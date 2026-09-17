@@ -1,0 +1,150 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Booking\Providers;
+
+use App\Modules\Booking\Application\Listeners\AggregateBookingVendorSubStatusListener;
+use App\Modules\Booking\Application\Listeners\CompleteBookingWhenAllVendorsCompletedListener;
+use App\Modules\Booking\Application\Listeners\ConfirmInventoryReservationsListener;
+use App\Modules\Booking\Application\Listeners\OnAdminSuggestedAlternativeVendorsNotifyCustomer;
+use App\Modules\Booking\Application\Listeners\OnBookingChatFrozenNotifyParties;
+use App\Modules\Booking\Application\Listeners\OnBookingChatFrozenPushFirestore;
+use App\Modules\Booking\Application\Listeners\OnBookingChatResumedNotifyParties;
+use App\Modules\Booking\Application\Listeners\OnBookingChatResumedPushFirestore;
+use App\Modules\Booking\Application\Listeners\OnBookingVendorTimedOutNotifyCustomer;
+use App\Modules\Booking\Application\Listeners\OnBookingVendorTimedOutNotifyVendor;
+use App\Modules\Booking\Application\Listeners\OnCustomerReviewReminderSentNotifyCustomer;
+use App\Modules\Booking\Application\Listeners\RecalculateBookingTotalsListener;
+use App\Modules\Booking\Application\Listeners\ReleaseInventoryOnCancellationListener;
+use App\Modules\Booking\Application\Listeners\WriteBookingStateTransitionListener;
+use App\Modules\Booking\Application\Listeners\WriteInitialBookingSnapshotListener;
+use App\Modules\Booking\Application\Listeners\WriteNegotiationSnapshotListener;
+use App\Modules\Booking\Application\Services\BookingVendorStatusMapCache;
+use App\Modules\Booking\Application\Timeline\BookingModificationTimelineDescriptors;
+use App\Modules\Booking\Application\Timeline\BookingTimelineDescriptors;
+use App\Modules\Booking\Console\Commands\ExpireStaleVendorReviewsCommand;
+use App\Modules\Booking\Console\Commands\ExpireVendorProposalsCommand;
+use App\Modules\Booking\Console\Commands\ReleaseExpiredReservationsCommand;
+use App\Modules\Booking\Domain\Contracts\BookingHistoryReader;
+use App\Modules\Booking\Domain\Contracts\BookingRepository;
+use App\Modules\Booking\Domain\Events\AdminSuggestedAlternativeVendors;
+use App\Modules\Booking\Domain\Events\BookingCancelled;
+use App\Modules\Booking\Domain\Events\BookingChatFrozen;
+use App\Modules\Booking\Domain\Events\BookingChatResumed;
+use App\Modules\Booking\Domain\Events\BookingConfirmed;
+use App\Modules\Booking\Domain\Events\BookingDraftCreated;
+use App\Modules\Booking\Domain\Events\BookingForceCancelled;
+use App\Modules\Booking\Domain\Events\BookingItemAdded;
+use App\Modules\Booking\Domain\Events\BookingItemFulfilled;
+use App\Modules\Booking\Domain\Events\BookingItemRemoved;
+use App\Modules\Booking\Domain\Events\BookingSubmittedToVendor;
+use App\Modules\Booking\Domain\Events\BookingVendorCompleted;
+use App\Modules\Booking\Domain\Events\BookingVendorTimedOut;
+use App\Modules\Booking\Domain\Events\CustomerModificationDecided;
+use App\Modules\Booking\Domain\Events\CustomerReviewReminderSent;
+use App\Modules\Booking\Domain\Events\VendorAccepted;
+use App\Modules\Booking\Domain\Events\VendorModificationProposed;
+use App\Modules\Booking\Domain\Events\VendorRejected;
+use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
+use App\Modules\Booking\Domain\Models\BookingModification;
+use App\Modules\Booking\Domain\Policies\BookingAdminInterventionPolicy;
+use App\Modules\Booking\Domain\Policies\BookingPolicy;
+use App\Modules\Booking\Infrastructure\Loyalty\EloquentBookingDiscountWriter;
+use App\Modules\Booking\Infrastructure\Loyalty\EloquentBookingDraftReader;
+use App\Modules\Booking\Infrastructure\Loyalty\EloquentBookingItemNetAmountReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingHistoryReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingItemReviewabilityReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingRepository;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingVendorReviewabilityReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentPaymentsBookingReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentSettlementBookingReader;
+use App\Modules\Loyalty\Domain\Contracts\BookingDiscountWriter;
+use App\Modules\Loyalty\Domain\Contracts\BookingDraftReader;
+use App\Modules\Loyalty\Domain\Contracts\BookingItemNetAmountReader;
+use App\Modules\Payments\Domain\Contracts\PaymentsBookingReader;
+use App\Modules\Reviews\Domain\Contracts\BookingItemReviewabilityReader;
+use App\Modules\Reviews\Domain\Contracts\BookingVendorReviewabilityReader;
+use App\Modules\Settlement\Domain\Contracts\SettlementBookingReader;
+use App\Modules\Shared\Application\Timeline\TimelineSourceRegistry;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+
+class BookingServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->scoped(BookingVendorStatusMapCache::class);
+        $this->app->bind(BookingRepository::class, EloquentBookingRepository::class);
+        $this->app->bind(PaymentsBookingReader::class, EloquentPaymentsBookingReader::class);
+        $this->app->bind(SettlementBookingReader::class, EloquentSettlementBookingReader::class);
+        $this->app->singleton(BookingItemReviewabilityReader::class, EloquentBookingItemReviewabilityReader::class);
+        $this->app->singleton(BookingVendorReviewabilityReader::class, EloquentBookingVendorReviewabilityReader::class);
+        $this->app->singleton(BookingHistoryReader::class, EloquentBookingHistoryReader::class);
+
+        // Cross-module contracts consumed by the Loyalty module.
+        $this->app->singleton(BookingItemNetAmountReader::class, EloquentBookingItemNetAmountReader::class);
+        $this->app->singleton(BookingDraftReader::class, EloquentBookingDraftReader::class);
+        $this->app->singleton(BookingDiscountWriter::class, EloquentBookingDiscountWriter::class);
+    }
+
+    public function boot(): void
+    {
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+        $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'booking');
+        $this->loadRoutesFrom(__DIR__.'/../Routes/customer.php');
+        $this->loadRoutesFrom(__DIR__.'/../Routes/vendor.php');
+        $this->loadRoutesFrom(__DIR__.'/../Routes/admin.php');
+
+        Gate::policy(Booking::class, BookingPolicy::class);
+        Gate::policy(BookingAdminIntervention::class, BookingAdminInterventionPolicy::class);
+
+        $this->commands([
+            ReleaseExpiredReservationsCommand::class,
+            ExpireVendorProposalsCommand::class,
+            ExpireStaleVendorReviewsCommand::class,
+        ]);
+
+        // Booking draft events (listener-driven state transition for initial draft)
+        Event::listen(BookingDraftCreated::class, WriteInitialBookingSnapshotListener::class);
+        Event::listen(BookingDraftCreated::class, WriteBookingStateTransitionListener::class);
+        Event::listen(BookingItemAdded::class, RecalculateBookingTotalsListener::class);
+        Event::listen(BookingItemRemoved::class, RecalculateBookingTotalsListener::class);
+
+        // Negotiation loop events — snapshot only (state transitions written in actions)
+        Event::listen(BookingSubmittedToVendor::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(VendorAccepted::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(VendorModificationProposed::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(VendorRejected::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(CustomerModificationDecided::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(BookingConfirmed::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(BookingConfirmed::class, ConfirmInventoryReservationsListener::class);
+        Event::listen(BookingCancelled::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(BookingCancelled::class, ReleaseInventoryOnCancellationListener::class);
+
+        // Admin override events
+        Event::listen(BookingForceCancelled::class, ReleaseInventoryOnCancellationListener::class);
+        Event::listen(BookingForceCancelled::class, WriteNegotiationSnapshotListener::class);
+        Event::listen(BookingVendorTimedOut::class, OnBookingVendorTimedOutNotifyVendor::class);
+        Event::listen(BookingVendorTimedOut::class, OnBookingVendorTimedOutNotifyCustomer::class);
+
+        // Admin intervention events
+        Event::listen(AdminSuggestedAlternativeVendors::class, OnAdminSuggestedAlternativeVendorsNotifyCustomer::class);
+        Event::listen(CustomerReviewReminderSent::class, OnCustomerReviewReminderSentNotifyCustomer::class);
+        Event::listen(BookingChatFrozen::class, OnBookingChatFrozenPushFirestore::class);
+        Event::listen(BookingChatFrozen::class, OnBookingChatFrozenNotifyParties::class);
+        Event::listen(BookingChatResumed::class, OnBookingChatResumedPushFirestore::class);
+        Event::listen(BookingChatResumed::class, OnBookingChatResumedNotifyParties::class);
+
+        // Vendor fulfillment — in-transaction aggregation of BookingVendor.sub_status (spec 040)
+        Event::listen(BookingItemFulfilled::class, AggregateBookingVendorSubStatusListener::class);
+        Event::listen(BookingVendorCompleted::class, CompleteBookingWhenAllVendorsCompletedListener::class);
+
+        $this->callAfterResolving(TimelineSourceRegistry::class, function (TimelineSourceRegistry $registry): void {
+            $registry->register(Booking::class, ...BookingTimelineDescriptors::all());
+            $registry->register(BookingModification::class, ...BookingModificationTimelineDescriptors::all());
+        });
+    }
+}

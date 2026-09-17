@@ -1,0 +1,122 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'dashboard' => [
+        'services_by_type' => [
+            'rental' => 'Rental services',
+            'sale' => 'Sale services',
+            'digital' => 'Digital services',
+        ],
+        'manage_services' => 'Manage services',
+    ],
+    'services' => [
+        'title' => 'My Services',
+        'type' => 'Type',
+        'status' => 'Status',
+        'last_modified' => 'Last Modified',
+        'draft' => 'Draft',
+        'pending_review' => 'Pending Review',
+        'published' => 'Published',
+        'rejected' => 'Rejected',
+        'changes_requested' => 'Changes Requested',
+        'archived' => 'Archived',
+        'submit_for_review' => 'Submit for Review',
+        'submitted' => 'Service submitted for review.',
+        'clone' => 'Clone',
+        'cloned' => 'Service cloned. You are now editing the copy.',
+        'archive' => 'Archive',
+        'archived_notice' => 'Service archived.',
+        'saved' => 'Service saved.',
+        'created' => 'Service created.',
+        'rental_services' => 'Rental Services',
+        'sale_services' => 'Sale Services',
+        'digital_services' => 'Digital Services',
+        'name' => 'Name',
+        'bulk_submitted' => ':count service(s) submitted for review.',
+        'bulk_archived' => ':count service(s) archived.',
+        'occasion_helper' => 'Appears under occasions: :occasions',
+        'occasion_helper_empty' => 'Pick a category to see which occasions it appears under.',
+        'occasion_helper_none' => 'This category is not linked to any occasion yet.',
+        'occasion_separator' => ', ',
+    ],
+
+    'imports' => [
+        'import_rental' => 'Import Rental Services',
+        'import_sale' => 'Import Sale Services',
+        'import_digital' => 'Import Digital Services',
+    ],
+
+    'availability' => [
+        'manage' => 'Manage Availability',
+    ],
+
+    'wallet' => [
+        'title' => 'My Wallet',
+        'current_balance' => 'Current Balance',
+        'available_balance' => 'Available Balance',
+        'pending_balance' => 'Pending Withdrawal',
+        'ledger' => 'Transaction History',
+        'date' => 'Date',
+        'type' => 'Type',
+        'direction_credit' => 'Credit',
+        'direction_debit' => 'Debit',
+        'amount' => 'Amount',
+        'running_balance' => 'Running Balance',
+        'description' => 'Description',
+    ],
+
+    'withdrawals' => [
+        'title' => 'Withdrawal Requests',
+        'reference' => 'Reference',
+        'status' => 'Status',
+        'amount' => 'Amount',
+        'requested_at' => 'Requested At',
+        'approved_at' => 'Approved At',
+        'paid_at' => 'Paid At',
+        'bank_reference' => 'Bank Reference',
+        'download_proof' => 'Download Proof',
+        'request' => 'Request Withdrawal',
+        'bank_details' => 'Bank Account',
+        'requested' => 'Withdrawal request submitted successfully.',
+        'cannot_have_two' => 'You already have a pending withdrawal request. Please wait until it is processed.',
+        'request_failed' => 'Withdrawal request failed.',
+        'try_again_later' => 'An unexpected error occurred. Please try again later.',
+        'insufficient_balance_tooltip' => 'Minimum withdrawal is EGP 100. Your available balance is too low.',
+    ],
+
+    'profile' => [
+        'no_bank_details' => 'No bank details on file. Please update your vendor profile with your bank information before requesting a withdrawal.',
+    ],
+
+    'nav' => [
+        'groups' => [
+            'profile' => 'My Profile',
+            'services' => 'Services',
+            'bookings' => 'Bookings',
+            'finance' => 'Finance',
+            'engagement' => 'Engagement',
+            'settings' => 'Settings',
+        ],
+        'items' => [
+            'dashboard' => 'Dashboard',
+            'profile_details' => 'Profile Details',
+            'documents' => 'Documents',
+            'business_hours' => 'Business Hours',
+            'coverage_areas' => 'Coverage Areas',
+            'rental_services' => 'Rental Services',
+            'sale_services' => 'Sale Services',
+            'digital_services' => 'Digital Services',
+            'incoming_bookings' => 'Incoming Bookings',
+            'active_bookings' => 'Active Bookings',
+            'booking_history' => 'Booking History',
+            'wallet' => 'Wallet',
+            'withdrawals' => 'Withdrawals',
+            'commissions' => 'Commissions',
+            'reviews' => 'Reviews',
+            'loyalty_program' => 'Loyalty Program',
+            'account_settings' => 'Account Settings',
+        ],
+    ],
+];

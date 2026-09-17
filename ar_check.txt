@@ -1,0 +1,5 @@
+nav.home: الرئيسية
+nav.wishlist: المفضلة
+common.search: بحث
+home.hero.headline: اعثر على بائعين لمناسبتك القادمة من مكان واحد.
+auth.login.title: مرحبًا بعودتك

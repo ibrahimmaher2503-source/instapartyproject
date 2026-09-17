@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Reviews\Filament\Resources;
+
+use App\Modules\Reviews\Domain\Models\ReviewModerationLog;
+use App\Modules\Reviews\Filament\Resources\ReviewModerationLogResource\Pages\ListReviewModerationLogs;
+use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
+
+class ReviewModerationLogResource extends Resource
+{
+    protected static ?string $model = ReviewModerationLog::class;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('admin.nav.groups.moderation');
+    }
+
+    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
+
+    protected static ?int $navigationSort = 40;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('reviews.nav.moderation_logs');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('reviews.models.moderation_log.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('reviews.models.moderation_log.plural');
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['moderator']);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('review_type')
+                    ->label(__('reviews.columns.review_type'))
+                    ->badge(),
+                TextColumn::make('review_id')
+                    ->label(__('reviews.columns.review_id'))
+                    ->formatStateUsing(fn ($state, $record): string => Str::upper(Str::before($record->review_type ?? '', '_review')).' #'.$state
+                    ),
+                TextColumn::make('from_status')
+                    ->label(__('reviews.columns.from_status'))
+                    ->badge(),
+                TextColumn::make('to_status')
+                    ->label(__('reviews.columns.to_status'))
+                    ->badge(),
+                TextColumn::make('moderator.name')
+                    ->label(__('reviews.columns.moderator'))
+                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->label(__('admin.common.created_at'))
+                    ->dateTime()
+                    ->sortable(),
+            ])
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListReviewModerationLogs::route('/'),
+        ];
+    }
+}

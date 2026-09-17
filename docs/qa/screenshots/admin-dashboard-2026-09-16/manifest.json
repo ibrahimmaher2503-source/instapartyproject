@@ -1,0 +1,98 @@
+[
+  {
+    "name": "01-dashboard",
+    "url": "/admin",
+    "finalUrl": "http://127.0.0.1:8142/admin",
+    "status": 200,
+    "title": "Dashboard - InstaParty",
+    "file": "01-dashboard.png"
+  },
+  {
+    "name": "02-occasion-create",
+    "url": "/admin/occasions/create",
+    "finalUrl": "http://127.0.0.1:8142/admin/occasions/create",
+    "status": 200,
+    "title": "Create Occasion - InstaParty",
+    "file": "02-occasion-create.png"
+  },
+  {
+    "name": "03-category-create",
+    "url": "/admin/categories/create",
+    "finalUrl": "http://127.0.0.1:8142/admin/categories/create",
+    "status": 200,
+    "title": "Create Category - InstaParty",
+    "file": "03-category-create.png"
+  },
+  {
+    "name": "04-loyalty-program-create",
+    "url": "/admin/loyalty-programs/create",
+    "finalUrl": "http://127.0.0.1:8142/admin/loyalty-programs/create",
+    "status": 200,
+    "title": "Create Program - InstaParty",
+    "file": "04-loyalty-program-create.png"
+  },
+  {
+    "name": "05-rental-service-create",
+    "url": "/admin/rental-services/create",
+    "finalUrl": "http://127.0.0.1:8142/admin/rental-services/create",
+    "status": 200,
+    "title": "Create Rental Service - InstaParty",
+    "file": "05-rental-service-create.png"
+  },
+  {
+    "name": "06-package-recommendation-create",
+    "url": "/admin/package-recommendations/create",
+    "finalUrl": "http://127.0.0.1:8142/admin/package-recommendations/create",
+    "status": 200,
+    "title": "Create Homepage Package - InstaParty",
+    "file": "06-package-recommendation-create.png"
+  },
+  {
+    "name": "07-payments",
+    "url": "/admin/payments",
+    "finalUrl": "http://127.0.0.1:8142/admin/payments",
+    "status": 200,
+    "title": "Payments - InstaParty",
+    "file": "07-payments.png"
+  },
+  {
+    "name": "08-booking-modifications",
+    "url": "/admin/booking-modifications",
+    "finalUrl": "http://127.0.0.1:8142/admin/booking-modifications",
+    "status": 200,
+    "title": "Booking Modifications - InstaParty",
+    "file": "08-booking-modifications.png"
+  },
+  {
+    "name": "09-reconciliation-runs",
+    "url": "/admin/reconciliation-runs",
+    "finalUrl": "http://127.0.0.1:8142/admin/reconciliation-runs",
+    "status": 200,
+    "title": "Reconciliation Runs - InstaParty",
+    "file": "09-reconciliation-runs.png"
+  },
+  {
+    "name": "10-campaigns",
+    "url": "/admin/campaigns",
+    "finalUrl": "http://127.0.0.1:8142/admin/campaigns",
+    "status": 200,
+    "title": "Campaigns - InstaParty",
+    "file": "10-campaigns.png"
+  },
+  {
+    "name": "11-notification-dispatches",
+    "url": "/admin/notification-dispatches",
+    "finalUrl": "http://127.0.0.1:8142/admin/notification-dispatches",
+    "status": 200,
+    "title": "Notification Dispatch Logs - InstaParty",
+    "file": "11-notification-dispatches.png"
+  },
+  {
+    "name": "12-review-moderation",
+    "url": "/admin/review-moderation-page",
+    "finalUrl": "http://127.0.0.1:8142/admin/review-moderation-page",
+    "status": 200,
+    "title": "Review Moderation - InstaParty",
+    "file": "12-review-moderation.png"
+  }
+]

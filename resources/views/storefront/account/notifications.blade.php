@@ -1,0 +1,3 @@
+@extends('storefront.account.layout')
+@section('account-title', __('account.notifications'))
+@section('account-content')@forelse($notifications as $notification)@php($context=(array)$notification->context)<article class="sf-account-panel @if(!$notification->read_at)sf-account-panel--unread @endif"><h2>{{ $context['subject'] ?? __('account.notification') }}</h2><p>{{ $context['body'] ?? '' }}</p><time datetime="{{ $notification->created_at?->toISOString() }}">{{ $notification->created_at?->timezone(auth()->user()->timezone ?? 'Africa/Cairo')->translatedFormat('d F Y، H:i') }}</time></article>@empty<div class="sf-account-empty">{{ __('account.no_notifications') }}</div>@endforelse {{ $notifications->links() }} @endsection

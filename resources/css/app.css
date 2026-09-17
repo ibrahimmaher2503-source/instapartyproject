@@ -1,0 +1,381 @@
+@import 'tailwindcss';
+
+/* Tailwind v4 defaults dark: to @media(prefers-color-scheme:dark).
+   Filament's toggle only writes/removes the .dark class on <html>.
+   Align both so every dark: utility — including custom blade templates —
+   responds to the toggle rather than the OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+    /* Filament's compiled CSS sets background-image on select:not(.choices) but
+       omits background-repeat/position/size — those came from @tailwindcss/forms
+       in its internal Tailwind v3 build. Tailwind v4 Preflight resets background
+       shorthand properties, causing the chevron to tile across the field.
+       Restore the three missing properties here so only one chevron appears. */
+    select:not(.choices) {
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1.5em 1.5em;
+        padding-inline-end: 2.5rem;
+    }
+
+    [dir='rtl'] select:not(.choices) {
+        background-position: left 0.5rem center;
+    }
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../../app/Filament/**/*.php';
+@source '../../app/Modules/**/*.php';
+@source '../../app/Modules/**/*.blade.php';
+@source '../../vendor/filament/**/resources/views/**/*.blade.php';
+@source '../../vendor/filament/**/src/**/*.php';
+
+/* Filament v3 blade templates use `col-[--cols-X]` / `grid-cols-[--cols-X]`
+   to reference CSS custom properties. Tailwind v3 (and the Filament-shipped
+   build) treats the bracketed value as `var(--cols-X)`; Tailwind v4 emits
+   the literal string `--cols-X`, which CSS rejects, so every Filament grid
+   collapses to `auto`. Restore the intended behavior. */
+@layer utilities {
+    .col-\[--col-span-default\]     { grid-column: var(--col-span-default); }
+    .col-start-\[--col-start-default\] { grid-column-start: var(--col-start-default); }
+
+    @media (min-width: 640px) {
+        .sm\:col-\[--col-span-sm\]     { grid-column: var(--col-span-sm); }
+        .sm\:col-start-\[--col-start-sm\] { grid-column-start: var(--col-start-sm); }
+    }
+    @media (min-width: 768px) {
+        .md\:col-\[--col-span-md\]     { grid-column: var(--col-span-md); }
+        .md\:col-start-\[--col-start-md\] { grid-column-start: var(--col-start-md); }
+    }
+    @media (min-width: 1024px) {
+        .lg\:col-\[--col-span-lg\]     { grid-column: var(--col-span-lg); }
+        .lg\:col-start-\[--col-start-lg\] { grid-column-start: var(--col-start-lg); }
+    }
+    @media (min-width: 1280px) {
+        .xl\:col-\[--col-span-xl\]     { grid-column: var(--col-span-xl); }
+        .xl\:col-start-\[--col-start-xl\] { grid-column-start: var(--col-start-xl); }
+    }
+    @media (min-width: 1536px) {
+        .\32xl\:col-\[--col-span-2xl\]     { grid-column: var(--col-span-2xl); }
+        .\32xl\:col-start-\[--col-start-2xl\] { grid-column-start: var(--col-start-2xl); }
+    }
+
+    .grid-cols-\[--cols-default\] { grid-template-columns: var(--cols-default); }
+    @media (min-width: 640px)  { .sm\:grid-cols-\[--cols-sm\]   { grid-template-columns: var(--cols-sm); } }
+    @media (min-width: 768px)  { .md\:grid-cols-\[--cols-md\]   { grid-template-columns: var(--cols-md); } }
+    @media (min-width: 1024px) { .lg\:grid-cols-\[--cols-lg\]   { grid-template-columns: var(--cols-lg); } }
+    @media (min-width: 1280px) { .xl\:grid-cols-\[--cols-xl\]   { grid-template-columns: var(--cols-xl); } }
+    @media (min-width: 1536px) { .\32xl\:grid-cols-\[--cols-2xl\] { grid-template-columns: var(--cols-2xl); } }
+}
+
+@theme {
+    --font-sans: 'Cairo', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Register the `custom-N` color family so Tailwind v4 compiles
+       `bg-custom-50`, `text-custom-600`, `ring-custom-600`, etc. Values here
+       are placeholders (Tailwind needs a real color to emit the utility) —
+       the actual color resolves at runtime via the `.fi-color-custom` rule
+       below, which binds `--color-custom-N` to the per-element `--c-N`. */
+    --color-custom-50:  rgb(0 0 0 / 0);
+    --color-custom-100: rgb(0 0 0 / 0);
+    --color-custom-200: rgb(0 0 0 / 0);
+    --color-custom-300: rgb(0 0 0 / 0);
+    --color-custom-400: rgb(0 0 0 / 0);
+    --color-custom-500: rgb(0 0 0 / 0);
+    --color-custom-600: rgb(0 0 0 / 0);
+    --color-custom-700: rgb(0 0 0 / 0);
+    --color-custom-800: rgb(0 0 0 / 0);
+    --color-custom-900: rgb(0 0 0 / 0);
+    --color-custom-950: rgb(0 0 0 / 0);
+}
+
+/* Filament v3 defines `--{name}-N` at :root for every registered color and
+   sometimes emits `--c-N` inline on `.fi-color-*` elements — but not always
+   (e.g. action links don't get the inline style). Set `--c-N` per semantic
+   color so the chain works whether the inline style is present or not. */
+.fi-color-primary { --c-50: var(--primary-50); --c-100: var(--primary-100); --c-200: var(--primary-200); --c-300: var(--primary-300); --c-400: var(--primary-400); --c-500: var(--primary-500); --c-600: var(--primary-600); --c-700: var(--primary-700); --c-800: var(--primary-800); --c-900: var(--primary-900); --c-950: var(--primary-950); }
+.fi-color-danger  { --c-50: var(--danger-50);  --c-100: var(--danger-100);  --c-200: var(--danger-200);  --c-300: var(--danger-300);  --c-400: var(--danger-400);  --c-500: var(--danger-500);  --c-600: var(--danger-600);  --c-700: var(--danger-700);  --c-800: var(--danger-800);  --c-900: var(--danger-900);  --c-950: var(--danger-950);  }
+.fi-color-success { --c-50: var(--success-50); --c-100: var(--success-100); --c-200: var(--success-200); --c-300: var(--success-300); --c-400: var(--success-400); --c-500: var(--success-500); --c-600: var(--success-600); --c-700: var(--success-700); --c-800: var(--success-800); --c-900: var(--success-900); --c-950: var(--success-950); }
+.fi-color-warning { --c-50: var(--warning-50); --c-100: var(--warning-100); --c-200: var(--warning-200); --c-300: var(--warning-300); --c-400: var(--warning-400); --c-500: var(--warning-500); --c-600: var(--warning-600); --c-700: var(--warning-700); --c-800: var(--warning-800); --c-900: var(--warning-900); --c-950: var(--warning-950); }
+.fi-color-info    { --c-50: var(--info-50);    --c-100: var(--info-100);    --c-200: var(--info-200);    --c-300: var(--info-300);    --c-400: var(--info-400);    --c-500: var(--info-500);    --c-600: var(--info-600);    --c-700: var(--info-700);    --c-800: var(--info-800);    --c-900: var(--info-900);    --c-950: var(--info-950);    }
+.fi-color-gray    { --c-50: var(--gray-50);    --c-100: var(--gray-100);    --c-200: var(--gray-200);    --c-300: var(--gray-300);    --c-400: var(--gray-400);    --c-500: var(--gray-500);    --c-600: var(--gray-600);    --c-700: var(--gray-700);    --c-800: var(--gray-800);    --c-900: var(--gray-900);    --c-950: var(--gray-950);    }
+
+/* Resolve the Tailwind v4 `custom-N` family from the per-element `--c-N` set
+   above. Declaring it here (not in @theme/:root) keeps the inner `var(--c-N)`
+   substitution local to each element — at :root, `--c-N` is undefined and the
+   whole token would be computed as invalid. */
+.fi-color-custom {
+    --color-custom-50:  rgb(var(--c-50));
+    --color-custom-100: rgb(var(--c-100));
+    --color-custom-200: rgb(var(--c-200));
+    --color-custom-300: rgb(var(--c-300));
+    --color-custom-400: rgb(var(--c-400));
+    --color-custom-500: rgb(var(--c-500));
+    --color-custom-600: rgb(var(--c-600));
+    --color-custom-700: rgb(var(--c-700));
+    --color-custom-800: rgb(var(--c-800));
+    --color-custom-900: rgb(var(--c-900));
+    --color-custom-950: rgb(var(--c-950));
+}
+
+/* Shared admin and vendor product UI. Keep the task surface calm, readable,
+   keyboard-visible, and direction-safe in both locales. */
+@layer base {
+    :root {
+        --ip-canvas: oklch(0.985 0.004 190);
+        --ip-surface: oklch(0.997 0.003 190);
+        --ip-border: oklch(0.91 0.012 190);
+        --ip-ink: oklch(0.25 0.025 240);
+        --ip-muted: oklch(0.48 0.02 235);
+    }
+
+    html[lang='ar'] { font-family: 'Cairo', system-ui, sans-serif; }
+    html[lang='en'] { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+    :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+        outline: 3px solid oklch(0.55 0.12 175);
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    .fi-body { background: var(--ip-canvas); color: var(--ip-ink); }
+    .fi-sidebar { background: var(--ip-surface); border-inline-end: 1px solid var(--ip-border); }
+    .fi-main { padding-block: 1.5rem; }
+    .fi-header-heading { font-size: 1.75rem; line-height: 1.25; font-weight: 700; }
+    .fi-section, .fi-ta-ctn { border-color: var(--ip-border); box-shadow: 0 1px 2px rgb(15 23 42 / 0.05); }
+    .fi-ta-header { position: sticky; top: 0; z-index: 10; background: var(--ip-surface); }
+    .fi-ta-text-item-label, .fi-fo-field-wrp-label { font-size: 0.875rem; font-weight: 600; }
+    .fi-ta-cell { vertical-align: middle; }
+    .fi-btn, .fi-icon-btn, .fi-input-wrp { min-height: 2.75rem; }
+    [dir='rtl'] :where(input[type='email'], input[type='url'], [data-public-id]) { direction: ltr; text-align: end; }
+    .tabular-nums, .fi-ta-cell[class*='amount'], .fi-ta-cell[class*='price'], .fi-ta-cell[class*='total'] { font-variant-numeric: tabular-nums; }
+
+    /* Admin operations shell. Filament remains the interaction system; these
+       rules only establish one compact visual language across its primitives. */
+    .fi-panel-admin {
+        --ip-admin-canvas: oklch(0.975 0.008 87);
+        --ip-admin-surface: oklch(0.993 0.006 84);
+        --ip-admin-subtle: oklch(0.955 0.012 87);
+        --ip-admin-border: oklch(0.89 0.018 87);
+        --ip-admin-ink: oklch(0.27 0.045 267);
+        --ip-admin-muted: oklch(0.51 0.025 270);
+        background: var(--ip-admin-canvas);
+        color: var(--ip-admin-ink);
+    }
+
+    .dark .fi-panel-admin {
+        --ip-admin-canvas: oklch(0.19 0.025 267);
+        --ip-admin-surface: oklch(0.23 0.028 267);
+        --ip-admin-subtle: oklch(0.27 0.025 267);
+        --ip-admin-border: oklch(0.36 0.025 267);
+        --ip-admin-ink: oklch(0.94 0.012 87);
+        --ip-admin-muted: oklch(0.72 0.018 87);
+    }
+
+    .fi-panel-admin .fi-topbar {
+        min-height: 3.75rem;
+        border-block-end: 1px solid var(--ip-admin-border);
+        background: color-mix(in oklch, var(--ip-admin-surface) 96%, transparent);
+        box-shadow: none;
+    }
+
+    .fi-panel-admin .fi-sidebar {
+        height: 100dvh;
+        border-inline-end: 1px solid var(--ip-admin-border);
+        background: var(--ip-admin-surface);
+        box-shadow: none;
+    }
+
+    @media (min-width: 1024px) {
+        .fi-panel-admin .fi-sidebar.fi-sidebar-open { width: 264px !important; }
+        .fi-panel-admin .fi-sidebar:not(.fi-sidebar-open) { width: 72px !important; }
+    }
+
+    .fi-panel-admin .fi-sidebar-header {
+        min-height: 3.75rem;
+        padding-inline: 0.875rem;
+        border-block-end: 1px solid var(--ip-admin-border);
+    }
+
+    .fi-panel-admin .fi-sidebar-nav {
+        overscroll-behavior: contain;
+        padding: 0.625rem 0.5rem 1rem;
+        scrollbar-width: thin;
+    }
+
+    .fi-panel-admin .fi-sidebar-nav-groups { gap: 0.625rem; }
+    .fi-panel-admin .fi-sidebar-group {
+        gap: 0.1875rem;
+        padding-block: 0.125rem;
+    }
+
+    .fi-panel-admin .fi-sidebar-group-label {
+        color: var(--ip-admin-muted);
+        font-size: 0.6875rem;
+        font-weight: 750;
+        letter-spacing: 0.045em;
+        text-transform: uppercase;
+    }
+
+    [dir='rtl'] .fi-panel-admin .fi-sidebar-group-label {
+        letter-spacing: 0;
+    }
+
+    .fi-panel-admin .fi-sidebar-group-button {
+        min-height: 2rem;
+        padding-inline: 0.625rem;
+        border-radius: 0.5rem;
+        transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .fi-panel-admin .fi-sidebar-group:has(.fi-sidebar-item-active) > .fi-sidebar-group-button {
+        background: rgb(var(--primary-50) / 0.72);
+        color: rgb(var(--primary-700));
+    }
+
+    .fi-panel-admin .fi-sidebar-group:has(.fi-sidebar-item-active) > .fi-sidebar-group-items {
+        display: flex !important;
+    }
+
+    .fi-panel-admin .fi-sidebar-item-button {
+        min-height: 2.375rem;
+        padding-block: 0.375rem;
+        padding-inline: 0.625rem;
+        border-radius: 0.5rem;
+        transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .fi-panel-admin .fi-sidebar-item-active > .fi-sidebar-item-button {
+        background: rgb(var(--primary-50));
+        color: rgb(var(--primary-700));
+        box-shadow: inset 3px 0 0 rgb(var(--primary-600));
+        font-weight: 700;
+    }
+
+    [dir='rtl'] .fi-panel-admin .fi-sidebar-item-active > .fi-sidebar-item-button {
+        box-shadow: inset -3px 0 0 rgb(var(--primary-600));
+    }
+
+    .fi-panel-admin .fi-sidebar-item-button:hover { background: var(--ip-admin-subtle); }
+    .fi-panel-admin .fi-sidebar-item-icon { flex: none; }
+    .fi-panel-admin .fi-sidebar-item-label { line-height: 1.25; }
+    .fi-panel-admin .fi-sidebar-item-badge { margin-inline-start: auto; }
+
+    .dark .fi-panel-admin .fi-sidebar-item-active > .fi-sidebar-item-button {
+        background: rgb(var(--primary-900) / 0.42);
+        color: rgb(var(--primary-200));
+    }
+
+    .dark .fi-panel-admin .fi-sidebar-group:has(.fi-sidebar-item-active) > .fi-sidebar-group-button {
+        background: rgb(var(--primary-900) / 0.22);
+        color: rgb(var(--primary-200));
+    }
+
+    .fi-panel-admin .fi-main {
+        width: 100%;
+        max-width: none;
+        padding-block: 1.5rem 2rem;
+        padding-inline: clamp(1.25rem, 2.3vw, 2rem);
+    }
+
+    .fi-panel-admin .fi-header { gap: 0.75rem; }
+    .fi-panel-admin .fi-header-heading {
+        color: var(--ip-admin-ink);
+        font-size: 1.875rem;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+    }
+
+    [dir='rtl'] .fi-panel-admin .fi-header-heading { letter-spacing: 0; }
+    .fi-panel-admin .fi-header-subheading { max-width: 72ch; color: var(--ip-admin-muted); }
+    .fi-panel-admin .fi-breadcrumbs { font-size: 0.8125rem; }
+
+    .fi-panel-admin :where(.fi-btn, .fi-icon-btn, .fi-input-wrp) {
+        min-height: 2.5rem;
+        border-radius: 0.625rem;
+    }
+
+    .fi-panel-admin :where(.fi-section, .fi-ta-ctn) {
+        border-color: var(--ip-admin-border);
+        border-radius: 0.875rem;
+        background: var(--ip-admin-surface);
+        box-shadow: 0 1px 2px rgb(17 27 58 / 0.05);
+    }
+
+    .fi-panel-admin .fi-ta-header {
+        position: sticky;
+        top: 3.75rem;
+        z-index: 10;
+        padding: 0.75rem 1rem;
+        border-block-end: 1px solid var(--ip-admin-border);
+        background: var(--ip-admin-surface);
+    }
+
+    .fi-panel-admin .fi-ta-search-field { width: min(100%, 24rem); }
+    .fi-panel-admin .fi-ta-header-cell {
+        background: var(--ip-admin-subtle);
+        color: var(--ip-admin-muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .fi-panel-admin .fi-ta-row { border-block-end-color: var(--ip-admin-border); }
+    .fi-panel-admin .fi-ta-row:hover { background: rgb(var(--primary-50) / 0.5); }
+    .dark .fi-panel-admin .fi-ta-row:hover { background: rgb(var(--primary-900) / 0.16); }
+    .fi-panel-admin .fi-ta-cell { min-height: 3.5rem; padding-block: 0.75rem; }
+    .fi-panel-admin .fi-ta-text-item-label { line-height: 1.45; }
+
+    .fi-panel-admin .fi-badge {
+        gap: 0.35rem;
+        border-radius: 999px;
+        font-weight: 650;
+    }
+
+    .fi-panel-admin .fi-ta-empty-state { min-height: 12rem; padding-block: 2.5rem; }
+    .fi-panel-admin .fi-ta-empty-state-heading { color: var(--ip-admin-ink); font-size: 1rem; }
+    .fi-panel-admin .fi-pagination { border-block-start-color: var(--ip-admin-border); }
+
+    .fi-panel-admin .fi-modal-window {
+        border: 1px solid var(--ip-admin-border);
+        border-radius: 1rem;
+        background: var(--ip-admin-surface);
+        box-shadow: 0 24px 64px rgb(17 27 58 / 0.18);
+    }
+
+    .fi-panel-admin .fi-no-notification {
+        border-color: var(--ip-admin-border);
+        border-radius: 0.875rem;
+    }
+
+    .ip-import-layout { display: grid; gap: 1rem; max-width: 64rem; }
+    .ip-import-intro { max-width: 68ch; color: var(--ip-admin-muted); line-height: 1.7; }
+    .ip-import-form { display: grid; gap: 1rem; }
+    .ip-import-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    .ip-import-results { overflow: hidden; }
+    .ip-import-summary { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block-end: 1rem; }
+    .ip-import-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .ip-import-table th, .ip-import-table td {
+        padding: 0.75rem;
+        border-block-end: 1px solid var(--ip-admin-border);
+        text-align: start;
+        vertical-align: top;
+    }
+    .ip-import-table th { background: var(--ip-admin-subtle); color: var(--ip-admin-muted); font-weight: 700; }
+}
+
+@media (max-width: 767px) {
+    .fi-main { padding-inline: 0.75rem; }
+    .fi-header-heading { font-size: 1.5rem; }
+    .fi-ta-content { overflow-x: auto; }
+    .fi-panel-admin .fi-main { padding-inline: 1rem; }
+    .fi-panel-admin .fi-header-heading { font-size: 1.5rem; }
+    .fi-panel-admin .fi-ta-header { padding: 0.75rem; }
+    .fi-panel-admin .fi-ta-header-cell { position: static; }
+    .fi-panel-admin .fi-sidebar { width: min(20rem, calc(100vw - 2.5rem)); }
+    .ip-import-table { min-width: 38rem; }
+}

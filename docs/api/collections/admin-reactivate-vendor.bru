@@ -1,0 +1,28 @@
+meta {
+  name: Reactivate vendor
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/vendor-profiles/{{vendor_public_id}}/reactivate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+}
+
+tests {
+  test("reactivates by public vendor reference", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.id).to.equal(bru.getVar("vendor_public_id"));
+    expect(res.getBody().data.approval_status).to.equal("approved");
+  });
+}

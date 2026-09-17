@@ -1,0 +1,142 @@
+[
+  {
+    "locale": "en",
+    "width": 1440,
+    "height": 1000,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 1440,
+      "clientWidth": 1440
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "en-1440.png"
+  },
+  {
+    "locale": "en",
+    "width": 1280,
+    "height": 900,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 1280,
+      "clientWidth": 1280
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "en-1280.png"
+  },
+  {
+    "locale": "en",
+    "width": 1024,
+    "height": 900,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 1024,
+      "clientWidth": 1024
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "en-1024.png"
+  },
+  {
+    "locale": "en",
+    "width": 768,
+    "height": 1000,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 768,
+      "clientWidth": 768
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "en-768.png"
+  },
+  {
+    "locale": "en",
+    "width": 390,
+    "height": 844,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 390,
+      "clientWidth": 390
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "en-390.png"
+  },
+  {
+    "locale": "ar",
+    "width": 1440,
+    "height": 1000,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 1440,
+      "clientWidth": 1440
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "ar-1440.png"
+  },
+  {
+    "locale": "ar",
+    "width": 1280,
+    "height": 900,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 1280,
+      "clientWidth": 1280
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "ar-1280.png"
+  },
+  {
+    "locale": "ar",
+    "width": 1024,
+    "height": 900,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 1024,
+      "clientWidth": 1024
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "ar-1024.png"
+  },
+  {
+    "locale": "ar",
+    "width": 768,
+    "height": 1000,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 768,
+      "clientWidth": 768
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "ar-768.png"
+  },
+  {
+    "locale": "ar",
+    "width": 390,
+    "height": 844,
+    "status": 200,
+    "overflow": {
+      "scrollWidth": 390,
+      "clientWidth": 390
+    },
+    "brokenImages": 0,
+    "brokenImageSources": [],
+    "consoleErrors": [],
+    "screenshot": "ar-390.png"
+  }
+]

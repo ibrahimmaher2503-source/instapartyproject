@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// InstaParty restricted chat — strict per-party access.
+//   - Admin (custom claim role == 'admin'): full read/write on all threads + messages.
+//   - Customer / Vendor: read + create only within their OWN thread (participantUserIds
+//     contains their uid), and only while the thread is not frozen.
+//   - Moderation fields (blocked / redacted / flagReason) are Cloud-Function-only and
+//     MUST NOT be set by clients.
+//   - Messages are append-only: no client update or delete.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.role == 'admin';
+    }
+
+    function isParticipant(thread) {
+      return request.auth != null
+        && thread.data.participantUserIds.hasAny([request.auth.uid]);
+    }
+
+    function threadNotFrozen(thread) {
+      return thread.data.frozen == false;
+    }
+
+    // Client message payloads may only carry these keys; moderation fields are server-only.
+    function messageShapeOk() {
+      return request.resource.data.keys().hasOnly(['senderUserId', 'body', 'createdAt'])
+        && request.resource.data.senderUserId == request.auth.uid
+        && request.resource.data.body is string
+        && request.resource.data.body.size() <= 2000;
+    }
+
+    match /threads/{threadId} {
+      allow read: if isAdmin() || isParticipant(resource);
+      // Threads are provisioned server-side (Admin SDK / Cloud Function) only.
+      allow create, update, delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin()
+          || isParticipant(get(/databases/$(database)/documents/threads/$(threadId)));
+
+        allow create: if isAdmin()
+          || (
+            messageShapeOk()
+            && isParticipant(get(/databases/$(database)/documents/threads/$(threadId)))
+            && threadNotFrozen(get(/databases/$(database)/documents/threads/$(threadId)))
+          );
+
+        // Append-only for clients; only admins/Cloud Functions (Admin SDK bypasses rules)
+        // may mutate (e.g., redaction is performed by the Admin SDK and is not subject to rules).
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

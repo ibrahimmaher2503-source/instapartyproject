@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'filters' => ['date_from' => 'التاريخ من', 'date_until' => 'التاريخ حتى'],
+    'nav' => [
+        'groups' => [
+            'operations' => 'العمليات',
+            'vendor_management' => 'الموردون',
+            'geography' => 'الإعدادات',
+            'identity' => 'الأمان والصلاحيات',
+            'vendor_onboarding' => 'الموردون',
+            'catalog' => 'الخدمات',
+            'services' => 'الخدمات',
+            'booking' => 'العمليات',
+            'payments' => 'المدفوعات والمالية',
+            'settlement' => 'المدفوعات والمالية',
+            'loyalty' => 'المحتوى والنمو',
+            'discovery' => 'الخدمات',
+            'communication' => 'الإشعارات والاتصالات',
+            'moderation' => 'الخدمات',
+            'support' => 'الدعم والثقة',
+            'trust_safety' => 'الدعم والثقة',
+            'promotions' => 'المحتوى والنمو',
+            'reports' => 'العمليات',
+            'settings' => 'الإعدادات',
+            'activity_logs' => 'العمليات',
+            'users' => 'الأمان والصلاحيات',
+            'inbox' => 'الدعم والثقة',
+            'subscriptions' => 'المحتوى والنمو',
+            'tax' => 'الإعدادات',
+            'advertising' => 'المحتوى والنمو',
+            'appearance' => 'المحتوى والنمو',
+            'security' => 'الأمان والصلاحيات',
+            'content' => 'المحتوى والنمو',
+        ],
+    ],
+
+    'activity_log' => [
+        'singular' => 'سجل نشاط',
+        'plural' => 'سجلات النشاط',
+        'empty_heading' => 'لا يوجد نشاط مسجل',
+        'empty_description' => 'ستظهر التغييرات الإدارية المسجلة هنا.',
+    ],
+
+    'actions' => [
+        'view' => 'عرض',
+        'edit' => 'تعديل',
+        'delete' => 'حذف',
+        'create' => 'إنشاء',
+        'approve' => 'اعتماد',
+        'reject' => 'رفض',
+        'suspend' => 'إيقاف',
+        'review' => 'مراجعة',
+        'download' => 'تنزيل',
+        'revoke' => 'سحب',
+        'approve_for_type' => 'اعتماد نوع منتج',
+        'revoke_type' => 'سحب اعتماد النوع',
+        'more' => 'إجراءات أخرى',
+    ],
+
+    'common' => [
+        'id' => 'المعرف',
+        'created_at' => 'تاريخ الإنشاء',
+        'updated_at' => 'تاريخ التحديث',
+        'status' => 'الحالة',
+        'active' => 'نشط',
+        'inactive' => 'غير نشط',
+        'yes' => 'نعم',
+        'no' => 'لا',
+        'no_results' => 'لا توجد نتائج',
+        'untranslated' => 'غير مترجم',
+        'egp' => 'جنيه',
+        'from' => 'من',
+        'until' => 'حتى',
+    ],
+
+    'empty_states' => [
+        'no_records' => 'لا توجد سجلات',
+        'no_records_description' => 'ستظهر هنا السجلات المطابقة لهذا العرض.',
+        'no_pending_vendors' => 'لا يوجد موردون قيد المراجعة',
+        'no_pending_vendors_description' => 'تمت مراجعة جميع طلبات تسجيل الموردين.',
+    ],
+
+    'dashboard' => [
+        'title' => 'لوحة التحكم',
+        'console_label' => 'وحدة متابعة العمليات',
+        'urgent_summary' => 'لا توجد عناصر عاجلة في قائمة العمليات|عنصر عاجل واحد في قائمة العمليات|:count عناصر عاجلة في قائمة العمليات',
+        'as_of' => 'آخر تحديث :time',
+        'live_summary' => 'بيانات مباشرة من النظام الحالي',
+        'revenue_today' => 'إيرادات اليوم',
+        'greeting_morning' => 'صباح الخير',
+        'greeting_afternoon' => 'مساء الخير',
+        'greeting_evening' => 'مساء الخير',
+    ],
+];

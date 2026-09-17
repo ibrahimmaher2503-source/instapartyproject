@@ -1,0 +1,554 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    // General
+    'vendor_profile' => 'Vendor Profile',
+    'vendor_profiles' => 'Vendor Profiles',
+    'vendor_document' => 'Vendor Document',
+    'vendor_documents' => 'Vendor Documents',
+    'customer' => 'Customer',
+    'vendor' => 'Vendor',
+    'admin' => 'Admin',
+
+    // Navigation labels
+    'nav' => [
+        'users' => 'Users',
+        'customer_profiles' => 'Customer Profiles',
+        'customer_addresses' => 'Customer Addresses',
+        'devices' => 'User Devices',
+        'coverage_areas' => 'Coverage Areas',
+        'business_hours' => 'Business Hours',
+        'approved_product_types' => 'Approved Product Types',
+        'queue' => 'Approval Queue',
+        'all_vendors' => 'All Vendors',
+        'vendor_management' => 'Vendor Management',
+        'documents' => 'Documents',
+        'customers' => 'Customers',
+    ],
+
+    'models' => [
+        'user' => [
+            'singular' => 'User',
+            'plural' => 'Users',
+        ],
+        'customer_profile' => [
+            'singular' => 'Customer Profile',
+            'plural' => 'Customer Profiles',
+        ],
+        'customer_address' => [
+            'singular' => 'Customer Address',
+            'plural' => 'Customer Addresses',
+        ],
+        'user_device' => [
+            'singular' => 'User Device',
+            'plural' => 'User Devices',
+        ],
+        'vendor_profile' => [
+            'singular' => 'Vendor Profile',
+            'plural' => 'Vendor Profiles',
+        ],
+        'vendor_document' => [
+            'singular' => 'Vendor Document',
+            'plural' => 'Vendor Documents',
+        ],
+        'coverage_area' => [
+            'singular' => 'Coverage Area',
+            'plural' => 'Coverage Areas',
+        ],
+        'business_hour' => [
+            'singular' => 'Business Hour',
+            'plural' => 'Business Hours',
+        ],
+        'approved_product_type' => [
+            'singular' => 'Approved Product Type',
+            'plural' => 'Approved Product Types',
+        ],
+    ],
+
+    // Infolist / form section titles
+    'sections' => [
+        'identity' => 'Identity',
+        'business_profile' => 'Business Profile',
+        'banking' => 'Banking Details',
+        'bank_information' => 'Bank Information',
+        'uploaded_documents' => 'Uploaded Documents',
+        'approved_product_types' => 'Approved Product Types',
+        'business_hours' => 'Business Hours',
+        'coverage_areas' => 'Coverage Areas',
+        'services' => 'Services',
+        'bookings' => 'Bookings',
+        'wallet' => 'Wallet',
+        'withdrawals' => 'Withdrawals',
+        'reviews' => 'Reviews',
+        'activity' => 'Activity Log',
+        'documents' => 'Documents',
+        'location' => 'Location',
+    ],
+
+    // Compliance / document expiry section
+    'compliance' => [
+        'document_context' => 'Document context',
+        'delete_document_warning' => 'Delete this document permanently? This cannot be undone.',
+        'expiry_and_criticality' => 'Expiry & Criticality',
+        'document_expired' => 'Document expired on :date.',
+        'auto_suspended' => 'Automatically suspended because a required critical document expired on :date.',
+        'expiry_reminder' => 'Document expiry reminder: :days day(s) remaining.',
+    ],
+
+    // Activity log column labels
+    'activity' => [
+        'description' => 'Description',
+        'caused_by' => 'Caused By',
+        'properties' => 'Properties',
+    ],
+
+    // Filters
+    'filters' => [
+        'approved_product_type' => 'Approved Product Type',
+        'status_active' => 'Active',
+        'status_suspended' => 'Suspended',
+    ],
+
+    // Empty state messages
+    'empty_states' => [
+        'no_bookings' => 'No bookings yet.',
+        'no_reviews' => 'No reviews yet.',
+        'no_loyalty' => 'No loyalty balances yet.',
+        'no_addresses' => 'No addresses saved yet.',
+        'no_activity' => 'No activity recorded yet.',
+        'no_documents' => 'No documents uploaded.',
+    ],
+
+    // Modal descriptions
+    'modals' => [
+        'suspend_customer' => 'Are you sure you want to suspend :name? They will be logged out immediately.',
+        'force_logout_customer' => 'This will revoke all active sessions for :name.',
+        'approve_vendor_heading' => 'Approve this vendor?',
+        'approve_vendor_description' => 'This grants the vendor the approved status. You can grant per-product-type permissions afterwards.',
+    ],
+
+    // Page titles
+    'pages' => [
+        'review_vendor_application' => 'Review Vendor Application',
+    ],
+
+    // Misc display labels
+    'misc' => [
+        'piastres' => 'piastres',
+        'address_default_marker' => '[Default]',
+        'booking_id' => 'Booking ID',
+        'id_short' => 'ID',
+        'translations_tab' => 'Translations',
+        'tab_english' => 'English',
+        'tab_arabic' => 'العربية',
+        'bookings_count' => '{0} No bookings|{1} 1 booking|[2,*] :count bookings',
+        'reviews_count' => '{0} No reviews|{1} 1 review|[2,*] :count reviews',
+        'yes' => 'Yes',
+        'no' => 'No',
+    ],
+
+    // Table column labels
+    'columns' => [
+        'public_id' => 'Public ID',
+        'vendor_reference' => 'Vendor Reference',
+        'document_reference' => 'Document Reference',
+        'reviewed_by' => 'Reviewed By',
+        'reviewed_at' => 'Reviewed At',
+        'review_notes' => 'Review Notes',
+        'id' => 'ID',
+        'name' => 'Name',
+        'user_id' => 'User',
+        'business_name' => 'Business Name',
+        'business_type' => 'Business Type',
+        'email' => 'Email',
+        'phone' => 'Phone Number',
+        'phone_verified' => 'Phone Verified',
+        'docs' => 'Documents',
+        'vendor' => 'Vendor',
+        'doc_type' => 'Document Type',
+        'file_name' => 'File Name',
+        'status' => 'Status',
+        'approval_status' => 'Approval Status',
+        'created_at' => 'Created At',
+        'download' => 'Download',
+        'slug' => 'Slug',
+        'governorate' => 'Governorate',
+        'city' => 'City',
+        'city_id' => 'City',
+        'label' => 'Label',
+        'recipient_name' => 'Recipient Name',
+        'recipient_phone' => 'Recipient Phone',
+        'is_default' => 'Default Address',
+        'bank_name' => 'Bank Name',
+        'bank_account_holder' => 'Account Holder',
+        'bank_iban' => 'IBAN',
+        'bank_swift_bic' => 'SWIFT / BIC',
+        'bank_branch' => 'Bank Branch',
+        'active_type_approvals' => 'Active Product Type Approvals',
+        'date_of_birth' => 'Date of Birth',
+        'gender' => 'Gender',
+        'accepts_marketing' => 'Accepts Marketing',
+        'platform' => 'Platform',
+        'device_id' => 'Device ID',
+        'last_seen_at' => 'Last Seen At',
+        'delivery_fee' => 'Delivery Fee',
+        'min_order' => 'Minimum Order',
+        'day_of_week' => 'Day of Week',
+        'opens_at' => 'Opens At',
+        'closes_at' => 'Closes At',
+        'product_type' => 'Product Type',
+        'approved_at' => 'Approved At',
+        'revoked_at' => 'Revoked At',
+        'role' => 'Role',
+        'reference' => 'Reference',
+        'lifecycle_status' => 'Lifecycle',
+        'payment_status' => 'Payment',
+        'fulfillment_status' => 'Fulfillment',
+        'total' => 'Total',
+        'kind' => 'Type',
+        'target' => 'Target',
+        'rating' => 'Rating',
+        'body' => 'Comment',
+        'program' => 'Program',
+        'points' => 'Points',
+        'address_line' => 'Address',
+        'description' => 'Description',
+        'actor' => 'Actor',
+    ],
+
+    'gender' => [
+        'male' => 'Male',
+        'female' => 'Female',
+        'prefer_not_to_say' => 'Prefer not to say',
+    ],
+
+    // Filament action labels
+    'actions' => [
+        'open_document' => 'Open document',
+        'review' => 'Review',
+        'approve' => 'Approve',
+        'reject' => 'Reject',
+        'suspend' => 'Suspend',
+        'unsuspend' => 'Unsuspend',
+        'approve_for_type' => 'Approve Product Type',
+        'revoke_type' => 'Revoke Product Type Approval',
+        'download' => 'View',
+        'suspend_customer' => 'Suspend Customer',
+        'unsuspend_customer' => 'Unsuspend Customer',
+        'force_logout' => 'Force Logout',
+        'edit_profile' => 'Edit Profile',
+        'impersonate' => 'Impersonate Vendor (API Token)',
+        'login_as_vendor' => 'Login as Vendor (Web)',
+        'replace_coverage' => 'Replace Coverage Areas',
+        're_upload_document' => 'Re-upload Document',
+        'request_changes' => 'Request Changes',
+        'approve_for_rental' => 'Approve for Rental',
+        'approve_for_sale' => 'Approve for Sale',
+        'approve_for_digital' => 'Approve for Digital',
+        'revoke_type_short' => 'Revoke Type',
+        'suspend_vendor' => 'Suspend Vendor',
+        'edit' => 'Edit',
+        'remove' => 'Remove',
+        'delete' => 'Delete',
+        'upload' => 'Upload',
+        'approve_profile' => 'Approve Profile',
+    ],
+
+    // Form field labels
+    'forms' => [
+        'rejection_reason' => 'rejection reason',
+        'rejection_reason_en' => 'Rejection Reason in English',
+        'rejection_reason_ar' => 'Rejection Reason in Arabic',
+        'revoke_reason_en' => 'Revocation Reason in English',
+        'revoke_reason_ar' => 'Revocation Reason in Arabic',
+        'revoke_reason_en_short' => 'Revoke Reason (EN)',
+        'business_name_en' => 'Business Name in English',
+        'business_name_ar' => 'Business Name in Arabic',
+        'bio_en' => 'Bio in English',
+        'bio_ar' => 'Bio in Arabic',
+    ],
+
+    // Notification titles
+    'notifications' => [
+        'customer_suspended' => 'Customer suspended',
+        'customer_unsuspended' => 'Customer unsuspended',
+        'customer_logged_out' => 'Customer logged out',
+        'profile_updated_by_admin' => 'Customer profile updated',
+        'vendor_approved' => 'Vendor profile approved',
+        'vendor_rejected' => 'Vendor profile rejected',
+        'vendor_suspended' => 'Vendor suspended',
+        'vendor_unsuspended' => 'Vendor reactivated',
+        'type_approved' => 'Vendor approved for product type: :type',
+        'type_approved_for' => 'Vendor approved for :type',
+        'type_revoked' => 'Product type approval revoked',
+        'signed_url_generated' => 'Signed URL generated',
+        'impersonation_token' => 'Impersonation Token (expires in 30 min)',
+        'coverage_updated' => 'Coverage areas updated successfully',
+        'document_uploaded' => 'Document replaced successfully',
+        'document_deleted' => 'Document deleted',
+        'document_upload_success' => 'Document uploaded successfully',
+        'vendor_profile_updated' => 'Vendor profile updated',
+        'change_request_created' => 'Change request submitted',
+        'expiry_set_successfully' => 'Document expiry updated',
+        'approval_request_submitted' => 'Approval request submitted. An admin will review shortly.',
+        'coverage_removed' => 'Coverage area removed',
+        'coverage_saved' => 'Coverage area saved',
+        'document_approved' => 'Document approved',
+        'document_rejected' => 'Document rejected',
+    ],
+
+    // Confirmation dialog content
+    'confirmations' => [
+        'impersonate_warning' => 'You are about to impersonate this vendor. This action will be logged in the audit trail. The token expires in 30 minutes.',
+    ],
+
+    // Placeholder strings
+    'placeholders' => [
+        'not_verified' => '— Not verified —',
+        'none' => '— None —',
+        'dash' => '—',
+        'no_documents' => 'No documents uploaded',
+        's3_not_configured' => '— S3 is not configured —',
+        'open_document' => 'Open Document',
+    ],
+
+    // Field labels
+    'fields' => [
+        'logo' => 'Logo',
+        'name' => 'Name',
+        'email' => 'Email',
+        'phone' => 'Phone Number',
+        'password' => 'Password',
+        'password_confirmation' => 'Password Confirmation',
+        'business_name' => 'Business Name',
+        'business_type' => 'Business Type',
+        'bio' => 'Bio',
+        'slug' => 'Slug',
+        'doc_type' => 'Document Type',
+        'file' => 'File',
+        'document_file' => 'Document File',
+        'city_id' => 'City',
+        'governorate_id' => 'Governorate',
+        'delivery_fee' => 'Delivery Fee',
+        'min_order' => 'Minimum Order',
+        'product_type' => 'Product Type',
+        'bank_iban' => 'IBAN',
+        'bank_name' => 'Bank Name',
+        'bank_account_holder' => 'Account Holder',
+        'bank_swift_bic' => 'SWIFT / BIC',
+        'bank_branch' => 'Bank Branch',
+        'opens_at' => 'Opens At',
+        'closes_at' => 'Closes At',
+        'day_of_week' => 'Day of Week',
+        'label' => 'Label',
+        'address_line' => 'Address',
+        'recipient_name' => 'Recipient Name',
+        'recipient_phone' => 'Recipient Phone',
+        'is_default' => 'Set as Default',
+        'field_path' => 'Field',
+        'requested_change_en' => 'Requested Change (English)',
+        'requested_change_ar' => 'Requested Change (Arabic)',
+        'expires_at' => 'Expires At',
+        'is_critical' => 'Critical Document',
+        'commercial_register_no' => 'Commercial Register No.',
+        'tax_id' => 'Tax ID',
+        'national_id' => 'National ID',
+        'locale' => 'Locale',
+        'last_login_at' => 'Last Login',
+        'joined_at' => 'Joined',
+        'uploaded_at' => 'Uploaded',
+    ],
+
+    // Role labels (Spatie roles)
+    'roles' => [
+        'customer' => 'Customer',
+        'vendor' => 'Vendor',
+        'admin' => 'Admin',
+        'super_admin' => 'Super Admin',
+        'booking_manager' => 'Booking Manager',
+    ],
+
+    // Approval status labels
+    'status' => [
+        'pending' => 'Pending Review',
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+        'suspended' => 'Suspended',
+        'changes_requested' => 'Changes Requested',
+    ],
+
+    // Document status labels
+    'document_status' => [
+        'pending' => 'Pending Review',
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+    ],
+
+    // Document type labels
+    'document_type' => [
+        'cr' => 'Commercial Register',
+        'tax_card' => 'Tax Card',
+        'national_id' => 'National ID',
+        'iban_proof' => 'IBAN Proof',
+        'other' => 'Other',
+    ],
+
+    // Business type labels
+    'business_type' => [
+        'individual' => 'Individual',
+        'company' => 'Company',
+        'establishment' => 'Establishment',
+    ],
+
+    // Product type labels
+    'product_type' => [
+        'rental' => 'Rental',
+        'sale' => 'Sale',
+        'digital' => 'Digital',
+    ],
+
+    // Day of week labels
+    'day_of_week' => [
+        0 => 'Sunday',
+        1 => 'Monday',
+        2 => 'Tuesday',
+        3 => 'Wednesday',
+        4 => 'Thursday',
+        5 => 'Friday',
+        6 => 'Saturday',
+    ],
+
+    'invalid_current_password' => 'The current password is incorrect.',
+
+    // Self-service account deletion guards (live audit 2026-06-06 §12.2)
+    'account_deletion' => [
+        'open_bookings' => 'You cannot delete your account while you have open bookings. Complete or cancel them first.',
+        'wallet_balance' => 'You cannot delete your account while your wallet holds funds. Withdraw your balance first.',
+        'open_withdrawals' => 'You cannot delete your account while a withdrawal is being processed.',
+    ],
+
+    // Customer management keys
+    'customer_already_suspended' => 'This account is already suspended.',
+    'customer_not_suspended' => 'This account is not currently suspended.',
+    'admin_cannot_self_suspend' => 'You cannot suspend your own account.',
+
+    // Customer tabs
+    'tabs' => [
+        'overview' => 'Overview',
+        'bookings' => 'Bookings',
+        'reviews' => 'Reviews',
+        'wallet' => 'Wallet',
+        'addresses' => 'Addresses',
+        'activity' => 'Activity',
+    ],
+
+    // Generic error keys (used in Actions and API responses)
+    'invalid_credentials' => 'The provided credentials are incorrect.',
+    'user_not_found' => 'No account was found with the given phone number.',
+    'invalid_otp' => 'The verification code is incorrect or has expired.',
+
+    'registration' => [
+        'phone_hint' => 'Include the country code, for example +201001234567.',
+    ],
+
+    'approval_eligibility' => [
+        'checklist' => 'Approval requirements',
+        'checklist_description' => 'Every requirement must be complete before this vendor can be approved.',
+        'complete' => 'Complete',
+        'incomplete' => 'Incomplete',
+        'complete_requirements' => 'Complete every approval requirement first.',
+        'pending_only' => 'Only a pending vendor can be approved.',
+        'identity' => 'The vendor identity is incomplete.',
+        'contact' => 'Email and phone must be present and verified.',
+        'profile' => 'Required bilingual business and identity fields are incomplete.',
+        'geography' => 'The selected city does not belong to the selected governorate.',
+        'banking' => 'Required banking information is incomplete.',
+        'hours' => 'At least one business-hours entry is required.',
+        'coverage' => 'At least one coverage area is required.',
+        'documents' => 'The latest required documents must be approved and valid.',
+    ],
+
+    // Validation messages
+    'validation' => [
+        'platform_required' => 'The device platform is required.',
+        'platform_invalid' => 'The device platform must be ios, android, or web.',
+        'fcm_token_required' => 'The FCM device token is required.',
+        'phone_e164' => 'Phone number must be in E.164 format, for example: +201001234567.',
+        'otp_invalid' => 'The verification code is incorrect or has expired.',
+        'otp_throttled' => 'Too many verification attempts. Please try again later.',
+        'duplicate_phone' => 'This phone number is already registered.',
+        'duplicate_email' => 'This email address is already registered.',
+        'business_name_en_required' => 'The business name in English is required.',
+        'business_name_ar_required' => 'The business name in Arabic is required.',
+        'city_not_found' => 'The selected city does not exist.',
+        'doc_type_invalid' => 'Invalid document type.',
+        'file_too_large' => 'File size must not exceed 10 MB.',
+        'file_mime_invalid' => 'Only PDF, JPEG, and PNG files are accepted.',
+        'vendor_not_approved' => 'The vendor profile must be approved before granting product-type permissions.',
+        'type_approval_not_found' => 'Product type approval was not found or has already been revoked.',
+        'document_already_reviewed' => 'This document has already been reviewed.',
+        'document_not_reuploadable' => 'Only a rejected document can be re-uploaded.',
+        'document_already_pending' => 'A replacement for this document is already pending review.',
+        'invalid_change_request_items' => 'One or more change-request items do not belong to this request.',
+        'unresolved_change_request_items' => 'Resolve every requested item before resubmitting.',
+        'idempotency_key_required' => 'The Idempotency-Key header is required.',
+        'idempotency_key_conflict' => 'This Idempotency-Key was already used for a different request.',
+        'change_request_items_required' => 'At least one requested change is required.',
+        'open_change_request_exists' => 'This vendor already has an unresolved change request.',
+        'change_request_cycle_limit' => 'The maximum number of change-request cycles has been reached.',
+        'revoke_reason_required' => 'A reason is required to revoke a product type.',
+        'rejection_reason_required' => 'A rejection reason is required.',
+        'city_governorate_mismatch' => 'The selected city does not belong to the selected governorate.',
+        'password_confirmation' => 'The password confirmation does not match.',
+        'vendor_not_suspended' => 'The vendor is not suspended.',
+        'changes_not_requested' => 'The vendor profile is not awaiting requested changes.',
+    ],
+
+    // Success messages
+    'messages' => [
+        'registered' => 'Registration successful. Please verify your phone number.',
+        'phone_verified' => 'Phone number verified successfully.',
+        'logged_in' => 'Logged in successfully.',
+        'logged_out' => 'Logged out successfully.',
+        'profile_updated' => 'Profile updated successfully.',
+        'document_uploaded' => 'Document uploaded successfully.',
+        'coverage_area_added' => 'Coverage area added successfully.',
+        'business_hours_updated' => 'Business hours updated successfully.',
+        'address_added' => 'Address added successfully.',
+        'address_deleted' => 'Address removed.',
+        'vendor_approved' => 'Vendor profile approved.',
+        'vendor_rejected' => 'Vendor profile rejected.',
+        'vendor_suspended' => 'Vendor suspended.',
+        'type_approved' => 'Vendor approved for product type: :type.',
+        'type_revoked' => 'Product type approval revoked.',
+    ],
+    'days' => [
+        'sunday' => 'Sunday',
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+    ],
+    'account_suspended' => 'Your account has been suspended. Please contact support.',
+    'account_suspended_title' => 'Account Suspended',
+    'account_suspended_body' => 'Your vendor account has been suspended. Please contact InstaParty support to resolve this.',
+    'vendor_portal' => [
+        'impersonation_banner' => 'InstaParty Support is currently acting on your account. Started :time.',
+        'impersonation_end' => 'End Session',
+    ],
+
+    'errors' => [
+        'document_not_owned' => 'This document does not belong to your profile.',
+        'document_not_deletable' => 'Only rejected documents can be deleted.',
+        'profile_not_approved' => 'Your profile must be approved before requesting product-type approval.',
+        'type_already_approved' => 'You are already approved for this product type.',
+        'vendor_suspended' => 'Your account is suspended. You can view your data but cannot make changes.',
+        'vendor_approval_required' => 'Your vendor account must be approved before using this feature.',
+        'email_verification_required' => 'Please verify your email before using vendor operations.',
+    ],
+    'expiry_date_must_be_future' => 'The expiry date must be today or later.',
+];

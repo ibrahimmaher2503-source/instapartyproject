@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Payments\Domain\Models;
+
+use App\Modules\Payments\Database\Factories\RefundFactory;
+use App\Modules\Payments\Domain\Enums\RefundReasonCode;
+use App\Modules\Payments\Domain\Enums\RefundStatus;
+use App\Modules\Shared\Domain\Casts\MoneyCast;
+use App\Modules\Shared\Domain\Concerns\HasPublicId;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Refund extends Model
+{
+    use HasFactory;
+    use HasPublicId;
+
+    protected $fillable = [
+        'public_id', 'payment_id', 'booking_id', 'amount_minor', 'amount_currency', 'reason_code',
+        'reason_notes', 'gateway_ref', 'status', 'initiated_by', 'processed_at',
+        // Phase 4.9
+        'ledger_group_id', 'idempotency_key',
+    ];
+
+    public array $translatable = ['reason_notes'];
+
+    protected $casts = [
+        'amount' => MoneyCast::class.':amount',
+        'reason_code' => RefundReasonCode::class,
+        'status' => RefundStatus::class,
+        'reason_notes' => 'array',
+        'processed_at' => 'datetime',
+    ];
+
+    /** @return BelongsTo<Model, $this> */
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo('App\\Modules\\Payments\\Domain\\Models\\Payment', 'payment_id');
+    }
+
+    /** @return BelongsTo<Model, $this> */
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo('App\\Modules\\Booking\\Domain\\Models\\Booking', 'booking_id');
+    }
+
+    protected static function newFactory(): RefundFactory
+    {
+        return RefundFactory::new();
+    }
+}

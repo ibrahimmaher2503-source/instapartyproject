@@ -1,0 +1,3 @@
+@extends('storefront.account.layout')
+@section('account-title', __('account.favorites'))
+@section('account-content')@forelse($items as $item)<article class="sf-account-panel sf-account-row"><h2>{{ $item->service?->getTranslation('name', app()->getLocale()) ?? __('account.service_unavailable') }}</h2>@if($item->service)<a class="sf-text-link" href="{{ url('/'.app()->getLocale().'/services/'.$item->service->public_id) }}">{{ __('account.view_service') }}</a>@endif</article>@empty<div class="sf-account-empty"><p>{{ __('account.no_favorites') }}</p><a class="sf-button sf-button--primary" href="{{ url('/'.app()->getLocale().'/search') }}">{{ __('account.browse_services') }}</a></div>@endforelse @endsection

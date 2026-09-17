@@ -1,0 +1,43 @@
+meta {
+  name: Register vendor
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/register/vendor
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "QA Vendor",
+    "email": "qa-vendor@example.test",
+    "phone_e164": "+201000009999",
+    "password": "SafePassword123!",
+    "password_confirmation": "SafePassword123!",
+    "business_name": {
+      "en": "QA Events",
+      "ar": "QA Events Arabic"
+    },
+    "business_type": "individual",
+    "primary_governorate_id": 1,
+    "primary_city_id": 1,
+    "preferred_locale": "en"
+  }
+}
+
+tests {
+  test("registration stays successful while verification is pending", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().meta.registration_successful).to.equal(true);
+    expect(res.getBody().meta.verification_pending).to.equal(true);
+  });
+}

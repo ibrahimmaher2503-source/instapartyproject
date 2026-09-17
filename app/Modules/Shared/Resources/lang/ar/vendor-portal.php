@@ -1,0 +1,122 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'dashboard' => [
+        'services_by_type' => [
+            'rental' => 'خدمات التأجير',
+            'sale' => 'خدمات البيع',
+            'digital' => 'الخدمات الرقمية',
+        ],
+        'manage_services' => 'إدارة الخدمات',
+    ],
+    'services' => [
+        'title' => 'خدماتي',
+        'type' => 'النوع',
+        'status' => 'الحالة',
+        'last_modified' => 'آخر تعديل',
+        'draft' => 'مسودة',
+        'pending_review' => 'قيد المراجعة',
+        'published' => 'منشور',
+        'rejected' => 'مرفوض',
+        'changes_requested' => 'مطلوب تعديلات',
+        'archived' => 'مؤرشف',
+        'submit_for_review' => 'إرسال للمراجعة',
+        'submitted' => 'تم إرسال الخدمة للمراجعة.',
+        'clone' => 'استنساخ',
+        'cloned' => 'تم استنساخ الخدمة. أنت الآن تعدّل النسخة.',
+        'archive' => 'أرشفة',
+        'archived_notice' => 'تمت أرشفة الخدمة.',
+        'saved' => 'تم حفظ الخدمة.',
+        'created' => 'تم إنشاء الخدمة.',
+        'rental_services' => 'خدمات التأجير',
+        'sale_services' => 'خدمات البيع',
+        'digital_services' => 'الخدمات الرقمية',
+        'name' => 'الاسم',
+        'bulk_submitted' => 'تم إرسال :count خدمة للمراجعة.',
+        'bulk_archived' => 'تمت أرشفة :count خدمة.',
+        'occasion_helper' => 'تظهر ضمن المناسبات: :occasions',
+        'occasion_helper_empty' => 'اختر فئة لعرض المناسبات التي تظهر تحتها.',
+        'occasion_helper_none' => 'هذه الفئة غير مرتبطة بأي مناسبة بعد.',
+        'occasion_separator' => '، ',
+    ],
+
+    'imports' => [
+        'import_rental' => 'استيراد خدمات التأجير',
+        'import_sale' => 'استيراد خدمات البيع',
+        'import_digital' => 'استيراد الخدمات الرقمية',
+    ],
+
+    'availability' => [
+        'manage' => 'إدارة التوفر',
+    ],
+
+    'wallet' => [
+        'title' => 'محفظتي',
+        'current_balance' => 'الرصيد الحالي',
+        'available_balance' => 'الرصيد المتاح',
+        'pending_balance' => 'سحب معلّق',
+        'ledger' => 'سجل المعاملات',
+        'date' => 'التاريخ',
+        'type' => 'النوع',
+        'direction_credit' => 'إضافة',
+        'direction_debit' => 'خصم',
+        'amount' => 'المبلغ',
+        'running_balance' => 'الرصيد الجاري',
+        'description' => 'الوصف',
+    ],
+
+    'withdrawals' => [
+        'title' => 'طلبات السحب',
+        'reference' => 'المرجع',
+        'status' => 'الحالة',
+        'amount' => 'المبلغ',
+        'requested_at' => 'تاريخ الطلب',
+        'approved_at' => 'تاريخ الاعتماد',
+        'paid_at' => 'تاريخ الدفع',
+        'bank_reference' => 'رقم إشعار التحويل',
+        'download_proof' => 'تحميل الإثبات',
+        'request' => 'طلب سحب',
+        'bank_details' => 'الحساب البنكي',
+        'requested' => 'تم تقديم طلب السحب بنجاح.',
+        'cannot_have_two' => 'لديك طلب سحب قيد الانتظار بالفعل. يرجى انتظار معالجته قبل تقديم طلب جديد.',
+        'request_failed' => 'فشل طلب السحب.',
+        'try_again_later' => 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.',
+        'insufficient_balance_tooltip' => 'الحد الأدنى للسحب هو 100 جنيه مصري. رصيدك المتاح غير كافٍ.',
+    ],
+
+    'profile' => [
+        'no_bank_details' => 'لا توجد بيانات بنكية مسجّلة. يرجى تحديث ملفك الشخصي ببيانات حسابك البنكي قبل طلب السحب.',
+    ],
+
+    'nav' => [
+        'groups' => [
+            'profile' => 'ملفي الشخصي',
+            'services' => 'الخدمات',
+            'bookings' => 'الحجوزات',
+            'finance' => 'المالية',
+            'engagement' => 'التفاعل',
+            'settings' => 'الإعدادات',
+        ],
+        'items' => [
+            'dashboard' => 'لوحة التحكم',
+            'profile_details' => 'بيانات الملف الشخصي',
+            'documents' => 'المستندات',
+            'business_hours' => 'مواعيد العمل',
+            'coverage_areas' => 'منطقة الخدمة',
+            'rental_services' => 'خدمات التأجير',
+            'sale_services' => 'خدمات البيع',
+            'digital_services' => 'الخدمات الرقمية',
+            'incoming_bookings' => 'الحجوزات الواردة',
+            'active_bookings' => 'الحجوزات النشطة',
+            'booking_history' => 'سجل الحجوزات',
+            'wallet' => 'المحفظة',
+            'withdrawals' => 'طلبات السحب',
+            'commissions' => 'العمولات',
+            'reviews' => 'التقييمات',
+            'loyalty_program' => 'برنامج الولاء',
+            'account_settings' => 'إعدادات الحساب',
+        ],
+    ],
+];

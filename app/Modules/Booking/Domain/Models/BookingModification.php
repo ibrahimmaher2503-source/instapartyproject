@@ -1,0 +1,89 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Booking\Domain\Models;
+
+use App\Modules\Booking\Database\Factories\BookingModificationFactory;
+use App\Modules\Booking\Domain\Enums\ModificationProposalKind;
+use App\Modules\Booking\Domain\Enums\ModificationStatus;
+use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Shared\Domain\Concerns\HasPublicId;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
+
+/**
+ * @property int $id
+ * @property string $public_id
+ * @property int $booking_vendor_id
+ * @property int $proposed_by
+ * @property ModificationProposalKind $proposal_kind
+ * @property ModificationStatus $status
+ * @property Carbon|null $customer_decision_at
+ * @property Carbon|null $expires_at
+ * @property array<string,string>|null $vendor_explanation
+ * @property array<string,string>|null $rejection_reason
+ * @property array<string,mixed> $diff_snapshot
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
+class BookingModification extends Model
+{
+    use HasFactory;
+    use HasPublicId;
+    use HasTranslations;
+
+    public array $translatable = ['vendor_explanation', 'rejection_reason'];
+
+    protected $fillable = [
+        'public_id',
+        'booking_vendor_id',
+        'proposed_by',
+        'proposal_kind',
+        'status',
+        'customer_decision_at',
+        'expires_at',
+        'vendor_explanation',
+        'rejection_reason',
+        'diff_snapshot',
+    ];
+
+    /** @return array<string,mixed> */
+    protected function casts(): array
+    {
+        return [
+            'proposal_kind' => ModificationProposalKind::class,
+            'status' => ModificationStatus::class,
+            'diff_snapshot' => 'array',
+            'customer_decision_at' => 'datetime',
+            'expires_at' => 'datetime',
+        ];
+    }
+
+    protected static function newFactory(): BookingModificationFactory
+    {
+        return BookingModificationFactory::new();
+    }
+
+    /** @return BelongsTo<BookingVendor, $this> */
+    public function bookingVendor(): BelongsTo
+    {
+        return $this->belongsTo(BookingVendor::class);
+    }
+
+    /** @return HasMany<BookingModificationItem, $this> */
+    public function items(): HasMany
+    {
+        return $this->hasMany(BookingModificationItem::class, 'booking_modification_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function proposedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'proposed_by');
+    }
+}

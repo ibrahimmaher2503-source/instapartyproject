@@ -1,0 +1,22 @@
+Options -Indexes
+DirectoryIndex public/index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never allow the Laravel application source, configuration, or runtime data
+    # to be served from the account's document root.
+    RewriteRule ^(?:app|bootstrap|config|database|lang|resources|routes|storage|tests|vendor)(?:/|$) - [F,L,NC]
+    RewriteRule ^(?:\.env(?:\..*)?|artisan|composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit\.xml|pint\.json|vite\.config\.js|Dockerfile|Caddyfile|docker-compose.*|AGENTS\.md|CLAUDE\.md)$ - [F,L,NC]
+
+    # Keep public URLs clean while serving Laravel's actual web root.
+    RewriteCond %{REQUEST_URI} !^/public(?:/|$)
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php84” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php84 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit

@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'filters' => ['date_from' => 'Date from', 'date_until' => 'Date until'],
+    'nav' => [
+        'groups' => [
+            'operations' => 'Operations',
+            'vendor_management' => 'Vendors',
+            'geography' => 'Settings',
+            'identity' => 'Security & Permissions',
+            'vendor_onboarding' => 'Vendors',
+            'catalog' => 'Services',
+            'services' => 'Services',
+            'booking' => 'Operations',
+            'payments' => 'Payments & Finance',
+            'settlement' => 'Payments & Finance',
+            'loyalty' => 'Content & Growth',
+            'discovery' => 'Services',
+            'communication' => 'Notifications & Communications',
+            'moderation' => 'Services',
+            'support' => 'Support & Trust',
+            'trust_safety' => 'Support & Trust',
+            'promotions' => 'Content & Growth',
+            'reports' => 'Operations',
+            'settings' => 'Settings',
+            'activity_logs' => 'Operations',
+            'users' => 'Security & Permissions',
+            'inbox' => 'Support & Trust',
+            'subscriptions' => 'Content & Growth',
+            'tax' => 'Settings',
+            'advertising' => 'Content & Growth',
+            'appearance' => 'Content & Growth',
+            'security' => 'Security & Permissions',
+            'content' => 'Content & Growth',
+        ],
+    ],
+
+    'activity_log' => [
+        'singular' => 'Activity Log',
+        'plural' => 'Activity Logs',
+        'empty_heading' => 'No activity recorded',
+        'empty_description' => 'Audited administrative changes will appear here.',
+    ],
+
+    'actions' => [
+        'view' => 'View',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'create' => 'Create',
+        'approve' => 'Approve',
+        'reject' => 'Reject',
+        'suspend' => 'Suspend',
+        'review' => 'Review',
+        'download' => 'Download',
+        'revoke' => 'Revoke',
+        'approve_for_type' => 'Approve Product Type',
+        'revoke_type' => 'Revoke Product Type Approval',
+        'more' => 'More actions',
+    ],
+
+    'common' => [
+        'id' => 'ID',
+        'created_at' => 'Created At',
+        'updated_at' => 'Updated At',
+        'status' => 'Status',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'yes' => 'Yes',
+        'no' => 'No',
+        'no_results' => 'No results found',
+        'untranslated' => 'Untranslated',
+        'egp' => 'EGP',
+        'from' => 'From',
+        'until' => 'Until',
+    ],
+
+    'empty_states' => [
+        'no_records' => 'No records found',
+        'no_records_description' => 'Records that match this view will appear here.',
+        'no_pending_vendors' => 'No pending vendors',
+        'no_pending_vendors_description' => 'All vendor registration requests have been reviewed.',
+    ],
+
+    'dashboard' => [
+        'title' => 'Dashboard',
+        'console_label' => 'Operations console',
+        'urgent_summary' => 'No urgent items in the live operations queue|:count urgent item in the live operations queue|:count urgent items in the live operations queue',
+        'as_of' => 'Updated at :time',
+        'live_summary' => 'Live from existing operational data',
+        'revenue_today' => 'Revenue Today',
+        'greeting_morning' => 'Good morning',
+        'greeting_afternoon' => 'Good afternoon',
+        'greeting_evening' => 'Good evening',
+    ],
+];

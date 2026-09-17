@@ -1,0 +1,38 @@
+{
+  "run": "Chromium focused profile diagnostic",
+  "date": "2026-09-14",
+  "result": {
+    "setup": "PASS",
+    "journey": "FAIL",
+    "tests": "1 passed, 1 failed",
+    "duration": "44.3s"
+  },
+  "observed": {
+    "registration_email_phone": "PASS",
+    "profile_state_after_fields": {
+      "all_tracked_inputs_non_empty": true,
+      "dom_city_non_empty": true,
+      "livewire_city_non_empty": true
+    },
+    "profile_state_before_save": {
+      "business_and_address_non_empty": true,
+      "national_id_non_empty": false,
+      "bank_fields_non_empty": false,
+      "dom_city_non_empty": false,
+      "livewire_city_non_empty": false
+    },
+    "profile_city_gate_after_reselect": {
+      "dom_city_non_empty": true,
+      "livewire_city_non_empty": true
+    },
+    "native_validation": {
+      "valid": false,
+      "invalid_field_id": "data.national_id",
+      "invalid_field_name": null,
+      "validation_message": "Please fill out this field."
+    },
+    "save_call_observed": false,
+    "reload_performed": false
+  },
+  "boundary": "The test stopped before submit because native validation rejected the empty national_id after Livewire re-render. No persistence conclusion is made from this run."
+}
