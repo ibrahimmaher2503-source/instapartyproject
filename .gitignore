@@ -67,6 +67,8 @@ routes_after.json
 *.jpg
 *.jpeg
 *.webp
+!/public/images/
+!/public/images/**
 *.pdf
 /tmp_*.php
 /check_*.php
