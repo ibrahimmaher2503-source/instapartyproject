@@ -115,10 +115,9 @@ body:has(.sf-home-v2) .sf-hero-controls {
 }
 
 .sf-hero-search {
-    position: absolute;
+    position: relative;
     z-index: 4;
-    inset-inline: 0;
-    bottom: -4rem;
+    margin-block-start: -4rem;
 }
 
 .sf-hero .sf-party-builder {
@@ -407,19 +406,22 @@ body:has(.sf-home-v2) .sf-hero-controls {
 }
 
 .sf-home-v2 .sf-taxonomy-grid--categories .sf-taxonomy-tile {
+    position: relative;
     display: flex;
-    min-height: 4.7rem;
-    align-items: center;
-    gap: .8rem;
-    padding: .75rem .85rem;
+    min-height: 10.5rem;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: .7rem;
+    padding: 1rem 1rem 2.8rem;
+    background: color-mix(in oklab, var(--sf-ivory) 86%, var(--sf-emerald-soft));
 }
 
 .sf-home-v2 .sf-category-utility__icon {
     display: grid;
     overflow: hidden;
-    width: 2.8rem;
-    height: 2.8rem;
-    flex: 0 0 2.8rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex: 0 0 3.5rem;
     place-items: center;
     border-radius: .8rem;
     background: var(--sf-emerald-soft);
@@ -433,14 +435,28 @@ body:has(.sf-home-v2) .sf-hero-controls {
 
 .sf-home-v2 .sf-taxonomy-grid--categories .sf-taxonomy-name {
     color: var(--sf-navy-deep);
-    font-size: .85rem;
+    font-size: .98rem;
     font-weight: 800;
-    line-height: 1.35;
+    line-height: 1.25;
+}
+
+.sf-home-v2 .sf-taxonomy-description--category {
+    display: -webkit-box;
+    overflow: hidden;
+    max-width: 28ch;
+    color: var(--sf-muted);
+    font-size: .75rem;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .sf-home-v2 .sf-taxonomy-grid--categories .sf-taxonomy-arrow {
+    position: absolute;
+    inset-inline-end: 1rem;
+    inset-block-end: .9rem;
     color: var(--sf-emerald);
-    font-size: .9rem;
+    font-size: 1rem;
 }
 
 .sf-home-v2 .sf-services-section {
@@ -1088,14 +1104,14 @@ body:has(.sf-home-v2) .sf-hero-controls {
     }
 
     .sf-home-v2 .sf-taxonomy-grid--categories .sf-taxonomy-tile {
-        min-height: 4.25rem;
-        padding: .6rem;
+        min-height: 9.5rem;
+        padding: .8rem .8rem 2.4rem;
     }
 
     .sf-home-v2 .sf-category-utility__icon {
-        width: 2.45rem;
-        height: 2.45rem;
-        flex-basis: 2.45rem;
+        width: 3rem;
+        height: 3rem;
+        flex-basis: 3rem;
     }
 
     .sf-home-v2 .sf-package-rail {

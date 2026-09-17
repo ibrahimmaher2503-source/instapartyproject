@@ -98,6 +98,8 @@ test('ar-home-second-pass-composition', async ({ page }) => {
   await expect(page.locator('.sf-section-header')).toHaveCount(6);
   await expect(page.locator('.sf-occasion-section .sf-taxonomy-grid > li')).toHaveCount(6);
   await expect(page.locator('.sf-category-utility .sf-taxonomy-grid > li')).toHaveCount(8);
+  await expect(page.locator('.sf-category-utility .sf-taxonomy-description--category')).toHaveCount(8);
+  await expect(page.locator('.sf-category-utility')).not.toContainText('عام عيد ميلاد');
   await expect(page.locator('.sf-category-utility .sf-taxonomy-photo')).toHaveCount(0);
   await expect(page.locator('.sf-packages-panel')).toBeVisible();
 
@@ -159,7 +161,11 @@ for (const locale of ['en', 'ar'] as const) {
       expect(overflow, `${locale} homepage overflows at ${width}px`).toBe(false);
       await expect(page.locator('.sf-hero-region .sf-party-builder')).toBeVisible();
       const discoveryLayout = await page.evaluate(() => {
-        const columns = (selector: string) => getComputedStyle(document.querySelector(selector)!).gridTemplateColumns.split(' ').length;
+        const columns = (selector: string) => {
+          const style = getComputedStyle(document.querySelector(selector)!);
+
+          return style.display === 'flex' ? 1 : style.gridTemplateColumns.split(' ').length;
+        };
         const region = document.querySelector('.sf-hero-region')!.getBoundingClientRect();
         const search = document.querySelector('.sf-hero-search')!.getBoundingClientRect();
         const footer = document.querySelector('.sf-footer')!;
@@ -168,12 +174,14 @@ for (const locale of ['en', 'ar'] as const) {
           occasionColumns: columns('.sf-taxonomy-grid--occasions'),
           categoryColumns: columns('.sf-taxonomy-grid--categories'),
           searchContained: search.bottom <= region.bottom + 1,
+          searchBottom: search.bottom,
+          regionBottom: region.bottom,
           footerPosition: getComputedStyle(footer).position,
         };
       });
-      expect(discoveryLayout.searchContained).toBe(true);
+      expect(discoveryLayout.searchContained, `${locale} search bottom ${discoveryLayout.searchBottom} exceeds hero region ${discoveryLayout.regionBottom} at ${width}px`).toBe(true);
       expect(discoveryLayout.footerPosition).toBe('static');
-      expect(discoveryLayout.occasionColumns).toBe(width < 768 ? 1 : width <= 1024 ? 2 : 3);
+      expect(discoveryLayout.occasionColumns).toBe(width < 768 ? 1 : width < 896 ? 2 : 3);
       expect(discoveryLayout.categoryColumns).toBe(width <= 1024 ? 2 : 4);
       await page.screenshot({ path: path.join(responsiveOut, `${locale}-${width}.png`), fullPage: true });
     }

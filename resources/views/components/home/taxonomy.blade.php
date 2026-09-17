@@ -3,8 +3,8 @@
 @php
     $payload = (array) ($block['payload'] ?? []);
     $requestedIds = collect((array) ($payload['public_ids'] ?? []));
-    $items = collect($items)
-        ->filter(static fn ($item): bool => $item !== null)
+    $allItems = collect($items)->filter(static fn ($item): bool => $item !== null)->values();
+    $items = $allItems
         ->when($requestedIds->isNotEmpty(), function ($items) use ($requestedIds) {
             return $items
                 ->filter(static fn ($item): bool => $requestedIds->contains($item->public_id))
@@ -20,7 +20,16 @@
     $browseUrl = url('/'.app()->getLocale().'/search');
     $storefrontText = app(App\Modules\Shared\Application\Services\StorefrontText::class);
     $fallbacks = collect(config('storefront.service_fallbacks', []));
-    $visibleItems = $items->take($isOccasion ? 6 : 8);
+    $categoryPool = $allItems->filter(
+        fn ($category): bool => filled($storefrontText->translation($category, 'description')),
+    );
+    $visibleItems = $isOccasion
+        ? $items->take(6)
+        : $items
+            ->filter(fn ($category): bool => filled($storefrontText->translation($category, 'description')))
+            ->concat($categoryPool)
+            ->unique('public_id')
+            ->take(8);
 @endphp
 
 @if ($items->isNotEmpty())
@@ -63,8 +72,8 @@
                                 </span>
                             @endif
                             <span class="sf-taxonomy-name">{{ $itemName }}</span>
-                            @if ($isOccasion && filled($itemDescription))
-                                <span class="sf-taxonomy-description">{{ $itemDescription }}</span>
+                            @if (filled($itemDescription))
+                                <span @class(['sf-taxonomy-description', 'sf-taxonomy-description--category' => ! $isOccasion])>{{ $itemDescription }}</span>
                             @endif
                             <span class="sf-taxonomy-arrow" aria-hidden="true">{{ app()->getLocale() === 'ar' ? '←' : '→' }}</span>
                         </a>
