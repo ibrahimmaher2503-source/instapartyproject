@@ -12,8 +12,9 @@
 @endphp
 
 @if ($slides->isNotEmpty())
-    <section class="sf-hero" aria-label="{{ __('storefront.home.hero_label') }}" data-home-hero>
-        <div class="sf-hero-frame">
+    <div class="sf-hero-region">
+        <section class="sf-hero" aria-label="{{ __('storefront.home.hero_label') }}" data-home-hero>
+            <div class="sf-hero-frame">
             <div class="sf-hero-content">
                 @foreach ($slides as $slideIndex => $slide)
                     @php
@@ -77,10 +78,10 @@
                     </div>
                 @endforeach
             </div>
-        </div>
+            </div>
 
-        @if ($slideCount > 1)
-            <div class="sf-hero-controls" aria-label="{{ __('storefront.common.pagination') }}">
+            @if ($slideCount > 1)
+                <div class="sf-hero-controls" aria-label="{{ __('storefront.common.pagination') }}">
                 <button type="button" class="sf-hero-control" data-home-hero-prev aria-label="{{ __('storefront.common.previous') }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" /></svg>
                 </button>
@@ -92,11 +93,12 @@
                 <button type="button" class="sf-hero-control" data-home-hero-next aria-label="{{ __('storefront.common.next') }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" /></svg>
                 </button>
-            </div>
-        @endif
+                </div>
+            @endif
+        </section>
 
         @if ($slot->isNotEmpty())
             <div class="sf-hero-search">{{ $slot }}</div>
         @endif
-    </section>
+    </div>
 @endif

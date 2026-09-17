@@ -94,7 +94,7 @@ for (const locale of ['en', 'ar'] as const) {
 test('ar-home-second-pass-composition', async ({ page }) => {
   await page.goto(`${base}/ar`, { waitUntil: 'networkidle' });
 
-  await expect(page.locator('.sf-hero .sf-party-builder')).toBeVisible();
+  await expect(page.locator('.sf-hero-region .sf-party-builder')).toBeVisible();
   await expect(page.locator('.sf-section-header')).toHaveCount(6);
   await expect(page.locator('.sf-occasion-section .sf-taxonomy-grid > li')).toHaveCount(6);
   await expect(page.locator('.sf-category-utility .sf-taxonomy-grid > li')).toHaveCount(8);
@@ -144,7 +144,7 @@ test('ar-home-second-pass-composition', async ({ page }) => {
 test('ar-home-search-keeps-supported-category-filter', async ({ page }) => {
   await page.goto(`${base}/ar`, { waitUntil: 'networkidle' });
 
-  await expect(page.locator('.sf-hero .sf-party-builder select[name="category"]')).toBeVisible();
+  await expect(page.locator('.sf-hero-region .sf-party-builder select[name="category"]')).toBeVisible();
 });
 
 for (const locale of ['en', 'ar'] as const) {
@@ -157,7 +157,24 @@ for (const locale of ['en', 'ar'] as const) {
       await page.goto(`${base}/${locale}`, { waitUntil: 'networkidle' });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
       expect(overflow, `${locale} homepage overflows at ${width}px`).toBe(false);
-      await expect(page.locator('.sf-hero .sf-party-builder')).toBeVisible();
+      await expect(page.locator('.sf-hero-region .sf-party-builder')).toBeVisible();
+      const discoveryLayout = await page.evaluate(() => {
+        const columns = (selector: string) => getComputedStyle(document.querySelector(selector)!).gridTemplateColumns.split(' ').length;
+        const region = document.querySelector('.sf-hero-region')!.getBoundingClientRect();
+        const search = document.querySelector('.sf-hero-search')!.getBoundingClientRect();
+        const footer = document.querySelector('.sf-footer')!;
+
+        return {
+          occasionColumns: columns('.sf-taxonomy-grid--occasions'),
+          categoryColumns: columns('.sf-taxonomy-grid--categories'),
+          searchContained: search.bottom <= region.bottom + 1,
+          footerPosition: getComputedStyle(footer).position,
+        };
+      });
+      expect(discoveryLayout.searchContained).toBe(true);
+      expect(discoveryLayout.footerPosition).toBe('static');
+      expect(discoveryLayout.occasionColumns).toBe(width < 768 ? 1 : width <= 1024 ? 2 : 3);
+      expect(discoveryLayout.categoryColumns).toBe(width <= 1024 ? 2 : 4);
       await page.screenshot({ path: path.join(responsiveOut, `${locale}-${width}.png`), fullPage: true });
     }
   });

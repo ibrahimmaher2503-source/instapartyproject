@@ -39,6 +39,7 @@
                 @foreach ($visibleItems as $index => $item)
                     @php
                         $itemName = $storefrontText->translation($item, 'name') ?: $fallbackTitle;
+                        $itemDescription = $storefrontText->translation($item, 'description');
                         $itemUrl = url('/'.app()->getLocale().'/'.$prefix.'/'.$item->code);
                         $iconPath = (string) ($item->icon_path ?? '');
                         $fallbackPath = $fallbacks->isNotEmpty() ? $fallbacks[$index % $fallbacks->count()] : 'images/homepage-scenes/hero.png';
@@ -47,12 +48,14 @@
                             ? $fallback
                             : (filter_var($iconPath, FILTER_VALIDATE_URL)
                                 ? $iconPath
-                                : Illuminate\Support\Facades\Storage::disk('public')->url($iconPath));
+                                : (str_starts_with($iconPath, 'images/')
+                                    ? asset($iconPath)
+                                    : Illuminate\Support\Facades\Storage::disk('public')->url($iconPath)));
                     @endphp
-                    <li>
+                    <li class="sf-taxonomy-item">
                         <a class="sf-taxonomy-tile sf-market-card" href="{{ $itemUrl }}">
                             @if ($isOccasion)
-                                <img class="sf-taxonomy-photo" src="{{ $image }}" alt="" width="640" height="420" loading="lazy" onerror="this.onerror=null;this.src='{{ $fallback }}';">
+                                <img class="sf-taxonomy-photo" src="{{ $image }}" alt="{{ $itemName }}" width="640" height="420" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $fallback }}';">
                                 <span class="sf-taxonomy-shade" aria-hidden="true"></span>
                             @else
                                 <span class="sf-category-utility__icon" aria-hidden="true">
@@ -60,6 +63,9 @@
                                 </span>
                             @endif
                             <span class="sf-taxonomy-name">{{ $itemName }}</span>
+                            @if ($isOccasion && filled($itemDescription))
+                                <span class="sf-taxonomy-description">{{ $itemDescription }}</span>
+                            @endif
                             <span class="sf-taxonomy-arrow" aria-hidden="true">{{ app()->getLocale() === 'ar' ? '←' : '→' }}</span>
                         </a>
                     </li>
