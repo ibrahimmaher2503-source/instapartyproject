@@ -22,6 +22,10 @@ use Illuminate\Validation\Rule;
  * @bodyParam teardown_time_minutes integer optional (partial update) Teardown time in minutes. Example: 30
  * @bodyParam security_deposit_minor integer optional (partial update) Refundable security deposit in piastres. Example: 50000
  * @bodyParam minimum_space_sqm integer optional (partial update) Minimum floor space required in square metres. Example: 25
+ * @bodyParam length_m string optional Nullable positive length in metres, up to two decimals; null clears it, omission preserves it. Example: 4.50
+ * @bodyParam width_m string optional Nullable positive width in metres, up to two decimals; null clears it, omission preserves it. Example: 3.25
+ * @bodyParam height_m string optional Nullable positive height in metres, up to two decimals; null clears it, omission preserves it. Example: 2.00
+ * @bodyParam category_field_values object optional Values for the selected category's dynamic fields; omission preserves them.
  */
 class UpdateRentalServiceRequest extends FormRequest
 {
@@ -58,6 +62,10 @@ class UpdateRentalServiceRequest extends FormRequest
             'teardown_time_minutes' => ['sometimes', 'integer', 'min:0', 'max:1440'],
             'security_deposit_minor' => ['sometimes', 'integer', 'min:0'],
             'minimum_space_sqm' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'length_m' => ['sometimes', 'nullable', 'numeric', 'gt:0', 'max:999999.99', 'decimal:0,2'],
+            'width_m' => ['sometimes', 'nullable', 'numeric', 'gt:0', 'max:999999.99', 'decimal:0,2'],
+            'height_m' => ['sometimes', 'nullable', 'numeric', 'gt:0', 'max:999999.99', 'decimal:0,2'],
+            'category_field_values' => ['sometimes', 'array'],
         ];
     }
 }

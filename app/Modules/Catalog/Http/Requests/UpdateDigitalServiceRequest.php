@@ -20,12 +20,13 @@ use Illuminate\Validation\Rule;
  * @bodyParam expiry_days_after_purchase integer optional (partial update) required if has_expiry is true. Days until expiry. Example: 30
  * @bodyParam is_refundable_after_delivery boolean optional (partial update) Whether refundable after delivery. Example: false
  * @bodyParam redemption_url_template string optional (partial update) URL template for redemption. Example: "https://example.com/redeem/{code}"
+ * @bodyParam category_field_values object optional Values for the selected category's dynamic fields; omission preserves them.
  */
 class UpdateDigitalServiceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return (bool) config('catalog.digital_services_enabled', true);
     }
 
     /**
@@ -54,6 +55,7 @@ class UpdateDigitalServiceRequest extends FormRequest
             'expiry_days_after_purchase' => ['sometimes', 'required_if:has_expiry,true', 'integer', 'min:1', 'max:3650'],
             'is_refundable_after_delivery' => ['sometimes', 'boolean'],
             'redemption_url_template' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'category_field_values' => ['sometimes', 'array'],
         ];
     }
 }

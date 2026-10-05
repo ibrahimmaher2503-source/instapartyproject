@@ -6,11 +6,17 @@ namespace App\Modules\Booking\Http\Requests;
 
 use App\Modules\Booking\Application\DTOs\CreateBookingDraftDTO;
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 
 class StorefrontBookingRequest extends FormRequest
 {
+    public function attributes(): array
+    {
+        return ['notes' => __('storefront.wizard.step3.notes_label')];
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -23,8 +29,9 @@ class StorefrontBookingRequest extends FormRequest
             'service_id' => ['required', 'string', 'exists:services,public_id'],
             'occasion' => ['required', 'string', 'exists:occasions,code'],
             'event_starts_at' => ['required', 'date', 'after:now'],
-            'event_ends_at' => ['required', 'date', 'after:event_starts_at'],
+            'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
             'guest_count' => ['nullable', 'integer', 'min:1'],
+            'notes' => ['nullable', 'string', 'max:10000'],
             'celebrant_name' => ['nullable', 'string', 'max:120'],
             'address' => ['required', 'array'],
             'address.city_id' => ['required', 'string', 'exists:cities,public_id'],
@@ -55,8 +62,12 @@ class StorefrontBookingRequest extends FormRequest
         $dates = [];
 
         foreach (['event_starts_at', 'event_ends_at'] as $field) {
-            if ($this->filled($field)) {
-                $dates[$field] = Carbon::parse($this->input($field), $timezone)->utc()->toIso8601String();
+            if ($this->filled($field) && is_string($this->input($field))) {
+                try {
+                    $dates[$field] = Carbon::parse($this->input($field), $timezone)->utc()->toIso8601String();
+                } catch (InvalidFormatException) {
+                    // Leave malformed input for the localized date validation rule.
+                }
             }
         }
 
@@ -71,8 +82,8 @@ class StorefrontBookingRequest extends FormRequest
         return new CreateBookingDraftDTO(
             customerId: (int) $user->id,
             occasionId: (int) DB::table('occasions')->where('code', $this->string('occasion')->toString())->value('id'),
-            eventStartsAt: Carbon::parse($this->input('event_starts_at')),
-            eventEndsAt: Carbon::parse($this->input('event_ends_at')),
+            eventStartsAt: Carbon::parse($this->input('event_starts_at'))->utc(),
+            eventEndsAt: $this->filled('event_ends_at') ? Carbon::parse($this->input('event_ends_at'))->utc() : null,
             guestCount: $this->integer('guest_count') ?: null,
             theme: null,
             celebrantName: $this->input('celebrant_name'),
@@ -88,6 +99,8 @@ class StorefrontBookingRequest extends FormRequest
             addressLongitude: $this->filled('address.longitude') ? (float) $this->input('address.longitude') : null,
             recipientName: (string) $this->input('address.recipient_name'),
             recipientPhoneE164: (string) $this->input('address.recipient_phone_e164'),
+            notes: $this->input('notes'),
+            notesLocale: app()->getLocale(),
         );
     }
 

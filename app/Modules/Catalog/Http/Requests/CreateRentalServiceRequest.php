@@ -22,6 +22,10 @@ use Illuminate\Validation\Rule;
  * @bodyParam teardown_time_minutes integer Teardown time in minutes. Example: 30
  * @bodyParam security_deposit_minor integer Refundable security deposit in piastres. Example: 50000
  * @bodyParam minimum_space_sqm integer Minimum floor space required in square metres. Example: 25
+ * @bodyParam length_m string optional Nullable positive length in metres, up to two decimal places (max 999999.99). Example: 4.50
+ * @bodyParam width_m string optional Nullable positive width in metres, up to two decimal places (max 999999.99). Example: 3.25
+ * @bodyParam height_m string optional Nullable positive height in metres, up to two decimal places (max 999999.99). Example: 2.00
+ * @bodyParam category_field_values object Values keyed by the selected category schema. Required keys follow the category's inherited required fields. Example: {"capacity": 50}
  */
 class CreateRentalServiceRequest extends FormRequest
 {
@@ -59,6 +63,10 @@ class CreateRentalServiceRequest extends FormRequest
             'teardown_time_minutes' => ['integer', 'min:0', 'max:1440'],
             'security_deposit_minor' => ['integer', 'min:0'],
             'minimum_space_sqm' => ['nullable', 'integer', 'min:1'],
+            'length_m' => ['nullable', 'numeric', 'gt:0', 'max:999999.99', 'decimal:0,2'],
+            'width_m' => ['nullable', 'numeric', 'gt:0', 'max:999999.99', 'decimal:0,2'],
+            'height_m' => ['nullable', 'numeric', 'gt:0', 'max:999999.99', 'decimal:0,2'],
+            'category_field_values' => ['sometimes', 'array'],
         ];
     }
 }

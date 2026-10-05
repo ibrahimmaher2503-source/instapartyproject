@@ -21,6 +21,8 @@ readonly class CreateSaleServiceDTO
         public ?int $leadTimeHours,
         public ?int $stockQuantity,
         public ?array $customizationFields,
+        /** @var array<string, mixed>|null */
+        public ?array $categoryFieldValues = null,
     ) {}
 
     public static function fromRequest(CreateSaleServiceRequest $request, int $vendorProfileId): self
@@ -36,6 +38,7 @@ readonly class CreateSaleServiceDTO
             leadTimeHours: $request->filled('lead_time_hours') ? $request->integer('lead_time_hours') : null,
             stockQuantity: $request->filled('stock_quantity') ? $request->integer('stock_quantity') : null,
             customizationFields: $request->input('customization_fields'),
+            categoryFieldValues: $request->input('category_field_values'),
         );
     }
 }

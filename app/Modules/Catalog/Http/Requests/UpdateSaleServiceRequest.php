@@ -21,6 +21,7 @@ use Illuminate\Validation\Rule;
  * @bodyParam stock_quantity integer optional (partial update) Quantity in stock (null means unlimited). Example: 10
  * @bodyParam customization_fields array optional (partial update) Array of customization field definitions.
  * @bodyParam customization_fields.* array Each customization field object.
+ * @bodyParam category_field_values object optional Values for the selected category's dynamic fields; omission preserves them.
  */
 class UpdateSaleServiceRequest extends FormRequest
 {
@@ -56,6 +57,7 @@ class UpdateSaleServiceRequest extends FormRequest
             'stock_quantity' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'customization_fields' => ['sometimes', 'nullable', 'array'],
             'customization_fields.*' => ['array'],
+            'category_field_values' => ['sometimes', 'array'],
         ];
     }
 }

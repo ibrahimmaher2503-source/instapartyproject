@@ -16,6 +16,7 @@ final class SearchServicesDTO
         public readonly ?string $categorySlug,
         public readonly ?string $occasionCode,
         public readonly ?string $vendorPublicId,
+        public readonly ?string $governoratePublicId,
         public readonly ?string $cityPublicId,
         public readonly ?int $priceMin,
         public readonly ?int $priceMax,
@@ -25,6 +26,8 @@ final class SearchServicesDTO
         public readonly int $perPage,
         public readonly ?string $sort,
         public readonly ?CarbonImmutable $eventDate = null,
+        public readonly ?CarbonImmutable $eventStartsAt = null,
+        public readonly ?CarbonImmutable $eventEndsAt = null,
     ) {}
 
     public static function fromRequest(SearchServicesRequest $request): self
@@ -43,6 +46,7 @@ final class SearchServicesDTO
             vendorPublicId: $request->filled('vendor')
                 ? $request->string('vendor')->toString()
                 : ($request->filled('vendor_public_id') ? $request->string('vendor_public_id')->toString() : null),
+            governoratePublicId: $request->filled('governorate_public_id') ? $request->string('governorate_public_id')->toString() : null,
             cityPublicId: $request->filled('city_public_id') ? $request->string('city_public_id')->toString() : null,
             priceMin: $request->filled('price_min') ? $request->integer('price_min') : null,
             priceMax: $request->filled('price_max') ? $request->integer('price_max') : null,

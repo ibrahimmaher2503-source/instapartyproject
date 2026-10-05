@@ -23,6 +23,11 @@ readonly class CreateRentalServiceDTO
         public ?int $teardownTimeMinutes,
         public ?int $securityDepositMinor,
         public ?int $minimumSpaceSqm,
+        public ?string $lengthM = null,
+        public ?string $widthM = null,
+        public ?string $heightM = null,
+        /** @var array<string, mixed>|null */
+        public ?array $categoryFieldValues = null,
     ) {}
 
     public static function fromRequest(CreateRentalServiceRequest $request, int $vendorProfileId): self
@@ -40,6 +45,10 @@ readonly class CreateRentalServiceDTO
             teardownTimeMinutes: $request->filled('teardown_time_minutes') ? $request->integer('teardown_time_minutes') : null,
             securityDepositMinor: $request->filled('security_deposit_minor') ? $request->integer('security_deposit_minor') : null,
             minimumSpaceSqm: $request->filled('minimum_space_sqm') ? $request->integer('minimum_space_sqm') : null,
+            lengthM: $request->filled('length_m') ? (string) $request->input('length_m') : null,
+            widthM: $request->filled('width_m') ? (string) $request->input('width_m') : null,
+            heightM: $request->filled('height_m') ? (string) $request->input('height_m') : null,
+            categoryFieldValues: $request->input('category_field_values'),
         );
     }
 }

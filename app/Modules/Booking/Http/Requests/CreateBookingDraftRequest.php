@@ -9,8 +9,18 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @bodyParam event_starts_at string required Future event start, with timezone offset. Example: 2026-12-01T18:00:00+02:00
+ * @bodyParam notes string optional Event instructions, up to 10000 characters; multiline content is preserved. Example: Please use the side entrance.
+ * @bodyParam event_ends_at string optional Event end after the start; omit or send null when unknown. Rental items use the service's stored default duration unless an explicit item/event end is supplied. Example: null
+ */
 class CreateBookingDraftRequest extends FormRequest
 {
+    public function attributes(): array
+    {
+        return ['notes' => __('storefront.wizard.step3.notes_label')];
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -22,8 +32,9 @@ class CreateBookingDraftRequest extends FormRequest
         return [
             'occasion_id' => ['required', 'string', 'exists:occasions,public_id'],
             'event_starts_at' => ['required', 'date', 'after:now'],
-            'event_ends_at' => ['required', 'date', 'after:event_starts_at'],
+            'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
             'guest_count' => ['nullable', 'integer', 'min:1'],
+            'notes' => ['nullable', 'string', 'max:10000'],
             'theme' => ['nullable', 'array'],
             'theme.en' => ['nullable', 'string', 'max:120'],
             'theme.ar' => ['nullable', 'string', 'max:120'],
@@ -55,8 +66,8 @@ class CreateBookingDraftRequest extends FormRequest
         return new CreateBookingDraftDTO(
             customerId: (int) auth()->id(),
             occasionId: (int) $occasionId,
-            eventStartsAt: Carbon::parse($this->input('event_starts_at')),
-            eventEndsAt: Carbon::parse($this->input('event_ends_at')),
+            eventStartsAt: Carbon::parse($this->input('event_starts_at'))->utc(),
+            eventEndsAt: $this->filled('event_ends_at') ? Carbon::parse($this->input('event_ends_at'))->utc() : null,
             guestCount: $this->input('guest_count'),
             theme: $this->input('theme'),
             celebrantName: $this->input('celebrant_name'),
@@ -74,6 +85,8 @@ class CreateBookingDraftRequest extends FormRequest
             addressLongitude: $this->input('address.longitude'),
             recipientName: $this->input('address.recipient_name'),
             recipientPhoneE164: $this->input('address.recipient_phone_e164'),
+            notes: $this->input('notes'),
+            notesLocale: app()->getLocale(),
         );
     }
 }

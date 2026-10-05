@@ -12,7 +12,7 @@ final readonly class CreateBookingDraftDTO
         public int $customerId,
         public int $occasionId,
         public Carbon $eventStartsAt,
-        public Carbon $eventEndsAt,
+        public ?Carbon $eventEndsAt,
         public ?int $guestCount,
         /** @var array<string, mixed>|null */
         public ?array $theme,
@@ -29,5 +29,7 @@ final readonly class CreateBookingDraftDTO
         public ?float $addressLongitude,
         public string $recipientName,
         public string $recipientPhoneE164,
+        public ?string $notes = null,
+        public string $notesLocale = 'en',
     ) {}
 }

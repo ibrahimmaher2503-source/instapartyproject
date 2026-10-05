@@ -20,6 +20,7 @@ use Illuminate\Validation\Rule;
  * @bodyParam expiry_days_after_purchase integer required if has_expiry is true. Days until expiry. Example: 30
  * @bodyParam is_refundable_after_delivery boolean Whether refundable after delivery. Example: false
  * @bodyParam redemption_url_template string nullable URL template for redemption. Example: "https://example.com/redeem/{code}"
+ * @bodyParam category_field_values object Values keyed by the selected category schema. Required keys follow the category's inherited required fields. Example: {"editable": true}
  */
 class CreateDigitalServiceRequest extends FormRequest
 {
@@ -27,7 +28,8 @@ class CreateDigitalServiceRequest extends FormRequest
     {
         $vendor = $this->user()?->vendorProfile;
 
-        return $vendor?->approvedTypes->contains('product_type', ProductType::Digital) ?? false;
+        return config('catalog.digital_services_enabled', true)
+            && ($vendor?->approvedTypes->contains('product_type', ProductType::Digital) ?? false);
     }
 
     /**
@@ -55,6 +57,7 @@ class CreateDigitalServiceRequest extends FormRequest
             'expiry_days_after_purchase' => ['nullable', 'required_if:has_expiry,true', 'integer', 'min:1', 'max:3650'],
             'is_refundable_after_delivery' => ['boolean'],
             'redemption_url_template' => ['nullable', 'string', 'max:2048'],
+            'category_field_values' => ['sometimes', 'array'],
         ];
     }
 }

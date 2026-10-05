@@ -19,5 +19,6 @@ final readonly class ServiceReadDTO
         public int $basePriceMinor,
         public string $basePriceCurrency,
         public ?int $stockQuantity,
+        public ?int $defaultRentalDurationHours = null,
     ) {}
 }

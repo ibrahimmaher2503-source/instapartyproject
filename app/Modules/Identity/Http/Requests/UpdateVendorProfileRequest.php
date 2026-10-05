@@ -8,11 +8,34 @@ use App\Modules\Identity\Domain\Enums\BusinessType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
+/**
+ * @bodyParam facebook_url string Optional Facebook page URL; null clears it. Example: https://www.facebook.com/qa-events
+ * @bodyParam website_url string Optional website URL; null clears it. Example: https://qa-events.example
+ * @bodyParam instagram_url string Optional Instagram page URL; null clears it. Example: https://www.instagram.com/qa-events
+ */
 class UpdateVendorProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return true;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'facebook_url.url' => __('vendor-portal.profile.invalid_url'),
+            'website_url.url' => __('vendor-portal.profile.invalid_url'),
+            'instagram_url.url' => __('vendor-portal.profile.invalid_url'),
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'facebook_url' => __('vendor-portal.profile.facebook_url'),
+            'website_url' => __('vendor-portal.profile.website_url'),
+            'instagram_url' => __('vendor-portal.profile.instagram_url'),
+        ];
     }
 
     /** @return array<string, array<int, mixed>> */
@@ -35,6 +58,9 @@ class UpdateVendorProfileRequest extends FormRequest
             'commercial_register_no' => ['sometimes', 'nullable', 'string', 'max:50'],
             'tax_id' => ['sometimes', 'nullable', 'string', 'max:50'],
             'national_id' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'facebook_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'website_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'instagram_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
             'bank_name' => ['sometimes', 'nullable', 'string', 'max:120'],
             'bank_account_holder' => ['sometimes', 'nullable', 'string', 'max:160'],
             'bank_iban' => ['sometimes', 'nullable', 'string', 'max:34'],

@@ -18,8 +18,11 @@ final readonly class RegisterVendorDTO
         public array $businessName,
         public string $businessType,
         public int $primaryGovernorateId,
-        public int $primaryCityId,
+        public ?int $primaryCityId,
         public string $preferredLocale,
+        public ?string $facebookUrl = null,
+        public ?string $websiteUrl = null,
+        public ?string $instagramUrl = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -35,7 +38,10 @@ final readonly class RegisterVendorDTO
             businessName: $data['business_name'],
             businessType: (string) $data['business_type'],
             primaryGovernorateId: (int) $data['primary_governorate_id'],
-            primaryCityId: (int) $data['primary_city_id'],
+            primaryCityId: isset($data['primary_city_id']) && $data['primary_city_id'] !== '' ? (int) $data['primary_city_id'] : null,
+            facebookUrl: $data['facebook_url'] ?? null,
+            websiteUrl: $data['website_url'] ?? null,
+            instagramUrl: $data['instagram_url'] ?? null,
             preferredLocale: (string) ($data['preferred_locale'] ?? 'ar'),
         );
     }
@@ -52,6 +58,9 @@ final readonly class RegisterVendorDTO
             'business_type' => $this->businessType,
             'primary_governorate_id' => $this->primaryGovernorateId,
             'primary_city_id' => $this->primaryCityId,
+            'facebook_url' => $this->facebookUrl,
+            'website_url' => $this->websiteUrl,
+            'instagram_url' => $this->instagramUrl,
             'preferred_locale' => $this->preferredLocale,
         ];
     }

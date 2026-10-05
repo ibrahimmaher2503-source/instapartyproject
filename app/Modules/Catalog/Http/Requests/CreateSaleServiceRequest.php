@@ -21,6 +21,7 @@ use Illuminate\Validation\Rule;
  * @bodyParam stock_quantity integer Quantity in stock (null means unlimited). Example: 10
  * @bodyParam customization_fields array nullable Array of customization field definitions.
  * @bodyParam customization_fields.* array Each customization field object.
+ * @bodyParam category_field_values object Values keyed by the selected category schema. Required keys follow the category's inherited required fields. Example: {"flavor": "vanilla"}
  */
 class CreateSaleServiceRequest extends FormRequest
 {
@@ -57,6 +58,7 @@ class CreateSaleServiceRequest extends FormRequest
             'stock_quantity' => ['nullable', 'integer', 'min:1'],
             'customization_fields' => ['nullable', 'array'],
             'customization_fields.*' => ['array'],
+            'category_field_values' => ['sometimes', 'array'],
         ];
     }
 }

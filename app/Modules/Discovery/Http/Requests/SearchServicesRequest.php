@@ -25,6 +25,7 @@ class SearchServicesRequest extends FormRequest
             'occasion_slug' => ['nullable', 'string'],
             'vendor' => ['nullable', 'string'],
             'vendor_public_id' => ['nullable', 'string'],
+            'governorate_public_id' => ['nullable', 'string', 'exists:governorates,public_id'],
             'city_public_id' => ['nullable', 'string'],
             'price_min' => ['nullable', 'integer', 'min:0'],
             'price_max' => ['nullable', 'integer', 'min:0', 'gte:price_min'],

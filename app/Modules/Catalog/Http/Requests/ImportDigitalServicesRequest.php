@@ -18,7 +18,8 @@ class ImportDigitalServicesRequest extends FormRequest
     {
         $vendor = $this->user()?->vendorProfile;
 
-        return $vendor?->approvedTypes->contains('product_type', ProductType::Digital) ?? false;
+        return config('catalog.digital_services_enabled', true)
+            && ($vendor?->approvedTypes->contains('product_type', ProductType::Digital) ?? false);
     }
 
     /**

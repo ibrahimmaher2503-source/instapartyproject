@@ -21,6 +21,8 @@ readonly class CreateDigitalServiceDTO
         public ?int $expiryDaysAfterPurchase,
         public bool $isRefundableAfterDelivery,
         public ?string $redemptionUrlTemplate,
+        /** @var array<string, mixed>|null */
+        public ?array $categoryFieldValues = null,
     ) {}
 
     public static function fromRequest(CreateDigitalServiceRequest $request, int $vendorProfileId): self
@@ -38,6 +40,7 @@ readonly class CreateDigitalServiceDTO
                 : null,
             isRefundableAfterDelivery: $request->boolean('is_refundable_after_delivery'),
             redemptionUrlTemplate: $request->input('redemption_url_template'),
+            categoryFieldValues: $request->input('category_field_values'),
         );
     }
 }
