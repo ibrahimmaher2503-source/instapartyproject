@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Http\Controllers\Vendor;
 
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Shared\Http\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -31,6 +32,8 @@ class VendorServiceStatsController
             ->where('vendor_profile_id', $vendor->id)
             ->where('public_id', $publicId)
             ->firstOrFail();
+
+        abort_if($service->product_type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
 
         $views = (int) DB::table('analytics_events')
             ->where('event_type', 'service_view')

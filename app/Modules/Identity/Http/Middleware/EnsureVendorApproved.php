@@ -19,19 +19,35 @@ final class EnsureVendorApproved
 
         $user = $request->user();
 
-        if ($vendor === null
-            || ! $vendor->approval_status instanceof ApprovedState
-            || ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail())) {
+        if ($vendor === null || ! $vendor->approval_status instanceof ApprovedState) {
             return response()->json([
                 'data' => null,
                 'meta' => (object) [],
                 'errors' => [[
-                    'code' => $user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()
-                        ? 'email_verification_required'
-                        : 'vendor_approval_required',
-                    'message' => $user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()
-                        ? __('identity::identity.errors.email_verification_required')
-                        : __('identity::identity.errors.vendor_approval_required'),
+                    'code' => 'vendor_approval_required',
+                    'message' => __('identity::identity.errors.vendor_approval_required'),
+                ]],
+            ], 403);
+        }
+
+        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+            return response()->json([
+                'data' => null,
+                'meta' => (object) [],
+                'errors' => [[
+                    'code' => 'email_verification_required',
+                    'message' => __('identity::identity.errors.email_verification_required'),
+                ]],
+            ], 403);
+        }
+
+        if ($user?->phone_verified_at === null) {
+            return response()->json([
+                'data' => null,
+                'meta' => (object) [],
+                'errors' => [[
+                    'code' => 'phone_verification_required',
+                    'message' => __('identity::identity.errors.phone_verification_required'),
                 ]],
             ], 403);
         }

@@ -23,7 +23,7 @@ class HomeController
     ): View {
         return view('storefront.home', [
             'homepage' => $action->execute(app()->getLocale()),
-            'cities' => $geography->searchCities(''),
+            'governorates' => $geography->activeGovernorates(),
         ]);
     }
 }

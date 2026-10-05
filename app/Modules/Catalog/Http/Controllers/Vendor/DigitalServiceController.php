@@ -27,6 +27,7 @@ class DigitalServiceController
 {
     public function store(CreateDigitalServiceRequest $request, CreateDigitalServiceAction $action): JsonResponse
     {
+        abort_unless(config('catalog.digital_services_enabled', true), 404);
         $vendor = $request->user()->vendorProfile()->firstOrFail();
         $service = $action->execute(CreateDigitalServiceDTO::fromRequest($request, $vendor->id));
 
@@ -39,6 +40,7 @@ class DigitalServiceController
         DetectMaterialServiceChangesAction $detectAction,
         SubmitServiceChangeRequestAction $submitAction,
     ): JsonResponse {
+        abort_unless(config('catalog.digital_services_enabled', true), 404);
         $vendor = $request->user()->vendorProfile()->firstOrFail();
 
         $service = Service::query()

@@ -23,6 +23,9 @@ use Illuminate\Support\Facades\Storage;
  *     "approval_status": "approved",
  *     "primary_governorate_id": "01J9X7M88HTR9V76J4MVY8FDVT",
  *     "primary_city_id": "01J9X7N4MMQS65F5TQJY6HPPVK",
+ *     "facebook_url": "https://www.facebook.com/instaparty",
+ *     "website_url": "https://instaparty.example",
+ *     "instagram_url": "https://www.instagram.com/instaparty",
  *     "approved_product_types": ["rental"],
  *     "logo_url": null,
  *     "cover_image_url": null,
@@ -50,6 +53,9 @@ class VendorProfileResource extends JsonResource
             'approval_status' => $profile->approval_status->getMorphClass(),
             'primary_governorate_id' => $profile->primaryGovernorate?->public_id,
             'primary_city_id' => $profile->primaryCity?->public_id,
+            'facebook_url' => $profile->facebook_url,
+            'website_url' => $profile->website_url,
+            'instagram_url' => $profile->instagram_url,
             'approved_product_types' => $this->whenLoaded(
                 'approvedTypes',
                 fn () => $profile->approvedTypes

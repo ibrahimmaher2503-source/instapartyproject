@@ -1,0 +1,43 @@
+meta {
+  name: Customer booking draft with optional end
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customer/bookings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{customerToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+}
+
+body:json {
+  "occasion_id": "{{occasionPublicId}}",
+  "event_starts_at": "{{eventStartsAt}}",
+  "event_ends_at": null,
+  "guest_count": 25,
+  "notes": "Please use the side entrance.\nDelivery contact is available after 5pm.",
+  "address": {
+    "city_id": "{{cityPublicId}}",
+    "address_line": "20 Event Street",
+    "recipient_name": "Event recipient",
+    "recipient_phone_e164": "+201001234567"
+  }
+}
+
+docs {
+  Set eventStartsAt to a future ISO datetime with its timezone offset.
+  The event end may be omitted or null; a supplied end must be after the start.
+  Unknown end is returned and stored as null, not the current time.
+  Rental item windows use the service's stored positive default duration when
+  no explicit item/event end is supplied. Inventory overlap checks still apply.
+  If the rental has no valid default, provide an explicit end; no duration is invented.
+}

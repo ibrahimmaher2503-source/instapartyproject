@@ -27,6 +27,8 @@ class VendorServiceShowController
             ->where('vendor_profile_id', $vendor->id)
             ->firstOrFail();
 
+        abort_if($service->product_type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
+
         return ApiResponse::success(match ($service->product_type) {
             ProductType::Rental => new RentalServiceResource($service->load('rentalDetail')),
             ProductType::Sale => new SaleServiceResource($service->load('saleDetail')),

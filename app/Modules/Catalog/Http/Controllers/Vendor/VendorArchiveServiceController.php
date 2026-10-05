@@ -24,6 +24,7 @@ class VendorArchiveServiceController
         // 2026-06-06). Read the default by name instead.
         $type = ProductType::tryFrom((string) $request->route('type'));
         abort_unless($type !== null, 404);
+        abort_if($type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
 
         $vendor = $request->user()->vendorProfile()->firstOrFail();
 

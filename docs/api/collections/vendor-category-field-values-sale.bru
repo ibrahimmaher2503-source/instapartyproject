@@ -1,0 +1,43 @@
+meta {
+  name: Create sale service with category field values
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vendor/services/sale
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vendorToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": {"en": "Custom cake", "ar": "كيكة مخصصة"},
+    "short_description": {"en": "A party cake", "ar": "كيكة للحفلات"},
+    "category_id": {{saleCategoryId}},
+    "base_price_minor": 80000,
+    "category_field_values": {"flavor": "vanilla"}
+  }
+}
+
+tests {
+  test("dynamic sale value is returned", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().data.category_field_values.flavor).to.equal("vanilla");
+  });
+}
+
+docs {
+  The selected category must define a select field named flavor, or replace
+  category_field_values with the inherited field keys for your category.
+}

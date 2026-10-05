@@ -1,0 +1,45 @@
+meta {
+  name: Create rental service with category field values
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vendor/services/rental
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vendorToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": {"en": "Bouncy castle", "ar": "قلعة قفز"},
+    "short_description": {"en": "Inflatable for celebrations", "ar": "لعبة هوائية للمناسبات"},
+    "category_id": {{rentalCategoryId}},
+    "base_price_minor": 25000,
+    "default_rental_duration_hours": 4,
+    "category_field_values": {"capacity": 50}
+  }
+}
+
+tests {
+  test("dynamic values are returned in raw and formatted contract fields", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().data.category_field_values.capacity).to.equal(50);
+    expect(res.getBody().data.category_fields).to.be.an("array");
+  });
+}
+
+docs {
+  The selected category must define a number field named capacity, or replace
+  category_field_values with the inherited field keys for your category.
+}

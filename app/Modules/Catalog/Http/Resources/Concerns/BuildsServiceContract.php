@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Http\Resources\Concerns;
 
+use App\Modules\Catalog\Application\Services\CategoryFieldPresenter;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Models\Service;
@@ -36,6 +37,7 @@ trait BuildsServiceContract
             // no independent is_active column on services.
             'is_active' => $service->status?->getValue() === ServiceStatus::Published->value,
             'category' => $this->serviceCategoryBlock($service, $locale),
+            'category_fields' => app(CategoryFieldPresenter::class)->forService($service),
             'vendor' => $this->serviceVendorBlock($service, $locale),
             'cover_image_url' => rescue(fn () => $service->getFirstMediaUrl('gallery', 'thumb') ?: null, null, report: false),
             'price_from_minor' => (int) $service->base_price_minor,
@@ -63,6 +65,9 @@ trait BuildsServiceContract
                     'default_rental_duration_hours' => $service->rentalDetail?->default_rental_duration_hours,
                     'setup_time_minutes' => $service->rentalDetail?->setup_time_minutes,
                     'security_deposit_minor' => $service->rentalDetail?->security_deposit_minor,
+                    'length_m' => $service->rentalDetail?->length_m,
+                    'width_m' => $service->rentalDetail?->width_m,
+                    'height_m' => $service->rentalDetail?->height_m,
                 ],
             ],
             ProductType::Sale => [

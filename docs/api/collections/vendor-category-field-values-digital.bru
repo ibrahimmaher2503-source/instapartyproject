@@ -1,0 +1,44 @@
+meta {
+  name: Create digital service with category field values
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vendor/services/digital
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vendorToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": {"en": "Digital invitation", "ar": "دعوة رقمية"},
+    "short_description": {"en": "Invitation link", "ar": "رابط دعوة"},
+    "category_id": {{digitalCategoryId}},
+    "base_price_minor": 5000,
+    "delivery_method": "email",
+    "category_field_values": {"editable": true}
+  }
+}
+
+tests {
+  test("dynamic boolean value is returned", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().data.category_field_values.editable).to.equal(true);
+  });
+}
+
+docs {
+  The selected category must define a boolean field named editable, or replace
+  category_field_values with the inherited field keys for your category.
+}

@@ -24,6 +24,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     "rejection_reason": null,
  *     "vendors_summary": {"total": 3, "pending": 1, "accepted": 2, "modified": 0, "rejected": 0, "cancelled": 0, "in_progress": 0, "completed": 0, "timed_out": 0},
  *     "payment_status": "unpaid",
+ *     "event_starts_at": "2026-12-01T18:00:00+02:00",
+ *     "event_ends_at": null,
+ *     "notes": "Please use the side entrance.\nDelivery contact is available after 5pm.",
  *     "fulfillment_status": "not_started",
  *     "requires_customer_approval": true,
  *     "total_minor": 25000,
@@ -51,8 +54,11 @@ class BookingResource extends JsonResource
             'event_starts_at' => $this->event_starts_at?->setTimezone($tz)->toIso8601String(),
             'event_ends_at' => $this->event_ends_at?->setTimezone($tz)->toIso8601String(),
             'guest_count' => $this->guest_count,
+            'notes' => $this->customerNotes->first()?->body,
             'subtotal_minor' => $this->subtotal_minor ?? 0,
             'delivery_total_minor' => $this->delivery_total_minor ?? 0,
+            'transport_base_minor' => $this->transport_base_minor ?? 0,
+            'transportation_adjustment_minor' => $this->transportationAdjustmentMinor(),
             'discount_total_minor' => $this->discount_total_minor ?? 0,
             'discount_promo_minor' => $this->discount_promo_minor ?? 0,
             'discount_loyalty_minor' => $this->discount_loyalty_minor ?? 0,
@@ -60,6 +66,14 @@ class BookingResource extends JsonResource
             'total_minor' => $this->total_minor ?? 0,
             'due_minor' => ($this->total_minor ?? 0) - ($this->applied_wallet_minor ?? 0) - ($this->discount_loyalty_minor ?? 0),
             'currency' => $this->total_currency ?? 'EGP',
+            'invoice_breakdown' => [
+                'services_minor' => $this->subtotal_minor ?? 0,
+                'vendor_delivery_minor' => max(0, (int) ($this->delivery_total_minor ?? 0) - (int) ($this->transport_base_minor ?? 0) - $this->transportationAdjustmentMinor()),
+                'transport_base_minor' => $this->transport_base_minor ?? 0,
+                'transportation_adjustment_minor' => $this->transportationAdjustmentMinor(),
+                'total_minor' => $this->total_minor ?? 0,
+                'currency' => $this->total_currency ?? 'EGP',
+            ],
             'payment_method_options' => app(ResolveAvailablePaymentMethodsAction::class)->execute($this->resource),
             'hold_expires_at' => $this->payment_hold_expires_at?->setTimezone($tz)->toIso8601String(),
             'requires_customer_approval' => $this->requiresCustomerApproval(),
@@ -88,6 +102,13 @@ class BookingResource extends JsonResource
         $booking = $this->resource;
 
         return $booking->pendingModifications()->exists();
+    }
+
+    private function transportationAdjustmentMinor(): int
+    {
+        return $this->relationLoaded('adjustments')
+            ? (int) $this->adjustments->where('type', 'transportation')->sum('amount_minor')
+            : (int) $this->adjustments()->where('type', 'transportation')->sum('amount_minor');
     }
 
     /**

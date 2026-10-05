@@ -1,0 +1,50 @@
+meta {
+  name: Create rental service with dimensions in metres
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vendor/services/rental
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vendorToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": {"en": "Bouncy castle", "ar": "قلعة قفز"},
+    "short_description": {"en": "Inflatable for celebrations", "ar": "لعبة هوائية للمناسبات"},
+    "category_id": {{rentalCategoryId}},
+    "base_price_minor": 25000,
+    "default_rental_duration_hours": 4,
+    "length_m": "4.50",
+    "width_m": "3.25",
+    "height_m": "2.00"
+  }
+}
+
+tests {
+  test("dimensions roundtrip as metres and price remains in minor units", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().data.rental.length_m).to.equal("4.50");
+    expect(res.getBody().data.rental.width_m).to.equal("3.25");
+    expect(res.getBody().data.rental.height_m).to.equal("2.00");
+    expect(res.getBody().data.price_from_minor).to.equal(25000);
+  });
+}
+
+docs {
+  Set rentalCategoryId to an existing active category approved for rental.
+  API prices remain integer piastres; only the vendor UI accepts major EGP units.
+  Dimensions are optional metres, positive and at most two decimal places.
+}

@@ -15,6 +15,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * customer-facing per-type block. Per-type resources (Rental/Sale/Digital)
  * extend the summary with their full write-detail blocks.
  *
+ * @responseField category_field_values object Raw values keyed by the selected
+ * category schema field key.
+ * @responseField category_fields array Applicable, localized display values
+ * for the selected category schema fields.
+ *
  * @mixin Service
  */
 class ServiceBaseResource extends JsonResource
@@ -30,6 +35,7 @@ class ServiceBaseResource extends JsonResource
     protected function summaryWithVendorFields(): array
     {
         return array_merge($this->serviceSummary($this->resource, app()->getLocale()), [
+            'category_field_values' => $this->category_field_values,
             'status' => $this->status->getValue(),
             'is_featured' => (bool) $this->is_featured,
             'created_at' => $this->created_at?->toIso8601String(),

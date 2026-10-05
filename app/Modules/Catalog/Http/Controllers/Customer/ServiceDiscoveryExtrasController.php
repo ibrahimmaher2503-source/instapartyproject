@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Http\Controllers\Customer;
 
 use App\Modules\Catalog\Domain\Models\Service;
-use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use App\Modules\Discovery\Http\Resources\ServiceSearchResultResource;
 use App\Modules\Shared\Http\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +29,7 @@ class ServiceDiscoveryExtrasController
         $needle = '%'.str_replace(['%', '_'], ['\%', '\_'], $validated['q']).'%';
 
         $rows = Service::query()
-            ->whereState('status', PublishedState::class)
+            ->displayable()
             ->where(fn ($q) => $q
                 ->where('name->en', 'like', $needle)
                 ->orWhere('name->ar', 'like', $needle))
@@ -52,7 +51,7 @@ class ServiceDiscoveryExtrasController
         $service = $this->publishedService($servicePublicId);
 
         $similar = Service::query()
-            ->whereState('status', PublishedState::class)
+            ->displayable()
             ->where('category_id', $service->category_id)
             ->where('product_type', $service->product_type)
             ->whereKeyNot($service->id)
@@ -86,7 +85,7 @@ class ServiceDiscoveryExtrasController
     private function publishedService(string $publicId): Service
     {
         return Service::query()
-            ->whereState('status', PublishedState::class)
+            ->displayable()
             ->where('public_id', $publicId)
             ->firstOrFail();
     }

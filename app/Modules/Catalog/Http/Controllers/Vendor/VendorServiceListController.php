@@ -28,6 +28,7 @@ class VendorServiceListController
 
         $vendor = $request->user()->vendorProfile()->firstOrFail();
         $type = $request->filled('type') ? ProductType::from($request->string('type')->toString()) : null;
+        abort_if($type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
         $status = $request->filled('status') ? ServiceStatus::from($request->string('status')->toString()) : null;
         $perPage = (int) $request->input('per_page', 25);
 

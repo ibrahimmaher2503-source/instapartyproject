@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Modules\Discovery\Http\Controllers\Web;
 
 use App\Modules\Catalog\Application\Actions\ListPublicOccasionsAction;
+use App\Modules\Discovery\Application\Actions\StorePlannerContextAction;
+use App\Modules\Discovery\Http\Requests\StorePlannerContextRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class PlannerController
 {
+    public function store(StorePlannerContextRequest $request, StorePlannerContextAction $action): RedirectResponse
+    {
+        return redirect()->to($action->execute($request->validated()));
+    }
+
     public function __invoke(Request $request, ListPublicOccasionsAction $occasions): View|RedirectResponse
     {
         if ($request->filled('service') && $request->user() === null) {

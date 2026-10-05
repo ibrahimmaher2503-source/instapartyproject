@@ -6,6 +6,11 @@ namespace App\Modules\Catalog\Http\Resources;
 
 use Illuminate\Http\Request;
 
+/**
+ * Rental dimensions are nullable decimal strings in metres (not money).
+ * Example rental fragment: {"length_m":"4.50","width_m":"3.25","height_m":"2.00"}.
+ * Null means unknown, including historical services; legacy rental fields remain available.
+ */
 class RentalServiceResource extends ServiceBaseResource
 {
     /**
@@ -26,6 +31,9 @@ class RentalServiceResource extends ServiceBaseResource
                 'security_deposit_minor' => $detail?->security_deposit_minor,
                 'security_deposit_currency' => $detail?->security_deposit_currency,
                 'minimum_space_sqm' => $detail?->minimum_space_sqm,
+                'length_m' => $detail?->length_m,
+                'width_m' => $detail?->width_m,
+                'height_m' => $detail?->height_m,
             ],
         ]);
     }

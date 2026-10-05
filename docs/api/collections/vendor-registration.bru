@@ -29,7 +29,9 @@ body:json {
     },
     "business_type": "individual",
     "primary_governorate_id": 1,
-    "primary_city_id": 1,
+    "facebook_url": "https://www.facebook.com/qa-events",
+    "website_url": "https://qa-events.example",
+    "instagram_url": "https://www.instagram.com/qa-events",
     "preferred_locale": "en"
   }
 }
@@ -39,5 +41,7 @@ tests {
     expect(res.getStatus()).to.equal(201);
     expect(res.getBody().meta.registration_successful).to.equal(true);
     expect(res.getBody().meta.verification_pending).to.equal(true);
+    expect(res.getBody().data.website_url).to.equal("https://qa-events.example");
+    expect(res.getBody().data.primary_city_id).to.equal(null);
   });
 }

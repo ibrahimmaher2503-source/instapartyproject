@@ -1,0 +1,41 @@
+meta {
+  name: Update or clear a rental dimension
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/vendor/services/rental/{{rentalServicePublicId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vendorToken}}
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "length_m": "5.25",
+    "height_m": null
+  }
+}
+
+tests {
+  test("partial update clears height while setting length", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.rental.length_m).to.equal("5.25");
+    expect(res.getBody().data.rental.height_m).to.equal(null);
+  });
+}
+
+docs {
+  Use a draft rental service owned by the authenticated vendor.
+  Width is omitted and must remain unchanged; null explicitly clears height.
+  Existing material-change review rules apply when other fields are sent.
+}

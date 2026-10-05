@@ -1,0 +1,37 @@
+meta {
+  name: Update vendor profile links
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/v1/vendor/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vendorToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "facebook_url": "https://www.facebook.com/qa-events",
+    "website_url": "https://qa-events.example",
+    "instagram_url": null
+  }
+}
+
+tests {
+  test("profile stores the website and clears Instagram", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.website_url).to.equal("https://qa-events.example");
+    expect(res.getBody().data.instagram_url).to.equal(null);
+  });
+}

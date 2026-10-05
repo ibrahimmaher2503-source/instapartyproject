@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Discovery\Http\Controllers\Customer;
 
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Discovery\Application\Actions\SearchServicesAction;
 use App\Modules\Discovery\Application\DTOs\SearchServicesDTO;
 use App\Modules\Discovery\Http\Requests\SearchServicesRequest;
@@ -19,6 +20,7 @@ class ServiceSearchController
     public function __invoke(SearchServicesRequest $request): JsonResponse
     {
         $dto = SearchServicesDTO::fromRequest($request);
+        abort_if($dto->type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
         $results = app(SearchServicesAction::class)->execute($dto);
 
         return ApiResponse::success(

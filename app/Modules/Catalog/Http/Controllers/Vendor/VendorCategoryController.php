@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Http\Controllers\Vendor;
 
 use App\Modules\Catalog\Application\Actions\ListVendorCategoriesAction;
+use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\CategoryFieldSchema;
@@ -23,6 +24,7 @@ class VendorCategoryController
         $type = $request->filled('product_type')
             ? ProductType::from($request->string('product_type')->toString())
             : null;
+        abort_if($type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
         $user = $request->user();
         abort_unless($user !== null, 401);
         $vendorProfile = $user->vendorProfile;
@@ -37,9 +39,12 @@ class VendorCategoryController
      * Vendor-portal 10.2 / 4.18 (FR-20) — ALL field schemas for the create/
      * edit form (the customer variant exposes filterable fields only).
      */
-    public function fieldSchemas(Request $request, string $categoryPublicId): JsonResponse
+    public function fieldSchemas(Request $request, string $categoryPublicId, CategoryFieldValidationService $fieldValidator): JsonResponse
     {
         $request->validate(['type' => ['required', 'string', 'in:rental,sale,digital']]);
+
+        $type = ProductType::from((string) $request->string('type'));
+        abort_if($type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
 
         $category = Category::query()
             ->where('public_id', $categoryPublicId)
@@ -48,11 +53,7 @@ class VendorCategoryController
 
         $locale = app()->getLocale();
 
-        $schemas = CategoryFieldSchema::query()
-            ->where('category_id', $category->id)
-            ->where('product_type', ProductType::from((string) $request->string('type')))
-            ->orderBy('sort_order')
-            ->get()
+        $schemas = $fieldValidator->schemasFor($category->id, $type)
             ->map(fn (CategoryFieldSchema $schema): array => [
                 'field_key' => $schema->getAttribute('field_key'),
                 'field_label' => $schema->getTranslation('field_label', $locale, useFallbackLocale: true),

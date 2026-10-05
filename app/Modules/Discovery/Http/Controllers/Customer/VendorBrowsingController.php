@@ -31,6 +31,12 @@ class VendorBrowsingController
     public function services(Request $request, string $publicId): JsonResponse
     {
         $request->validate(['type' => ['nullable', 'string', 'in:rental,sale,digital']]);
+        abort_if(
+            $request->filled('type')
+                && $request->string('type')->toString() === ProductType::Digital->value
+                && ! config('catalog.digital_services_enabled', true),
+            404,
+        );
 
         $page = $this->repository->servicesFor(
             $this->approvedVendor($publicId)->id,

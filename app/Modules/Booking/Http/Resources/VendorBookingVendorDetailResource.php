@@ -43,6 +43,7 @@ class VendorBookingVendorDetailResource extends BookingVendorResource
                 'event_starts_at' => $booking->event_starts_at?->setTimezone($tz)->toIso8601String(),
                 'event_ends_at' => $booking->event_ends_at?->setTimezone($tz)->toIso8601String(),
                 'occasion' => $booking->occasion?->getTranslation('name', $locale),
+                'notes' => $booking->customerNotes->first()?->body,
                 'customer_name' => $booking->customer?->name,
                 'customer_phone_masked' => $this->maskPhone($booking->address?->recipient_phone_e164),
                 'address' => $this->addressBlock($booking->address, $bookingVendor, $locale),

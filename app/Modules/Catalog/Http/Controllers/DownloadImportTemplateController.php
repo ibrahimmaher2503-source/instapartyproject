@@ -17,6 +17,11 @@ class DownloadImportTemplateController
     public function __invoke(Request $request, string $type, DownloadTemplateAction $action): BinaryFileResponse
     {
         abort_unless(collect(ProductType::cases())->map->value->contains($type), 422, 'Invalid product type.');
+        abort_if(
+            $type === ProductType::Digital->value
+                && str_starts_with((string) $request->route()?->getName(), 'vendor.'),
+            404,
+        );
 
         return $action->execute(ProductType::from($type));
     }

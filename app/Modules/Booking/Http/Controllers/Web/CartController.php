@@ -37,6 +37,7 @@ class CartController
         $user = $request->user();
         abort_unless($user !== null, 401);
         $action->execute((int) $user->id, $request->toDraftDTO(), $request->servicePublicId(), $request->quantity());
+        $request->session()->forget('storefront.planner_notes');
 
         return redirect()->route('storefront.cart')->with('booking_added', true);
     }
