@@ -21,6 +21,13 @@ class ListPublicCategoriesAction
     {
         return Category::query()
             ->active()
+            ->when(
+                ! config('catalog.digital_services_enabled', true),
+                fn (Builder $query) => $query->where(function (Builder $types): void {
+                    $types->whereJsonContains('allowed_product_types', ProductType::Rental->value)
+                        ->orWhereJsonContains('allowed_product_types', ProductType::Sale->value);
+                }),
+            )
             ->when($type !== null, fn (Builder $query) => $query->forProductType($type))
             ->orderBy('sort_order')
             ->get();

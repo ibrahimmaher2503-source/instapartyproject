@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Application\Actions;
 
 use App\Modules\Catalog\Application\DTOs\CreateDigitalServiceDTO;
+use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Events\DigitalServiceCreated;
@@ -21,6 +22,7 @@ class CreateDigitalServiceAction
 
     public function execute(CreateDigitalServiceDTO $dto): Service
     {
+        abort_unless(config('catalog.digital_services_enabled', true), 404);
         $decision = $this->subscriptionPolicy->canCreateService($dto->vendorProfileId, ProductType::Digital);
         if (! $decision->allowed) {
             throw new SubscriptionLimitReachedException(
@@ -33,6 +35,12 @@ class CreateDigitalServiceAction
         }
 
         return DB::transaction(function () use ($dto): Service {
+            $values = app(CategoryFieldValidationService::class)->validateValues(
+                $dto->categoryId,
+                ProductType::Digital,
+                $dto->categoryFieldValues ?? [],
+                'category_field_values.',
+            );
             $service = Service::create([
                 'public_id' => Str::ulid()->toBase32(),
                 'vendor_profile_id' => $dto->vendorProfileId,
@@ -44,6 +52,7 @@ class CreateDigitalServiceAction
                 'status' => ServiceStatus::Draft->value,
                 'base_price_minor' => $dto->basePriceMinor,
                 'base_price_currency' => 'EGP',
+                'category_field_values' => $values,
             ]);
 
             ServiceDigitalDetail::create([

@@ -6,6 +6,7 @@ namespace App\Modules\Booking\Application\Actions;
 
 use App\Modules\Booking\Application\DTOs\AddBookingItemDTO;
 use App\Modules\Booking\Application\DTOs\ServiceReadDTO;
+use App\Modules\Booking\Application\Services\BookingTransportPricingService;
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Booking\Domain\Events\BookingItemAdded;
 use App\Modules\Booking\Domain\Models\Booking;
@@ -27,6 +28,7 @@ class AddItemToBookingAction
     public function __construct(
         private readonly CatalogServiceReader $catalogReader,
         private readonly CommissionRateResolver $commissionRateResolver,
+        private readonly BookingTransportPricingService $transportPricing,
     ) {}
 
     public function execute(AddBookingItemDTO $dto): BookingItem
@@ -49,6 +51,8 @@ class AddItemToBookingAction
                 $this->abortWith(Response::HTTP_NOT_FOUND, 'Service not found or unavailable');
             }
 
+            $this->transportPricing->snapshotBaseFee($booking);
+
             // One currency per draft (mobile audit 2026-06-06): every item must
             // match the booking's currency, otherwise mismatched minor units
             // would be summed as if they were the same money. The app surfaces
@@ -64,8 +68,14 @@ class AddItemToBookingAction
             $effectiveEnd = $dto->effectiveEndsAt ?? $booking->event_ends_at;
 
             if ($service->productType === ProductType::Rental) {
+                if ($effectiveEnd === null && $effectiveStart !== null && $service->defaultRentalDurationHours > 0) {
+                    $effectiveEnd = $effectiveStart->copy()->addHours($service->defaultRentalDurationHours);
+                }
                 if ($effectiveStart === null || $effectiveEnd === null) {
-                    $this->abortWith(Response::HTTP_UNPROCESSABLE_ENTITY, 'Rental items require event_starts_at and event_ends_at');
+                    $this->abortWith(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.rental_duration_required'));
+                }
+                if ($effectiveEnd->lessThanOrEqualTo($effectiveStart)) {
+                    $this->abortWith(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.times_invalid'));
                 }
                 $reservationId = $this->reserveRental($service, $dto, $effectiveStart, $effectiveEnd);
             } else {

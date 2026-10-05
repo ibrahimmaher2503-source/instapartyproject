@@ -6,7 +6,6 @@ namespace App\Modules\Discovery\Infrastructure\Repositories;
 
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
-use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use Illuminate\Contracts\Pagination\CursorPaginator;
@@ -23,12 +22,28 @@ use Illuminate\Support\Facades\DB;
 class VendorBrowsingRepository
 {
     /** @return EloquentCollection<int, VendorProfile> */
-    public function approvedForFilter(int $limit = 100): EloquentCollection
+    public function approvedForFilter(?string $categoryCode = null, ?string $occasionCode = null, int $limit = 100): EloquentCollection
     {
         return VendorProfile::query()
             ->whereState('approval_status', ApprovedState::class)
-            ->whereHas('services', fn (Builder $query) => $query->whereState('status', PublishedState::class))
-            ->with('primaryCity')
+            ->whereHas('services', fn (Builder $query) => $query
+                ->displayable()
+                ->when($categoryCode !== null, fn (Builder $services) => $services->whereHas(
+                    'category',
+                    fn (Builder $categories) => $categories
+                        ->where('code', $categoryCode)
+                        ->orWhereHas('parent', fn (Builder $parent) => $parent->where('code', $categoryCode)),
+                ))
+                ->when($occasionCode !== null, fn (Builder $services) => $services->whereHas(
+                    'category.occasions',
+                    fn (Builder $occasions) => $occasions->where('code', $occasionCode),
+                )))
+            ->with([
+                'primaryCity',
+                'services' => fn ($query) => $query
+                    ->displayable()
+                    ->with(['category.parent', 'category.occasions']),
+            ])
             ->orderByDesc('rating_avg')
             ->orderBy('id')
             ->limit($limit)
@@ -40,9 +55,9 @@ class VendorBrowsingRepository
     {
         return VendorProfile::query()
             ->whereState('approval_status', ApprovedState::class)
-            ->whereHas('services', fn (Builder $query) => $query->whereState('status', PublishedState::class))
+            ->whereHas('services', fn (Builder $query) => $query->displayable())
             ->with(['primaryCity'])
-            ->withCount(['services' => fn (Builder $query) => $query->whereState('status', PublishedState::class)])
+            ->withCount(['services' => fn (Builder $query) => $query->displayable()])
             ->orderByDesc('rating_avg')
             ->orderByDesc('rating_count')
             ->limit($limit)
@@ -54,11 +69,25 @@ class VendorBrowsingRepository
     {
         return Service::query()
             ->where('vendor_profile_id', $vendorProfileId)
-            ->whereState('status', PublishedState::class)
+            ->displayable()
             ->when($type !== null, fn ($q) => $q->where('product_type', $type))
             ->with(['category', 'vendor'])
             ->orderByDesc('id')
             ->cursorPaginate($perPage);
+    }
+
+    /** @return Collection<string, int> Counts over all displayable services, not just the current page. */
+    public function serviceTypeCountsFor(int $vendorProfileId): Collection
+    {
+        return Service::query()
+            ->where('vendor_profile_id', $vendorProfileId)
+            ->displayable()
+            ->selectRaw('product_type, COUNT(*) as service_count')
+            ->groupBy('product_type')
+            ->orderBy('product_type')
+            ->toBase()
+            ->pluck('service_count', 'product_type')
+            ->map(fn ($count): int => (int) $count);
     }
 
     /** @return Collection<int, \stdClass> coverage rows joined to cities */
@@ -98,7 +127,7 @@ class VendorBrowsingRepository
     {
         $services = Service::query()
             ->where('vendor_profile_id', $vendorProfileId)
-            ->whereState('status', PublishedState::class)
+            ->displayable()
             ->get();
 
         $items = [];
@@ -122,7 +151,7 @@ class VendorBrowsingRepository
         return [
             'services_count' => (int) Service::query()
                 ->where('vendor_profile_id', $vendorProfileId)
-                ->whereState('status', PublishedState::class)
+                ->displayable()
                 ->count(),
             'bookings_count' => (int) DB::table('booking_vendors')
                 ->where('vendor_profile_id', $vendorProfileId)

@@ -49,6 +49,9 @@ final class RegisterVendorAction
                     'business_type' => $dto->businessType,
                     'primary_governorate_id' => $dto->primaryGovernorateId,
                     'primary_city_id' => $dto->primaryCityId,
+                    'facebook_url' => $dto->facebookUrl,
+                    'website_url' => $dto->websiteUrl,
+                    'instagram_url' => $dto->instagramUrl,
                     'approval_status' => ApprovalStatus::Pending->value,
                 ]);
 
@@ -88,7 +91,8 @@ final class RegisterVendorAction
 
     private function uniqueSlug(string $businessNameEn): string
     {
-        $base = Str::slug($businessNameEn) ?: 'vendor';
+        // Leave room for the hyphen and ULID suffix in the existing 160-character column.
+        $base = rtrim(mb_substr(Str::slug($businessNameEn) ?: 'vendor', 0, 149), '-');
 
         return $base.'-'.Str::lower(substr((string) Str::ulid(), -10));
     }

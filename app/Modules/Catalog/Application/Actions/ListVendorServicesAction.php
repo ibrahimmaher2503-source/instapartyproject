@@ -21,6 +21,10 @@ class ListVendorServicesAction
     ): LengthAwarePaginator {
         return Service::query()
             ->where('vendor_profile_id', $vendorProfile->id)
+            ->when(
+                ! config('catalog.digital_services_enabled', true),
+                fn (Builder $q) => $q->where('product_type', '!=', ProductType::Digital),
+            )
             ->when($type !== null, fn (Builder $q) => $q->where('product_type', $type->value))
             ->when($status !== null, fn (Builder $q) => $q->where('status', $status->value))
             ->with(['media', 'category', 'vendor.primaryCity', 'vendor.primaryGovernorate', 'rentalDetail', 'saleDetail', 'digitalDetail'])

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Discovery\Infrastructure\Repositories;
 
 use App\Modules\Catalog\Domain\Models\Service;
-use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use Illuminate\Support\Collection;
 
 /**
@@ -29,7 +28,7 @@ class ServiceRecommendationRepository
             .'(CASE WHEN ? IS NOT NULL AND base_price_minor <= ? THEN 10 ELSE 0 END)';
 
         return Service::query()
-            ->whereState('status', PublishedState::class)
+            ->displayable()
             ->with(['category', 'vendor'])
             ->selectRaw("services.*, {$score} AS recommendation_score", [
                 $occasionId, $occasionId,

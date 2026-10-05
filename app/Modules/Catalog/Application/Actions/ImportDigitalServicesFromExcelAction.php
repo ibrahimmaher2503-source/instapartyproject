@@ -21,6 +21,9 @@ use Throwable;
 
 class ImportDigitalServicesFromExcelAction
 {
+    /** @var array<int, array<int, string>> */
+    private array $categoryFieldKeys = [];
+
     public function __construct(
         private readonly CreateDigitalServiceAction $createDigitalServiceAction,
         private readonly CategoryFieldValidationService $categoryFieldValidator,
@@ -29,6 +32,7 @@ class ImportDigitalServicesFromExcelAction
 
     public function execute(UploadedFile $file, int $vendorProfileId, string $locale = 'en'): ExcelImport
     {
+        abort_unless(config('catalog.digital_services_enabled', true), 404);
         $storedPath = $file->store('excel-imports', 'local');
 
         $excelImport = ExcelImport::create([
@@ -94,6 +98,7 @@ class ImportDigitalServicesFromExcelAction
                         expiryDaysAfterPurchase: isset($row['expiry_days_after_purchase']) && $row['expiry_days_after_purchase'] !== '' ? (int) $row['expiry_days_after_purchase'] : null,
                         isRefundableAfterDelivery: (bool) $row['is_refundable_after_delivery'],
                         redemptionUrlTemplate: isset($row['redemption_url_template']) && $row['redemption_url_template'] !== '' ? (string) $row['redemption_url_template'] : null,
+                        categoryFieldValues: $this->categoryFieldValues((int) $row['category_id'], $row->toArray()),
                     );
 
                     $this->createDigitalServiceAction->execute($dto);
@@ -153,6 +158,9 @@ class ImportDigitalServicesFromExcelAction
             $rules = $baseRules;
             if ($categoryId > 0) {
                 $categoryRules = $this->categoryFieldValidator->rulesFor($categoryId, ProductType::Digital);
+                $this->categoryFieldKeys[$categoryId] = array_values(array_filter(
+                    array_keys($categoryRules), fn (string $key): bool => ! str_ends_with($key, '.*'),
+                ));
                 $rules = array_merge($rules, $categoryRules);
             }
 
@@ -189,5 +197,16 @@ class ImportDigitalServicesFromExcelAction
         }
 
         return $errors;
+    }
+
+    /** @param array<string, mixed> $row */
+    private function categoryFieldValues(int $categoryId, array $row): ?array
+    {
+        $values = collect($this->categoryFieldKeys[$categoryId] ?? [])
+            ->filter(fn (string $key): bool => array_key_exists($key, $row))
+            ->mapWithKeys(fn (string $key): array => [$key => $row[$key]])
+            ->all();
+
+        return $values !== [] ? $values : null;
     }
 }

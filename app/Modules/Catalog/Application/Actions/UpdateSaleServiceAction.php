@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Application\Actions;
 
+use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use App\Modules\Identity\Domain\Models\VendorProfile;
@@ -12,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateSaleServiceAction
 {
-    private const MATERIAL_FIELDS = ['category_id', 'base_price_minor'];
+    private const MATERIAL_FIELDS = ['category_id', 'base_price_minor', 'category_field_values'];
 
     public function execute(Service $service, VendorProfile $vendorProfile, array $data): Service
     {
@@ -24,8 +25,17 @@ class UpdateSaleServiceAction
             && count(array_intersect(array_keys($data), self::MATERIAL_FIELDS)) > 0;
 
         return DB::transaction(function () use ($service, $data, $isMaterialEdit): Service {
+            if (array_key_exists('category_field_values', $data)) {
+                $data['category_field_values'] = app(CategoryFieldValidationService::class)->validateValues(
+                    (int) ($data['category_id'] ?? $service->category_id), $service->product_type, $data['category_field_values'], 'category_field_values.',
+                );
+            } elseif (isset($data['category_id']) && (int) $data['category_id'] !== $service->category_id) {
+                // A legacy caller changing category must not carry stale custom values.
+                $data['category_field_values'] = null;
+            }
             $serviceData = array_intersect_key($data, array_flip([
                 'category_id', 'name', 'short_description', 'long_description', 'base_price_minor',
+                'category_field_values',
             ]));
 
             if ($isMaterialEdit) {

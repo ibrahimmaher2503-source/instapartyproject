@@ -15,6 +15,7 @@ use App\Modules\Identity\Domain\Enums\DocumentStatus;
 use App\Modules\Identity\Domain\Enums\RejectionState;
 use App\Modules\Identity\Domain\Enums\VendorOnboardingChecklistItemKey;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorAccountPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorBusinessHoursPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorCoverageAreasPage;
@@ -96,7 +97,7 @@ class VendorOnboardingChecklistService
         $nextRecommendedAction = null;
         foreach (self::PRIORITY_KEYS as $key) {
             $item = $itemsByKey->get($key->value);
-            if ($item && $item->status !== ChecklistItemStatus::Complete) {
+            if ($item && $item->status !== ChecklistItemStatus::Complete && $item->url !== null) {
                 $nextRecommendedAction = $item;
                 break;
             }
@@ -301,6 +302,7 @@ class VendorOnboardingChecklistService
     private function serviceDraftedItem(VendorProfile $vendor): VendorOnboardingChecklistItemDTO
     {
         $complete = $this->servicePresenceQuery->hasAnyService($vendor->id);
+        $canManageServices = $vendor->approval_status instanceof ApprovedState;
 
         return new VendorOnboardingChecklistItemDTO(
             key: VendorOnboardingChecklistItemKey::ServiceDrafted,
@@ -309,20 +311,21 @@ class VendorOnboardingChecklistService
             subText: null,
             // The services landing page exposes Rental, Sale, and Digital CTAs.
             // Linking directly to Rental would incorrectly imply a single-type vendor setup.
-            url: $complete ? null : $this->safeUrl(fn () => VendorServicesListPage::getUrl(panel: 'vendor')),
+            url: $complete || ! $canManageServices ? null : $this->safeUrl(fn () => VendorServicesListPage::getUrl(panel: 'vendor')),
         );
     }
 
     private function serviceSubmittedItem(VendorProfile $vendor): VendorOnboardingChecklistItemDTO
     {
         $complete = $this->servicePresenceQuery->hasServiceInReviewOrPublished($vendor->id);
+        $canManageServices = $vendor->approval_status instanceof ApprovedState;
 
         return new VendorOnboardingChecklistItemDTO(
             key: VendorOnboardingChecklistItemKey::ServiceSubmitted,
             status: $complete ? ChecklistItemStatus::Complete : ChecklistItemStatus::Pending,
             label: __('identity::vendor-onboarding.rows.service_submitted.label'),
             subText: null,
-            url: $complete ? null : $this->safeUrl(fn () => VendorServicesListPage::getUrl(panel: 'vendor')),
+            url: $complete || ! $canManageServices ? null : $this->safeUrl(fn () => VendorServicesListPage::getUrl(panel: 'vendor')),
         );
     }
 

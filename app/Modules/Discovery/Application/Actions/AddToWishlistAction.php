@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Discovery\Application\Actions;
 
-use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Discovery\Domain\Models\Wishlist;
 use App\Modules\Discovery\Domain\Models\WishlistItem;
@@ -15,8 +14,9 @@ class AddToWishlistAction
 {
     public function execute(int $userId, string $servicePublicId): Wishlist
     {
-        $service = Service::where('public_id', $servicePublicId)
-            ->where('status', ServiceStatus::Published)
+        $service = Service::query()
+            ->where('public_id', $servicePublicId)
+            ->displayable()
             ->firstOrFail();
 
         return DB::transaction(function () use ($userId, $service): Wishlist {

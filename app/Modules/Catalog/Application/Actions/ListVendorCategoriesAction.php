@@ -23,6 +23,12 @@ class ListVendorCategoriesAction
             ->pluck('product_type')
             ->map(fn ($t) => $t->value)
             ->toArray();
+        if (! config('catalog.digital_services_enabled', true)) {
+            $approvedTypes = array_values(array_filter(
+                $approvedTypes,
+                fn (string $approvedType): bool => $approvedType !== ProductType::Digital->value,
+            ));
+        }
         if ($type !== null) {
             $approvedTypes = in_array($type->value, $approvedTypes, true)
                 ? [$type->value]

@@ -8,6 +8,7 @@ use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Occasion;
 use App\Modules\Discovery\Domain\Contracts\SearchRepository;
 use App\Modules\Geography\Domain\Models\City;
+use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 
 class EloquentSearchRepository implements SearchRepository
@@ -43,5 +44,10 @@ class EloquentSearchRepository implements SearchRepository
     public function resolveCityId(string $publicId): ?int
     {
         return City::where('public_id', $publicId)->value('id');
+    }
+
+    public function resolveGovernorateId(string $publicId): ?int
+    {
+        return Governorate::where('public_id', $publicId)->value('id');
     }
 }

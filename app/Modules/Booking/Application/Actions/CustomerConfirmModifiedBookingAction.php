@@ -22,6 +22,7 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use App\Modules\Shared\Domain\Models\StateTransition;
+use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -230,7 +231,7 @@ class CustomerConfirmModifiedBookingAction
 
         $serviceId = (int) ($safePayload['service_id'] ?? 0);
         $service = Service::query()
-            ->with('saleDetail')
+            ->with(['saleDetail', 'rentalDetail'])
             ->whereKey($serviceId)
             ->lockForUpdate()
             ->first();
@@ -269,10 +270,19 @@ class CustomerConfirmModifiedBookingAction
         $endsAt = $safePayload['effective_ends_at'] ?? $booking->event_ends_at;
 
         if ($service->product_type === ProductType::Rental) {
+            $duration = $service->rentalDetail?->default_rental_duration_hours;
+            if ($endsAt === null && $startsAt !== null && $duration > 0) {
+                $endsAt = Carbon::parse($startsAt)->addHours($duration);
+            }
             abort_if(
                 $startsAt === null || $endsAt === null,
                 Response::HTTP_UNPROCESSABLE_ENTITY,
-                'Rental items require a booking window',
+                __('storefront.wizard.validation.rental_duration_required'),
+            );
+            abort_if(
+                Carbon::parse($endsAt)->lessThanOrEqualTo(Carbon::parse($startsAt)),
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                __('storefront.wizard.validation.times_invalid'),
             );
             $this->assertRentalInventoryAvailable($service->id, $startsAt, $endsAt);
         } elseif ($service->product_type === ProductType::Sale) {

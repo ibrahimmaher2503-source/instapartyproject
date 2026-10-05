@@ -16,7 +16,7 @@ class ShowPublishedServiceAction
     public function execute(string $publicId): Service
     {
         return Service::query()
-            ->published()
+            ->displayable()
             ->with([
                 'media',
                 'category',

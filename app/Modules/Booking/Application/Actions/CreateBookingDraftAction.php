@@ -18,6 +18,7 @@ class CreateBookingDraftAction
     {
         return DB::transaction(function () use ($dto): Booking {
             $booking = $this->repository->create($dto);
+            app(AppendCustomerBookingNoteAction::class)->execute($booking, $dto->customerId, $dto->notes, $dto->notesLocale);
             DB::afterCommit(fn () => event(new BookingDraftCreated($booking)));
 
             return $booking;

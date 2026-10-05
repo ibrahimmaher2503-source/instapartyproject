@@ -17,6 +17,10 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
         $row = DB::table('services')
             ->where('id', $id)
             ->where('status', ServiceStatus::Published->value)
+            ->when(
+                ! config('catalog.digital_services_enabled', true),
+                fn ($query) => $query->where('product_type', '!=', ProductType::Digital->value),
+            )
             ->whereNull('deleted_at')
             ->first();
 
@@ -25,9 +29,12 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
         }
 
         $stockQuantity = null;
+        $rentalDuration = null;
         if ($row->product_type === 'sale') {
             $detail = DB::table('service_sale_details')->where('service_id', $id)->first();
             $stockQuantity = $detail?->stock_quantity;
+        } elseif ($row->product_type === ProductType::Rental->value) {
+            $rentalDuration = DB::table('service_rental_details')->where('service_id', $id)->value('default_rental_duration_hours');
         }
 
         $name = is_string($row->name) ? json_decode($row->name, true) : (array) $row->name;
@@ -43,6 +50,7 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
             basePriceMinor: (int) $row->base_price_minor,
             basePriceCurrency: $row->base_price_currency ?? 'EGP',
             stockQuantity: $stockQuantity !== null ? (int) $stockQuantity : null,
+            defaultRentalDurationHours: $rentalDuration !== null ? (int) $rentalDuration : null,
         );
     }
 

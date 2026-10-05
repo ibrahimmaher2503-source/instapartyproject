@@ -17,7 +17,11 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
             PackageRecommendation::query()
                 ->published()
                 ->leftJoin('occasions', 'occasions.id', '=', 'package_recommendations.occasion_id')
-                ->select('package_recommendations.*', 'occasions.public_id as occasion_public_id')
+                ->select(
+                    'package_recommendations.*',
+                    'occasions.public_id as occasion_public_id',
+                    'occasions.code as occasion_code',
+                )
                 ->orderBy('display_order')
                 ->limit(6),
             $locale,
@@ -38,7 +42,23 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
         );
     }
 
-    public function publishedForCategories(string $locale, array $categoryIds): array
+    public function publishedForFilter(string $locale): array
+    {
+        return $this->map(
+            PackageRecommendation::query()
+                ->published()
+                ->join('occasions', 'occasions.id', '=', 'package_recommendations.occasion_id')
+                ->select(
+                    'package_recommendations.*',
+                    'occasions.public_id as occasion_public_id',
+                    'occasions.code as occasion_code',
+                )
+                ->orderBy('package_recommendations.display_order'),
+            $locale,
+        );
+    }
+
+    public function publishedForCategories(string $locale, array $categoryIds, ?string $occasionCode = null): array
     {
         if ($categoryIds === []) {
             return [];
@@ -50,6 +70,7 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
                 ->join('occasions', 'occasions.id', '=', 'package_recommendations.occasion_id')
                 ->join('occasion_category', 'occasion_category.occasion_id', '=', 'occasions.id')
                 ->whereIn('occasion_category.category_id', $categoryIds)
+                ->when($occasionCode !== null, static fn ($query) => $query->where('occasions.code', $occasionCode))
                 ->select(
                     'package_recommendations.*',
                     'occasions.public_id as occasion_public_id',
@@ -60,6 +81,23 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
                 ->limit(4),
             $locale,
         );
+    }
+
+    public function findPublishedByPublicId(string $publicId, string $locale): ?array
+    {
+        return $this->map(
+            PackageRecommendation::query()
+                ->published()
+                ->leftJoin('occasions', 'occasions.id', '=', 'package_recommendations.occasion_id')
+                ->where('package_recommendations.public_id', $publicId)
+                ->select(
+                    'package_recommendations.*',
+                    'occasions.public_id as occasion_public_id',
+                    'occasions.code as occasion_code',
+                )
+                ->limit(1),
+            $locale,
+        )[0] ?? null;
     }
 
     /**
@@ -76,6 +114,10 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
             $max = $package->max_budget_minor === null
                 ? null
                 : Money::ofMinor($package->max_budget_minor, $currency)->formatTo($locale);
+            $fixed = $package->min_budget_minor !== null
+                && $package->min_budget_minor === $package->max_budget_minor
+                    ? $min
+                    : null;
 
             return [
                 'public_id' => $package->public_id,
@@ -86,6 +128,7 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
                 'occasion_code' => $package->getAttribute('occasion_code'),
                 'min_budget' => $min,
                 'max_budget' => $max,
+                'fixed_budget' => $fixed,
                 'hero_url' => $package->getFirstMediaUrl('hero', 'large')
                     ?: $package->getFirstMediaUrl('hero')
                     ?: null,

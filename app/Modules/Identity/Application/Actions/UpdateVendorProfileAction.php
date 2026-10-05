@@ -7,6 +7,7 @@ namespace App\Modules\Identity\Application\Actions;
 use App\Modules\Identity\Application\Support\MaskBankData;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class UpdateVendorProfileAction
 {
@@ -18,6 +19,25 @@ class UpdateVendorProfileAction
     /** @param array<string, mixed> $data */
     public function execute(VendorProfile $vendorProfile, array $data): VendorProfile
     {
+        foreach (['facebook_url', 'website_url', 'instagram_url'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $value = trim($data[$field]);
+                $data[$field] = $value === '' ? null : $value;
+            }
+        }
+
+        Validator::make($data, [
+            'facebook_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'website_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'instagram_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+        ], [
+            'url' => __('vendor-portal.profile.invalid_url'),
+        ], [
+            'facebook_url' => __('vendor-portal.profile.facebook_url'),
+            'website_url' => __('vendor-portal.profile.website_url'),
+            'instagram_url' => __('vendor-portal.profile.instagram_url'),
+        ])->validate();
+
         return DB::transaction(function () use ($vendorProfile, $data): VendorProfile {
             // Strip protected fields so approval_status can never be overwritten
             $data = array_diff_key($data, array_flip(self::PROTECTED_FIELDS));

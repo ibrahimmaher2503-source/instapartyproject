@@ -25,6 +25,7 @@ class CloneServiceAction
         if (! in_array($service->product_type, $approvedTypes, true)) {
             throw ValidationException::withMessages(['product_type' => __('catalog.errors.not_approved_for_type')]);
         }
+        abort_if($service->product_type === ProductType::Digital && ! config('catalog.digital_services_enabled', true), 404);
 
         return DB::transaction(function () use ($service): Service {
             $nameEn = $service->getTranslation('name', 'en').' (Copy)';
@@ -42,6 +43,7 @@ class CloneServiceAction
                 'status' => ServiceStatus::Draft->value,
                 'base_price_minor' => $service->base_price_minor,
                 'base_price_currency' => $service->base_price_currency,
+                'category_field_values' => $service->category_field_values,
             ]);
 
             $this->cloneDetailTable($service, $clone);
@@ -76,6 +78,9 @@ class CloneServiceAction
             'security_deposit_minor',
             'security_deposit_currency',
             'minimum_space_sqm',
+            'length_m',
+            'width_m',
+            'height_m',
         ]));
     }
 

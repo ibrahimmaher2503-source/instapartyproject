@@ -18,9 +18,9 @@ class SendOtpAction
     {
         $this->rateLimiter->recordSendAttempt($phoneE164);
 
-        $code = app()->environment('production')
-            ? sprintf('%06d', random_int(0, 999999))
-            : '000000';
+        $code = app()->environment(['local', 'testing'])
+            ? '000000'
+            : sprintf('%06d', random_int(0, 999999));
 
         $this->gateway->send($phoneE164, $code);
     }

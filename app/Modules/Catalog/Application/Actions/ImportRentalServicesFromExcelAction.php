@@ -21,6 +21,9 @@ use Throwable;
 
 class ImportRentalServicesFromExcelAction
 {
+    /** @var array<int, array<int, string>> */
+    private array $categoryFieldKeys = [];
+
     public function __construct(
         private readonly CreateRentalServiceAction $createRentalServiceAction,
         private readonly CategoryFieldValidationService $categoryFieldValidator,
@@ -106,6 +109,7 @@ class ImportRentalServicesFromExcelAction
                         teardownTimeMinutes: isset($row['teardown_time_minutes']) ? (int) $row['teardown_time_minutes'] : null,
                         securityDepositMinor: isset($row['security_deposit_minor']) ? (int) $row['security_deposit_minor'] : null,
                         minimumSpaceSqm: isset($row['minimum_space_sqm']) ? (int) $row['minimum_space_sqm'] : null,
+                        categoryFieldValues: $this->categoryFieldValues((int) $row['category_id'], $row->toArray()),
                     );
 
                     $this->createRentalServiceAction->execute($dto);
@@ -171,6 +175,9 @@ class ImportRentalServicesFromExcelAction
             $rules = $baseRules;
             if ($categoryId > 0) {
                 $categoryRules = $this->categoryFieldValidator->rulesFor($categoryId, ProductType::Rental);
+                $this->categoryFieldKeys[$categoryId] = array_values(array_filter(
+                    array_keys($categoryRules), fn (string $key): bool => ! str_ends_with($key, '.*'),
+                ));
                 $rules = array_merge($rules, $categoryRules);
             }
 
@@ -198,5 +205,16 @@ class ImportRentalServicesFromExcelAction
         }
 
         return $errors;
+    }
+
+    /** @param array<string, mixed> $row */
+    private function categoryFieldValues(int $categoryId, array $row): ?array
+    {
+        $values = collect($this->categoryFieldKeys[$categoryId] ?? [])
+            ->filter(fn (string $key): bool => array_key_exists($key, $row))
+            ->mapWithKeys(fn (string $key): array => [$key => $row[$key]])
+            ->all();
+
+        return $values !== [] ? $values : null;
     }
 }

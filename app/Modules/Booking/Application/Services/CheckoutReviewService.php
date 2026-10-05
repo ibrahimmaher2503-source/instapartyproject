@@ -43,6 +43,10 @@ final class CheckoutReviewService
             'items_count' => $itemsCount,
             'subtotal_minor' => (int) ($booking->subtotal_minor ?? 0),
             'delivery_total_minor' => (int) ($booking->delivery_total_minor ?? 0),
+            'transport_base_minor' => (int) ($booking->transport_base_minor ?? 0),
+            'transportation_adjustment_minor' => (int) $booking->adjustments()
+                ->where('type', 'transportation')
+                ->sum('amount_minor'),
             'discount_total_minor' => (int) ($booking->discount_total_minor ?? 0),
             'loyalty_redeemed_minor' => (int) ($booking->loyalty_redeemed_minor ?? 0),
             'total_minor' => (int) ($booking->total_minor ?? 0),

@@ -25,9 +25,11 @@ class SearchServicesAction
         // the SQL fallback — under scout:database the index attributes leak
         // into SQL and 500 (SRCH-001).
         if ($dto->eventDate !== null
+            || $dto->governoratePublicId !== null
             || $dto->priceMin !== null
             || $dto->priceMax !== null
             || $dto->minRating !== null
+            || ! config('catalog.digital_services_enabled', true)
             || config('scout.driver') !== 'meilisearch') {
             return $this->executeDatabaseFallback($dto);
         }
@@ -100,6 +102,7 @@ class SearchServicesAction
                 'occasion' => $dto->occasionCode,
                 'category' => $dto->categorySlug,
                 'vendor' => $dto->vendorPublicId,
+                'governorate' => $dto->governoratePublicId,
                 'city' => $dto->cityPublicId,
                 'price_min' => $dto->priceMin,
                 'price_max' => $dto->priceMax,
@@ -112,79 +115,22 @@ class SearchServicesAction
         return $results;
     }
 
+    /** @return list<int> */
+    public function matchingCategoryIds(SearchServicesDTO $dto): array
+    {
+        return $this->databaseQuery($dto)
+            ->distinct()
+            ->pluck('category_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
     /** @return LengthAwarePaginator<int, Service> */
     private function executeDatabaseFallback(SearchServicesDTO $dto): LengthAwarePaginator
     {
-        $builder = Service::query()
-            ->published()
+        $builder = $this->databaseQuery($dto)
             ->with(['media', 'category.occasions', 'vendor.primaryCity', 'vendor.primaryGovernorate', 'rentalDetail', 'saleDetail', 'digitalDetail']);
-
-        if ($dto->query !== null && trim($dto->query) !== '') {
-            $query = '%'.trim($dto->query).'%';
-            $builder->where(function ($q) use ($query): void {
-                foreach (['en', 'ar'] as $locale) {
-                    $q->orWhere("name->{$locale}", 'like', $query)
-                        ->orWhere("short_description->{$locale}", 'like', $query)
-                        ->orWhere("long_description->{$locale}", 'like', $query);
-                }
-            });
-        }
-
-        if ($dto->type !== null) {
-            $builder->where('product_type', $dto->type->value);
-        }
-
-        if ($dto->categorySlug !== null) {
-            $categoryIds = $this->searchRepository->resolveCategoryIds($dto->categorySlug);
-            $builder->whereIn('category_id', $categoryIds === [] ? [-1] : $categoryIds);
-        }
-
-        if ($dto->occasionCode !== null) {
-            $occasionId = $this->searchRepository->resolveOccasionId($dto->occasionCode);
-            // An unknown occasion matches nothing — never silently drop the filter.
-            $builder->whereHas('category.occasions', fn ($oq) => $oq->whereKey($occasionId ?? -1));
-        }
-
-        if ($dto->vendorPublicId !== null) {
-            $vendorId = $this->searchRepository->resolveVendorId($dto->vendorPublicId);
-            // An unknown vendor matches nothing — never silently drop the filter.
-            $builder->where('vendor_profile_id', $vendorId ?? -1);
-        }
-
-        if ($dto->cityPublicId !== null) {
-            $cityId = $this->searchRepository->resolveCityId($dto->cityPublicId);
-            // A service is available in a city when its vendor's primary city
-            // matches OR the vendor lists the city among its coverage areas.
-            $resolvedCityId = $cityId ?? -1;
-            $builder->whereHas('vendor', fn ($vq) => $vq
-                ->where('primary_city_id', $resolvedCityId)
-                ->orWhereHas('coverageAreas', fn ($cq) => $cq->where('city_id', $resolvedCityId)));
-        }
-
-        if ($dto->priceMin !== null) {
-            $builder->where('base_price_minor', '>=', $dto->priceMin);
-        }
-
-        if ($dto->priceMax !== null) {
-            $builder->where('base_price_minor', '<=', $dto->priceMax);
-        }
-
-        if ($dto->minRating !== null) {
-            $builder->where('rating_avg', '>=', $dto->minRating);
-        }
-
-        if ($dto->eventDate !== null) {
-            $startsAt = $dto->eventDate->startOfDay();
-            $endsAt = $dto->eventDate->endOfDay();
-
-            $builder->where(static function (Builder $query) use ($startsAt, $endsAt): void {
-                $query
-                    ->where('product_type', '!=', ProductType::Rental->value)
-                    ->orWhereDoesntHave('availabilityBlocks', static fn (Builder $blocks) => $blocks
-                        ->where('starts_at', '<=', $endsAt)
-                        ->where('ends_at', '>=', $startsAt));
-            });
-        }
 
         match ($dto->sort) {
             'price_asc' => $builder->orderBy('base_price_minor'),
@@ -211,6 +157,7 @@ class SearchServicesAction
                 'occasion' => $dto->occasionCode,
                 'category' => $dto->categorySlug,
                 'vendor' => $dto->vendorPublicId,
+                'governorate' => $dto->governoratePublicId,
                 'city' => $dto->cityPublicId,
                 'price_min' => $dto->priceMin,
                 'price_max' => $dto->priceMax,
@@ -222,6 +169,84 @@ class SearchServicesAction
         ));
 
         return $results;
+    }
+
+    /** @return Builder<Service> */
+    private function databaseQuery(SearchServicesDTO $dto): Builder
+    {
+        $builder = Service::query()->displayable();
+
+        if ($dto->query !== null && trim($dto->query) !== '') {
+            $query = '%'.trim($dto->query).'%';
+            $builder->where(function ($q) use ($query): void {
+                foreach (['en', 'ar'] as $locale) {
+                    $q->orWhere("name->{$locale}", 'like', $query)
+                        ->orWhere("short_description->{$locale}", 'like', $query)
+                        ->orWhere("long_description->{$locale}", 'like', $query);
+                }
+            });
+        }
+
+        if ($dto->type !== null) {
+            $builder->where('product_type', $dto->type->value);
+        }
+
+        if ($dto->categorySlug !== null) {
+            $categoryIds = $this->searchRepository->resolveCategoryIds($dto->categorySlug);
+            $builder->whereIn('category_id', $categoryIds === [] ? [-1] : $categoryIds);
+        }
+
+        if ($dto->occasionCode !== null) {
+            $occasionId = $this->searchRepository->resolveOccasionId($dto->occasionCode);
+            $builder->whereHas('category.occasions', fn ($query) => $query->whereKey($occasionId ?? -1));
+        }
+
+        if ($dto->vendorPublicId !== null) {
+            $vendorId = $this->searchRepository->resolveVendorId($dto->vendorPublicId);
+            $builder->where('vendor_profile_id', $vendorId ?? -1);
+        }
+
+        if ($dto->governoratePublicId !== null) {
+            $governorateId = $this->searchRepository->resolveGovernorateId($dto->governoratePublicId) ?? -1;
+            $builder->whereHas('vendor', fn ($query) => $query
+                ->where('primary_governorate_id', $governorateId)
+                ->orWhereHas('coverageAreas.city', fn ($cities) => $cities->where('governorate_id', $governorateId)));
+        }
+
+        if ($dto->cityPublicId !== null) {
+            $cityId = $this->searchRepository->resolveCityId($dto->cityPublicId) ?? -1;
+            $builder->whereHas('vendor', fn ($query) => $query
+                ->where('primary_city_id', $cityId)
+                ->orWhereHas('coverageAreas', fn ($coverage) => $coverage->where('city_id', $cityId)));
+        }
+
+        if ($dto->priceMin !== null) {
+            $builder->where('base_price_minor', '>=', $dto->priceMin);
+        }
+
+        if ($dto->priceMax !== null) {
+            $builder->where('base_price_minor', '<=', $dto->priceMax);
+        }
+
+        if ($dto->minRating !== null) {
+            $builder->where('rating_avg', '>=', $dto->minRating);
+        }
+
+        $startsAt = $dto->eventStartsAt ?? $dto->eventDate?->startOfDay();
+        $endsAt = $dto->eventStartsAt !== null
+            ? ($dto->eventEndsAt ?? $dto->eventStartsAt)
+            : $dto->eventDate?->endOfDay();
+        if ($startsAt !== null && $endsAt !== null) {
+            $builder->where(static function (Builder $query) use ($startsAt, $endsAt): void {
+                $query
+                    ->where('product_type', '!=', ProductType::Rental->value)
+                    ->orWhereDoesntHave('availabilityBlocks', static fn (Builder $blocks) => $blocks
+                        ->where('starts_at', '<=', $endsAt)
+                        ->where('ends_at', '>=', $startsAt));
+            });
+        }
+
+        return $builder;
     }
 
     private function authenticatedUserId(): ?int

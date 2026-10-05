@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Application\Actions;
 
 use App\Modules\Catalog\Application\DTOs\CreateSaleServiceDTO;
+use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Events\SaleServiceCreated;
@@ -33,6 +34,12 @@ class CreateSaleServiceAction
         }
 
         return DB::transaction(function () use ($dto): Service {
+            $values = app(CategoryFieldValidationService::class)->validateValues(
+                $dto->categoryId,
+                ProductType::Sale,
+                $dto->categoryFieldValues ?? [],
+                'category_field_values.',
+            );
             $service = Service::create([
                 'public_id' => Str::ulid()->toBase32(),
                 'vendor_profile_id' => $dto->vendorProfileId,
@@ -44,6 +51,7 @@ class CreateSaleServiceAction
                 'status' => ServiceStatus::Draft->value,
                 'base_price_minor' => $dto->basePriceMinor,
                 'base_price_currency' => 'EGP',
+                'category_field_values' => $values,
             ]);
 
             ServiceSaleDetail::create([

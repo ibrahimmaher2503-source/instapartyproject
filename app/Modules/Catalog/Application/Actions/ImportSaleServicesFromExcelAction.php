@@ -21,6 +21,9 @@ use Throwable;
 
 class ImportSaleServicesFromExcelAction
 {
+    /** @var array<int, array<int, string>> */
+    private array $categoryFieldKeys = [];
+
     public function __construct(
         private readonly CreateSaleServiceAction $createSaleServiceAction,
         private readonly CategoryFieldValidationService $categoryFieldValidator,
@@ -94,6 +97,7 @@ class ImportSaleServicesFromExcelAction
                         leadTimeHours: isset($row['lead_time_hours']) && $row['lead_time_hours'] !== '' ? (int) $row['lead_time_hours'] : null,
                         stockQuantity: isset($row['stock_quantity']) && $row['stock_quantity'] !== '' ? (int) $row['stock_quantity'] : null,
                         customizationFields: null,
+                        categoryFieldValues: $this->categoryFieldValues((int) $row['category_id'], $row->toArray()),
                     );
 
                     $this->createSaleServiceAction->execute($dto);
@@ -152,6 +156,9 @@ class ImportSaleServicesFromExcelAction
             $rules = $baseRules;
             if ($categoryId > 0) {
                 $categoryRules = $this->categoryFieldValidator->rulesFor($categoryId, ProductType::Sale);
+                $this->categoryFieldKeys[$categoryId] = array_values(array_filter(
+                    array_keys($categoryRules), fn (string $key): bool => ! str_ends_with($key, '.*'),
+                ));
                 $rules = array_merge($rules, $categoryRules);
             }
 
@@ -188,5 +195,16 @@ class ImportSaleServicesFromExcelAction
         }
 
         return $errors;
+    }
+
+    /** @param array<string, mixed> $row */
+    private function categoryFieldValues(int $categoryId, array $row): ?array
+    {
+        $values = collect($this->categoryFieldKeys[$categoryId] ?? [])
+            ->filter(fn (string $key): bool => array_key_exists($key, $row))
+            ->mapWithKeys(fn (string $key): array => [$key => $row[$key]])
+            ->all();
+
+        return $values !== [] ? $values : null;
     }
 }
