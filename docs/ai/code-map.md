@@ -15,6 +15,7 @@ Verify filenames with `rg --files` when working; update affected rows when entry
 | Homepage / CMS | [Shared](../../app/Modules/Shared/), [home view](../../resources/views/storefront/home.blade.php) | [Home components](../../resources/views/components/home/), [PRODUCT](../../PRODUCT.md), [DESIGN](../../DESIGN.md) |
 | Schedule / jobs | [console routes](../../routes/console.php) | Module Console/Commands or Application/Commands and listeners |
 | API locale / envelope | [SetLocaleMiddleware](../../app/Modules/Identity/Http/Middleware/SetLocaleMiddleware.php), [ApiResponse](../../app/Modules/Shared/Http/ApiResponse.php) | Module Resources/lang/{en,ar}, Requests and Resources |
+| Phone verification / SMS | [IdentityServiceProvider](../../app/Modules/Identity/Providers/IdentityServiceProvider.php), [SmsOtpGateway](../../app/Modules/Identity/Infrastructure/Gateways/SmsOtpGateway.php) | SendOtpAction → Communication SmsProviderInterface / SMS Misr → cache challenge → VerifyPhoneAction; local/testing use StubOtpGateway |
 | Money / identifiers | [MoneyCast](../../app/Modules/Shared/Domain/Casts/MoneyCast.php), [HasPublicId](../../app/Modules/Shared/Traits/HasPublicId.php) | Owning module migrations/models; engineering policy §6 |
 | Timeline / audit | [TimelineServiceProvider](../../app/Modules/Shared/Providers/TimelineServiceProvider.php) | Shared Application/Timeline + module Application/Timeline |
 | Media / signed URLs | [SharedServiceProvider](../../app/Modules/Shared/Providers/SharedServiceProvider.php) | Shared Domain/Contracts + Infrastructure/Services |
@@ -31,7 +32,7 @@ Each module link leads to its actual directory. Inspect its provider for binding
 |---|---|---|
 | [Identity](../../app/Modules/Identity/) | login, registration, users, vendor approval/documents/permissions | customer, vendor, admin, storefront |
 | [Catalog](../../app/Modules/Catalog/) | services, rental/sale/digital, inventory, availability, imports | customer, vendor, admin, storefront |
-| [Discovery](../../app/Modules/Discovery/) | search, browsing, discovery | customer, storefront |
+| [Discovery](../../app/Modules/Discovery/) | search, browsing, discovery; public wizard context via POST `wizard/context` → `PlannerController::store` → `StorePlannerContextAction` | customer, storefront |
 | [Booking](../../app/Modules/Booking/) | draft, items, negotiation, cancellation, fulfillment | customer, vendor, admin, storefront |
 | [Payments](../../app/Modules/Payments/) | Paymob, payment attempts, refunds, idempotency, webhooks | customer, admin, webhook |
 | [Settlement](../../app/Modules/Settlement/) | commissions, wallet, ledger, withdrawals | customer, vendor, admin |
