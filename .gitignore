@@ -3,6 +3,7 @@
 .env.*
 *.env
 *.env.*
+!/.env.example
 /auth.json
 **/auth.json
 *.pem
@@ -93,6 +94,7 @@ tests/.pest-baseline.xml
 tests/e2e/.auth-state.json
 tests/e2e/auth/.auth-state.json
 tests/e2e/.results/
+tests/e2e/.results-*/
 tests/e2e/.report/
 playwright-report/
 /test-results/
@@ -100,3 +102,5 @@ playwright-report/
 /.e2e-appdata/
 /.task-appdata/
 /.tmp*
+/tmp/
+/docs/qa/screenshots/
