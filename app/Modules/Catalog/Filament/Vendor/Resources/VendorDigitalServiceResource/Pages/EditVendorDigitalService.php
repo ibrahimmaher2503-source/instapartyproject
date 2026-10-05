@@ -34,8 +34,10 @@ class EditVendorDigitalService extends EditRecord
                 'en' => $service->getTranslation('long_description', 'en') ?? '',
                 'ar' => $service->getTranslation('long_description', 'ar') ?? '',
             ],
-            'category_id' => $service->category_id,
+            'main_category_id' => $service->category?->parent_id ?? $service->category?->id,
+            'category_id' => $service->category?->parent_id !== null ? $service->category_id : null,
             'base_price_minor' => $service->base_price_minor,
+            'category_field_values' => $service->category_field_values ?? [],
             'digitalDetail' => [
                 'delivery_method' => $service->digitalDetail?->delivery_method,
                 'has_expiry' => $service->digitalDetail?->has_expiry ?? false,
@@ -56,6 +58,7 @@ class EditVendorDigitalService extends EditRecord
             'short_description' => $data['short_description'] ?? ['en' => '', 'ar' => ''],
             'long_description' => $data['long_description'] ?? ['en' => '', 'ar' => ''],
             'base_price_minor' => (int) $data['base_price_minor'],
+            'category_field_values' => $data['category_field_values'] ?? [],
             'delivery_method' => $data['digitalDetail']['delivery_method'] ?? 'email',
             'has_expiry' => (bool) ($data['digitalDetail']['has_expiry'] ?? false),
             'expiry_days_after_purchase' => isset($data['digitalDetail']['expiry_days_after_purchase'])

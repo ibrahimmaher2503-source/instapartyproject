@@ -25,6 +25,7 @@ class CreateVendorSaleService extends CreateRecord
             name: $data['name'],
             shortDescription: $data['short_description'] ?? ['en' => '', 'ar' => ''],
             basePriceMinor: (int) $data['base_price_minor'],
+            categoryFieldValues: $data['category_field_values'] ?? [],
             isPerishable: (bool) ($data['saleDetail']['is_perishable'] ?? false),
             isMadeToOrder: (bool) ($data['saleDetail']['is_made_to_order'] ?? false),
             leadTimeHours: isset($data['saleDetail']['lead_time_hours']) ? (int) $data['saleDetail']['lead_time_hours'] : null,

@@ -8,6 +8,7 @@ use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Geography\Filament\Resources\GovernorateResource\Pages\CreateGovernorate;
 use App\Modules\Geography\Filament\Resources\GovernorateResource\Pages\EditGovernorate;
 use App\Modules\Geography\Filament\Resources\GovernorateResource\Pages\ListGovernorates;
+use Brick\Money\Money;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -97,6 +98,21 @@ class GovernorateResource extends Resource
                         ->numeric()
                         ->default(0)
                         ->minValue(0),
+
+                    TextInput::make('transport_fee_minor')
+                        ->label(__('geography.columns.transport_fee').' (EGP)')
+                        ->numeric()
+                        ->step('0.01')
+                        ->rules(['decimal:0,2'])
+                        ->validationMessages([
+                            'decimal' => __('geography.errors.transport_price_invalid'),
+                            'numeric' => __('geography.errors.transport_price_invalid'),
+                            'min' => __('geography.errors.transport_price_invalid'),
+                        ])
+                        ->formatStateUsing(fn ($state): string => (string) Money::ofMinor((int) ($state ?? 0), 'EGP')->getAmount())
+                        ->dehydrateStateUsing(fn ($state): int => Money::of((string) ($state ?? '0'), 'EGP')->getMinorAmount()->toInt())
+                        ->minValue(0)
+                        ->default(0),
 
                     Toggle::make('is_active')
                         ->label(__('geography.columns.is_active'))

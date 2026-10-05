@@ -48,7 +48,7 @@
 
 @section('content')
     <x-home.hero :block="$heroBlock" :fallback-image-url="$homepage['hero_image_url'] ?? null">
-        <x-home.party-builder :occasions="$occasions" :categories="$categories" :cities="$cities" />
+        <x-home.party-builder :occasions="$occasions" :governorates="$governorates" />
     </x-home.hero>
 
     <div class="sf-home-flow sf-home-v2">

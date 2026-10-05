@@ -44,6 +44,12 @@ return [
         'payment_status' => 'Payment Status',
         'fulfillment_status' => 'Fulfillment Status',
         'total' => 'Total',
+        'delivery_total' => 'Delivery and transport total',
+        'transport_base' => 'Governorate transport base',
+        'transportation_adjustment' => 'Additional transportation',
+        'adjustment_source' => 'Adjustment source',
+        'adjustment_reference' => 'Source reference',
+        'services_subtotal' => 'Services subtotal',
         'amount_paid' => 'Amount Paid',
         'submitted_at' => 'Submitted At',
         'vendor' => 'Vendor',
@@ -103,6 +109,7 @@ return [
         'customer' => 'Customer',
         'event' => 'Event Details',
         'kpis' => 'Overview',
+        'invoice_breakdown' => 'Invoice breakdown',
     ],
 
     'relations' => [
@@ -118,6 +125,7 @@ return [
         'edit' => 'Edit',
         'force_cancel' => 'Force Cancel',
         'add_admin_note' => 'Add Admin Note',
+        'add_transportation_line' => 'Add transportation line',
         'save_changes' => 'Save Changes',
         'create_booking' => 'Create Booking',
     ],
@@ -160,6 +168,17 @@ return [
         'booking_updated' => 'Booking updated successfully.',
         'force_cancelled' => 'Booking force-cancelled successfully.',
         'admin_note_added' => 'Admin note added successfully.',
+        'transportation_line_added' => 'Transportation line added and totals recalculated.',
+    ],
+    'invoice' => [
+        'title' => 'Booking invoice',
+        'print' => 'Print invoice',
+        'customer' => 'Customer',
+        'date' => 'Date',
+        'currency' => 'Currency',
+        'item' => 'Item',
+        'amount' => 'Amount',
+        'vendor_delivery' => 'Vendor delivery',
     ],
 
     'empty_states' => [
@@ -179,6 +198,7 @@ return [
         'cancelled' => 'Cancelled',
         'in_progress' => 'In Progress',
         'completed' => 'Completed',
+        'timed_out' => 'Timed Out',
     ],
 
     'lifecycle_status' => [
@@ -390,6 +410,7 @@ return [
         'action_failed' => 'Action failed.',
     ],
     'validation' => [
+        'transport_price_invalid' => 'Enter a non-negative EGP amount with no more than two decimal places.',
         'lane_required' => 'The fulfillment step is required.',
         'lane_invalid' => 'The fulfillment step must be preparing, ready, in_progress, or completed.',
     ],

@@ -34,6 +34,7 @@ return [
         'latitude' => 'Latitude',
         'longitude' => 'Longitude',
         'created_at' => 'Created At',
+        'transport_fee' => 'Base transport fee',
     ],
 
     // Filter labels
@@ -44,6 +45,7 @@ return [
         'region' => 'Region',
     ],
     'errors' => [
+        'transport_price_invalid' => 'Enter a non-negative EGP amount with no more than two decimal places.',
         'delete_governorate_has_regions' => 'Delete its regions before deleting this governorate.',
         'delete_region_has_cities' => 'Delete its cities before deleting this region.',
     ],

@@ -19,7 +19,6 @@
             <div class="sf-package-rail">
                 @foreach (collect($packages)->take(3) as $index => $package)
                     @php
-                        $query = $package['occasion_public_id'] ? '?occasion='.$package['occasion_public_id'] : '';
                         $fallback = asset($imageFallbacks->service(
                             (string) $package['public_id'],
                             'rental',
@@ -27,7 +26,7 @@
                         ));
                         $image = filled($package['hero_url']) ? $package['hero_url'] : $fallback;
                     @endphp
-                    <a class="sf-package-card sf-package-card--{{ ($index % 3) + 1 }} sf-market-card" href="{{ url('/'.app()->getLocale().'/search').$query }}">
+                    <a class="sf-package-card sf-package-card--{{ ($index % 3) + 1 }} sf-market-card" href="{{ route('storefront.packages.show', ['publicId' => $package['public_id']]) }}">
                         <img
                             src="{{ $image }}"
                             alt=""
@@ -41,10 +40,12 @@
                             <strong>{{ $package['name'] }}</strong>
                             <span>{{ $package['description'] }}</span>
                             @if ($package['min_budget'] || $package['max_budget'])
-                                <small>
-                                    {{ $package['min_budget'] && $package['max_budget']
-                                        ? __('storefront.home.packages.budget_range', ['min' => $package['min_budget'], 'max' => $package['max_budget']])
-                                        : __('storefront.home.packages.budget_from', ['amount' => $package['min_budget'] ?? $package['max_budget']]) }}
+                                <small data-package-price data-package-price-kind="{{ ($package['fixed_budget'] ?? null) ? 'fixed' : ($package['min_budget'] && $package['max_budget'] ? 'range' : 'from') }}">
+                                    {{ ($package['fixed_budget'] ?? null)
+                                        ? __('storefront.home.packages.budget_fixed', ['amount' => $package['fixed_budget']])
+                                        : ($package['min_budget'] && $package['max_budget']
+                                            ? __('storefront.home.packages.budget_range', ['min' => $package['min_budget'], 'max' => $package['max_budget']])
+                                            : __('storefront.home.packages.budget_from', ['amount' => $package['min_budget'] ?? $package['max_budget']])) }}
                                 </small>
                             @endif
                             <b>{{ __('storefront.home.packages.explore') }} <span aria-hidden="true">{{ app()->getLocale() === 'ar' ? '←' : '→' }}</span></b>

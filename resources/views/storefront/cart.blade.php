@@ -39,6 +39,12 @@
                 </div>
             </section>
         @else
+            @if ($booking->customerNotes->isNotEmpty())
+                <section data-event-notes class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+                    <h2 class="text-lg font-bold">{{ __('storefront.wizard.step3.notes_label') }}</h2>
+                    <p class="mt-2 whitespace-pre-wrap break-words text-sm">{{ $booking->customerNotes->first()->body }}</p>
+                </section>
+            @endif
             <section class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-8 lg:py-14">
                 <div class="space-y-4">
                     @foreach ($booking->vendors as $vendor)

@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Filament\Vendor\Pages;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 class VendorCategoriesPage extends Page implements HasTable
 {
     use InteractsWithTable;
+    use RequiresApprovedVendor;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
@@ -44,6 +46,12 @@ class VendorCategoriesPage extends Page implements HasTable
             ->pluck('product_type')
             ->map(fn ($t) => $t->value)
             ->toArray();
+        if (! config('catalog.digital_services_enabled', true)) {
+            $approvedTypes = array_values(array_filter(
+                $approvedTypes,
+                fn (string $type): bool => $type !== ProductType::Digital->value,
+            ));
+        }
 
         return $table
             ->query(
@@ -73,7 +81,14 @@ class VendorCategoriesPage extends Page implements HasTable
                     ->badge()
                     ->separator(',')
                     ->formatStateUsing(fn ($state) => is_array($state)
-                        ? implode(', ', array_map(fn (string $type): string => ProductType::from($type)->label(), $state))
+                        ? implode(', ', array_map(
+                            fn (string $type): string => ProductType::from($type)->label(),
+                            array_values(array_filter(
+                                $state,
+                                fn (string $type): bool => config('catalog.digital_services_enabled', true)
+                                    || $type !== ProductType::Digital->value,
+                            )),
+                        ))
                         : ProductType::from($state)->label()
                     ),
                 TextColumn::make('parent.name')

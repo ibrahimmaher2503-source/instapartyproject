@@ -21,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
@@ -65,8 +66,12 @@ class VendorProfilePage extends Page implements HasForms
             'commercial_register_no' => $profile->commercial_register_no,
             'tax_id' => $profile->tax_id,
             'national_id' => $profile->national_id,
+            'business_type' => $profile->business_type?->value,
             'primary_governorate_id' => $profile->primary_governorate_id,
             'primary_city_id' => $profile->primary_city_id,
+            'facebook_url' => $profile->facebook_url,
+            'website_url' => $profile->website_url,
+            'instagram_url' => $profile->instagram_url,
             'bank_name' => filled($profile->getRawOriginal('bank_name'))
                 ? MaskBankData::forField('bank_name', $profile->getRawOriginal('bank_name'))
                 : null,
@@ -151,21 +156,50 @@ class VendorProfilePage extends Page implements HasForms
                 Section::make(__('identity.sections.business_profile'))
                     ->columns(2)
                     ->schema([
+                        Select::make('business_type')
+                            ->label(__('identity.fields.business_type'))
+                            ->options([
+                                BusinessType::Individual->value => __('identity.business_type.individual'),
+                                BusinessType::Company->value => __('identity.business_type.company'),
+                                BusinessType::Establishment->value => __('identity.business_type.establishment'),
+                            ])
+                            ->required()
+                            ->live(),
                         TextInput::make('national_id')
                             ->label(__('identity.fields.national_id'))
                             ->maxLength(50)
-                            ->visible(fn (): bool => $this->getVendorProfile()->business_type === BusinessType::Individual)
-                            ->required(fn (): bool => $this->getVendorProfile()->business_type === BusinessType::Individual),
+                            ->visible(fn (Get $get): bool => $get('business_type') === BusinessType::Individual->value)
+                            ->required(fn (Get $get): bool => $get('business_type') === BusinessType::Individual->value),
                         TextInput::make('commercial_register_no')
                             ->label(__('identity.fields.commercial_register_no'))
                             ->maxLength(50)
-                            ->visible(fn (): bool => in_array($this->getVendorProfile()->business_type, [BusinessType::Company, BusinessType::Establishment], true))
-                            ->required(fn (): bool => in_array($this->getVendorProfile()->business_type, [BusinessType::Company, BusinessType::Establishment], true)),
+                            ->visible(fn (Get $get): bool => in_array($get('business_type'), [BusinessType::Company->value, BusinessType::Establishment->value], true))
+                            ->required(fn (Get $get): bool => in_array($get('business_type'), [BusinessType::Company->value, BusinessType::Establishment->value], true)),
                         TextInput::make('tax_id')
                             ->label(__('identity.fields.tax_id'))
                             ->maxLength(50)
-                            ->visible(fn (): bool => $this->getVendorProfile()->business_type === BusinessType::Company)
-                            ->required(fn (): bool => $this->getVendorProfile()->business_type === BusinessType::Company),
+                            ->visible(fn (Get $get): bool => $get('business_type') === BusinessType::Company->value)
+                            ->required(fn (Get $get): bool => $get('business_type') === BusinessType::Company->value),
+                    ]),
+
+                Section::make(__('vendor-portal.profile.social_links'))
+                    ->columns(3)
+                    ->schema([
+                        TextInput::make('facebook_url')
+                            ->label(__('vendor-portal.profile.facebook_url'))
+                            ->url()
+                            ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                            ->maxLength(2048),
+                        TextInput::make('website_url')
+                            ->label(__('vendor-portal.profile.website_url'))
+                            ->url()
+                            ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                            ->maxLength(2048),
+                        TextInput::make('instagram_url')
+                            ->label(__('vendor-portal.profile.instagram_url'))
+                            ->url()
+                            ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                            ->maxLength(2048),
                     ]),
 
                 Section::make(__('vendor-portal.profile.location'))
@@ -247,16 +281,23 @@ class VendorProfilePage extends Page implements HasForms
             'business_name' => ['en' => $data['business_name_en'], 'ar' => $data['business_name_ar']],
             'bio' => ['en' => $data['bio_en'] ?? '', 'ar' => $data['bio_ar'] ?? ''],
             'address_line' => ['en' => $data['address_line_en'] ?? '', 'ar' => $data['address_line_ar'] ?? ''],
-            'commercial_register_no' => $data['commercial_register_no'] ?? null,
-            'tax_id' => $data['tax_id'] ?? null,
-            'national_id' => $data['national_id'] ?? null,
+            'business_type' => $data['business_type'],
             'primary_governorate_id' => $data['primary_governorate_id'],
             'primary_city_id' => $data['primary_city_id'],
+            'facebook_url' => $data['facebook_url'] ?? null,
+            'website_url' => $data['website_url'] ?? null,
+            'instagram_url' => $data['instagram_url'] ?? null,
             'bank_name' => $data['bank_name'],
             'bank_account_holder' => $data['bank_account_holder'],
             'bank_iban' => $data['bank_iban'],
             'bank_swift_bic' => $data['bank_swift'],
         ];
+
+        foreach (['commercial_register_no', 'tax_id', 'national_id'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $payload[$field] = $data[$field];
+            }
+        }
 
         foreach (['bank_name', 'bank_account_holder', 'bank_iban', 'bank_swift_bic'] as $field) {
             $inputField = $field === 'bank_swift_bic' ? 'bank_swift' : $field;

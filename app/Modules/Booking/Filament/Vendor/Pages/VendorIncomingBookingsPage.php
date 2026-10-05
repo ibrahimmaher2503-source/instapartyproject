@@ -64,7 +64,7 @@ class VendorIncomingBookingsPage extends Page implements HasTable
                     ->where('vendor_profile_id', $vendorProfile->id)
                     ->where('sub_status', VendorSubStatus::Pending)
                     ->with(['booking', 'booking.address', 'items'])
-                    ->orderByRaw('ISNULL(response_deadline), response_deadline ASC')
+                    ->orderByRaw('CASE WHEN response_deadline IS NULL THEN 1 ELSE 0 END, response_deadline ASC')
             )
             ->columns([
                 TextColumn::make('booking.reference_no')

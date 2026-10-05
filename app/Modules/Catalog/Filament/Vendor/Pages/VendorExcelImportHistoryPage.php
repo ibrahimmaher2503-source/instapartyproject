@@ -92,6 +92,10 @@ class VendorExcelImportHistoryPage extends Page implements HasTable
     {
         return ExcelImport::query()
             ->where('vendor_profile_id', auth()->user()->vendorProfile->id)
+            ->when(
+                ! config('catalog.digital_services_enabled', true),
+                fn (Builder $query) => $query->where('product_type', '!=', ProductType::Digital),
+            )
             ->withCount('errors');
     }
 }

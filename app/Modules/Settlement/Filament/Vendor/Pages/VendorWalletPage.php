@@ -14,6 +14,7 @@ use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Domain\Models\WalletLedgerEntry;
 use App\Modules\Settlement\Domain\ValueObjects\BankAccountSnapshot;
 use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
+use Brick\Money\Money;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
@@ -92,7 +93,7 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
                 $wallet !== null
                     ? WalletLedgerEntry::query()
                         ->where('wallet_id', $wallet->id)
-                        ->with('commission')
+                        ->with('commission.bookingItem.bookingVendor.booking')
                         ->orderByDesc('created_at')
                     : WalletLedgerEntry::query()->whereRaw('1 = 0')
             )
@@ -104,6 +105,18 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
                     ->label(__('vendor-portal.wallet.date'))
                     ->dateTime('d M Y, H:i')
                     ->sortable(),
+                TextColumn::make('party_number')
+                    ->label(__('vendor-portal.wallet.party_number'))
+                    ->getStateUsing(fn (WalletLedgerEntry $record): string => $this->partyNumber($record)),
+                TextColumn::make('party_total')
+                    ->label(__('vendor-portal.wallet.party_total'))
+                    ->getStateUsing(fn (WalletLedgerEntry $record): string => $this->partyTotal($record)),
+                TextColumn::make('commission_percentage')
+                    ->label(__('vendor-portal.wallet.commission_percentage'))
+                    ->getStateUsing(fn (WalletLedgerEntry $record): string => $this->commissionPercentage($record)),
+                TextColumn::make('party_net')
+                    ->label(__('vendor-portal.wallet.party_net'))
+                    ->getStateUsing(fn (WalletLedgerEntry $record): string => $this->partyNet($record)),
                 TextColumn::make('direction')
                     ->label(__('vendor-portal.wallet.type'))
                     ->badge()
@@ -290,6 +303,39 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
             ->where('owner_id', $vendor->id)
             ->where('currency', 'EGP')
             ->first();
+    }
+
+    private function partyNumber(WalletLedgerEntry $record): string
+    {
+        return $record->commission?->bookingItem?->bookingVendor?->booking?->reference_no ?? '—';
+    }
+
+    private function partyTotal(WalletLedgerEntry $record): string
+    {
+        $vendor = $record->commission?->bookingItem?->bookingVendor;
+
+        return $vendor === null
+            ? '—'
+            : Money::ofMinor((int) $vendor->subtotal_minor, $vendor->subtotal_currency ?: 'EGP')
+                ->plus(Money::ofMinor((int) $vendor->delivery_fee_minor, $vendor->delivery_fee_currency ?: 'EGP'))
+                ->formatTo(app()->getLocale());
+    }
+
+    private function commissionPercentage(WalletLedgerEntry $record): string
+    {
+        return $record->commission === null
+            ? '—'
+            : number_format((int) $record->commission->commission_bps / 100, 2).'%';
+    }
+
+    private function partyNet(WalletLedgerEntry $record): string
+    {
+        $commission = $record->commission;
+
+        return $commission === null
+            ? '—'
+            : Money::ofMinor((int) $commission->vendor_share_minor, $commission->vendor_share_currency ?: 'EGP')
+                ->formatTo(app()->getLocale());
     }
 
     protected function getVendorProfile(): VendorProfile

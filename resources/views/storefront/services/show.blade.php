@@ -11,8 +11,6 @@
     $vendor = $service->vendor;
     $vendorName = $vendor ? $storefrontText->translation($vendor, 'business_name') : '';
     $categoryName = $service->category ? $storefrontText->translation($service->category, 'name') : '';
-    $serviceAreaHint = $vendor?->primaryCity ? $storefrontText->translation($vendor->primaryCity, 'name') : '';
-    $serviceAreaHint = $serviceAreaHint ?: ($vendor?->primaryGovernorate ? $storefrontText->translation($vendor->primaryGovernorate, 'name') : '');
     $ratingCount = (int) ($service->rating_count ?? 0);
     $isOutOfStock = $service->product_type === ProductType::Sale
         && $service->saleDetail?->stock_quantity !== null
@@ -84,10 +82,10 @@
                             <x-storefront.service-type-badge :type="$service->product_type" />
                         </div>
 
+                        @if (($service->product_type === ProductType::Rental && $service->rentalDetail?->setup_time_minutes)
+                            || ($service->product_type === ProductType::Sale && $service->saleDetail?->lead_time_hours)
+                            || ($service->product_type === ProductType::Digital && $service->digitalDetail?->delivery_method))
                         <dl class="mt-5 space-y-4 text-sm">
-                            @if ($serviceAreaHint)
-                                <div class="flex items-center justify-between gap-4"><dt class="text-white/60">{{ __('storefront.search.filter_location') }}</dt><dd class="font-semibold">{{ $serviceAreaHint }}</dd></div>
-                            @endif
                             @if ($service->product_type === ProductType::Rental && $service->rentalDetail?->setup_time_minutes)
                                 <div class="flex items-center justify-between gap-4"><dt class="text-white/60">{{ __('storefront.service.setup_time') }}</dt><dd class="font-semibold"><bdi dir="ltr">{{ $service->rentalDetail->setup_time_minutes }}</bdi> {{ __('storefront.common.minutes') }}</dd></div>
                             @elseif ($service->product_type === ProductType::Sale && $service->saleDetail?->lead_time_hours)
@@ -96,6 +94,7 @@
                                 <div class="flex items-center justify-between gap-4"><dt class="text-white/60">{{ __('storefront.service.delivery_method') }}</dt><dd class="font-semibold">{{ __('catalog.delivery_methods.'.(string) $service->digitalDetail->delivery_method) }}</dd></div>
                             @endif
                         </dl>
+                        @endif
 
                         @if ($isOutOfStock)
                             <button type="button" class="sf-button mt-7 min-h-12 w-full cursor-not-allowed justify-center bg-white/10 text-white/55" disabled>{{ __('storefront.service.out_of_stock') }}</button>
@@ -111,7 +110,7 @@
                     </div>
 
                     @if ($vendor)
-                        <a href="{{ url('/'.$locale.'/vendors/'.$vendor->public_id) }}" class="sf-service-vendor mt-5 flex items-center gap-4 rounded-[1.35rem] border border-ink-200 bg-white p-5 transition hover:border-secondary-300 hover:shadow-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600">
+                        <a href="{{ route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="sf-service-vendor mt-5 flex items-center gap-4 rounded-[1.35rem] border border-ink-200 bg-white p-5 transition hover:border-secondary-300 hover:shadow-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600">
                             @if ($vendor->logo_path)
                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($vendor->logo_path) }}" alt="" width="52" height="52" class="size-13 rounded-full object-cover" loading="lazy" onerror="this.onerror=null;this.hidden=true;this.nextElementSibling.hidden=false;">
                                 <span hidden class="flex size-13 items-center justify-center rounded-full bg-secondary-50 text-lg font-extrabold text-secondary-700">{{ mb_substr((string) $vendorName, 0, 1) }}</span>
@@ -121,9 +120,6 @@
                             <span class="min-w-0 flex-1">
                                 <span class="block text-xs font-bold text-ink-400">{{ $vendor->approval_status instanceof \App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState ? __('storefront.service.verified_vendor') : __('storefront.service.view_profile') }}</span>
                                 <span class="mt-1 block truncate font-bold text-ink-900">{{ $vendorName }}</span>
-                                @if ($serviceAreaHint)
-                                    <span class="mt-1 block text-xs text-ink-500">{{ $serviceAreaHint }}</span>
-                                @endif
                                 <x-storefront.vendor-rating :vendor="$vendor" class="mt-2 text-accent-600" />
                             </span>
                             <span class="text-xl text-secondary-700" aria-hidden="true">{{ $locale === 'ar' ? '←' : '→' }}</span>
@@ -132,7 +128,7 @@
                 </aside>
 
                 <div class="min-w-0 lg:col-start-1 lg:row-start-2">
-                    <x-storefront.service-attributes :service="$service" :location="$serviceAreaHint" class="mt-10 border-t border-ink-200 pt-8" />
+                    <x-storefront.service-attributes :service="$service" class="mt-10 border-t border-ink-200 pt-8" />
 
                     @if ($serviceDescription)
                         <section class="mt-10 border-t border-ink-200 pt-8" aria-labelledby="service-about-heading">

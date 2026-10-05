@@ -2100,7 +2100,7 @@
     .sf-service-page aside > div:first-child { background: var(--sf-navy-deep); }
     .sf-service-page .sf-button--light { background: var(--sf-emerald); color: var(--sf-ivory); }
     .sf-service-page .sf-button--light:hover { background: var(--sf-ivory); color: var(--sf-navy-deep); }
-    .sf-vendor-page section:first-child,
+    .sf-vendor-page > section:first-child,
     .sf-vendors-page section:first-child { background: var(--sf-navy-deep); }
     .sf-wizard-page { background: var(--sf-hero-surface) !important; }
     .sf-wizard-page [data-storefront-planner] { box-shadow: 0 30px 80px oklch(0.14 0.03 267 / 0.3); }

@@ -11,10 +11,12 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\ServiceState;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasServicePriceInput;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorDigitalServiceResource;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorRentalServiceResource;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -32,7 +34,9 @@ use Throwable;
 
 class VendorServicesListPage extends Page implements HasTable
 {
+    use HasServicePriceInput;
     use InteractsWithTable;
+    use RequiresApprovedVendor;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -69,7 +73,8 @@ class VendorServicesListPage extends Page implements HasTable
                 ->label(__('vendor-portal.services.create_digital'))
                 ->icon('heroicon-o-plus')
                 ->color('info')
-                ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor')),
+                ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor'))
+                ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true)),
         ];
     }
 
@@ -79,6 +84,10 @@ class VendorServicesListPage extends Page implements HasTable
             ->query(
                 Service::query()
                     ->where('vendor_profile_id', $this->getVendorProfile()->id)
+                    ->when(
+                        ! config('catalog.digital_services_enabled', true),
+                        fn ($query) => $query->where('product_type', '!=', ProductType::Digital),
+                    )
                     ->latest()
             )
             ->emptyStateIcon('heroicon-o-rectangle-stack')
@@ -99,7 +108,8 @@ class VendorServicesListPage extends Page implements HasTable
                     ->label(__('vendor-portal.services.create_digital'))
                     ->icon('heroicon-o-plus')
                     ->color('info')
-                    ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor')),
+                    ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor'))
+                    ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true)),
             ])
             ->columns([
                 TextColumn::make('name')
@@ -154,9 +164,7 @@ class VendorServicesListPage extends Page implements HasTable
                     ->tooltip(fn (Service $record): ?string => ServiceStatus::tryFrom($record->status?->getValue() ?? '') === ServiceStatus::Draft
                         ? __('vendor-portal.services.draft_cue_tooltip')
                         : null),
-                TextColumn::make('base_price_minor')
-                    ->label(__('catalog.base_price'))
-                    ->money('EGP', divideBy: 100),
+                static::servicePriceColumn(),
                 TextColumn::make('updated_at')
                     ->label(__('vendor-portal.services.last_modified'))
                     ->dateTime('d M Y')
@@ -168,7 +176,9 @@ class VendorServicesListPage extends Page implements HasTable
                     ->options([
                         ProductType::Rental->value => ProductType::Rental->label(),
                         ProductType::Sale->value => ProductType::Sale->label(),
-                        ProductType::Digital->value => ProductType::Digital->label(),
+                        ...(config('catalog.digital_services_enabled', true)
+                            ? [ProductType::Digital->value => ProductType::Digital->label()]
+                            : []),
                     ]),
                 SelectFilter::make('status')
                     ->label(__('vendor-portal.services.status'))

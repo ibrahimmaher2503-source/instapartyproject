@@ -36,16 +36,18 @@ class EditVendorRentalService extends EditRecord
                 'en' => $service->getTranslation('long_description', 'en') ?? '',
                 'ar' => $service->getTranslation('long_description', 'ar') ?? '',
             ],
-            'category_id' => $service->category_id,
+            'main_category_id' => $service->category?->parent_id ?? $service->category?->id,
+            'category_id' => $service->category?->parent_id !== null ? $service->category_id : null,
             'base_price_minor' => $service->base_price_minor,
+            'category_field_values' => $service->category_field_values ?? [],
             'rentalDetail' => [
                 'requires_electricity' => $service->rentalDetail?->requires_electricity ?? false,
                 'requires_outdoor_space' => $service->rentalDetail?->requires_outdoor_space ?? false,
                 'default_rental_duration_hours' => $service->rentalDetail?->default_rental_duration_hours ?? 1,
                 'setup_time_minutes' => $service->rentalDetail?->setup_time_minutes ?? 0,
-                'teardown_time_minutes' => $service->rentalDetail?->teardown_time_minutes ?? 0,
-                'security_deposit_minor' => $service->rentalDetail?->security_deposit_minor ?? 0,
-                'minimum_space_sqm' => $service->rentalDetail?->minimum_space_sqm,
+                'length_m' => $service->rentalDetail?->length_m,
+                'width_m' => $service->rentalDetail?->width_m,
+                'height_m' => $service->rentalDetail?->height_m,
             ],
         ];
     }
@@ -60,13 +62,14 @@ class EditVendorRentalService extends EditRecord
             'short_description' => $data['short_description'] ?? ['en' => '', 'ar' => ''],
             'long_description' => $data['long_description'] ?? ['en' => '', 'ar' => ''],
             'base_price_minor' => (int) $data['base_price_minor'],
+            'category_field_values' => $data['category_field_values'] ?? [],
             'requires_electricity' => (bool) ($data['rentalDetail']['requires_electricity'] ?? false),
             'requires_outdoor_space' => (bool) ($data['rentalDetail']['requires_outdoor_space'] ?? false),
             'default_rental_duration_hours' => (int) ($data['rentalDetail']['default_rental_duration_hours'] ?? 1),
             'setup_time_minutes' => isset($data['rentalDetail']['setup_time_minutes']) ? (int) $data['rentalDetail']['setup_time_minutes'] : null,
-            'teardown_time_minutes' => isset($data['rentalDetail']['teardown_time_minutes']) ? (int) $data['rentalDetail']['teardown_time_minutes'] : null,
-            'security_deposit_minor' => isset($data['rentalDetail']['security_deposit_minor']) ? (int) $data['rentalDetail']['security_deposit_minor'] : null,
-            'minimum_space_sqm' => isset($data['rentalDetail']['minimum_space_sqm']) ? (int) $data['rentalDetail']['minimum_space_sqm'] : null,
+            'length_m' => isset($data['rentalDetail']['length_m']) ? (string) $data['rentalDetail']['length_m'] : null,
+            'width_m' => isset($data['rentalDetail']['width_m']) ? (string) $data['rentalDetail']['width_m'] : null,
+            'height_m' => isset($data['rentalDetail']['height_m']) ? (string) $data['rentalDetail']['height_m'] : null,
         ];
 
         /** @var Service $record */

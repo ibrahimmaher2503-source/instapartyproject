@@ -11,6 +11,7 @@ use App\Modules\Identity\Domain\Enums\ChecklistItemStatus;
 use App\Modules\Identity\Domain\Enums\RejectionState;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -23,11 +24,18 @@ class VendorOnboardingChecklistWidget extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        $profile = auth()->user()?->vendorProfile;
+        $profile = Filament::auth()->user()?->vendorProfile;
 
-        // Onboarding checklist is only relevant until the vendor is approved.
-        // Once approved, the operational dashboard widgets take over (BUG-010).
-        return $profile !== null && ! ($profile->approval_status instanceof ApprovedState);
+        if ($profile === null || ! ($profile->approval_status instanceof ApprovedState)) {
+            return $profile !== null;
+        }
+
+        // Approved vendors may still need to resume documents/profile work or
+        // create their first service. Keep the same checklist and gates visible
+        // until there is no actionable onboarding step left.
+        return app(VendorOnboardingChecklistService::class)
+            ->forVendor($profile)
+            ->nextRecommendedAction !== null;
     }
 
     public function mount(): void

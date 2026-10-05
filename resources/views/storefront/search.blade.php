@@ -4,6 +4,7 @@
     $selectedType = $filters['product_type'] ?? null;
     $selectedCategory = $filters['category_slug'] ?? null;
     $selectedOccasion = $filters['occasion'] ?? null;
+    $selectedPackageId = $filters['package'] ?? null;
     $selectedVendor = $filters['vendor'] ?? null;
     $selectedCity = $filters['city_public_id'] ?? null;
     $selectedStartsAt = $filters['event_starts_at'] ?? null;
@@ -21,19 +22,24 @@
     $context = $categoryContext ?: $occasionContext;
     $categoryName = $context ? $storefrontText->translation($context, 'name') : '';
     $categoryDescription = $context ? $storefrontText->translation($context, 'description') : '';
-    $searchState = request()->except(['q', 'page']);
+    $searchState = $filters;
+    unset($searchState['q'], $searchState['page']);
     $clearSearchUrl = route('storefront.search', $searchState);
     $clearFiltersUrl = route('storefront.search');
-    $filterUrl = fn (string $key): string => route('storefront.search', request()->except([$key, 'page']));
+    $filterUrl = fn (string $key): string => route('storefront.search', collect($searchState)->except($key)->all());
     $selectedCategoryModel = $selectedCategory ? $categories->firstWhere('code', $selectedCategory) : null;
     $selectedOccasionModel = $selectedOccasion ? $occasions->firstWhere('code', $selectedOccasion) : null;
+    $selectedGovernorateModel = $selectedGovernorate ? $governorates->firstWhere('public_id', $selectedGovernorate) : null;
     $selectedCityModel = $selectedCity ? $cities->firstWhere('public_id', $selectedCity) : null;
     $selectedVendorModel = $selectedVendor ? $vendors->firstWhere('public_id', $selectedVendor) : null;
+    $selectedPackage = $selectedPackage ?? null;
     $activeFilters = collect([
         'q' => ! empty($filters['q']) ? ['label' => '“'.$filters['q'].'”', 'url' => $clearSearchUrl] : null,
         'product_type' => $selectedType ? ['label' => __('storefront.search.type_'.$selectedType), 'url' => $filterUrl('product_type')] : null,
         'category_slug' => $selectedCategoryModel ? ['label' => $storefrontText->translation($selectedCategoryModel, 'name'), 'url' => $filterUrl('category_slug')] : null,
-        'occasion' => $selectedOccasionModel ? ['label' => $storefrontText->translation($selectedOccasionModel, 'name'), 'url' => $filterUrl('occasion')] : null,
+        'occasion' => $selectedOccasionModel ? ['label' => $storefrontText->translation($selectedOccasionModel, 'name'), 'url' => route('storefront.search', collect($searchState)->except(['occasion', 'package'])->all())] : null,
+        'package' => $selectedPackage ? ['label' => $selectedPackage['name'], 'url' => $filterUrl('package')] : null,
+        'governorate_public_id' => $selectedGovernorateModel ? ['label' => $storefrontText->translation($selectedGovernorateModel, 'name'), 'url' => route('storefront.search', collect($searchState)->except(['governorate_public_id', 'city_public_id'])->all())] : null,
         'city_public_id' => $selectedCityModel ? ['label' => $storefrontText->translation($selectedCityModel, 'name'), 'url' => $filterUrl('city_public_id')] : null,
         'event_date' => ! empty($filters['event_date']) ? ['label' => $filters['event_date'], 'url' => $filterUrl('event_date')] : null,
         'vendor' => $selectedVendorModel ? ['label' => $storefrontText->translation($selectedVendorModel, 'business_name'), 'url' => $filterUrl('vendor')] : null,
@@ -84,37 +90,12 @@
                     </form>
                 </div>
 
-                @if ($context && $recommendedPackages !== [])
-                    <section class="sf-category-packages" aria-labelledby="category-packages-heading">
-                        <h2 id="category-packages-heading">{{ __('storefront.home.packages.eyebrow') }}</h2>
-                        <div class="sf-category-packages__rail">
-                            @foreach ($recommendedPackages as $package)
-                                <a href="{{ route('storefront.search', array_filter(['category_slug' => $selectedCategory, 'occasion' => $selectedOccasion])) }}" class="sf-category-package-card">
-                                    @if ($package['hero_url'])
-                                        <img src="{{ $package['hero_url'] }}" alt="" width="320" height="240" loading="lazy">
-                                    @endif
-                                    <span class="sf-category-package-card__body">
-                                        <strong>{{ $package['name'] }}</strong>
-                                        @if ($package['min_budget'] || $package['max_budget'])
-                                            <small>
-                                                {{ $package['min_budget'] && $package['max_budget']
-                                                    ? __('storefront.home.packages.budget_range', ['min' => $package['min_budget'], 'max' => $package['max_budget']])
-                                                    : __('storefront.home.packages.budget_from', ['amount' => $package['min_budget'] ?? $package['max_budget']]) }}
-                                            </small>
-                                        @endif
-                                        <span>{{ __('storefront.home.packages.explore') }} <b aria-hidden="true">→</b></span>
-                                    </span>
-                                </a>
-                            @endforeach
-                        </div>
-                    </section>
-                @endif
             </div>
         </section>
 
         <div class="sf-marketplace-shell mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-10">
             <aside id="search-filters" class="sf-search-filters" popover="auto" aria-label="{{ __('storefront.search.filters_sidebar_heading') }}">
-                <form action="{{ route('storefront.search') }}" method="GET">
+                <form action="{{ route('storefront.search') }}" method="GET" data-search-geography>
                     @if ($plannerContext)
                         <input type="hidden" name="planner" value="1">
                     @endif
@@ -133,13 +114,15 @@
                                 <option value="">{{ __('storefront.search.type_all') }}</option>
                                 <option value="rental" @selected($selectedType === 'rental')>{{ __('storefront.search.type_rental') }}</option>
                                 <option value="sale" @selected($selectedType === 'sale')>{{ __('storefront.search.type_sale') }}</option>
-                                <option value="digital" @selected($selectedType === 'digital')>{{ __('storefront.search.type_digital') }}</option>
+                                @if (config('catalog.digital_services_enabled', true))
+                                    <option value="digital" @selected($selectedType === 'digital')>{{ __('storefront.search.type_digital') }}</option>
+                                @endif
                             </select>
                         </div>
 
                         <div class="sf-filter-group">
                             <label for="category_slug">{{ __('storefront.search.filter_category') }}</label>
-                            <select id="category_slug" name="category_slug" class="sf-field">
+                            <select id="category_slug" name="category_slug" class="sf-field" data-search-category>
                                 <option value="">{{ __('storefront.search.filter_all') }}</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->code }}" @selected($selectedCategory === $category->code)>{{ $storefrontText->translation($category, 'name') }}</option>
@@ -149,7 +132,7 @@
 
                         <div class="sf-filter-group">
                             <label for="occasion">{{ __('storefront.search.filter_occasion') }}</label>
-                            <select id="occasion" name="occasion" class="sf-field">
+                            <select id="occasion" name="occasion" class="sf-field" data-search-occasion>
                                 <option value="">{{ __('storefront.search.filter_all') }}</option>
                                 @foreach ($occasions as $occasion)
                                     <option value="{{ $occasion->code }}" @selected($selectedOccasion === $occasion->code)>{{ $storefrontText->translation($occasion, 'name') }}</option>
@@ -158,8 +141,30 @@
                         </div>
 
                         <div class="sf-filter-group">
+                            <label for="package">{{ __('storefront.search.filter_package') }}</label>
+                            <select id="package" name="package" class="sf-field" data-search-package data-search-package-all-label="{{ __('storefront.search.filter_package_all') }}" @disabled(! $selectedOccasion)>
+                                <option value="">{{ $selectedOccasion ? __('storefront.search.filter_package_all') : __('storefront.search.filter_package_select_occasion') }}</option>
+                                @foreach ($occasionPackageOptions as $packageOption)
+                                    <option value="{{ $packageOption['public_id'] }}" @selected($selectedPackageId === $packageOption['public_id'])>{{ $packageOption['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <script type="application/json" data-search-package-options>@json($packageFilterOptions)</script>
+
+                        <div class="sf-filter-group">
+                            <label for="governorate_public_id">{{ __('storefront.search.filter_governorate') }}</label>
+                            <select id="governorate_public_id" name="governorate_public_id" class="sf-field" data-search-governorate>
+                                <option value="">{{ __('storefront.search.filter_all_governorates') }}</option>
+                                @foreach ($governorates as $governorate)
+                                    <option value="{{ $governorate->public_id }}" @selected($selectedGovernorate === $governorate->public_id)>{{ $storefrontText->translation($governorate, 'name') }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="sf-filter-group">
                             <label for="city_public_id">{{ __('storefront.search.filter_city') }}</label>
-                            <select id="city_public_id" name="city_public_id" class="sf-field">
+                            <select id="city_public_id" name="city_public_id" class="sf-field" data-search-city @disabled(! $selectedGovernorate)>
                                 <option value="">{{ __('storefront.search.filter_all_cities') }}</option>
                                 @foreach ($cities as $city)
                                     <option value="{{ $city->public_id }}" @selected($selectedCity === $city->public_id)>{{ $storefrontText->translation($city, 'name') }}</option>
@@ -177,7 +182,7 @@
 
                         <div class="sf-filter-group">
                             <label for="vendor">{{ __('storefront.search.filter_vendor') }}</label>
-                            <select id="vendor" name="vendor" class="sf-field">
+                            <select id="vendor" name="vendor" class="sf-field" data-search-vendor>
                                 <option value="">{{ __('storefront.search.filter_vendor_all') }}</option>
                                 @foreach ($vendors as $vendor)
                                     <option value="{{ $vendor->public_id }}" @selected($selectedVendor === $vendor->public_id)>
@@ -186,6 +191,18 @@
                                             · {{ $storefrontText->translation($vendor->primaryCity, 'name') }}
                                         @endif
                                     </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <script type="application/json" data-search-vendor-options>@json($vendorFilterOptions)</script>
+
+                        <div class="sf-filter-group">
+                            <label for="min_rating">{{ __('storefront.search.filter_rating') }}</label>
+                            <select id="min_rating" name="min_rating" class="sf-field">
+                                <option value="">{{ __('storefront.search.filter_all') }}</option>
+                                @foreach ([4, 3, 2, 1] as $rating)
+                                    <option value="{{ $rating }}" @selected((string) $selectedRating === (string) $rating)>{{ __('storefront.search.filter_min_rating_chip', ['n' => $rating]) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -204,15 +221,6 @@
                             </div>
                         </fieldset>
 
-                        <div class="sf-filter-group">
-                            <label for="min_rating">{{ __('storefront.search.filter_rating') }}</label>
-                            <select id="min_rating" name="min_rating" class="sf-field">
-                                <option value="">{{ __('storefront.search.filter_all') }}</option>
-                                @foreach ([4, 3, 2, 1] as $rating)
-                                    <option value="{{ $rating }}" @selected((string) $selectedRating === (string) $rating)>{{ __('storefront.search.filter_min_rating_chip', ['n' => $rating]) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
                     </div>
 
                     @if (! empty($filters['q']))
@@ -223,9 +231,6 @@
                     @endif
                     @if ($selectedEndsAt)
                         <input type="hidden" name="event_ends_at" value="{{ $selectedEndsAt }}">
-                    @endif
-                    @if ($selectedGovernorate)
-                        <input type="hidden" name="governorate_public_id" value="{{ $selectedGovernorate }}">
                     @endif
                     @if (! empty($filters['sort']))
                         <input type="hidden" name="sort" value="{{ $filters['sort'] }}">
@@ -251,7 +256,7 @@
 
                         <form action="{{ route('storefront.search') }}" method="GET" class="sf-sort-form">
                             @foreach (request()->except(['sort', 'page']) as $name => $value)
-                                @if (is_scalar($value) && $value !== '')
+                                @if (is_scalar($value) && $value !== '' && ! ($name === 'product_type' && ! config('catalog.digital_services_enabled', true)))
                                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                                 @endif
                             @endforeach
@@ -281,30 +286,43 @@
                     </div>
                 @endif
 
-                @if ($plannerContext)
-                    <section class="sf-context-recommendations mt-7 rounded-[1.5rem] border border-secondary-100 bg-secondary-50/70 p-5 sm:p-6" aria-labelledby="planner-recommendations-heading">
+                @if (session('package_error'))
+                    <x-storefront.alert type="error" class="mt-6" data-package-error>
+                        {{ session('package_error') }}
+                    </x-storefront.alert>
+                @endif
+
+                @if ($recommendedPackages !== [])
+                    <section class="sf-context-recommendations mt-7 rounded-[1.5rem] border border-secondary-100 bg-secondary-50/70 p-5 sm:p-6" aria-labelledby="search-packages-heading" data-search-package-results>
                         <div class="max-w-2xl">
                             <p class="text-xs font-bold uppercase tracking-[0.16em] text-secondary-700">{{ __('storefront.home.packages.eyebrow') }}</p>
-                            <h2 id="planner-recommendations-heading" class="mt-2 text-xl font-extrabold text-ink-900">{{ __('storefront.search.context_heading') }}</h2>
-                            <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.search.context_body') }}</p>
+                            <h2 id="search-packages-heading" class="mt-2 text-xl font-extrabold text-ink-900">{{ $plannerContext ? __('storefront.search.context_heading') : __('storefront.home.packages.heading') }}</h2>
+                            @if ($plannerContext)
+                                <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.search.context_body') }}</p>
+                            @endif
                         </div>
-                        @if ($recommendedPackages !== [])
-                            <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                @foreach ($recommendedPackages as $package)
-                                    <a href="{{ route('storefront.search', array_filter(['occasion' => $selectedOccasion, 'city_public_id' => $selectedCity, 'event_date' => $selectedDate])) }}" class="group overflow-hidden rounded-2xl border border-secondary-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-surface">
-                                        @if ($package['hero_url'])
-                                            <img src="{{ $package['hero_url'] }}" alt="" class="h-32 w-full object-cover" loading="lazy">
+                        <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            @foreach ($recommendedPackages as $package)
+                                <a href="{{ route('storefront.packages.show', ['publicId' => $package['public_id']]) }}" class="group overflow-hidden rounded-2xl border border-secondary-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-surface" data-search-package-card>
+                                    @if ($package['hero_url'])
+                                        <img src="{{ $package['hero_url'] }}" alt="" class="h-32 w-full object-cover" loading="lazy">
+                                    @endif
+                                    <span class="block space-y-2 p-4">
+                                        <strong class="block text-base text-ink-900 group-hover:text-secondary-700">{{ $package['name'] }}</strong>
+                                        <span class="line-clamp-2 block text-xs leading-5 text-ink-500">{{ $package['description'] }}</span>
+                                        @if ($package['min_budget'] || $package['max_budget'])
+                                            <small class="block text-xs font-semibold text-secondary-700" data-package-price data-package-price-kind="{{ ($package['fixed_budget'] ?? null) ? 'fixed' : ($package['min_budget'] && $package['max_budget'] ? 'range' : 'from') }}">
+                                                {{ ($package['fixed_budget'] ?? null)
+                                                    ? __('storefront.home.packages.budget_fixed', ['amount' => $package['fixed_budget']])
+                                                    : ($package['min_budget'] && $package['max_budget']
+                                                        ? __('storefront.home.packages.budget_range', ['min' => $package['min_budget'], 'max' => $package['max_budget']])
+                                                        : __('storefront.home.packages.budget_from', ['amount' => $package['min_budget'] ?? $package['max_budget']])) }}
+                                            </small>
                                         @endif
-                                        <span class="block space-y-2 p-4">
-                                            <strong class="block text-base text-ink-900 group-hover:text-secondary-700">{{ $package['name'] }}</strong>
-                                            <span class="line-clamp-2 block text-xs leading-5 text-ink-500">{{ $package['description'] }}</span>
-                                        </span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="mt-5 rounded-xl border border-dashed border-secondary-200 bg-white px-4 py-4 text-sm leading-6 text-ink-600">{{ __('storefront.search.context_empty') }}</p>
-                        @endif
+                                    </span>
+                                </a>
+                            @endforeach
+                        </div>
                     </section>
                 @endif
 

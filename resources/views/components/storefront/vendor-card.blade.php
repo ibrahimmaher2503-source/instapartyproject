@@ -11,7 +11,7 @@
 @endphp
 
 <article class="group overflow-hidden rounded-[1.25rem] border border-ink-200 bg-white transition hover:-translate-y-0.5 hover:shadow-surface">
-    <a href="{{ url('/'.app()->getLocale().'/vendors/'.$vendor->public_id) }}" class="block focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-secondary-200" aria-label="{{ __('storefront.vendor.view_profile') }}: {{ $name }}">
+    <a href="{{ route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="block focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-secondary-200" aria-label="{{ __('storefront.vendor.view_profile') }}: {{ $name }}">
         <div class="relative aspect-[16/9] bg-secondary-900">
             @if ($cover)
                 <img src="{{ $cover }}" alt="" class="h-full w-full object-cover" loading="lazy" onerror="this.hidden=true">

@@ -25,6 +25,7 @@ class CreateVendorDigitalService extends CreateRecord
             name: $data['name'],
             shortDescription: $data['short_description'] ?? ['en' => '', 'ar' => ''],
             basePriceMinor: (int) $data['base_price_minor'],
+            categoryFieldValues: $data['category_field_values'] ?? [],
             deliveryMethod: $data['digitalDetail']['delivery_method'] ?? 'email',
             hasExpiry: (bool) ($data['digitalDetail']['has_expiry'] ?? false),
             expiryDaysAfterPurchase: isset($data['digitalDetail']['expiry_days_after_purchase'])

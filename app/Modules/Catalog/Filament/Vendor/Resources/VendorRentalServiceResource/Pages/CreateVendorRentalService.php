@@ -25,13 +25,17 @@ class CreateVendorRentalService extends CreateRecord
             name: $data['name'],
             shortDescription: $data['short_description'] ?? ['en' => '', 'ar' => ''],
             basePriceMinor: (int) $data['base_price_minor'],
+            categoryFieldValues: $data['category_field_values'] ?? [],
             requiresElectricity: (bool) ($data['rentalDetail']['requires_electricity'] ?? false),
             requiresOutdoorSpace: (bool) ($data['rentalDetail']['requires_outdoor_space'] ?? false),
             defaultRentalDurationHours: (int) ($data['rentalDetail']['default_rental_duration_hours'] ?? 1),
             setupTimeMinutes: isset($data['rentalDetail']['setup_time_minutes']) ? (int) $data['rentalDetail']['setup_time_minutes'] : null,
-            teardownTimeMinutes: isset($data['rentalDetail']['teardown_time_minutes']) ? (int) $data['rentalDetail']['teardown_time_minutes'] : null,
-            securityDepositMinor: isset($data['rentalDetail']['security_deposit_minor']) ? (int) $data['rentalDetail']['security_deposit_minor'] : null,
-            minimumSpaceSqm: isset($data['rentalDetail']['minimum_space_sqm']) ? (int) $data['rentalDetail']['minimum_space_sqm'] : null,
+            teardownTimeMinutes: null,
+            securityDepositMinor: null,
+            minimumSpaceSqm: null,
+            lengthM: isset($data['rentalDetail']['length_m']) ? (string) $data['rentalDetail']['length_m'] : null,
+            widthM: isset($data['rentalDetail']['width_m']) ? (string) $data['rentalDetail']['width_m'] : null,
+            heightM: isset($data['rentalDetail']['height_m']) ? (string) $data['rentalDetail']['height_m'] : null,
         );
 
         return app(CreateRentalServiceAction::class)->execute($dto);

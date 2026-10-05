@@ -1,16 +1,24 @@
-@props(['service', 'location' => null])
+@props(['service'])
 
 @php
     use App\Modules\Catalog\Domain\Enums\ProductType;
 
     $items = [];
-
-    if ($location) {
-        $items[] = [__('storefront.search.filter_location'), $location];
+    $categoryAttributes = $service instanceof App\Modules\Catalog\Domain\Models\Service
+        ? app(App\Modules\Catalog\Application\Services\CategoryFieldPresenter::class)->forService($service)
+        : [];
+    foreach ($categoryAttributes as $attribute) {
+        $items[] = [$attribute['label'], $attribute['value']];
     }
 
     if ($service->product_type === ProductType::Rental && $service->rentalDetail) {
         $detail = $service->rentalDetail;
+        foreach (['length', 'width', 'height'] as $dimension) {
+            $value = $detail->{$dimension.'_m'} ?? null;
+            if ($value !== null) {
+                $items[] = [__('catalog.dimension_'.$dimension), $value.' '.__('catalog.metres_unit')];
+            }
+        }
         if ($detail->default_rental_duration_hours) {
             $items[] = [__('storefront.service.rental_duration'), $detail->default_rental_duration_hours.' '.__('storefront.common.hours')];
         }
@@ -36,15 +44,6 @@
         $detail = $service->saleDetail;
         if ($detail->lead_time_hours) {
             $items[] = [__('storefront.service.lead_time'), $detail->lead_time_hours.' '.__('storefront.common.hours')];
-        }
-        if ($detail->is_made_to_order) {
-            $items[] = [__('storefront.service.made_to_order'), __('storefront.common.yes')];
-        }
-        if ($detail->is_perishable) {
-            $items[] = [__('storefront.service.perishable'), __('storefront.common.yes')];
-        }
-        if ($detail->stock_quantity !== null) {
-            $items[] = [__('storefront.service.stock'), $detail->stock_quantity > 0 ? (string) $detail->stock_quantity : __('storefront.service.out_of_stock')];
         }
     } elseif ($service->product_type === ProductType::Digital && $service->digitalDetail) {
         $detail = $service->digitalDetail;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Booking\Filament\Resources\BookingResource\Pages;
 
+use App\Modules\Booking\Application\Actions\AddTransportationAdjustmentAction;
 use App\Modules\Booking\Application\Actions\ForceCancelBookingAction;
 use App\Modules\Booking\Application\DTOs\AdminInterventionDTO;
 use App\Modules\Booking\Domain\Enums\InterventionType;
@@ -11,6 +12,7 @@ use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
 use App\Modules\Booking\Filament\Resources\BookingResource;
+use Brick\Money\Money;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Textarea;
@@ -151,6 +153,57 @@ class ViewBooking extends ViewRecord
                         ->success()
                         ->send();
                 }),
+
+            Action::make('addTransportationLine')
+                ->label(__('booking.actions.add_transportation_line'))
+                ->icon('heroicon-o-truck')
+                ->button()
+                ->color('warning')
+                ->form([
+                    TextInput::make('amount')
+                        ->label(__('booking.columns.transportation_adjustment').' (EGP)')
+                        ->numeric()
+                        ->step('0.01')
+                        ->rules(['decimal:0,2'])
+                        ->validationMessages([
+                            'decimal' => __('booking.validation.transport_price_invalid'),
+                            'numeric' => __('booking.validation.transport_price_invalid'),
+                            'min' => __('booking.validation.transport_price_invalid'),
+                        ])
+                        ->minValue(0)
+                        ->required(),
+                    Textarea::make('source')
+                        ->label(__('booking.columns.adjustment_source'))
+                        ->required()
+                        ->minLength(3)
+                        ->maxLength(120),
+                    TextInput::make('source_reference')
+                        ->label(__('booking.columns.adjustment_reference'))
+                        ->maxLength(120),
+                ])
+                ->visible(fn (): bool => auth()->user()?->hasAnyRole(['admin', 'booking_manager', 'super_admin']) === true)
+                ->action(function (Booking $record, array $data): void {
+                    $minor = Money::of((string) $data['amount'], 'EGP')->getMinorAmount()->toInt();
+
+                    app(AddTransportationAdjustmentAction::class)->execute(
+                        $record,
+                        (int) auth()->id(),
+                        $minor,
+                        $data['source'],
+                        $data['source_reference'] ?? null,
+                    );
+
+                    Notification::make()
+                        ->title(__('booking.notifications.transportation_line_added'))
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('printInvoice')
+                ->label(__('booking.invoice.print'))
+                ->icon('heroicon-o-printer')
+                ->url(fn (Booking $record): string => route('admin.bookings.invoice', $record->public_id))
+                ->openUrlInNewTab(),
         ];
     }
 }

@@ -8,7 +8,6 @@
     <div class="sf-account-grid">
         <aside class="sf-account-nav"><nav aria-label="{{ __('account.navigation') }}">
             @foreach($sections as $section)<a href="{{ route('storefront.account.'.$section) }}" @if(request()->routeIs('storefront.account.'.$section.'*')) aria-current="page" @endif>{{ __('account.'.$section) }}</a>@endforeach
-            <a href="{{ route('storefront.wizard') }}">{{ __('account.plan_cta') }}</a>
             <a href="{{ url('/'.app()->getLocale().'/p/faq') }}">{{ __('account.support') }}</a>
             <form method="POST" action="{{ route('storefront.auth.logout') }}">@csrf<button type="submit">{{ __('storefront.nav.logout') }}</button></form>
         </nav></aside>

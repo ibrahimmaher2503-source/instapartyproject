@@ -36,6 +36,12 @@ class VendorLoyaltyProgramPage extends Page implements HasForms
     /** @var array<string, mixed>|null */
     public ?array $data = [];
 
+    public static function canAccess(): bool
+    {
+        // Vendor loyalty is hidden for this phase; customer/platform loyalty stays intact.
+        return false;
+    }
+
     public function getTitle(): string|Htmlable
     {
         return __('vendor-portal.loyalty.title');
@@ -120,6 +126,8 @@ class VendorLoyaltyProgramPage extends Page implements HasForms
 
     public function save(): void
     {
+        abort_unless(static::canAccess(), 403);
+
         $data = $this->form->getState();
         $vendor = $this->getVendorProfile();
 

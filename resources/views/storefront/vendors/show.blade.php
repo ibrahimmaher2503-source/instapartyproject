@@ -40,12 +40,41 @@
         </section>
 
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            @if ($galleryItems->isNotEmpty())
+                <section data-vendor-gallery data-service-gallery class="mb-10 max-w-3xl" aria-labelledby="vendor-gallery-heading">
+                    <h2 id="vendor-gallery-heading" class="mb-5 text-2xl font-extrabold text-ink-900">{{ __('storefront.vendor.gallery_heading') }}</h2>
+                    <div class="overflow-hidden rounded-[1.5rem] bg-secondary-50">
+                        <img data-service-gallery-main src="{{ $galleryItems->first()['url'] }}" alt="{{ $vendorName }}" class="aspect-[16/9] w-full object-cover" width="1200" height="675">
+                    </div>
+                    @if ($galleryItems->count() > 1)
+                        <div class="mt-4 flex items-center gap-3">
+                            <button type="button" data-gallery-step="-1" class="shrink-0 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-700">{{ __('storefront.common.previous') }}</button>
+                            <div class="flex min-w-0 flex-1 gap-3 overflow-x-auto" aria-label="{{ __('storefront.vendor.gallery_heading') }}">
+                                @foreach ($galleryItems as $item)
+                                    <button type="button" data-service-gallery-image="{{ $item['url'] }}" aria-label="{{ $vendorName }} · {{ $loop->iteration }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}" class="size-16 shrink-0 overflow-hidden rounded-xl border-2 border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600 aria-pressed:border-secondary-600">
+                                        <img src="{{ $item['thumb'] }}" alt="" width="64" height="64" class="h-full w-full object-cover" loading="lazy">
+                                    </button>
+                                @endforeach
+                            </div>
+                            <button type="button" data-gallery-step="1" class="shrink-0 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-700">{{ __('storefront.common.next') }}</button>
+                        </div>
+                    @endif
+                </section>
+            @endif
             <div>
                 <div class="flex flex-wrap gap-3">
-                    <div class="min-w-32 rounded-2xl border border-ink-200 bg-white px-5 py-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-ink-400">{{ __('storefront.vendor.services_count_label') }}</p><p class="mt-2 text-2xl font-extrabold text-ink-900">{{ $vendor->services_count }}</p></div>
+                    <div data-vendor-services-count class="min-w-32 rounded-2xl border border-ink-200 bg-white px-5 py-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-ink-400">{{ __('storefront.vendor.services_count_label') }}</p><p class="mt-2 text-2xl font-extrabold text-ink-900">{{ $vendor->services_count }}</p></div>
                     @if ($city)<div class="min-w-32 rounded-2xl border border-ink-200 bg-white px-5 py-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-ink-500">{{ __('storefront.search.filter_location') }}</p><p class="mt-2 text-base font-extrabold text-ink-900">{{ $city }}</p></div>@endif
-                    @if ($vendor->approvedTypes->isNotEmpty())<div class="min-w-32 rounded-2xl border border-ink-200 bg-white px-5 py-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-ink-500">{{ __('storefront.vendor.product_types_label') }}</p><p class="mt-2 text-base font-extrabold text-ink-900">{{ $vendor->approvedTypes->count() }}</p></div>@endif
+                    @if ($serviceTypeCounts->isNotEmpty())<div data-vendor-types-count class="min-w-32 rounded-2xl border border-ink-200 bg-white px-5 py-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-ink-500">{{ __('storefront.vendor.product_types_label') }}</p><p class="mt-2 text-base font-extrabold text-ink-900">{{ $serviceTypeCounts->count() }}</p></div>@endif
                 </div>
+
+                @if ($serviceTypeCounts->isNotEmpty())
+                    <ul class="mt-5 flex flex-wrap gap-3" aria-label="{{ __('storefront.vendor.product_types_label') }}">
+                        @foreach ($serviceTypeCounts as $type => $count)
+                            <li data-vendor-service-type="{{ $type }}" class="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700">{{ \App\Modules\Catalog\Domain\Enums\ProductType::from($type)->getLabel() }} <span aria-hidden="true">·</span> {{ $count }}</li>
+                        @endforeach
+                    </ul>
+                @endif
 
                 <section id="vendor-services" class="mt-10" aria-labelledby="vendor-services-heading">
                     <div class="flex items-end justify-between gap-4 border-b border-ink-200 pb-5">

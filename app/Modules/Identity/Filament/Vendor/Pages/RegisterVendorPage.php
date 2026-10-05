@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Vendor\Pages;
 
-use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Identity\Application\Actions\RegisterVendorAction;
 use App\Modules\Identity\Application\DTOs\RegisterVendorDTO;
@@ -87,7 +86,7 @@ class RegisterVendorPage extends Register
                                         ->required()
                                         ->maxLength(200),
                                 ]),
-                                Grid::make(3)->schema([
+                                Grid::make(2)->schema([
                                     Select::make('business_type')
                                         ->label(__('identity.fields.business_type'))
                                         ->options([
@@ -106,26 +105,28 @@ class RegisterVendorPage extends Register
                                                 $governorate->id => $governorate->getTranslation('name', app()->getLocale()),
                                             ])
                                             ->all())
-                                        ->required()
-                                        ->live()
-                                        ->afterStateUpdated(fn (callable $set) => $set('primary_city_id', null)),
-                                    Select::make('primary_city_id')
-                                        ->label(__('identity.fields.city_id'))
-                                        ->options(
-                                            fn (callable $get): array => $get('primary_governorate_id')
-                                                ? City::query()
-                                                    ->where('governorate_id', $get('primary_governorate_id'))
-                                                    ->active()
-                                                    ->orderBy('sort_order')
-                                                    ->get()
-                                                    ->mapWithKeys(fn (City $city): array => [
-                                                        $city->id => $city->getTranslation('name', app()->getLocale()),
-                                                    ])
-                                                    ->all()
-                                                : []
-                                        )
                                         ->required(),
                                 ]),
+                            ]),
+
+                        Section::make(__('vendor-portal.profile.social_links'))
+                            ->columns(3)
+                            ->schema([
+                                TextInput::make('facebook_url')
+                                    ->label(__('vendor-portal.profile.facebook_url'))
+                                    ->url()
+                                    ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                                    ->maxLength(2048),
+                                TextInput::make('website_url')
+                                    ->label(__('vendor-portal.profile.website_url'))
+                                    ->url()
+                                    ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                                    ->maxLength(2048),
+                                TextInput::make('instagram_url')
+                                    ->label(__('vendor-portal.profile.instagram_url'))
+                                    ->url()
+                                    ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                                    ->maxLength(2048),
                             ]),
                     ])
                     ->statePath('data'),
@@ -151,8 +152,13 @@ class RegisterVendorPage extends Register
             ->placeholder('+201234567890')
             ->required()
             ->maxLength(20)
-            ->regex('/^\+\d{8,15}$/')
+            ->regex(VendorRegistrationRules::PHONE_E164_REGEX)
             ->rule(Rule::unique('users', 'phone_e164'))
+            ->validationMessages([
+                'required' => __('identity::identity.validation.phone_required'),
+                'regex' => __('identity::identity.validation.phone_e164'),
+                'unique' => __('identity::identity.validation.duplicate_phone'),
+            ])
             ->helperText(__('identity::identity.registration.phone_hint'))
             ->validationAttribute(__('identity::identity.fields.phone'));
     }

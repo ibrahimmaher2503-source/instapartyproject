@@ -18,6 +18,7 @@ use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\BookingFulfillmentIssue;
 use App\Modules\Booking\Domain\Models\BookingItem;
 use App\Modules\Booking\Domain\Models\BookingVendor;
+use App\Modules\Booking\Filament\Vendor\Helpers\DeadlineColumnFormatter;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
@@ -40,6 +41,7 @@ use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 use Throwable;
 
 class VendorBookingDetailPage extends Page implements HasInfolists
@@ -64,7 +66,7 @@ class VendorBookingDetailPage extends Page implements HasInfolists
 
         $record = BookingVendor::query()
             ->where('public_id', $bookingVendor)
-            ->with(['booking.customer', 'booking.address', 'items'])
+            ->with(['booking.customer', 'booking.address', 'booking.customerNotes', 'items'])
             ->firstOrFail();
 
         abort_if($record->vendor_profile_id !== $this->getVendorProfile()->id, 403);
@@ -148,6 +150,13 @@ class VendorBookingDetailPage extends Page implements HasInfolists
                                         ->money('EGP', divideBy: 100),
                                 ]),
                             ]),
+                    ]),
+
+                Section::make(__('vendor-portal.decision.customer_notes'))
+                    ->schema([
+                        TextEntry::make('event_notes')->label('')
+                            ->getStateUsing(fn (): string => $record->booking?->customerNotes->first()?->body ?? '—')
+                            ->formatStateUsing(fn (string $state): HtmlString => new HtmlString('<div style="white-space: pre-wrap; overflow-wrap: anywhere;">'.e($state).'</div>')),
                     ]),
 
                 $this->fulfillmentSection(),
@@ -245,7 +254,7 @@ class VendorBookingDetailPage extends Page implements HasInfolists
         if ($this->resolvedBookingVendor === null) {
             $this->resolvedBookingVendor = BookingVendor::query()
                 ->where('public_id', $this->bookingVendor)
-                ->with(['booking.customer', 'booking.address', 'items'])
+                ->with(['booking.customer', 'booking.address', 'booking.customerNotes', 'items'])
                 ->firstOrFail();
         }
 

@@ -34,6 +34,7 @@ return [
         'latitude' => 'خط العرض',
         'longitude' => 'خط الطول',
         'created_at' => 'تاريخ الإنشاء',
+        'transport_fee' => 'رسوم النقل الأساسية',
     ],
 
     // Filter labels
@@ -44,6 +45,7 @@ return [
         'region' => 'المنطقة',
     ],
     'errors' => [
+        'transport_price_invalid' => 'أدخل مبلغًا بالجنيه المصري لا يقل عن صفر وبمنزلتين عشريتين كحد أقصى.',
         'delete_governorate_has_regions' => 'احذف مناطق المحافظة قبل حذفها.',
         'delete_region_has_cities' => 'احذف مدن المنطقة قبل حذفها.',
     ],

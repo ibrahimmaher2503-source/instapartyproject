@@ -11,6 +11,12 @@ document.querySelectorAll('[data-service-gallery]').forEach((gallery) => {
         image.src = button.dataset.serviceGalleryImage;
         buttons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
     }));
+    gallery.querySelectorAll('[data-gallery-step]').forEach((control) => control.addEventListener('click', () => {
+        if (buttons.length === 0) return;
+        const current = Math.max(0, Array.from(buttons).findIndex((item) => item.getAttribute('aria-pressed') === 'true'));
+        const next = (current + Number(control.dataset.galleryStep) + buttons.length) % buttons.length;
+        buttons[next].click();
+    }));
 });
 
 document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
@@ -25,6 +31,86 @@ document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
 document.querySelectorAll('[data-browser-timezone]').forEach((input) => {
     if (input instanceof HTMLInputElement) input.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
 });
+
+const searchGeography = document.querySelector('[data-search-geography]');
+
+if (searchGeography instanceof HTMLFormElement) {
+    const governorateSelect = searchGeography.querySelector('[data-search-governorate]');
+    const citySelect = searchGeography.querySelector('[data-search-city]');
+
+    if (governorateSelect instanceof HTMLSelectElement && citySelect instanceof HTMLSelectElement) {
+        const cityPlaceholder = citySelect.options[0]?.text ?? '';
+
+        governorateSelect.addEventListener('change', async () => {
+            citySelect.replaceChildren(new Option(cityPlaceholder, ''));
+            citySelect.disabled = true;
+
+            if (governorateSelect.value === '') return;
+
+            try {
+                const response = await fetch(`/api/v1/customer/cities?governorate=${encodeURIComponent(governorateSelect.value)}`, {
+                    headers: { Accept: 'application/json', 'Accept-Language': document.documentElement.lang },
+                });
+                if (!response.ok) return;
+
+                const payload = await response.json();
+                const cities = Array.isArray(payload?.data) ? payload.data : [];
+                cities.forEach((city) => citySelect.add(new Option(city.name, city.public_id)));
+            } finally {
+                citySelect.disabled = governorateSelect.value === '';
+            }
+        });
+    }
+
+    const categorySelect = searchGeography.querySelector('[data-search-category]');
+    const occasionSelect = searchGeography.querySelector('[data-search-occasion]');
+    const packageSelect = searchGeography.querySelector('[data-search-package]');
+    const packageOptionsNode = searchGeography.querySelector('[data-search-package-options]');
+    const vendorSelect = searchGeography.querySelector('[data-search-vendor]');
+    const vendorOptionsNode = searchGeography.querySelector('[data-search-vendor-options]');
+
+    if (categorySelect instanceof HTMLSelectElement
+        && occasionSelect instanceof HTMLSelectElement
+        && vendorSelect instanceof HTMLSelectElement
+        && vendorOptionsNode instanceof HTMLScriptElement) {
+        const vendorPlaceholder = vendorSelect.options[0]?.text ?? '';
+        const vendorOptions = JSON.parse(vendorOptionsNode.textContent || '[]');
+
+        const refreshVendors = () => {
+            const selectedVendor = vendorSelect.value;
+            const category = categorySelect.value;
+            const occasion = occasionSelect.value;
+            const matching = vendorOptions.filter((vendor) => vendor.combinations.some((combination) => (
+                (category === '' || combination.categories.includes(category))
+                && (occasion === '' || combination.occasions.includes(occasion))
+            )));
+
+            vendorSelect.replaceChildren(new Option(vendorPlaceholder, ''));
+            matching.forEach((vendor) => vendorSelect.add(new Option(vendor.label, vendor.public_id)));
+            vendorSelect.value = matching.some((vendor) => vendor.public_id === selectedVendor) ? selectedVendor : '';
+        };
+
+        categorySelect.addEventListener('change', refreshVendors);
+        occasionSelect.addEventListener('change', refreshVendors);
+    }
+
+    if (occasionSelect instanceof HTMLSelectElement
+        && packageSelect instanceof HTMLSelectElement
+        && packageOptionsNode instanceof HTMLScriptElement) {
+        const packageEmptyPlaceholder = packageSelect.options[0]?.text ?? '';
+        const packageAllLabel = packageSelect.dataset.searchPackageAllLabel ?? packageEmptyPlaceholder;
+        const packageOptions = JSON.parse(packageOptionsNode.textContent || '[]');
+
+        occasionSelect.addEventListener('change', () => {
+            const occasion = occasionSelect.value;
+            packageSelect.replaceChildren(new Option(occasion === '' ? packageEmptyPlaceholder : packageAllLabel, ''));
+            packageOptions
+                .filter((packageOption) => packageOption.occasion_code === occasion)
+                .forEach((packageOption) => packageSelect.add(new Option(packageOption.name, packageOption.public_id)));
+            packageSelect.disabled = occasion === '';
+        });
+    }
+}
 
 if (storefrontHeader instanceof HTMLElement) {
     const syncHeaderSurface = () => storefrontHeader.classList.toggle('is-scrolled', window.scrollY > 12);
@@ -129,13 +215,13 @@ if (planner instanceof HTMLElement) {
 
             const startsAt = planner.querySelector('[name="event_starts_at"]');
             const endsAt = planner.querySelector('[name="event_ends_at"]');
-            if (!(startsAt instanceof HTMLInputElement) || !(endsAt instanceof HTMLInputElement) || startsAt.value === '' || endsAt.value === '') {
+            if (!(startsAt instanceof HTMLInputElement) || !(endsAt instanceof HTMLInputElement) || startsAt.value === '') {
                 showPlannerError(planner.dataset.errorTimesRequired ?? '');
                 return false;
             }
             const startsDate = new Date(startsAt.value);
-            const endsDate = new Date(endsAt.value);
-            if (Number.isNaN(startsDate.valueOf()) || Number.isNaN(endsDate.valueOf()) || startsDate <= new Date() || endsDate <= startsDate) {
+            const endsDate = endsAt.value === '' ? null : new Date(endsAt.value);
+            if (Number.isNaN(startsDate.valueOf()) || startsDate <= new Date() || (endsDate !== null && (Number.isNaN(endsDate.valueOf()) || endsDate <= startsDate))) {
                 showPlannerError(planner.dataset.errorTimesInvalid ?? '');
                 return false;
             }

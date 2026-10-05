@@ -44,6 +44,12 @@ return [
         'payment_status' => 'حالة الدفع',
         'fulfillment_status' => 'حالة التنفيذ',
         'total' => 'الإجمالي',
+        'delivery_total' => 'إجمالي التوصيل والنقل',
+        'transport_base' => 'أساس نقل المحافظة',
+        'transportation_adjustment' => 'نقل إضافي',
+        'adjustment_source' => 'مصدر التعديل',
+        'adjustment_reference' => 'مرجع المصدر',
+        'services_subtotal' => 'المجموع الفرعي للخدمات',
         'amount_paid' => 'المبلغ المدفوع',
         'submitted_at' => 'تاريخ الإرسال',
         'vendor' => 'المورد',
@@ -103,6 +109,7 @@ return [
         'customer' => 'العميل',
         'event' => 'تفاصيل الفعالية',
         'kpis' => 'نظرة عامة',
+        'invoice_breakdown' => 'تفاصيل الفاتورة',
     ],
 
     'relations' => [
@@ -118,6 +125,7 @@ return [
         'edit' => 'تعديل',
         'force_cancel' => 'إلغاء إجباري',
         'add_admin_note' => 'إضافة ملاحظة إدارية',
+        'add_transportation_line' => 'إضافة بند نقل',
         'save_changes' => 'حفظ التغييرات',
         'create_booking' => 'إنشاء حجز',
     ],
@@ -160,6 +168,17 @@ return [
         'booking_updated' => 'تم تحديث الحجز بنجاح.',
         'force_cancelled' => 'تم إلغاء الحجز إجباريًا بنجاح.',
         'admin_note_added' => 'تمت إضافة الملاحظة الإدارية بنجاح.',
+        'transportation_line_added' => 'تمت إضافة بند النقل وإعادة حساب الإجمالي.',
+    ],
+    'invoice' => [
+        'title' => 'فاتورة الحجز',
+        'print' => 'طباعة الفاتورة',
+        'customer' => 'العميل',
+        'date' => 'التاريخ',
+        'currency' => 'العملة',
+        'item' => 'العنصر',
+        'amount' => 'المبلغ',
+        'vendor_delivery' => 'توصيل الموردين',
     ],
 
     'empty_states' => [
@@ -378,6 +397,7 @@ return [
         'action_failed' => 'فشل الإجراء.',
     ],
     'validation' => [
+        'transport_price_invalid' => 'أدخل مبلغًا بالجنيه المصري لا يقل عن صفر وبمنزلتين عشريتين كحد أقصى.',
         'lane_required' => 'خطوة التنفيذ مطلوبة.',
         'lane_invalid' => 'يجب أن تكون خطوة التنفيذ preparing أو ready أو in_progress أو completed.',
     ],

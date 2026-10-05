@@ -355,6 +355,9 @@ return [
         'commercial_register_no' => 'Commercial Register No.',
         'tax_id' => 'Tax ID',
         'national_id' => 'National ID',
+        'facebook_url' => 'Facebook page URL',
+        'website_url' => 'Website URL',
+        'instagram_url' => 'Instagram page URL',
         'locale' => 'Locale',
         'last_login_at' => 'Last Login',
         'joined_at' => 'Joined',
@@ -397,7 +400,7 @@ return [
 
     // Business type labels
     'business_type' => [
-        'individual' => 'Individual',
+        'individual' => 'Individual / No company',
         'company' => 'Company',
         'establishment' => 'Establishment',
     ],
@@ -461,7 +464,7 @@ return [
         'complete_requirements' => 'Complete every approval requirement first.',
         'pending_only' => 'Only a pending vendor can be approved.',
         'identity' => 'The vendor identity is incomplete.',
-        'contact' => 'Email and phone must be present and verified.',
+        'contact' => 'A verified email and a phone number are required; phone verification is completed after approval.',
         'profile' => 'Required bilingual business and identity fields are incomplete.',
         'geography' => 'The selected city does not belong to the selected governorate.',
         'banking' => 'Required banking information is incomplete.',
@@ -476,6 +479,7 @@ return [
         'platform_invalid' => 'The device platform must be ios, android, or web.',
         'fcm_token_required' => 'The FCM device token is required.',
         'phone_e164' => 'Phone number must be in E.164 format, for example: +201001234567.',
+        'phone_required' => 'A phone number is required to register as a vendor.',
         'otp_invalid' => 'The verification code is incorrect or has expired.',
         'otp_throttled' => 'Too many verification attempts. Please try again later.',
         'duplicate_phone' => 'This phone number is already registered.',
@@ -549,6 +553,7 @@ return [
         'vendor_suspended' => 'Your account is suspended. You can view your data but cannot make changes.',
         'vendor_approval_required' => 'Your vendor account must be approved before using this feature.',
         'email_verification_required' => 'Please verify your email before using vendor operations.',
+        'phone_verification_required' => 'Please verify your phone after approval before using vendor operations.',
     ],
     'expiry_date_must_be_future' => 'The expiry date must be today or later.',
 ];

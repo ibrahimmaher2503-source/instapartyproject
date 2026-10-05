@@ -134,6 +134,7 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
         });
 
         $serviceTypeStats = collect(ProductType::cases())
+            ->filter(fn (ProductType $type): bool => $type !== ProductType::Digital || config('catalog.digital_services_enabled', false))
             ->map(function (ProductType $type) use ($data): Stat {
                 $resource = match ($type) {
                     ProductType::Rental => VendorRentalServiceResource::class,

@@ -202,6 +202,9 @@ class BookingResource extends Resource
                             ->size('lg')
                             ->weight(FontWeight::Bold)
                             ->color('success'),
+                        TextEntry::make('delivery_total_minor')
+                            ->label(__('booking.columns.delivery_total'))
+                            ->money('EGP', divideBy: 100),
                         TextEntry::make('amount_paid_minor')
                             ->label(__('booking.columns.amount_paid'))
                             ->money('EGP', divideBy: 100)
@@ -326,6 +329,32 @@ class BookingResource extends Resource
                     ]),
 
                 // ── Audit timeline (full width) ───────────────────────────
+                Section::make(__('booking.sections.invoice_breakdown'))
+                    ->icon('heroicon-o-receipt-percent')
+                    ->columns(2)
+                    ->columnSpan(12)
+                    ->schema([
+                        TextEntry::make('subtotal_minor')
+                            ->label(__('booking.columns.services_subtotal'))
+                            ->money('EGP', divideBy: 100),
+                        TextEntry::make('transport_base_minor')
+                            ->label(__('booking.columns.transport_base'))
+                            ->money('EGP', divideBy: 100),
+                        TextEntry::make('transportation_adjustment_minor')
+                            ->label(__('booking.columns.transportation_adjustment'))
+                            ->state(fn (Booking $record): int => (int) $record->adjustments()
+                                ->where('type', 'transportation')
+                                ->sum('amount_minor'))
+                            ->money('EGP', divideBy: 100),
+                        TextEntry::make('delivery_total_minor')
+                            ->label(__('booking.columns.delivery_total'))
+                            ->money('EGP', divideBy: 100),
+                        TextEntry::make('total_minor')
+                            ->label(__('booking.columns.total'))
+                            ->money('EGP', divideBy: 100)
+                            ->weight(FontWeight::Bold),
+                    ]),
+
                 AuditTimelineSection::make()
                     ->audience(TimelineAudience::Admin)
                     ->columnSpan(12),

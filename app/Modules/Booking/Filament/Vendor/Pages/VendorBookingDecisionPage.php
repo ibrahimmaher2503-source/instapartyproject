@@ -31,6 +31,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 
 class VendorBookingDecisionPage extends Page implements HasInfolists
 {
@@ -218,6 +219,7 @@ class VendorBookingDecisionPage extends Page implements HasInfolists
                     ->schema([
                         TextEntry::make('customer_notes_text')
                             ->label('')
+                            ->formatStateUsing(fn (string $state): HtmlString => new HtmlString('<div style="white-space: pre-wrap; overflow-wrap: anywhere;">'.e($state).'</div>'))
                             ->getStateUsing(fn (): string => $this->getRecord()->booking?->customerNotes->first()?->body ?? '—'),
                     ]),
 
@@ -400,7 +402,7 @@ class VendorBookingDecisionPage extends Page implements HasInfolists
         }
 
         $eventStartsAt = $booking->event_starts_at;
-        $eventEndsAt = $booking->event_ends_at;
+        $eventEndsAt = $booking->event_ends_at ?? $rentalItems->max('effective_ends_at');
 
         if ($eventStartsAt === null) {
             return;
@@ -419,7 +421,9 @@ class VendorBookingDecisionPage extends Page implements HasInfolists
                 ->orWhere(fn ($held) => $held
                     ->where('status', 'held')
                     ->where('expires_at', '>', now())))
-            ->when($currentItemIds, fn ($q) => $q->whereNotIn('booking_item_id', $currentItemIds))
+            ->when($currentItemIds, fn ($q) => $q->where(fn ($other) => $other
+                ->whereNull('booking_item_id')
+                ->orWhereNotIn('booking_item_id', $currentItemIds)))
             ->when(
                 $eventEndsAt !== null,
                 fn ($q) => $q->where('reserved_starts_at', '<', $eventEndsAt)

@@ -25,6 +25,7 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Http\UploadedFile;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class VendorDocumentsPage extends Page implements HasTable
 {
@@ -92,8 +93,24 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->label(__('vendor-portal.documents.view'))
                     ->icon('heroicon-o-eye')
                     ->color('gray')
-                    ->url(fn (VendorDocument $record): string => app(GenerateDocumentSignedUrlAction::class)->execute($record, auth()->user()))
-                    ->openUrlInNewTab(),
+                    ->action(function (VendorDocument $record) {
+                        try {
+                            $url = app(GenerateDocumentSignedUrlAction::class)->execute($record, auth()->user());
+                        } catch (HttpException $exception) {
+                            if ($exception->getStatusCode() !== 404) {
+                                throw $exception;
+                            }
+
+                            Notification::make()
+                                ->title(__('vendor-portal.documents.file_unavailable'))
+                                ->warning()
+                                ->send();
+
+                            return null;
+                        }
+
+                        return redirect()->away($url);
+                    }),
                 TableAction::make('reupload')
                     ->label(__('identity.actions.re_upload_document'))
                     ->icon('heroicon-o-arrow-up-tray')

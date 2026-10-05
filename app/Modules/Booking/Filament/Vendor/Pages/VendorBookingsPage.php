@@ -79,7 +79,7 @@ class VendorBookingsPage extends Page implements HasTable
                 VendorSubStatus::TimedOut->value,
             ]))
             ->with(['booking', 'booking.customer', 'items'])
-            ->orderByRaw('ISNULL(response_deadline), response_deadline ASC');
+            ->orderByRaw('CASE WHEN response_deadline IS NULL THEN 1 ELSE 0 END, response_deadline ASC');
 
         return $table
             ->query($query)

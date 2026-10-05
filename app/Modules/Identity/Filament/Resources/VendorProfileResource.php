@@ -42,6 +42,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
@@ -136,17 +137,37 @@ class VendorProfileResource extends Resource
                         ->options([
                             BusinessType::Individual->value => __('identity.business_type.individual'),
                             BusinessType::Company->value => __('identity.business_type.company'),
+                            BusinessType::Establishment->value => __('identity.business_type.establishment'),
                         ])
-                        ->required(),
+                        ->required()
+                        ->live(),
                     TextInput::make('commercial_register_no')
                         ->label(__('identity.fields.commercial_register_no'))
-                        ->maxLength(60),
+                        ->maxLength(60)
+                        ->visible(fn (Get $get): bool => in_array($get('business_type'), [BusinessType::Company->value, BusinessType::Establishment->value], true)),
                     TextInput::make('tax_id')
                         ->label(__('identity.fields.tax_id'))
-                        ->maxLength(60),
+                        ->maxLength(60)
+                        ->visible(fn (Get $get): bool => $get('business_type') === BusinessType::Company->value),
                     TextInput::make('national_id')
                         ->label(__('identity.fields.national_id'))
-                        ->maxLength(20),
+                        ->maxLength(20)
+                        ->visible(fn (Get $get): bool => $get('business_type') === BusinessType::Individual->value),
+                    TextInput::make('facebook_url')
+                        ->label(__('identity.fields.facebook_url'))
+                        ->url()
+                        ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                        ->maxLength(2048),
+                    TextInput::make('website_url')
+                        ->label(__('identity.fields.website_url'))
+                        ->url()
+                        ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                        ->maxLength(2048),
+                    TextInput::make('instagram_url')
+                        ->label(__('identity.fields.instagram_url'))
+                        ->url()
+                        ->validationMessages(['url' => __('vendor-portal.profile.invalid_url')])
+                        ->maxLength(2048),
                     Select::make('primary_governorate_id')
                         ->label(__('identity.columns.governorate'))
                         ->options(fn () => DB::table('governorates')->pluck('name', 'id')
@@ -609,6 +630,18 @@ class VendorProfileResource extends Resource
                         ->label(__('identity.forms.business_name_ar'))
                         ->getStateUsing(fn (VendorProfile $record): ?string => app(StorefrontText::class)->translation($record, 'business_name', 'ar') ?: null),
                     TextEntry::make('slug')->label(__('identity.columns.slug')),
+                    TextEntry::make('facebook_url')
+                        ->label(__('identity.fields.facebook_url'))
+                        ->url(fn (?string $state): ?string => $state)
+                        ->openUrlInNewTab(),
+                    TextEntry::make('website_url')
+                        ->label(__('identity.fields.website_url'))
+                        ->url(fn (?string $state): ?string => $state)
+                        ->openUrlInNewTab(),
+                    TextEntry::make('instagram_url')
+                        ->label(__('identity.fields.instagram_url'))
+                        ->url(fn (?string $state): ?string => $state)
+                        ->openUrlInNewTab(),
                     TextEntry::make('primaryGovernorate.name')
                         ->label(__('identity.columns.governorate'))
                         ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—')),

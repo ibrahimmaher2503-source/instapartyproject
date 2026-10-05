@@ -9,7 +9,6 @@ use App\Modules\Catalog\Application\Actions\SubmitServiceForReviewAction;
 use App\Modules\Catalog\Application\Actions\VendorArchiveServiceAction;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
-use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\ChangesRequestedState;
 use App\Modules\Catalog\Domain\States\ServiceStatus\DraftState;
@@ -17,13 +16,15 @@ use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use App\Modules\Catalog\Domain\States\ServiceStatus\RejectedState;
 use App\Modules\Catalog\Domain\States\ServiceStatus\ServiceState;
 use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategoryOccasionHelper;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasServicePriceInput;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages\CreateVendorSaleService;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages\EditVendorSaleService;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages\ListVendorSaleServices;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Shared\Application\Services\VendorOperationalAccess;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
@@ -31,7 +32,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
@@ -46,6 +46,8 @@ use Throwable;
 class VendorSaleServiceResource extends Resource
 {
     use HasCategoryOccasionHelper;
+    use HasCategorySchemaFields;
+    use HasServicePriceInput;
 
     protected static ?string $model = Service::class;
 
@@ -122,32 +124,12 @@ class VendorSaleServiceResource extends Resource
 
             Section::make(__('catalog.shared'))
                 ->schema([
-                    Select::make('category_id')
-                        ->label(__('catalog.category'))
-                        ->options(function () {
-                            return Category::query()
-                                ->where('is_active', true)
-                                ->whereJsonContains('allowed_product_types', ProductType::Sale->value)
-                                ->orderBy('sort_order')
-                                ->get()
-                                ->mapWithKeys(fn (Category $c) => [
-                                    $c->id => $c->getTranslation('name', app()->getLocale()),
-                                ]);
-                        })
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->live()
-                        ->helperText(fn (Get $get): ?string => static::categoryOccasionHelper($get)),
-                    TextInput::make('base_price_minor')
-                        ->label(__('catalog.base_price'))
-                        ->numeric()
-                        ->required()
-                        ->minValue(0)
-                        ->suffix(__('catalog.piastres_suffix')),
+                    ...static::serviceCategoryFields(ProductType::Sale),
+                    static::servicePriceField(),
                 ])
                 ->columns(2),
 
+            static::categorySchemaSection(ProductType::Sale),
             Section::make(__('catalog.sale_details'))
                 ->schema([
                     Grid::make(2)->schema([
@@ -220,9 +202,7 @@ class VendorSaleServiceResource extends Resource
                             ? $state->getValue()
                             : ($state instanceof ServiceStatus ? $state->value : (is_string($state) ? $state : '')),
                     )?->label() ?? '—'),
-                TextColumn::make('base_price_minor')
-                    ->label(__('catalog.base_price'))
-                    ->money('EGP', divideBy: 100),
+                static::servicePriceColumn(),
                 TextColumn::make('updated_at')
                     ->label(__('vendor-portal.services.last_modified'))
                     ->dateTime('d M Y')
@@ -286,7 +266,7 @@ class VendorSaleServiceResource extends Resource
     {
         $vendor = auth()->user()?->vendorProfile;
 
-        return $vendor && $vendor->approvedTypes()
+        return VendorOperationalAccess::allowed() && $vendor->approvedTypes()
             ->where('product_type', ProductType::Sale->value)
             ->exists();
     }

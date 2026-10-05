@@ -68,7 +68,7 @@ class VendorRecentBookingsWidget extends TableWidget
                         VendorSubStatus::Rejected, VendorSubStatus::TimedOut => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (VendorSubStatus $state): string => ucwords(str_replace('_', ' ', $state->value))),
+                    ->formatStateUsing(fn (VendorSubStatus $state): string => __('booking.vendor_status.'.$state->value)),
                 TextColumn::make('subtotal_minor')
                     ->label(__('vendor-portal.dashboard.recent_bookings.total'))
                     ->money('EGP', divideBy: 100),

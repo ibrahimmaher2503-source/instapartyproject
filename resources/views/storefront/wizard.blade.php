@@ -56,12 +56,12 @@
             <div class="sf-wizard-card">
                 <form
                     class="sf-wizard-form"
-                    method="{{ $bookingMode ? 'POST' : 'GET' }}"
-                    action="{{ $bookingMode ? route('storefront.cart.setup') : route('storefront.search') }}"
+                    method="POST"
+                    action="{{ $bookingMode ? route('storefront.cart.setup') : route('storefront.wizard.context') }}"
                     data-planner-form
                 >
+                    @csrf
                     @if ($bookingMode)
-                        @csrf
                         <input type="hidden" name="service_id" value="{{ request('service') }}">
                         <input type="hidden" name="timezone" value="Africa/Cairo" data-browser-timezone>
                     @endif
@@ -133,7 +133,7 @@
                                     </span>
                                 </label>
                                 <label class="sf-wizard-field-card">
-                                    <span class="sf-wizard-field-label">{{ __('storefront.checkout.event.ends_at') }}</span>
+                                    <span class="sf-wizard-field-label">{{ __('storefront.wizard.step1.ends_at_optional') }}</span>
                                     <span class="sf-localized-date sf-wizard-date-control" data-localized-date>
                                         <input
                                             type="datetime-local"
@@ -142,7 +142,6 @@
                                             value="{{ old('event_ends_at', request('event_ends_at')) }}"
                                             class="sf-field sf-wizard-field"
                                             data-localized-date-input
-                                            required
                                         >
                                         <span aria-hidden="true" data-localized-date-placeholder>{{ __('storefront.common.datetime_placeholder') }}</span>
                                     </span>
@@ -214,14 +213,14 @@
                                 >
                             </label>
                             <label class="sf-wizard-field-card">
-                                <span class="sf-wizard-field-label">{{ __('storefront.wizard.step3.celebrant_label') }}</span>
-                                <input
-                                    type="text"
-                                    name="celebrant_name"
-                                    value="{{ old('celebrant_name', request('celebrant_name')) }}"
-                                    placeholder="{{ __('storefront.wizard.step3.celebrant_placeholder') }}"
+                                <span class="sf-wizard-field-label">{{ __('storefront.wizard.step3.notes_label') }}</span>
+                                <textarea
+                                    name="notes"
+                                    rows="5"
+                                    maxlength="10000"
+                                    placeholder="{{ __('storefront.wizard.step3.notes_placeholder') }}"
                                     class="sf-field sf-wizard-field"
-                                >
+                                >{{ old('notes', request('notes', session('storefront.planner_notes'))) }}</textarea>
                             </label>
                         </div>
 

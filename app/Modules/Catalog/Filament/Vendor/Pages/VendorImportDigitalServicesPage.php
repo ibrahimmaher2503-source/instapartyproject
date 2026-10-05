@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Filament\Vendor\Pages;
 
 use App\Modules\Catalog\Application\Actions\ImportDigitalServicesFromExcelAction;
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\ExcelImport;
 use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
+use App\Modules\Shared\Application\Services\VendorOperationalAccess;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -30,6 +32,15 @@ class VendorImportDigitalServicesPage extends Page implements HasForms
     protected static ?int $navigationSort = 8;
 
     protected static string $view = 'vendor-portal.pages.vendor-import-services';
+
+    public static function canAccess(): bool
+    {
+        return config('catalog.digital_services_enabled', true)
+            && VendorOperationalAccess::allowed()
+            && auth()->user()?->vendorProfile?->approvedTypes()
+                ->where('product_type', ProductType::Digital->value)
+                ->exists();
+    }
 
     /** @var array<string, mixed>|null */
     public ?array $data = [];

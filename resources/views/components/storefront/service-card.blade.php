@@ -18,6 +18,7 @@
         : ($service->vendor?->primaryGovernorate ? $storefrontText->translation($service->vendor->primaryGovernorate, 'name') : '');
     $shortDescription = $storefrontText->translation($service, 'short_description');
     $ratingCount = (int) ($service->rating_count ?? 0);
+    $categoryAttributes = app(App\Modules\Catalog\Application\Services\CategoryFieldPresenter::class)->forService($service);
 @endphp
 
 <article class="sf-catalog-card group overflow-hidden rounded-[1.35rem] border border-ink-200/80 bg-white transition duration-200 hover:-translate-y-1 hover:shadow-deep">
@@ -40,6 +41,13 @@
             </h3>
             @if ($shortDescription)
                 <p class="line-clamp-2 text-sm leading-6 text-ink-500">{{ $shortDescription }}</p>
+            @endif
+            @if ($categoryAttributes !== [])
+                <dl class="space-y-1 text-xs text-ink-500" data-category-attributes>
+                    @foreach ($categoryAttributes as $attribute)
+                        <div class="flex justify-between gap-3"><dt>{{ $attribute['label'] }}</dt><dd class="font-semibold text-ink-900">{{ $attribute['value'] }}</dd></div>
+                    @endforeach
+                </dl>
             @endif
             @if ($vendorName || $locationName)
                 <div class="sf-catalog-card__meta">
