@@ -1,11 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
 
+// Every browser fixture uses the isolated SQL search, including child PHP processes.
+process.env.SCOUT_DRIVER = 'null';
+
 const database = path.resolve('storage/e2e.sqlite');
 const testEnvironment = {
     ...process.env,
     APP_ENV: 'testing',
     APP_DEBUG: 'true',
+    APP_URL: 'http://127.0.0.1:8139',
     DB_CONNECTION: 'sqlite',
     DB_DATABASE: database,
     CACHE_STORE: 'array',
@@ -15,6 +19,7 @@ const testEnvironment = {
     MAIL_LOG_CHANNEL: 'single',
     LOG_CHANNEL: 'single',
     LOG_LEVEL: 'debug',
+    CATALOG_DIGITAL_SERVICES_ENABLED: process.env.CATALOG_DIGITAL_SERVICES_ENABLED ?? 'true',
 };
 
 export default defineConfig({

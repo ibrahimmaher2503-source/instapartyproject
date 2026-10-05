@@ -20,6 +20,11 @@ export default function globalSetup(): void {
   };
 
   const script = String.raw`
+Illuminate\Support\Facades\Http::fake(['*' => Illuminate\Support\Facades\Http::response('', 503)]);
+App\Modules\Identity\Domain\Models\User::factory()->create(['email' => 'admin@instaparty.local']);
+app(App\Modules\Identity\Database\Seeders\IdentityDevelopmentSeeder::class)->run();
+app(App\Modules\Catalog\Database\Seeders\CatalogDevelopmentSeeder::class)->run();
+app(App\Modules\Discovery\Database\Seeders\DiscoveryDevelopmentSeeder::class)->run();
 $occasionNames = [
     'birthday' => ['en' => 'Birthday', 'ar' => 'عيد ميلاد'],
     'baby-shower' => ['en' => 'Baby Shower', 'ar' => 'حفلة استقبال المولود'],
@@ -44,15 +49,17 @@ foreach ($occasionNames as $code => $name) {
 $occasionClass::query()->whereNotIn('code', array_keys($occasionNames))->update(['is_active' => false]);
 
 $categoryCodes = [
-    'birthday-general', 'wedding-general', 'engagement-general',
+    'birthday-general', 'e2e-birthday-services', 'wedding-general', 'engagement-general',
     'cakes', 'venues', 'balloons-decoration', 'catering', 'photography',
     'entertainment', 'gifts', 'rentals', 'lighting-effects', 'rental-bouncy-castles',
     'rental-party-equipment', 'sale-cakes', 'digital-invitations',
 ];
 $categoryClass::query()->whereNotIn('code', $categoryCodes)->update(['is_active' => false]);
+app(Database\Seeders\FrontendAppearanceSeeder::class)->run();
 
 $occasion = $occasionClass::query()->where('code', 'birthday')->firstOrFail();
 $birthdayCategory = $categoryClass::query()->where('code', 'birthday-general')->firstOrFail();
+$birthdayChild = $categoryClass::query()->where('code', 'e2e-birthday-services')->firstOrFail();
 $services = $serviceClass::query()->whereIn('slug', [
     'joy-castle-10x10', 'deluxe-birthday-cake', 'animated-birthday-invite',
 ])->get()->keyBy('slug');
@@ -62,8 +69,9 @@ if ($services->count() !== 3 || $services->pluck('product_type')->unique()->coun
 
 $curatedVendorIds = $services->pluck('vendor_profile_id')->unique()->values();
 $vendorClass::query()->whereNotIn('id', $curatedVendorIds)->update(['approval_status' => 'pending']);
-$vendorClass::query()->whereIn('id', $curatedVendorIds)->update(['logo_path' => null, 'cover_path' => null]);
+$vendorClass::query()->whereIn('id', $curatedVendorIds)->update(['approval_status' => 'approved', 'logo_path' => null, 'cover_path' => null]);
 $serviceClass::query()->whereNotIn('slug', $services->keys())->update(['status' => 'draft']);
+$serviceClass::query()->whereIn('id', $services->pluck('id'))->update(['status' => 'published']);
 Illuminate\Support\Facades\DB::table('media')
     ->where('model_type', $services->first()->getMorphClass())
     ->whereIn('model_id', $services->pluck('id'))
@@ -78,13 +86,12 @@ if ($featured) {
 
 $designTokenClass::query()->where('is_active', true)->update(['tokens' => $designTokenSchemaClass::default()]);
 
-$birthdayCategoryIds = $services->pluck('category_id')->push($birthdayCategory->id)->unique()->mapWithKeys(
+$birthdayCategoryIds = $services->pluck('category_id')->push($birthdayCategory->id)->push($birthdayChild->id)->unique()->mapWithKeys(
     fn ($categoryId): array => [$categoryId => ['sort_order' => 1]],
 )->all();
 $occasion->categories()->syncWithoutDetaching($birthdayCategoryIds);
 
-// Keep the category route populated while preserving the rental/sale/digital split.
-$serviceClass::query()->where('slug', 'joy-castle-10x10')->update(['category_id' => $birthdayCategory->id]);
+$serviceClass::query()->where('slug', 'joy-castle-10x10')->update(['category_id' => $birthdayChild->id]);
 
 echo 'Public desktop fixtures ready: '.$occasion->getTranslation('name', 'en').' / '.$occasion->getTranslation('name', 'ar').'; '.$services->count().' typed services.'.PHP_EOL;
 `.trim().replace(/\r?\n/g, ' ');

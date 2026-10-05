@@ -122,16 +122,18 @@ it('imports a valid rental row and commits completed counters', function (): voi
     Storage::fake('local');
     $vendor = VendorProfile::factory()->create();
     $validator = Mockery::mock(CategoryFieldValidationService::class);
-    $validator->shouldReceive('rulesFor')->once()->andReturn([]);
+    $validator->shouldReceive('rulesFor')->once()->andReturn(['capacity' => ['required', 'numeric']]);
     $creator = Mockery::mock(CreateRentalServiceAction::class);
-    $creator->shouldReceive('execute')->once()->andReturn(new Service);
+    $creator->shouldReceive('execute')->once()
+        ->with(Mockery::on(fn ($dto): bool => $dto->categoryFieldValues === ['capacity' => 50]))
+        ->andReturn(new Service);
 
     $action = new ImportRentalServicesFromExcelAction($creator, $validator, new FailExcelImportAction);
     $file = UploadedFile::fake()->createWithContent('valid.csv', implode(',', [
         'name_en', 'name_ar', 'short_description_en', 'short_description_ar', 'base_price_minor',
-        'requires_electricity', 'requires_outdoor_space', 'default_rental_duration_hours', 'category_id',
+        'requires_electricity', 'requires_outdoor_space', 'default_rental_duration_hours', 'category_id', 'capacity',
     ])."\n".implode(',', [
-        'Party Chairs', 'كراسي حفلات', 'Chairs', 'كراسي', '2500', '0', '0', '24', '1',
+        'Party Chairs', 'كراسي حفلات', 'Chairs', 'كراسي', '2500', '0', '0', '24', '1', '50',
     ])."\n");
 
     $import = $action->execute($file, $vendor->id);

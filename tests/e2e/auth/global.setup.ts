@@ -26,6 +26,7 @@ setup('create isolated database and authenticate admin', async ({ page }) => {
         '--class=App\\Modules\\Geography\\Database\\Seeders\\EgyptGeographySeeder', '--force']);
     runPhp('catalog-seeder', ['artisan', 'db:seed',
         '--class=App\\Modules\\Catalog\\Database\\Seeders\\CatalogSeeder', '--force']);
+    runPhp('catalog-subcategory', ['artisan', 'tinker', "--execute=$parent=App\\Modules\\Catalog\\Domain\\Models\\Category::query()->where('code','birthday-general')->firstOrFail(); $child=App\\Modules\\Catalog\\Domain\\Models\\Category::factory()->create(['parent_id'=>$parent->id,'code'=>'e2e-birthday-services','name'=>['en'=>'Birthday Services','ar'=>'خدمات عيد الميلاد'],'allowed_product_types'=>['rental','sale','digital']]); $occasion=App\\Modules\\Catalog\\Domain\\Models\\Occasion::query()->where('code','birthday')->firstOrFail(); $occasion->categories()->syncWithoutDetaching([$child->id]);"]);
     const permissionSetup = [
         'view_any_occasion', 'create_occasion', 'view_any_category', 'create_category',
         'view_any_loyalty::program', 'create_loyalty::program',

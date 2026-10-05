@@ -6,6 +6,15 @@ use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Discovery\Application\Actions\SearchServicesAction;
 use App\Modules\Discovery\Application\DTOs\SearchServicesDTO;
 
+it('labels the rating filter below vendor without changing its submitted value', function (string $locale): void {
+    $response = $this->get("/{$locale}/search?min_rating=4")->assertOk();
+    $response->assertSee($locale === 'ar' ? 'تقييم المورد' : 'Vendor Rating');
+    $html = $response->getContent();
+    expect(strpos($html, 'for="vendor"'))->toBeLessThan(strpos($html, 'for="min_rating"'))
+        ->and(strpos($html, 'for="min_rating"'))->toBeLessThan(strpos($html, 'for="price_min"'));
+    $response->assertSee('value="4" selected', false);
+})->with(['en', 'ar']);
+
 it('searches both languages and never drops unknown filters', function (): void {
     config(['scout.driver' => 'database']);
 
@@ -22,6 +31,7 @@ it('searches both languages and never drops unknown filters', function (): void 
         categorySlug: $category,
         occasionCode: null,
         vendorPublicId: null,
+        governoratePublicId: null,
         cityPublicId: $city,
         priceMin: $priceMin,
         priceMax: null,

@@ -6,6 +6,9 @@ use App\Modules\Booking\Database\Factories\BookingFactory;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Domain\Models\ServiceDigitalDetail;
+use App\Modules\Catalog\Domain\Models\ServiceRentalDetail;
+use App\Modules\Catalog\Domain\Models\ServiceSaleDetail;
 use App\Modules\Identity\Domain\Models\User;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +39,30 @@ it('serves a published service before the customer enters the cart flow', functi
         ->assertOk()
         ->assertSeeText('Published test service');
 });
+
+it('hides the four removed customer detail properties without changing stored service data', function (string $locale, string $type): void {
+    $service = Service::factory()->{$type}()->published()->create();
+    $detail = match ($type) {
+        'rental' => ServiceRentalDetail::factory()->create(['service_id' => $service->id]),
+        'sale' => ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'is_made_to_order' => true, 'is_perishable' => true, 'stock_quantity' => 87]),
+        'digital' => ServiceDigitalDetail::factory()->create(['service_id' => $service->id]),
+    };
+    $stored = $detail->refresh()->getRawOriginal();
+    $response = $this->get("/{$locale}/services/{$service->public_id}")->assertOk();
+    foreach (['search.filter_location', 'service.made_to_order', 'service.perishable', 'service.stock'] as $key) {
+        $response->assertDontSeeText(__("storefront.{$key}"));
+    }
+    expect($detail->fresh()->getRawOriginal())->toBe($stored);
+})->with(['en', 'ar'])->with(['rental', 'sale', 'digital']);
+
+it('omits empty detail groups but still blocks an out-of-stock purchase', function (string $locale): void {
+    $service = Service::factory()->sale()->published()->create();
+    ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'lead_time_hours' => 0, 'stock_quantity' => 0]);
+    $response = $this->get("/{$locale}/services/{$service->public_id}")->assertOk();
+    $response->assertSeeText(__('storefront.service.out_of_stock'))
+        ->assertDontSee('class="sf-service-attributes', false)
+        ->assertDontSee('<dl class="mt-5', false);
+})->with(['en', 'ar']);
 
 it('renders only the attributes supported by each service type', function (): void {
     $rental = (object) [

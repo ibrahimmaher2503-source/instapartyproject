@@ -2,23 +2,26 @@ import { expect, test } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import preparePublicFixtures from './public-desktop-capture.setup';
 
 const base = 'http://127.0.0.1:8139';
-const out = path.resolve('docs/qa/screenshots/public-desktop-2026-09-15');
-const serviceIds = JSON.parse(execFileSync('php', ['artisan', 'tinker', '--execute=echo App\\Modules\\Catalog\\Domain\\Models\\Service::query()->whereIn("slug",["joy-castle-10x10","deluxe-birthday-cake","animated-birthday-invite"])->pluck("public_id","slug")->toJson();'], { env: { ...process.env, APP_ENV: 'testing', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('storage/e2e.sqlite') } }).toString());
-const vendorId = execFileSync('php', ['artisan', 'tinker', '--execute=echo App\\Modules\\Identity\\Domain\\Models\\VendorProfile::query()->where("slug","joy-rentals-cairo")->value("public_id");'], { env: { ...process.env, APP_ENV: 'testing', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('storage/e2e.sqlite') } }).toString().trim();
-const requiredServiceSlugs = ['joy-castle-10x10', 'deluxe-birthday-cake', 'animated-birthday-invite'];
-const missingServiceSlugs = requiredServiceSlugs.filter(slug => !serviceIds[slug]);
-if (missingServiceSlugs.length > 0) throw new Error(`Missing public service IDs in isolated SQLite: ${missingServiceSlugs.join(', ')}`);
-if (!vendorId) throw new Error('Missing public vendor ID in isolated SQLite: joy-rentals-cairo');
+const out = path.resolve('docs/qa/screenshots/handoff-2026-10-05/public-desktop');
+const manifest: any[] = [];
+let serviceIds: Record<string, string>;
+test.beforeAll(async () => {
+  preparePublicFixtures();
+  serviceIds = JSON.parse(execFileSync('php', ['artisan', 'tinker', '--execute=echo App\\Modules\\Catalog\\Domain\\Models\\Service::query()->whereIn("slug",["joy-castle-10x10","deluxe-birthday-cake","animated-birthday-invite"])->pluck("public_id","slug")->toJson();'], { env: { ...process.env, APP_ENV: 'testing', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('storage/e2e.sqlite') } }).toString());
+  expect(Object.keys(serviceIds)).toHaveLength(3);
+  await fs.mkdir(out, { recursive: true });
+});
 const routes = [
   ['home', '/'], ['join-us', '/join-us'], ['faq', '/p/faq'], ['terms', '/p/terms'],
   ['privacy', '/p/privacy'], ['about', '/p/about'], ['contact', '/p/contact'],
-  ['search-populated', '/search?q=birthday'], ['search-empty', '/search?q=zzzz-no-match'],
-  ['wizard', '/wizard'], ['service-rental', `/services/${serviceIds['joy-castle-10x10']}`],
-  ['service-sale', `/services/${serviceIds['deluxe-birthday-cake']}`], ['service-digital', `/services/${serviceIds['animated-birthday-invite']}`],
+  ['search-populated', '/search?q=Joy'], ['search-empty', '/search?q=zzzz-no-match'],
+  ['wizard', '/wizard'], ['service-rental', '/services/@joy-castle-10x10'],
+  ['service-sale', '/services/@deluxe-birthday-cake'], ['service-digital', '/services/@animated-birthday-invite'],
   ['category-birthday', '/c/birthday-general'], ['occasion-birthday', '/o/birthday'],
-  ['vendors', '/vendors'], ['vendor-rental', `/vendors/${vendorId}`], ['cart', '/cart'],
+  ['vendors', '/vendors'], ['vendor-rental', '/vendors/joy-rentals-cairo'], ['cart', '/cart'],
   ['auth-login', '/auth/login'], ['auth-register', '/auth/register'], ['auth-forgot', '/auth/forgot'],
   ['auth-reset', '/auth/reset'], ['auth-verify', '/auth/verify'],
 ] as const;
@@ -28,8 +31,9 @@ test.describe.configure({ mode: 'serial' });
 test.use({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1, storageState: { cookies: [], origins: [] } });
 
 for (const locale of ['en', 'ar'] as const) {
-  for (const [name, route] of routes) {
+  for (const [name, routeTemplate] of routes) {
     test(`${locale}-${name}`, async ({ page }) => {
+      const route = routeTemplate.replace(/@([\w-]+)/g, (_, slug) => serviceIds[slug]);
       const consoleErrors: string[] = [];
       const pageErrors: string[] = [];
       page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
@@ -80,13 +84,8 @@ for (const locale of ['en', 'ar'] as const) {
       await fs.mkdir(out, { recursive: true });
       const file = `${locale}-${name}.png`;
       await page.screenshot({ path: path.join(out, file), fullPage: true });
-      const manifestPath = path.join(out, 'manifest.json');
-      let manifest: any[] = [];
-      try { manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8')); } catch {}
-      manifest = manifest.filter(item => !(item.name === name && item.locale === locale));
       const redirectRecorded = recordedRedirects.has(name) && redirected && status === 200;
       manifest.push({ name, locale, requestedUrl, finalUrl, redirected, status, title: await page.title(), consoleErrors, pageErrors, navigationError, outcome: redirectRecorded ? 'redirect-recorded' : failed ? 'failed' : 'pass', failed, screenshot: file });
-      await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
     });
   }
 }
@@ -143,15 +142,17 @@ test('ar-home-second-pass-composition', async ({ page }) => {
   ]);
 });
 
-test('ar-home-search-keeps-supported-category-filter', async ({ page }) => {
+test('ar-home-search-uses-dependent-governorate-and-city-without-category', async ({ page }) => {
   await page.goto(`${base}/ar`, { waitUntil: 'networkidle' });
 
-  await expect(page.locator('.sf-hero-region .sf-party-builder select[name="category"]')).toBeVisible();
+  await expect(page.locator('.sf-hero-region .sf-party-builder select[name="category"]')).toHaveCount(0);
+  await expect(page.locator('.sf-hero-region .sf-party-builder select[name="governorate_public_id"]')).toBeVisible();
+  await expect(page.locator('.sf-hero-region .sf-party-builder select[name="city_public_id"]')).toBeDisabled();
 });
 
 for (const locale of ['en', 'ar'] as const) {
   test(`${locale}-home-second-pass-responsive`, async ({ page }) => {
-    const responsiveOut = path.resolve('docs/qa/screenshots/homepage-second-pass-2026-09-17');
+    const responsiveOut = path.resolve('docs/qa/screenshots/handoff-2026-10-05/homepage');
     await fs.mkdir(responsiveOut, { recursive: true });
 
     for (const width of [1440, 1280, 1024, 768, 390]) {
@@ -205,7 +206,7 @@ for (const locale of ['en', 'ar'] as const) {
     await expect(page.locator('[data-faq-empty]')).toBeVisible();
     await page.locator('[data-faq-search-clear]').click();
 
-    const responsiveOut = path.resolve('docs/qa/screenshots/faq-responsive-2026-09-16');
+    const responsiveOut = path.resolve('docs/qa/screenshots/handoff-2026-10-05/faq');
     await fs.mkdir(responsiveOut, { recursive: true });
     for (const width of [1440, 1280, 1024, 768, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
@@ -218,13 +219,8 @@ for (const locale of ['en', 'ar'] as const) {
 
 test.afterAll(async () => {
   const manifestPath = path.join(out, 'manifest.json');
-  try {
-    const manifest = await fs.readFile(manifestPath, 'utf8');
-    await fs.writeFile(manifestPath, JSON.stringify(JSON.parse(manifest), null, 2));
-  } catch { /* no rows were produced */ }
-  await fs.writeFile(path.join(out, 'README.md'), `# Public desktop storefront capture\n\nCaptured 2026-09-15 at 1440x1000, device scale factor 1, from isolated SQLite storage/e2e.sqlite on 127.0.0.1:8139.\n\nEach manifest row records final URL, HTTP status, title, console errors, page errors, and screenshot filename.\n`);
-
-  const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8')) as Array<Record<string, any>>;
+  await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+  await fs.writeFile(path.join(out, 'README.md'), `# Public desktop storefront capture\n\nCaptured 2026-10-05 at 1440x1000, device scale factor 1, from isolated SQLite storage/e2e.sqlite on 127.0.0.1:8139.\n\nEach manifest row records final URL, HTTP status, title, console errors, page errors, and screenshot filename.\n`);
   const failures = manifest.filter(item => item.outcome !== 'redirect-recorded' && (
     item.status >= 400 || item.navigationError || item.pageErrors?.length > 0 || item.consoleErrors?.length > 0
   ));

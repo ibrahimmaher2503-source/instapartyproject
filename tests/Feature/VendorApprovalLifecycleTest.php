@@ -123,6 +123,20 @@ it('approves once without requiring a product type and rejects unauthorized appr
         ->and($approved->approvedTypes()->count())->toBe(0);
 });
 
+it('allows admin approval before phone verification and leaves operations gated afterwards', function (): void {
+    Event::fake();
+    $profile = eligibleVendorProfile();
+    $profile->user->forceFill(['phone_verified_at' => null])->save();
+    $actor = vendorLifecycleActor(['approve_vendor_profile']);
+
+    expect(app(VendorApprovalEligibilityService::class)->evaluate($profile)->eligible)->toBeTrue();
+
+    $approved = app(ApproveVendorProfileAction::class)->execute($profile, $actor);
+
+    expect($approved->approval_status)->toBeInstanceOf(ApprovedState::class)
+        ->and($approved->user->fresh()->phone_verified_at)->toBeNull();
+});
+
 it('keeps grants separate and makes grant revoke suspend and reactivate idempotent', function (): void {
     Event::fake();
     $profile = eligibleVendorProfile();

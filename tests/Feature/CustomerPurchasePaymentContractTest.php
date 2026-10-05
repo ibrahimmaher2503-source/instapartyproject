@@ -97,7 +97,7 @@ it('rejects payment initiation for an unconfirmed booking before the gateway', f
 
 it('confirms a single-vendor booking through the existing vendor accept route', function (): void {
     $customer = User::factory()->asCustomer()->create();
-    $vendorUser = User::factory()->asVendor()->create();
+    $vendorUser = User::factory()->phoneVerified()->asVendor()->create();
     $vendor = VendorProfile::factory()->approved()->create(['user_id' => $vendorUser->id]);
     $booking = BookingFactory::new()->create([
         'customer_id' => $customer->id,

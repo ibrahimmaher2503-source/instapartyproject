@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Occasion;
+use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Discovery\Domain\Contracts\PackageRecommendationReader;
 use App\Modules\Discovery\Domain\Models\PackageRecommendation;
 use Illuminate\Support\Str;
@@ -15,6 +16,7 @@ it('returns only the first four published packages related to the selected categ
     $otherOccasion = Occasion::factory()->active()->create(['code' => 'other-package-occasion']);
 
     $category->occasions()->attach($occasion->id, ['sort_order' => 1]);
+    Service::factory()->published()->create(['category_id' => $category->id]);
     $otherCategory->occasions()->attach($otherOccasion->id, ['sort_order' => 1]);
 
     foreach (range(1, 5) as $order) {
@@ -96,4 +98,34 @@ it('does not mix global or unrelated packages into an occasion hero', function (
 
     expect(array_column(array_slice($packages, 0, 4), 'slug'))
         ->toBe(['occasion-package-1', 'occasion-package-2', 'occasion-package-3', 'occasion-package-4']);
+});
+
+it('renders matching packages inside the search results surface', function (): void {
+    $category = Category::factory()->active()->create(['code' => 'results-package-category']);
+    $occasion = Occasion::factory()->active()->create(['code' => 'results-package-occasion']);
+    $category->occasions()->attach($occasion->id, ['sort_order' => 1]);
+    Service::factory()->published()->create(['category_id' => $category->id]);
+
+    PackageRecommendation::query()->create([
+        'public_id' => (string) Str::ulid(),
+        'slug' => 'results-package',
+        'name' => ['en' => 'Package inside results', 'ar' => 'باقة داخل النتائج'],
+        'description' => ['en' => 'Search result package', 'ar' => 'باقة نتائج البحث'],
+        'occasion_id' => $occasion->id,
+        'budget_currency' => 'EGP',
+        'is_published' => true,
+        'display_order' => 1,
+    ]);
+
+    $response = $this->get('/en/search?category_slug='.$category->code);
+
+    $response
+        ->assertOk()
+        ->assertSee('data-search-package-results', false)
+        ->assertSee('data-search-package-card', false)
+        ->assertSee('Package inside results')
+        ->assertDontSee('sf-category-packages', false);
+
+    expect(strpos($response->getContent(), 'data-search-package-results'))
+        ->toBeGreaterThan(strpos($response->getContent(), 'class="sf-search-results'));
 });

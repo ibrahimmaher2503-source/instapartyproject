@@ -1,20 +1,39 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, fstatSync, mkdirSync, openSync, readSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
 
 function latestVendorVerificationUrl(email: string): string | null {
     const logPath = path.resolve('storage/logs/laravel.log');
-    const contents = readFileSync(logPath, 'utf8');
-    const emailIndex = contents.lastIndexOf(email);
+    const descriptor = openSync(logPath, 'r');
+    const size = fstatSync(descriptor).size;
+    const chunkSize = 8_000_000;
+    const overlap = 40_000;
 
-    if (emailIndex < 0) {
-        return null;
+    for (let end = size; end > 0; end -= chunkSize) {
+        const start = Math.max(0, end - chunkSize - overlap);
+        const bytesToRead = end - start;
+        const buffer = Buffer.allocUnsafe(bytesToRead);
+        readSync(descriptor, buffer, 0, bytesToRead, start);
+        const contents = buffer.toString('utf8');
+        let emailIndex = contents.lastIndexOf(email);
+
+        while (emailIndex >= 0) {
+            const mailBlock = contents.slice(emailIndex, emailIndex + 30_000);
+            const match = mailBlock.match(/https?:\/\/[^\s<>"']+\/vendor-portal\/email-verification\/verify\/[^\s<>"']+/);
+
+            if (match?.[0]) {
+                closeSync(descriptor);
+
+                return match[0].replace(/[),.;]+$/, '');
+            }
+
+            emailIndex = contents.lastIndexOf(email, emailIndex - 1);
+        }
     }
 
-    const mailBlock = contents.slice(emailIndex, emailIndex + 30_000);
-    const match = mailBlock.match(/https?:\/\/[^\s<>"']+\/vendor-portal\/email-verification\/verify\/[^\s<>"']+/);
+    closeSync(descriptor);
 
-    return match?.[0]?.replace(/[),.;]+$/, '') ?? null;
+    return null;
 }
 
 async function waitForVendorVerificationUrl(email: string): Promise<string | null> {
@@ -113,16 +132,7 @@ test('full marketplace journey records the real browser gates', async ({ browser
         await expect(cairoGovernorate).toBeAttached({ timeout: 15_000 });
         const cairoGovernorateValue = await cairoGovernorate.getAttribute('value');
         expect(cairoGovernorateValue).toBeTruthy();
-        await Promise.all([
-            vendorPage.waitForResponse((networkResponse) => networkResponse.request().method() === 'POST'
-                && networkResponse.url().includes('/livewire/update')),
-            selects.nth(1).selectOption(cairoGovernorateValue!),
-        ]);
-        const nasrCity = selects.nth(2).locator('option').filter({ hasText: /Nasr City|مدينة نصر/i }).first();
-        await expect(nasrCity).toBeAttached({ timeout: 15_000 });
-        const nasrCityValue = await nasrCity.getAttribute('value');
-        expect(nasrCityValue).toBeTruthy();
-        await selects.nth(2).selectOption(nasrCityValue!);
+        await selects.nth(1).selectOption(cairoGovernorateValue!);
         const signUpButton = vendorPage.getByRole('button', { name: /create account|sign up|إنشاء حساب/i });
         await expect(signUpButton).toBeEnabled({ timeout: 15_000 });
         await Promise.all([
@@ -1133,17 +1143,24 @@ test('full marketplace journey records the real browser gates', async ({ browser
         await vendorPage.locator('[id="data.name.ar"]').fill(`بيع ${runId}`);
         await vendorPage.locator('[id="data.short_description.ar"]').fill('خدمة بيع تم التحقق منها بالمتصفح.');
 
+        const mainCategoryField = vendorPage.locator('[data-field-wrapper]')
+            .filter({ has: vendorPage.locator('label[for="data.main_category_id"]') });
+        const mainCategory = mainCategoryField.locator('.choices[role="combobox"]');
+        await mainCategory.click();
+        await mainCategory.locator('.choices__list--dropdown [role="option"]')
+            .filter({ hasText: /^(General Birthday|عام عيد ميلاد)$/i }).click();
+        await vendorPage.waitForLoadState('networkidle');
         const categoryField = vendorPage.locator('[data-field-wrapper]')
             .filter({ has: vendorPage.locator('label[for="data.category_id"]') });
         const category = categoryField.locator('.choices[role="combobox"]');
         await expect(categoryField).toHaveCount(1);
         await category.click();
         const categoryOption = category.locator('.choices__list--dropdown [role="option"]')
-            .filter({ hasText: /^(General Birthday|عام عيد ميلاد)$/i }).first();
+            .filter({ hasText: /^(Birthday Services|خدمات عيد الميلاد)$/i }).first();
         await expect(categoryOption).toBeVisible({ timeout: 15_000 });
         await categoryOption.click();
         await expect(categoryField.locator('select[id="data.category_id"]')).toHaveValue(/^\d+$/);
-        await vendorPage.locator('[id="data.base_price_minor"]').fill('25000');
+        await vendorPage.locator('[id="data.base_price_minor"]').fill('250');
         await vendorPage.locator('[id="data.saleDetail.stock_quantity"]').fill('3');
         const galleryInput = vendorPage.locator('.fi-fo-file-upload:visible input[type="file"]').last();
         await expect(galleryInput).toBeAttached({ timeout: 30_000 });
@@ -1211,21 +1228,25 @@ test('full marketplace journey records the real browser gates', async ({ browser
         )?.public_id ?? null;
         expect(servicePublicId).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
 
-        await vendorPage.locator('tr').filter({ hasText: serviceName }).first()
-            .getByRole('button', { name: /submit for review/i }).click();
+        await serviceRow.getByRole('button', { name: /submit for review|إرسال للمراجعة/i }).click();
         const submitConfirmation = vendorPage.locator('.fi-modal-window:visible').last();
         await expect(submitConfirmation).toBeVisible();
-        await submitConfirmation.getByRole('button', { name: /confirm|submit/i }).last().click();
+        await submitConfirmation.getByRole('button', { name: /^(Confirm|Submit|تأكيد|إرسال)$/i }).click();
         await expect(vendorPage.locator('body')).toContainText(/submitted|pending review|قيد المراجعة/i);
 
         const pendingResponse = await adminPage.goto('/admin/sale-services/pending-review');
         expect(pendingResponse?.status()).toBe(200);
         const pendingRow = adminPage.locator('tr').filter({ hasText: serviceName }).first();
         await expect(pendingRow).toBeVisible();
-        await pendingRow.getByRole('button', { name: /approve.*publish|اعتماد ونشر/i }).click();
+        await pendingRow.getByRole('button', { name: /review|مراجعة/i }).click();
+        const approvePublishAction = adminPage.locator('.fi-dropdown-list-item')
+            .filter({ hasText: /approve.*publish|اعتماد ونشر/i })
+            .last();
+        await expect(approvePublishAction).toBeVisible();
+        await approvePublishAction.click();
         const publishConfirmation = adminPage.locator('.fi-modal-window:visible').last();
         await expect(publishConfirmation).toBeVisible();
-        await publishConfirmation.getByRole('button', { name: /approve|publish|confirm|اعتماد|نشر/i }).last().click();
+        await publishConfirmation.getByRole('button', { name: /approve|publish|confirm|اعتماد|نشر|تأكيد/i }).last().click();
         await expect(adminPage.getByText(/service published successfully|تم نشر الخدمة بنجاح/i)).toBeVisible({ timeout: 15_000 });
         const publishedServiceResponse = await customerPage.goto(`/en/services/${servicePublicId!}`);
         expect(publishedServiceResponse?.status()).toBe(200);
@@ -1246,8 +1267,11 @@ test('full marketplace journey records the real browser gates', async ({ browser
         await customerPage.locator('form[action*="/auth/register"] button[type="submit"]').click();
 
         await expect(customerPage).toHaveURL(/\/en\/auth\/verify$/);
-        await expect(customerPage.locator('input[name="code"]')).toBeVisible();
-        await customerPage.locator('input[name="code"]').fill('123456');
+        const otpDigits = customerPage.locator('[data-otp-digit]');
+        await expect(otpDigits).toHaveCount(6);
+        for (const [index, digit] of [...'123456'].entries()) {
+            await otpDigits.nth(index).fill(digit);
+        }
         await customerPage.getByRole('button', { name: /verify|confirm/i }).click();
         await expect(customerPage).toHaveURL(/\/en\/?$/);
 
@@ -1319,7 +1343,7 @@ test('full marketplace journey records the real browser gates', async ({ browser
         await customerPage.locator('[data-planner-next]').nth(1).click();
 
         await customerPage.locator('input[name="guest_count"]').fill('2');
-        await customerPage.locator('input[name="celebrant_name"]').fill('E2E Customer');
+        await customerPage.locator('textarea[name="notes"]').fill('E2E Customer event notes');
         await customerPage.locator('input[name="address[address_line]"]').fill('10 E2E Street');
         await customerPage.locator('input[name="address[recipient_name]"]').fill('E2E Customer');
         await customerPage.locator('input[name="address[recipient_phone_e164]"]').fill('+201212345678');

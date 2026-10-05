@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Geography\Domain\Models\Governorate;
+use App\Modules\Identity\Application\Actions\RegisterVendorAction;
+use App\Modules\Identity\Application\DTOs\RegisterVendorDTO;
 use App\Modules\Identity\Application\Listeners\SendVendorRegistrationEmailVerification;
 use App\Modules\Identity\Application\Listeners\SendVendorRegistrationVerification;
 use App\Modules\Identity\Domain\Events\VendorRegistered;
@@ -15,6 +17,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -62,6 +65,33 @@ it('registers through the API atomically and returns verification pending', func
         ->and(VendorProfile::query()->count())->toBe(1)
         ->and(User::query()->firstOrFail()->email)->toBe('qa-one@example.test')
         ->and(User::query()->firstOrFail()->phone_e164)->not->toContain(' ');
+});
+
+it('registers without a city and retains the initial governorate', function (string $locale, bool $explicitNull): void {
+    [$governorate, $city] = vendorRegistrationGeography();
+    $payload = vendorRegistrationPayload($governorate, $city);
+    unset($payload['primary_city_id']);
+    if ($explicitNull) {
+        $payload['primary_city_id'] = null;
+    }
+
+    $this->withHeader('Accept-Language', $locale)
+        ->postJson('/api/v1/register/vendor', $payload)
+        ->assertCreated()
+        ->assertJsonPath('data.primary_city_id', null)
+        ->assertJsonPath('data.primary_governorate_id', $governorate->public_id);
+
+    expect(VendorProfile::query()->sole()->primary_city_id)->toBeNull();
+})->with(['en', 'ar'])->with([false, true]);
+
+it('accepts a missing city through the direct registration action', function (): void {
+    [$governorate, $city] = vendorRegistrationGeography();
+    $payload = vendorRegistrationPayload($governorate, $city);
+    unset($payload['primary_city_id']);
+
+    $profile = app(RegisterVendorAction::class)->execute(RegisterVendorDTO::fromArray($payload));
+    expect($profile->primary_city_id)->toBeNull()
+        ->and($profile->primary_governorate_id)->toBe($governorate->id);
 });
 
 it('rolls back and localizes validation for confirmation and governorate-city failures', function (string $locale): void {
@@ -132,13 +162,13 @@ it('registers through the Filament Livewire page with the confirmed field mapped
             'business_name_ar' => 'QA Livewire Events AR',
             'business_type' => 'individual',
             'primary_governorate_id' => $governorate->id,
-            'primary_city_id' => $city->id,
         ])
         ->call('register')
         ->assertHasNoFormErrors();
 
     expect(User::query()->where('email', 'qa-livewire@example.test')->exists())->toBeTrue()
-        ->and(VendorProfile::query()->count())->toBe(1);
+        ->and(VendorProfile::query()->count())->toBe(1)
+        ->and(VendorProfile::query()->sole()->primary_city_id)->toBeNull();
 });
 
 it('rejects weak passwords and active duplicate contact values without partial records', function (): void {
@@ -199,3 +229,69 @@ it('does not create a second account when the normalized registration is submitt
     expect(User::query()->where('email', 'qa-repeat@example.test')->count())->toBe(1)
         ->and(VendorProfile::query()->count())->toBe(1);
 });
+
+it('rejects missing or invalid phone numbers through the vendor API with bilingual feedback', function (string $locale, mixed $phone): void {
+    [$governorate, $city] = vendorRegistrationGeography();
+    $payload = vendorRegistrationPayload($governorate, $city);
+    if ($phone === null) {
+        unset($payload['phone_e164']);
+    } else {
+        $payload['phone_e164'] = $phone;
+    }
+
+    $response = $this->withHeader('Accept-Language', $locale)
+        ->postJson('/api/v1/register/vendor', $payload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['phone_e164']);
+
+    app()->setLocale($locale);
+    $expected = __('identity::identity.validation.'.($phone === null || $phone === '' ? 'phone_required' : 'phone_e164'));
+    expect($response->json('errors.phone_e164.0'))->toBe($expected)
+        ->and(User::query()->count())->toBe(0)
+        ->and(VendorProfile::query()->count())->toBe(0);
+})->with(['en', 'ar'])->with([
+    'missing' => [null],
+    'blank' => [''],
+    'local without country code' => ['01001234567'],
+    'zero country code' => ['+001001234567'],
+    'too short' => ['+20123'],
+    'too long' => ['+2010012345678901'],
+    'malformed input' => [['not-a-phone']],
+]);
+
+it('enforces required and valid phone numbers when the registration action is called directly', function (string $phone): void {
+    [$governorate, $city] = vendorRegistrationGeography();
+    $payload = vendorRegistrationPayload($governorate, $city);
+    $payload['phone_e164'] = $phone;
+
+    expect(fn () => app(RegisterVendorAction::class)->execute(RegisterVendorDTO::fromArray($payload)))
+        ->toThrow(ValidationException::class);
+    expect(User::query()->count())->toBe(0)
+        ->and(VendorProfile::query()->count())->toBe(0);
+})->with(['', '+001001234567']);
+
+it('rejects missing or invalid phone numbers in the localized Filament form before registration', function (string $locale, string $phone): void {
+    [$governorate, $city] = vendorRegistrationGeography();
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+
+    Livewire::test(RegisterVendorPage::class)
+        ->fillForm([
+            'name' => 'Phone Rule Vendor',
+            'email' => 'phone-rule@example.test',
+            'phone_e164' => $phone,
+            'password' => 'SafePassword123!',
+            'passwordConfirmation' => 'SafePassword123!',
+            'business_name_en' => 'Phone Rule Events',
+            'business_name_ar' => 'فعاليات اختبار الهاتف',
+            'business_type' => 'individual',
+            'primary_governorate_id' => $governorate->id,
+            'primary_city_id' => $city->id,
+        ])
+        ->call('register')
+        ->assertHasFormErrors(['phone_e164' => $phone === '' ? 'required' : 'regex'])
+        ->assertSee(__('identity::identity.validation.'.($phone === '' ? 'phone_required' : 'phone_e164')));
+
+    expect(User::query()->count())->toBe(0)
+        ->and(VendorProfile::query()->count())->toBe(0);
+})->with(['en', 'ar'])->with(['', '+001001234567']);

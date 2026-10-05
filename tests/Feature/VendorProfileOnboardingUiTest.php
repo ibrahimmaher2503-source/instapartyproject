@@ -153,3 +153,52 @@ it('persists the browser onboarding profile and banking payload through the Live
         ->and(app(VendorApprovalEligibilityService::class)->evaluate($saved)->checks['profile'])->toBeTrue()
         ->and(app(VendorApprovalEligibilityService::class)->evaluate($saved)->checks['banking'])->toBeTrue();
 });
+
+it('lets an individual vendor save without company data and switch business type with conditional fields', function (string $locale): void {
+    [$profile] = profileOnboardingVendor();
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+    $this->actingAs($profile->user, 'vendor');
+
+    Livewire::test(VendorProfilePage::class)
+        ->assertSee(__('identity.business_type.individual'))
+        ->assertFormSet(['business_type' => 'individual'])
+        ->fillForm([
+            'national_id' => '29901011234567',
+            'address_line_en' => '10 Individual Street',
+            'address_line_ar' => '١٠ شارع الأفراد',
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($profile->refresh()->business_type)->toBe(BusinessType::Individual)
+        ->and($profile->commercial_register_no)->toBeNull()
+        ->and($profile->tax_id)->toBeNull();
+
+    $form = Livewire::test(VendorProfilePage::class)
+        ->set('data.business_type', 'company')
+        ->call('save')
+        ->assertHasFormErrors(['commercial_register_no' => 'required', 'tax_id' => 'required']);
+
+    expect($profile->refresh()->business_type)->toBe(BusinessType::Individual);
+
+    $form->fillForm(['commercial_register_no' => 'CR-SWITCH', 'tax_id' => 'TAX-SWITCH'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($profile->refresh()->business_type)->toBe(BusinessType::Company)
+        ->and($profile->commercial_register_no)->toBe('CR-SWITCH')
+        ->and($profile->tax_id)->toBe('TAX-SWITCH')
+        ->and($profile->national_id)->toBe('29901011234567');
+
+    Livewire::test(VendorProfilePage::class)
+        ->assertFormSet(['business_type' => 'company'])
+        ->set('data.business_type', 'individual')
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($profile->refresh()->business_type)->toBe(BusinessType::Individual)
+        ->and($profile->national_id)->toBe('29901011234567')
+        ->and($profile->commercial_register_no)->toBe('CR-SWITCH')
+        ->and($profile->tax_id)->toBe('TAX-SWITCH');
+})->with(['en', 'ar']);
