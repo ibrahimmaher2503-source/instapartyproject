@@ -27,6 +27,7 @@ use App\Modules\Identity\Http\Middleware\EnsureVendorApproved;
 use App\Modules\Identity\Http\Middleware\EnsureVendorNotSuspended;
 use App\Modules\Identity\Http\Responses\PanelLoginResponse;
 use App\Modules\Identity\Http\Responses\VendorRegistrationResponse;
+use App\Modules\Identity\Infrastructure\Gateways\SmsOtpGateway;
 use App\Modules\Identity\Infrastructure\Gateways\StubOtpGateway;
 use App\Modules\Identity\Infrastructure\Loyalty\EloquentVendorLookup;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentCoverageAreaResolver;
@@ -49,7 +50,9 @@ class IdentityServiceProvider extends ServiceProvider
     {
         $this->app->bind(LoginResponse::class, PanelLoginResponse::class);
         $this->app->bind(RegistrationResponse::class, VendorRegistrationResponse::class);
-        $this->app->bind(OtpGatewayInterface::class, StubOtpGateway::class);
+        $this->app->bind(OtpGatewayInterface::class, fn ($app) => $app->make(
+            $app->environment(['local', 'testing']) ? StubOtpGateway::class : SmsOtpGateway::class,
+        ));
         $this->app->singleton(DeviceTokenRepository::class, EloquentDeviceTokenRepository::class);
         $this->app->singleton(VendorRatingWriter::class, EloquentVendorRatingWriter::class);
         $this->app->singleton(VendorLookup::class, EloquentVendorLookup::class);

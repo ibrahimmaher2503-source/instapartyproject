@@ -34,7 +34,8 @@ class RecalculateBookingTotalsListener
             WHERE id = ?
         ', [$bookingVendorId]);
 
-        // Update booking totals
+        // Update booking totals, including the immutable transport snapshot and
+        // any auditable invoice adjustments.
         DB::statement('
             UPDATE bookings
             SET subtotal_minor = (
@@ -46,6 +47,11 @@ class RecalculateBookingTotalsListener
                     SELECT COALESCE(SUM(delivery_fee_minor), 0)
                     FROM booking_vendors
                     WHERE booking_id = bookings.id
+                ) + COALESCE(transport_base_minor, 0) + (
+                    SELECT COALESCE(SUM(amount_minor), 0)
+                    FROM booking_adjustments
+                    WHERE booking_id = bookings.id
+                      AND type = \'transportation\'
                 ),
                 total_minor = (
                     SELECT COALESCE(SUM(subtotal_minor), 0)
@@ -55,6 +61,11 @@ class RecalculateBookingTotalsListener
                     SELECT COALESCE(SUM(delivery_fee_minor), 0)
                     FROM booking_vendors
                     WHERE booking_id = bookings.id
+                ) + COALESCE(transport_base_minor, 0) + (
+                    SELECT COALESCE(SUM(amount_minor), 0)
+                    FROM booking_adjustments
+                    WHERE booking_id = bookings.id
+                      AND type = \'transportation\'
                 ) - discount_total_minor
             WHERE id = ?
         ', [$bookingId]);

@@ -97,6 +97,7 @@ class BookingServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/../Routes/customer.php');
         $this->loadRoutesFrom(__DIR__.'/../Routes/vendor.php');
         $this->loadRoutesFrom(__DIR__.'/../Routes/admin.php');
+        $this->loadRoutesFrom(__DIR__.'/../Routes/admin-web.php');
 
         Gate::policy(Booking::class, BookingPolicy::class);
         Gate::policy(BookingAdminIntervention::class, BookingAdminInterventionPolicy::class);
