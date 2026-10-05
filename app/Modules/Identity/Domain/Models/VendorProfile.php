@@ -45,6 +45,9 @@ use Spatie\Translatable\HasTranslations;
  * @property array<string, string>|null $bio
  * @property string|null $logo_path
  * @property string|null $cover_path
+ * @property string|null $facebook_url
+ * @property string|null $website_url
+ * @property string|null $instagram_url
  * @property BusinessType|null $business_type
  * @property string|null $commercial_register_no
  * @property string|null $tax_id
@@ -131,6 +134,9 @@ class VendorProfile extends Model implements ChangeRequestSubject, HasMedia
         'bio',
         'logo_path',
         'cover_path',
+        'facebook_url',
+        'website_url',
+        'instagram_url',
         'business_type',
         'commercial_register_no',
         'tax_id',

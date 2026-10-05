@@ -24,6 +24,8 @@ class Governorate extends Model
         'name',
         'code',
         'is_active',
+        'transport_fee_minor',
+        'transport_fee_currency',
         'sort_order',
     ];
 
@@ -34,6 +36,7 @@ class Governorate extends Model
         return [
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'transport_fee_minor' => 'integer',
         ];
     }
 

@@ -146,15 +146,17 @@ class ServicePolicy
     {
         $type = $service->product_type->value;
 
-        return $user->can("{$action}_{$type}::service")
-            || $user->can("service.{$action}.{$type}.own");
+        // Both panels share the seeded web permission namespace, not their session guard.
+        return $user->can("{$action}_{$type}::service", 'web')
+            || ($user->vendorProfile?->id === $service->vendor_profile_id
+                && $user->can("service.{$action}.{$type}.own", 'web'));
     }
 
     private function canAnyType(User $user, string $permissionPrefix): bool
     {
         foreach (ProductType::cases() as $type) {
-            if ($user->can("{$permissionPrefix}_{$type->value}::service")
-                || $user->can("{$permissionPrefix}.{$type->value}.own")) {
+            if ($user->can("{$permissionPrefix}_{$type->value}::service", 'web')
+                || $user->can("{$permissionPrefix}.{$type->value}.own", 'web')) {
                 return true;
             }
         }

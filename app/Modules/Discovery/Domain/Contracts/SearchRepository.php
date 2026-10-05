@@ -16,4 +16,6 @@ interface SearchRepository
     public function resolveCategoryIds(string $code): array;
 
     public function resolveCityId(string $publicId): ?int;
+
+    public function resolveGovernorateId(string $publicId): ?int;
 }

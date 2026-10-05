@@ -64,6 +64,7 @@ class Booking extends Model
         'celebrant_name', 'celebrant_dob', 'celebrant_gender',
         'subtotal_minor', 'subtotal_currency',
         'delivery_total_minor', 'delivery_total_currency',
+        'transport_base_minor', 'transport_base_currency', 'transport_base_source',
         'discount_total_minor', 'discount_total_currency',
         'loyalty_redeemed_minor', 'loyalty_redeemed_currency', 'loyalty_redemption_public_id',
         'total_minor', 'total_currency', 'total_vat_minor',
@@ -90,6 +91,7 @@ class Booking extends Model
         'loyalty_redeemed' => MoneyCast::class.':loyalty_redeemed',
         'total' => MoneyCast::class.':total',
         'amount_paid' => MoneyCast::class.':amount_paid',
+        'transport_base_minor' => 'integer',
     ];
 
     protected static function newFactory(): BookingFactory
@@ -142,7 +144,13 @@ class Booking extends Model
     /** @return HasMany<BookingCustomerNote, $this> */
     public function customerNotes(): HasMany
     {
-        return $this->hasMany(BookingCustomerNote::class)->latest('created_at');
+        return $this->hasMany(BookingCustomerNote::class)->latest('created_at')->orderByDesc('id');
+    }
+
+    /** @return HasMany<BookingAdjustment, $this> */
+    public function adjustments(): HasMany
+    {
+        return $this->hasMany(BookingAdjustment::class);
     }
 
     /** @return HasMany<BookingAdminIntervention, $this> */

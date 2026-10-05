@@ -95,6 +95,7 @@ class Service extends Model implements ChangeRequestSubject, HasMedia
         'base_price_currency',
         'is_featured',
         'gallery_order_version',
+        'category_field_values',
     ];
 
     /** @var list<string> */
@@ -106,6 +107,7 @@ class Service extends Model implements ChangeRequestSubject, HasMedia
         'moderated_at' => 'datetime',
         'is_featured' => 'boolean',
         'base_price' => MoneyCast::class.':base_price',
+        'category_field_values' => 'array',
     ];
 
     public function registerMediaCollections(): void
@@ -207,6 +209,14 @@ class Service extends Model implements ChangeRequestSubject, HasMedia
         return $query->whereState('status', PublishedState::class);
     }
 
+    public function scopeDisplayable(Builder $query): Builder
+    {
+        return $query->published()->when(
+            ! config('catalog.digital_services_enabled', true),
+            fn (Builder $services): Builder => $services->where('product_type', '!=', ProductType::Digital),
+        );
+    }
+
     public function scopePendingReview(Builder $query): Builder
     {
         return $query->whereState('status', PendingReviewState::class);
@@ -231,7 +241,9 @@ class Service extends Model implements ChangeRequestSubject, HasMedia
      */
     public function shouldBeSearchable(): bool
     {
-        return $this->status instanceof PublishedState;
+        return $this->status instanceof PublishedState
+            && (config('catalog.digital_services_enabled', true)
+                || $this->product_type !== ProductType::Digital);
     }
 
     /**

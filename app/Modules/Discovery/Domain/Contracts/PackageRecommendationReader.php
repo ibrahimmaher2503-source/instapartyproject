@@ -12,9 +12,15 @@ interface PackageRecommendationReader
     /** @return array<int, array<string, mixed>> */
     public function publishedForContext(string $locale, ?string $occasionCode): array;
 
+    /** @return array<int, array<string, mixed>> */
+    public function publishedForFilter(string $locale): array;
+
     /**
      * @param  list<int>  $categoryIds
      * @return array<int, array<string, mixed>>
      */
-    public function publishedForCategories(string $locale, array $categoryIds): array;
+    public function publishedForCategories(string $locale, array $categoryIds, ?string $occasionCode = null): array;
+
+    /** @return array<string, mixed>|null */
+    public function findPublishedByPublicId(string $publicId, string $locale): ?array;
 }

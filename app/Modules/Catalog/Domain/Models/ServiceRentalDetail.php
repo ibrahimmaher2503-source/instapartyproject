@@ -33,6 +33,9 @@ class ServiceRentalDetail extends Model
         'security_deposit_minor',
         'security_deposit_currency',
         'minimum_space_sqm',
+        'length_m',
+        'width_m',
+        'height_m',
     ];
 
     protected $casts = [
@@ -43,6 +46,9 @@ class ServiceRentalDetail extends Model
         'teardown_time_minutes' => 'integer',
         'security_deposit' => MoneyCast::class.':security_deposit',
         'minimum_space_sqm' => 'integer',
+        'length_m' => 'decimal:2',
+        'width_m' => 'decimal:2',
+        'height_m' => 'decimal:2',
     ];
 
     // -------------------------------------------------------------------------
