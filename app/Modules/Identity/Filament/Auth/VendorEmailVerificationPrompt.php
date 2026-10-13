@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Auth;
 
+use App\Modules\Communication\Domain\Contracts\EmailTransportReadiness;
 use App\Modules\Identity\Domain\Models\User;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Actions\Action;
@@ -31,7 +32,7 @@ final class VendorEmailVerificationPrompt extends EmailVerificationPrompt
                 abort_unless($user instanceof User && $user->status === 'active' && $user->hasRole('vendor', 'web'), 403);
                 $accepted = false;
                 try {
-                    if (in_array(config('mail.mailers.'.config('mail.default').'.transport'), ['smtp', 'ses', 'ses-v2', 'postmark', 'resend', 'sendmail'], true)) {
+                    if (app(EmailTransportReadiness::class)->isConfigured()) {
                         $this->sendEmailVerificationNotification($user);
                         $accepted = true;
                     }

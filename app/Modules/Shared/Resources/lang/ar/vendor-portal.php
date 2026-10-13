@@ -13,8 +13,16 @@ return [
     ],
     'services' => [
         'title' => 'خدماتي',
+        'create_rental' => 'إضافة خدمة تأجير',
+        'create_sale' => 'إضافة خدمة بيع',
+        'create_digital' => 'إضافة خدمة رقمية',
         'type' => 'النوع',
         'status' => 'الحالة',
+        'product_type_separator' => '، ',
+        'pending_product_types' => 'يمكن إنشاء الخدمات للأنواع المعتمدة فقط. الأنواع التي تنتظر اعتماد الإدارة: :types.',
+        'product_type_pending' => 'خدمات :type غير متاحة حتى تعتمد الإدارة نوع المنتج هذا.',
+        'digital_services_disabled' => 'الخدمات الرقمية غير متاحة حالياً على المنصة.',
+        'check_product_type_status' => 'عرض حالة اعتماد أنواع المنتجات',
         'last_modified' => 'آخر تعديل',
         'draft' => 'مسودة',
         'pending_review' => 'قيد المراجعة',
@@ -40,6 +48,19 @@ return [
         'occasion_helper_empty' => 'اختر فئة لعرض المناسبات التي تظهر تحتها.',
         'occasion_helper_none' => 'هذه الفئة غير مرتبطة بأي مناسبة بعد.',
         'occasion_separator' => '، ',
+    ],
+
+    'approval' => [
+        'title' => 'حالة الاعتماد',
+        'overall' => 'اعتماد الحساب',
+        'per_type' => 'حسب نوع المنتج',
+        'approved' => 'معتمد',
+        'pending' => 'قيد الانتظار',
+        'unavailable' => 'غير متاح',
+        'rejected' => 'مرفوض',
+        'suspended' => 'موقوف',
+        'rejection_reason' => 'سبب الرفض',
+        'per_type_guidance' => 'اعتماد الحساب واعتماد كل نوع منتج خطوتان منفصلتان. يمكن إنشاء الخدمات للأنواع المعتمدة فقط، وتظل الأنواع المنتظرة محظورة حتى تعتمدها الإدارة. تتاح الخدمات الرقمية فقط عند تفعيلها على المنصة.',
     ],
 
     'imports' => [

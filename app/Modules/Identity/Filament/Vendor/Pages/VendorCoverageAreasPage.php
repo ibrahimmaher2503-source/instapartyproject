@@ -150,6 +150,7 @@ class VendorCoverageAreasPage extends Page implements HasTable
                             ])
                         )
                         ->searchable()
+                        ->optionsLimit(fn (): int => City::query()->active()->count())
                         ->preload()
                         ->live()
                         ->afterStateUpdated(fn (Select $component) => $this->validateOnly($component->getStatePath()))

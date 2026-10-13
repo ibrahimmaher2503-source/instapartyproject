@@ -42,7 +42,7 @@ return [
         ],
         'approved_types' => [
             'label' => 'Approved product types',
-            'cta' => null,
+            'cta' => 'View product-type approval status',
         ],
     ],
 
@@ -71,10 +71,12 @@ return [
     ],
 
     'approved_types' => [
-        'sub_text' => 'Approved for: :types',
-        'rental' => 'Rental',
-        'sale' => 'Sale',
-        'digital' => 'Digital',
+        'status_line' => ':type: :status',
+        'status_summary' => 'Product-type status: :statuses.',
+        'creation_guidance' => 'Only an admin can approve product types, and you can create services after approval.',
+        'digital_unavailable' => 'Digital services are currently unavailable on the platform.',
+        'approved' => 'Approved',
+        'pending' => 'Pending',
     ],
 
     'approval_status' => [

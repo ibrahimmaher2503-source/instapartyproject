@@ -42,7 +42,7 @@ return [
         ],
         'approved_types' => [
             'label' => 'أنواع المنتجات المعتمدة',
-            'cta' => null,
+            'cta' => 'عرض حالة اعتماد أنواع المنتجات',
         ],
     ],
 
@@ -71,10 +71,12 @@ return [
     ],
 
     'approved_types' => [
-        'sub_text' => 'معتمد لـ: :types',
-        'rental' => 'إيجار',
-        'sale' => 'بيع',
-        'digital' => 'رقمي',
+        'status_line' => ':type: :status',
+        'status_summary' => 'حالة أنواع المنتجات: :statuses.',
+        'creation_guidance' => 'تعتمد الإدارة أنواع المنتجات، ويمكنك إنشاء الخدمات بعد اعتماد النوع.',
+        'digital_unavailable' => 'الخدمات الرقمية غير متاحة حالياً على المنصة.',
+        'approved' => 'معتمد',
+        'pending' => 'قيد الانتظار',
     ],
 
     'approval_status' => [

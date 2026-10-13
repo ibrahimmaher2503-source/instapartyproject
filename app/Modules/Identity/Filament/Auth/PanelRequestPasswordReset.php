@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Auth;
 
+use App\Modules\Communication\Domain\Contracts\EmailTransportReadiness;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Notifications\Notification;
 use Filament\Pages\Auth\PasswordReset\RequestPasswordReset;
@@ -25,7 +26,7 @@ final class PanelRequestPasswordReset extends RequestPasswordReset
 
     public function request(): void
     {
-        if (in_array(config('mail.default'), ['log', 'array', 'failover'], true)) {
+        if (! app(EmailTransportReadiness::class)->isConfigured()) {
             try {
                 $this->rateLimit(2);
             } catch (TooManyRequestsException $exception) {

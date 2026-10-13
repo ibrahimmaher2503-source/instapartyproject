@@ -16,6 +16,7 @@ use App\Modules\Catalog\Filament\Vendor\Resources\VendorDigitalServiceResource;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorRentalServiceResource;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Identity\Filament\Vendor\Pages\VendorApprovalStatusPage;
 use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -56,28 +57,43 @@ class VendorServicesListPage extends Page implements HasTable
         return __('vendor-portal.services.title');
     }
 
+    public function getSubheading(): ?string
+    {
+        $pendingTypes = $this->pendingProductTypes();
+        $guidance = [];
+
+        if ($pendingTypes !== []) {
+            $guidance[] = __('vendor-portal.services.pending_product_types', [
+                'types' => implode(__('vendor-portal.services.product_type_separator'), array_map(
+                    fn (ProductType $type): string => $type->label(),
+                    $pendingTypes,
+                )),
+            ]);
+        }
+
+        if (! (bool) config('catalog.digital_services_enabled', true)) {
+            $guidance[] = __('vendor-portal.services.digital_services_disabled');
+        }
+
+        return $guidance === [] ? null : implode(' ', $guidance);
+    }
+
     protected function getHeaderActions(): array
     {
-        return [
-            Action::make('addRental')
-                ->label(__('vendor-portal.services.create_rental'))
-                ->icon('heroicon-o-plus')
-                ->color('warning')
-                ->url(VendorRentalServiceResource::getUrl('create', panel: 'vendor'))
-                ->visible(fn (): bool => VendorRentalServiceResource::canAccess()),
-            Action::make('addSale')
-                ->label(__('vendor-portal.services.create_sale'))
-                ->icon('heroicon-o-plus')
-                ->color('success')
-                ->url(VendorSaleServiceResource::getUrl('create', panel: 'vendor'))
-                ->visible(fn (): bool => VendorSaleServiceResource::canAccess()),
-            Action::make('addDigital')
-                ->label(__('vendor-portal.services.create_digital'))
-                ->icon('heroicon-o-plus')
-                ->color('info')
-                ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor'))
-                ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true) && VendorDigitalServiceResource::canAccess()),
-        ];
+        $actions = array_map(
+            fn (ProductType $type): Action => $this->createServiceAction($type),
+            $this->enabledProductTypes(),
+        );
+
+        if ($this->pendingProductTypes() !== []) {
+            $actions[] = Action::make('checkProductTypeApprovalStatus')
+                ->label(__('vendor-portal.services.check_product_type_status'))
+                ->icon('heroicon-o-check-badge')
+                ->color('gray')
+                ->url(VendorApprovalStatusPage::getUrl(panel: 'vendor'));
+        }
+
+        return $actions;
     }
 
     public function table(Table $table): Table
@@ -298,5 +314,55 @@ class VendorServicesListPage extends Page implements HasTable
     private function getVendorProfile(): VendorProfile
     {
         return auth()->user()->vendorProfile;
+    }
+
+    /** @return list<ProductType> */
+    private function enabledProductTypes(): array
+    {
+        return array_values(array_filter(
+            ProductType::cases(),
+            fn (ProductType $type): bool => $type !== ProductType::Digital || (bool) config('catalog.digital_services_enabled', true),
+        ));
+    }
+
+    /** @return list<ProductType> */
+    private function pendingProductTypes(): array
+    {
+        return array_values(array_filter($this->enabledProductTypes(), function (ProductType $type): bool {
+            $resource = $this->serviceResource($type);
+
+            return ! $resource::canAccess();
+        }));
+    }
+
+    private function createServiceAction(ProductType $type): Action
+    {
+        $resource = $this->serviceResource($type);
+
+        return Action::make('add'.ucfirst($type->value))
+            ->label(__('vendor-portal.services.create_'.$type->value))
+            ->icon('heroicon-o-plus')
+            ->color(match ($type) {
+                ProductType::Rental => 'warning',
+                ProductType::Sale => 'success',
+                ProductType::Digital => 'info',
+            })
+            ->url(fn (): ?string => $resource::canAccess()
+                ? $resource::getUrl('create', panel: 'vendor')
+                : null)
+            ->disabled(fn (): bool => ! $resource::canAccess())
+            ->tooltip(fn (): ?string => $resource::canAccess()
+                ? null
+                : __('vendor-portal.services.product_type_pending', ['type' => $type->label()]));
+    }
+
+    /** @return class-string<VendorRentalServiceResource|VendorSaleServiceResource|VendorDigitalServiceResource> */
+    private function serviceResource(ProductType $type): string
+    {
+        return match ($type) {
+            ProductType::Rental => VendorRentalServiceResource::class,
+            ProductType::Sale => VendorSaleServiceResource::class,
+            ProductType::Digital => VendorDigitalServiceResource::class,
+        };
     }
 }

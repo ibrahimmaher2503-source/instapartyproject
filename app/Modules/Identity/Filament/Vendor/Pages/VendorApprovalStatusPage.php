@@ -51,11 +51,14 @@ class VendorApprovalStatusPage extends Page implements HasInfolists
         $typeEntries = [];
         foreach (ProductType::cases() as $type) {
             $typeStatus = $status['types'][$type->value] ?? ['approved' => false, 'approved_at' => null];
+            $unavailable = $type === ProductType::Digital && ! (bool) config('catalog.digital_services_enabled', true);
             $typeEntries[] = TextEntry::make('type_'.$type->value)
-                ->label(ucfirst($type->value))
+                ->label($type->label())
                 ->badge()
-                ->state($typeStatus['approved'] ? __('vendor-portal.approval.approved') : __('vendor-portal.approval.pending'))
-                ->color($typeStatus['approved'] ? 'success' : 'warning');
+                ->state($unavailable
+                    ? __('vendor-portal.approval.unavailable')
+                    : ($typeStatus['approved'] ? __('vendor-portal.approval.approved') : __('vendor-portal.approval.pending')))
+                ->color($unavailable ? 'gray' : ($typeStatus['approved'] ? 'success' : 'warning'));
         }
 
         return $schema
@@ -89,6 +92,7 @@ class VendorApprovalStatusPage extends Page implements HasInfolists
                     ]),
 
                 Section::make(__('vendor-portal.approval.per_type'))
+                    ->description(__('vendor-portal.approval.per_type_guidance'))
                     ->schema($typeEntries)
                     ->columns(3),
             ]);
