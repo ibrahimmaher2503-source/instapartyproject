@@ -33,4 +33,8 @@ Existing test source and local evidence remain preserved in the original checkou
 
 Deferred test-source compatibility work: `CommissionRefundAllocationTest.php` directly constructs the previous refund listener and mocks its former reader flow. It will need adaptation to `ReconcileCompletedRefundsAction`, `completedRefundsForPayment()` and the cumulative reversal argument when the user resumes the validation campaign. No test source was changed under the current instruction. The production reader has one implementation; no production implementer was left behind.
 
+The final source review also covers legacy refunds posted before every commission row existed: payment locking serializes reconciliation; actual append-only clearing credits consume each item's capacity and each refund's existing budget, so replay does not allocate the same customer refund again to late commission rows. Platform rounding follows the accrual convention and vendor reversal is the exact gross complement. Historical ledger entries are retained.
+
+Known policy boundary: discounted/loyalty-adjusted bookings accrue commission from service line gross while customer refunds follow the lower paid amount. The gross-versus-net reversal decision is tracked separately under #59 and has been put to the user. This batch does not claim that discounted full refunds are settled or covered. No new behavior depending on that unanswered decision is introduced here.
+
 Publishing this branch is not a merge, deployment, production-data repair or release acceptance. Existing GitHub closures for these fifteen issues describe local fixes; the branch supplies their reviewable source publication.
