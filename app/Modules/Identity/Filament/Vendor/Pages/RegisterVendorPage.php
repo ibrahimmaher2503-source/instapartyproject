@@ -21,7 +21,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Auth\Register;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class RegisterVendorPage extends Register
 {
@@ -35,23 +34,28 @@ class RegisterVendorPage extends Register
         try {
             $this->rateLimit(2);
         } catch (TooManyRequestsException $exception) {
+            $this->clearSensitiveRegistrationState();
             $this->getRateLimitedNotification($exception)?->send();
 
             return null;
         }
 
-        $user = $this->wrapInDatabaseTransaction(function (): Model {
-            $this->callHook('beforeValidate');
-            $data = $this->form->getState();
-            $this->callHook('afterValidate');
-            $data = $this->mutateFormDataBeforeRegister($data);
-            $this->callHook('beforeRegister');
-            $user = $this->handleRegistration($data);
-            $this->form->model($user)->saveRelationships();
-            $this->callHook('afterRegister');
+        try {
+            $user = $this->wrapInDatabaseTransaction(function (): Model {
+                $this->callHook('beforeValidate');
+                $data = $this->form->getState();
+                $this->callHook('afterValidate');
+                $data = $this->mutateFormDataBeforeRegister($data);
+                $this->callHook('beforeRegister');
+                $user = $this->handleRegistration($data);
+                $this->form->model($user)->saveRelationships();
+                $this->callHook('afterRegister');
 
-            return $user;
-        });
+                return $user;
+            });
+        } finally {
+            $this->clearSensitiveRegistrationState();
+        }
 
         Filament::auth()->login($user);
         session()->regenerate();
@@ -176,7 +180,7 @@ class RegisterVendorPage extends Register
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->rule(Password::default())
+            ->rule(VendorRegistrationRules::passwordRule())
             ->same('passwordConfirmation')
             ->helperText(__('vendor-portal.registration.password_hint'))
             ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
@@ -204,5 +208,14 @@ class RegisterVendorPage extends Register
             ->send();
 
         return $vendorProfile->user;
+    }
+
+    private function clearSensitiveRegistrationState(): void
+    {
+        if ($this->data === null) {
+            return;
+        }
+
+        unset($this->data['password'], $this->data['passwordConfirmation'], $this->data['password_confirmation']);
     }
 }

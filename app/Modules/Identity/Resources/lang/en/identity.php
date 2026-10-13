@@ -127,6 +127,8 @@ return [
         'force_logout_customer' => 'This will revoke all active sessions for :name.',
         'approve_vendor_heading' => 'Approve this vendor?',
         'approve_vendor_description' => 'This grants the vendor the approved status. You can grant per-product-type permissions afterwards.',
+        'suspend_vendor_heading' => 'Suspend this vendor?',
+        'suspend_vendor_description' => 'The vendor will immediately lose access to vendor features. The reason will be recorded in the audit log.',
     ],
 
     // Page titles
@@ -244,6 +246,7 @@ return [
         'replace_coverage' => 'Replace Coverage Areas',
         're_upload_document' => 'Re-upload Document',
         'request_changes' => 'Request Changes',
+        'add_requested_change' => 'Add another requested change',
         'approve_for_rental' => 'Approve for Rental',
         'approve_for_sale' => 'Approve for Sale',
         'approve_for_digital' => 'Approve for Digital',
@@ -268,6 +271,7 @@ return [
         'business_name_ar' => 'Business Name in Arabic',
         'bio_en' => 'Bio in English',
         'bio_ar' => 'Bio in Arabic',
+        'vendor_suspension_reason' => 'Reason for suspension',
     ],
 
     // Notification titles
@@ -277,6 +281,7 @@ return [
         'customer_logged_out' => 'Customer logged out',
         'profile_updated_by_admin' => 'Customer profile updated',
         'vendor_approved' => 'Vendor profile approved',
+        'vendor_approval_failed' => 'Vendor approval could not be completed',
         'vendor_rejected' => 'Vendor profile rejected',
         'vendor_suspended' => 'Vendor suspended',
         'vendor_unsuspended' => 'Vendor reactivated',
@@ -344,6 +349,10 @@ return [
         'day_of_week' => 'Day of Week',
         'label' => 'Label',
         'address_line' => 'Address',
+        'change_request_fields' => [
+            'address_line_en' => 'Address (English)',
+            'address_line_ar' => 'Address (Arabic)',
+        ],
         'recipient_name' => 'Recipient Name',
         'recipient_phone' => 'Recipient Phone',
         'is_default' => 'Set as Default',
@@ -506,6 +515,7 @@ return [
         'document_not_reuploadable' => 'Only a rejected document can be re-uploaded.',
         'document_already_pending' => 'A replacement for this document is already pending review.',
         'invalid_change_request_items' => 'One or more change-request items do not belong to this request.',
+        'unsupported_change_request_field' => 'Select a supported profile field for each requested change.',
         'unresolved_change_request_items' => 'Resolve every requested item before resubmitting.',
         'idempotency_key_required' => 'The Idempotency-Key header is required.',
         'idempotency_key_conflict' => 'This Idempotency-Key was already used for a different request.',

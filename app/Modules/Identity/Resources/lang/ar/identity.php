@@ -127,6 +127,8 @@ return [
         'force_logout_customer' => 'سيتم إلغاء جميع الجلسات النشطة لـ :name.',
         'approve_vendor_heading' => 'اعتماد هذا المورد؟',
         'approve_vendor_description' => 'سيمنح هذا الإجراء المورد حالة الاعتماد. يمكنك منح صلاحيات لأنواع المنتجات بعد ذلك.',
+        'suspend_vendor_heading' => 'هل تريد إيقاف هذا المورد؟',
+        'suspend_vendor_description' => 'سيُمنع المورد فورًا من استخدام ميزات بوابة المورد، وسيُسجّل السبب في سجل التدقيق.',
     ],
 
     // Page titles
@@ -244,6 +246,7 @@ return [
         'replace_coverage' => 'استبدال مناطق التغطية',
         're_upload_document' => 'إعادة رفع المستند',
         'request_changes' => 'طلب تعديلات',
+        'add_requested_change' => 'إضافة تعديل مطلوب آخر',
         'approve_for_rental' => 'اعتماد للإيجار',
         'approve_for_sale' => 'اعتماد للبيع',
         'approve_for_digital' => 'اعتماد للرقمي',
@@ -268,6 +271,7 @@ return [
         'business_name_ar' => 'اسم النشاط التجاري بالعربية',
         'bio_en' => 'النبذة بالإنجليزية',
         'bio_ar' => 'النبذة بالعربية',
+        'vendor_suspension_reason' => 'سبب الإيقاف',
     ],
 
     // Notification titles
@@ -277,6 +281,7 @@ return [
         'customer_logged_out' => 'تم إنهاء جلسات العميل',
         'profile_updated_by_admin' => 'تم تحديث ملف العميل',
         'vendor_approved' => 'تمت الموافقة على الملف التجاري',
+        'vendor_approval_failed' => 'تعذر إكمال اعتماد المورد',
         'vendor_rejected' => 'تم رفض الملف التجاري',
         'vendor_suspended' => 'تم إيقاف المورد',
         'vendor_unsuspended' => 'تم إعادة تفعيل المورد',
@@ -344,6 +349,10 @@ return [
         'day_of_week' => 'يوم الأسبوع',
         'label' => 'التسمية',
         'address_line' => 'العنوان',
+        'change_request_fields' => [
+            'address_line_en' => 'العنوان (بالإنجليزية)',
+            'address_line_ar' => 'العنوان (بالعربية)',
+        ],
         'recipient_name' => 'اسم المستلم',
         'recipient_phone' => 'هاتف المستلم',
         'is_default' => 'تعيين كافتراضي',
@@ -506,6 +515,7 @@ return [
         'document_not_reuploadable' => 'لا يمكن إعادة رفع إلا مستند مرفوض.',
         'document_already_pending' => 'يوجد بالفعل مستند بديل قيد المراجعة.',
         'invalid_change_request_items' => 'عنصر واحد أو أكثر لا ينتمي إلى طلب التعديل الحالي.',
+        'unsupported_change_request_field' => 'اختر حقلاً مدعوماً لكل تعديل مطلوب.',
         'unresolved_change_request_items' => 'يجب معالجة جميع التعديلات المطلوبة قبل إعادة الإرسال.',
         'idempotency_key_required' => 'ترويسة Idempotency-Key مطلوبة.',
         'idempotency_key_conflict' => 'تم استخدام مفتاح Idempotency-Key هذا لطلب مختلف.',

@@ -12,6 +12,11 @@ final class VendorRegistrationRules
 {
     public const PHONE_E164_REGEX = '/^\+[1-9]\d{7,14}$/';
 
+    public static function passwordRule(): Password
+    {
+        return Password::min(8)->mixedCase()->numbers();
+    }
+
     /** @param array<string, mixed> $data
      * @return array<string, mixed>
      */
@@ -39,7 +44,7 @@ final class VendorRegistrationRules
             'name' => ['required', 'string', 'max:255'],
             'phone_e164' => ['required', 'string', 'regex:'.self::PHONE_E164_REGEX, Rule::unique('users', 'phone_e164')],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', Password::default(), 'confirmed'],
+            'password' => ['required', 'string', self::passwordRule(), 'confirmed'],
             'password_confirmation' => ['required', 'string'],
             'business_name' => ['required', 'array'],
             'business_name.en' => ['required', 'string', 'max:255'],

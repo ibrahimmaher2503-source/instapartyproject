@@ -12,6 +12,7 @@ use App\Modules\Identity\Application\Actions\RequestVendorChangesAction;
 use App\Modules\Identity\Application\Actions\RevokeVendorTypeAction;
 use App\Modules\Identity\Application\Actions\SuspendVendorAction;
 use App\Modules\Identity\Application\Actions\UnsuspendVendorAction;
+use App\Modules\Identity\Application\Services\VendorApprovalEligibilityService;
 use App\Modules\Identity\Application\Services\VendorSearchQuery;
 use App\Modules\Identity\Domain\Enums\BusinessType;
 use App\Modules\Identity\Domain\Enums\DayOfWeek;
@@ -58,6 +59,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Spatie\ModelStates\State;
 
 class VendorProfileResource extends Resource
@@ -282,6 +284,21 @@ class VendorProfileResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $changeRequestFieldOptions = [
+            'business_name.en' => __('identity.forms.business_name_en'),
+            'business_name.ar' => __('identity.forms.business_name_ar'),
+            'bio.en' => __('identity.forms.bio_en'),
+            'bio.ar' => __('identity.forms.bio_ar'),
+            'address_line.en' => __('identity.fields.change_request_fields.address_line_en'),
+            'address_line.ar' => __('identity.fields.change_request_fields.address_line_ar'),
+            'commercial_register_no' => __('identity.fields.commercial_register_no'),
+            'tax_id' => __('identity.fields.tax_id'),
+            'national_id' => __('identity.fields.national_id'),
+            'facebook_url' => __('identity.fields.facebook_url'),
+            'website_url' => __('identity.fields.website_url'),
+            'instagram_url' => __('identity.fields.instagram_url'),
+        ];
+
         return $table
             ->columns([
                 TextColumn::make('public_id')
@@ -317,6 +334,7 @@ class VendorProfileResource extends Resource
                 TextColumn::make('created_at')
                     ->label(__('identity.columns.created_at'))
                     ->dateTime()
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
@@ -368,8 +386,23 @@ class VendorProfileResource extends Resource
                     ->modalDescription(__('identity.modals.approve_vendor_description'))
                     ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof PendingState
                         && auth()->user()?->can('approve_vendor_profile'))
+                    ->disabled(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
+                    ->tooltip(fn (VendorProfile $record): ?string => app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible
+                        ? null
+                        : (string) __('identity.approval_eligibility.complete_requirements'))
                     ->action(function (VendorProfile $record): void {
-                        app(ApproveVendorProfileAction::class)->execute($record);
+                        try {
+                            app(ApproveVendorProfileAction::class)->execute($record);
+                        } catch (ValidationException $exception) {
+                            Notification::make()
+                                ->title(__('identity.notifications.vendor_approval_failed'))
+                                ->body(collect($exception->errors())->flatten()->implode(' '))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
                         Notification::make()
                             ->title(__('identity.notifications.vendor_approved'))
                             ->success()
@@ -466,9 +499,19 @@ class VendorProfileResource extends Resource
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
                     ->requiresConfirmation()
+                    ->modalHeading(__('identity.modals.suspend_vendor_heading'))
+                    ->modalDescription(__('identity.modals.suspend_vendor_description'))
                     ->visible(fn (VendorProfile $record) => $record->approval_status instanceof ApprovedState && auth()->user()?->can('suspend_vendor'))
-                    ->action(function (VendorProfile $record): void {
-                        app(SuspendVendorAction::class)->execute($record);
+                    ->form([
+                        Textarea::make('reason')
+                            ->label(__('identity.forms.vendor_suspension_reason'))
+                            ->required()
+                            ->minLength(5)
+                            ->maxLength(1000)
+                            ->rows(3),
+                    ])
+                    ->action(function (VendorProfile $record, array $data): void {
+                        app(SuspendVendorAction::class)->execute($record, $data['reason']);
                         Notification::make()->title(__('identity.notifications.vendor_suspended'))->danger()->send();
                     }),
 
@@ -492,10 +535,12 @@ class VendorProfileResource extends Resource
                         Repeater::make('items')
                             ->label('')
                             ->schema([
-                                TextInput::make('field_path')
+                                Select::make('field_path')
                                     ->label(__('identity.fields.field_path'))
+                                    ->options($changeRequestFieldOptions)
                                     ->required()
-                                    ->maxLength(255),
+                                    ->distinct()
+                                    ->rules(['in:'.implode(',', array_keys($changeRequestFieldOptions))]),
                                 Textarea::make('requested_change_en')
                                     ->label(__('identity.fields.requested_change_en'))
                                     ->required()
@@ -512,6 +557,7 @@ class VendorProfileResource extends Resource
                             ])
                             ->columns(1)
                             ->minItems(1)
+                            ->addActionLabel(__('identity.actions.add_requested_change'))
                             ->reorderable(false)
                             ->collapsible(),
                     ])
@@ -648,7 +694,10 @@ class VendorProfileResource extends Resource
                     TextEntry::make('primaryCity.name')
                         ->label(__('identity.columns.city'))
                         ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—')),
-                    TextEntry::make('created_at')->label(__('identity.columns.created_at'))->dateTime(),
+                    TextEntry::make('created_at')
+                        ->label(__('identity.columns.created_at'))
+                        ->dateTime()
+                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
                 ]),
             InfolistSection::make(__('identity.sections.approved_product_types'))
                 ->schema([

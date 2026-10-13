@@ -85,10 +85,20 @@ class ViewVendorProfile extends ViewRecord
                 ->icon('heroicon-o-no-symbol')
                 ->color('danger')
                 ->requiresConfirmation()
+                ->modalHeading(__('identity.modals.suspend_vendor_heading'))
+                ->modalDescription(__('identity.modals.suspend_vendor_description'))
                 ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof ApprovedState
                     && (bool) auth()->user()?->can('suspend_vendor'))
-                ->action(function (VendorProfile $record): void {
-                    app(SuspendVendorAction::class)->execute($record);
+                ->form([
+                    Textarea::make('reason')
+                        ->label(__('identity.forms.vendor_suspension_reason'))
+                        ->required()
+                        ->minLength(5)
+                        ->maxLength(1000)
+                        ->rows(3),
+                ])
+                ->action(function (VendorProfile $record, array $data): void {
+                    app(SuspendVendorAction::class)->execute($record, $data['reason']);
                     Notification::make()->title(__('identity.notifications.vendor_suspended'))->danger()->send();
                 }),
 
