@@ -12,4 +12,9 @@ interface SettlementPaymentReader
     public function findById(int $id): ?PaymentSnapshotDto;
 
     public function findRefundById(int $id): ?RefundSnapshotDto;
+
+    /**
+     * @return list<RefundSnapshotDto>
+     */
+    public function completedRefundsForPayment(int $paymentId): array;
 }

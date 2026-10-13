@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'delivery_accrual' => 'رسوم توصيل المورد',
     'balance' => 'الرصيد',
     'currency' => 'العملة',
     'requested_amount' => 'المبلغ المطلوب',

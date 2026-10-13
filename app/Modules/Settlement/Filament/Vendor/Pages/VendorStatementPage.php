@@ -16,7 +16,6 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\DB;
 
 class VendorStatementPage extends Page implements HasTable
 {
@@ -95,32 +94,26 @@ class VendorStatementPage extends Page implements HasTable
             ->first();
     }
 
+    /** @var array<int, array<int, int>> */
+    private array $statementBalances = [];
+
     private function runningBalance(WalletLedgerEntry $record): int
     {
-        if ($record->running_balance_minor !== null) {
-            return (int) $record->running_balance_minor;
+        if (! isset($this->statementBalances[$record->wallet_id])) {
+            $balance = Money::ofMinor(0, $record->currency);
+            $balances = [];
+            foreach (WalletLedgerEntry::query()->where('wallet_id', $record->wallet_id)
+                ->orderBy('created_at')->orderBy('id')->get() as $entry) {
+                $amount = Money::ofMinor((int) $entry->amount_minor, $entry->currency);
+                // Null directions identify historical signed entries.
+                $balance = $entry->direction === LedgerDirection::Debit
+                    ? $balance->minus($amount) : $balance->plus($amount);
+                $balances[$entry->id] = $balance->getMinorAmount()->toInt();
+            }
+            $this->statementBalances[$record->wallet_id] = $balances;
         }
 
-        $credit = DB::table('wallet_ledger')
-            ->where('wallet_id', $record->wallet_id)
-            ->where('direction', 'credit')
-            ->where(fn ($query) => $query
-                ->where('created_at', '<', $record->created_at)
-                ->orWhere(fn ($sameTime) => $sameTime
-                    ->where('created_at', $record->created_at)
-                    ->where('id', '<=', $record->id)))
-            ->sum('amount_minor');
-        $debit = DB::table('wallet_ledger')
-            ->where('wallet_id', $record->wallet_id)
-            ->where('direction', 'debit')
-            ->where(fn ($query) => $query
-                ->where('created_at', '<', $record->created_at)
-                ->orWhere(fn ($sameTime) => $sameTime
-                    ->where('created_at', $record->created_at)
-                    ->where('id', '<=', $record->id)))
-            ->sum('amount_minor');
-
-        return (int) $credit - (int) $debit;
+        return $this->statementBalances[$record->wallet_id][$record->id];
     }
 
     private function formatMoney(int $minor, string $currency): string

@@ -92,7 +92,7 @@ class VendorDashboardSummaryService
                         'currency' => 'EGP',
                     ],
                     'wallet' => [
-                        'available_minor' => $wallet ? max(0, (int) $wallet->balance_minor - (int) $wallet->pending_withdrawal_minor) : 0,
+                        'available_minor' => $wallet ? max(0, (int) $wallet->balance_minor) : 0,
                         'pending_withdrawal_minor' => $wallet ? (int) $wallet->pending_withdrawal_minor : 0,
                         'currency' => 'EGP',
                     ],

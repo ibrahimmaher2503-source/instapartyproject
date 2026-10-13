@@ -8,6 +8,7 @@ use App\Modules\Settlement\Application\DTOs\BookingItemSnapshotDto;
 use App\Modules\Settlement\Application\DTOs\LedgerEntryInput;
 use App\Modules\Settlement\Application\DTOs\PaymentSnapshotDto;
 use App\Modules\Settlement\Application\DTOs\PostLedgerTransactionInput;
+use App\Modules\Settlement\Domain\Contracts\BookingPayoutWriter;
 use App\Modules\Settlement\Domain\Contracts\CommissionRateResolver;
 use App\Modules\Settlement\Domain\Contracts\LedgerWriter;
 use App\Modules\Settlement\Domain\Enums\CommissionStatus;
@@ -30,6 +31,7 @@ class CalculateCommissionAction
     public function __construct(
         private readonly CommissionRateResolver $rateResolver,
         private readonly LedgerWriter $ledgerWriter,
+        private readonly BookingPayoutWriter $bookingPayoutWriter,
     ) {}
 
     public function execute(BookingItemSnapshotDto $item, PaymentSnapshotDto $payment): Commission
@@ -38,6 +40,9 @@ class CalculateCommissionAction
             // Idempotency: return existing commission if already calculated for this booking item
             $existing = Commission::where('booking_item_id', $item->id)->first();
             if ($existing !== null) {
+                $this->recordBookingPayout($item->id, (int) $existing->commission_minor, $existing->commission_currency, $payment->id);
+                $this->creditDelivery($item);
+
                 return $existing;
             }
 
@@ -55,8 +60,9 @@ class CalculateCommissionAction
             }
 
             $gross = Money::ofMinor($item->totalMinor, $item->totalCurrency);
-            $commissionMinor = $gross->multipliedBy($bps / 10000, RoundingMode::HALF_EVEN)->getMinorAmount()->toInt();
-            $vendorShareMinor = $item->totalMinor - $commissionMinor;
+            $commission = $gross->multipliedBy($bps)->dividedBy(10000, RoundingMode::HALF_EVEN);
+            $commissionMinor = $commission->getMinorAmount()->toInt();
+            $vendorShareMinor = $gross->minus($commission)->getMinorAmount()->toInt();
 
             $idempotencyKey = "comm:{$item->id}";
             $correlationId = (string) Str::ulid();
@@ -75,7 +81,7 @@ class CalculateCommissionAction
                 'commission_currency' => $item->totalCurrency,
                 'vendor_share_minor' => $vendorShareMinor,
                 'vendor_share_currency' => $item->totalCurrency,
-                'status' => CommissionStatus::Calculated,
+                'status' => CommissionStatus::Calculated->value,
                 'idempotency_key' => $idempotencyKey,
             ]);
 
@@ -162,6 +168,9 @@ class CalculateCommissionAction
                 $commission->update(['accrual_ledger_entry_id' => $vendorLedgerEntryId]);
             }
 
+            $this->recordBookingPayout($item->id, $commissionMinor, $item->totalCurrency, $payment->id);
+            $this->creditDelivery($item);
+
             DB::afterCommit(fn () => event(new CommissionCalculated(
                 commissionId: $commission->id,
                 vendorProfileId: $item->vendorProfileId,
@@ -171,5 +180,45 @@ class CalculateCommissionAction
 
             return $commission;
         });
+    }
+
+    private function creditDelivery(BookingItemSnapshotDto $item): void
+    {
+        if ($item->bookingVendorId === null || $item->deliveryFeeMinor === 0) {
+            return;
+        }
+        abort_unless($item->deliveryFeeCurrency === $item->totalCurrency && $item->deliveryFeeMinor > 0, 409);
+        $this->ledgerWriter->post(new PostLedgerTransactionInput(
+            kind: TransactionKind::CommissionAccrual,
+            currency: $item->totalCurrency,
+            idempotencyKey: 'vendor_delivery:'.$item->bookingVendorId,
+            correlationId: (string) Str::ulid(),
+            causationId: null,
+            initiatorType: 'system',
+            initiatedByUserId: null,
+            entries: [
+                new LedgerEntryInput(
+                    walletOwnerType: 'platform_account', walletOwnerId: SuspenseAccount::PlatformClearing->value,
+                    direction: LedgerDirection::Debit, amountMinor: $item->deliveryFeeMinor,
+                    entryType: LedgerEntryType::VendorCredit, counterAccountType: self::VENDOR_OWNER_TYPE,
+                    counterAccountId: $item->vendorProfileId, relatedEntityType: 'booking_vendor', relatedEntityId: $item->bookingVendorId,
+                ),
+                new LedgerEntryInput(
+                    walletOwnerType: self::VENDOR_OWNER_TYPE, walletOwnerId: $item->vendorProfileId,
+                    direction: LedgerDirection::Credit, amountMinor: $item->deliveryFeeMinor,
+                    entryType: LedgerEntryType::VendorCredit, counterAccountType: 'platform_account',
+                    counterAccountId: SuspenseAccount::PlatformClearing->value, relatedEntityType: 'booking_vendor', relatedEntityId: $item->bookingVendorId,
+                ),
+            ],
+            descriptionKey: 'settlement.delivery_accrual',
+            descriptionParams: [],
+        ));
+    }
+
+    private function recordBookingPayout(int $itemId, int $minor, string $currency, int $paymentId): void
+    {
+        $persisted = Commission::query()->where('payment_id', $paymentId)->where('commission_currency', $currency)
+            ->pluck('commission_minor', 'booking_item_id')->map(fn ($value): int => (int) $value)->all();
+        $this->bookingPayoutWriter->recordCommission($itemId, $minor, $currency, $persisted);
     }
 }

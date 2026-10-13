@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'delivery_accrual' => 'Vendor delivery fee',
     'balance' => 'Balance',
     'currency' => 'Currency',
     'requested_amount' => 'Requested amount',
