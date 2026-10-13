@@ -131,6 +131,7 @@ class VendorAccountPage extends Page implements HasInfolists
                         ->label(__('vendor-portal.account.new_phone'))
                         ->placeholder('+201234567890')
                         ->required()
+                        ->regex('/^\+[1-9]\d{7,14}$/')
                         ->maxLength(20)
                         ->helperText('Include country code, e.g. +201234567890'),
                 ])

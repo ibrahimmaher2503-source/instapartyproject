@@ -107,6 +107,7 @@ return [
         'suspended' => 'Suspended',
     ],
     'business_hours' => [
+        'overnight_hint' => 'A closing time earlier than opening means the following day.',
         'title' => 'Business Hours',
         'day' => 'Day',
         'open' => 'Open',

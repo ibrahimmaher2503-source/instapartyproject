@@ -78,6 +78,7 @@ class VendorBusinessHoursPage extends Page implements HasForms
                             ->default('09:00'),
                         TimePicker::make("day_{$day->value}_closes_at")
                             ->label(__('vendor-portal.business_hours.closes_at'))
+                            ->helperText(__('vendor-portal.business_hours.overnight_hint'))
                             ->seconds(false)
                             ->visible(fn (callable $get) => (bool) $get("day_{$day->value}_open"))
                             ->default('22:00'),

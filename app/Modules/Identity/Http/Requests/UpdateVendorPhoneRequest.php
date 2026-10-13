@@ -23,7 +23,7 @@ class UpdateVendorPhoneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_e164' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/', Rule::unique('users', 'phone_e164')],
+            'phone_e164' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/', Rule::unique('users', 'phone_e164')->ignore($this->user())],
         ];
     }
 }

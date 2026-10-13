@@ -63,18 +63,20 @@ class VendorServicesListPage extends Page implements HasTable
                 ->label(__('vendor-portal.services.create_rental'))
                 ->icon('heroicon-o-plus')
                 ->color('warning')
-                ->url(VendorRentalServiceResource::getUrl('create', panel: 'vendor')),
+                ->url(VendorRentalServiceResource::getUrl('create', panel: 'vendor'))
+                ->visible(fn (): bool => VendorRentalServiceResource::canAccess()),
             Action::make('addSale')
                 ->label(__('vendor-portal.services.create_sale'))
                 ->icon('heroicon-o-plus')
                 ->color('success')
-                ->url(VendorSaleServiceResource::getUrl('create', panel: 'vendor')),
+                ->url(VendorSaleServiceResource::getUrl('create', panel: 'vendor'))
+                ->visible(fn (): bool => VendorSaleServiceResource::canAccess()),
             Action::make('addDigital')
                 ->label(__('vendor-portal.services.create_digital'))
                 ->icon('heroicon-o-plus')
                 ->color('info')
                 ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor'))
-                ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true)),
+                ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true) && VendorDigitalServiceResource::canAccess()),
         ];
     }
 
@@ -98,18 +100,20 @@ class VendorServicesListPage extends Page implements HasTable
                     ->label(__('vendor-portal.services.create_rental'))
                     ->icon('heroicon-o-plus')
                     ->color('warning')
-                    ->url(VendorRentalServiceResource::getUrl('create', panel: 'vendor')),
+                    ->url(VendorRentalServiceResource::getUrl('create', panel: 'vendor'))
+                    ->visible(fn (): bool => VendorRentalServiceResource::canAccess()),
                 TableAction::make('createSale')
                     ->label(__('vendor-portal.services.create_sale'))
                     ->icon('heroicon-o-plus')
                     ->color('success')
-                    ->url(VendorSaleServiceResource::getUrl('create', panel: 'vendor')),
+                    ->url(VendorSaleServiceResource::getUrl('create', panel: 'vendor'))
+                    ->visible(fn (): bool => VendorSaleServiceResource::canAccess()),
                 TableAction::make('createDigital')
                     ->label(__('vendor-portal.services.create_digital'))
                     ->icon('heroicon-o-plus')
                     ->color('info')
                     ->url(VendorDigitalServiceResource::getUrl('create', panel: 'vendor'))
-                    ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true)),
+                    ->visible(fn (): bool => (bool) config('catalog.digital_services_enabled', true) && VendorDigitalServiceResource::canAccess()),
             ])
             ->columns([
                 TextColumn::make('name')
