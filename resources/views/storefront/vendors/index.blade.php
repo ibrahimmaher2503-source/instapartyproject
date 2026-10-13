@@ -38,7 +38,7 @@
             @else
                 <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     @foreach($vendors as $vendor)
-                        <x-storefront.vendor-card :vendor="$vendor" />
+                        <x-storefront.vendor-card :vendor="$vendor" :review-summary="$reviewSummaries[$vendor->id] ?? null" />
                     @endforeach
                 </div>
                 @if ($vendors->lastPage() > 1)

@@ -59,6 +59,12 @@ return [
         'hidden' => 'Hidden',
     ],
 
+    'response' => [
+        'body' => 'Response',
+        'status' => 'Response Status',
+        'not_submitted' => 'Not responded',
+    ],
+
     'review_type' => [
         'service' => 'Service Review',
         'vendor' => 'Vendor Review',
@@ -82,6 +88,8 @@ return [
     ],
 
     'actions' => [
+        'respond' => 'Respond',
+        'edit_response' => 'Edit response',
         'approve' => 'Approve',
         'reject' => 'Reject',
         'hide' => 'Hide',

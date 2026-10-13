@@ -7,6 +7,7 @@ namespace App\Modules\Discovery\Http\Controllers\Web;
 use App\Modules\Discovery\Infrastructure\Repositories\VendorBrowsingRepository;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 
 class VendorController
 {
-    public function index(Request $request): View
+    public function index(Request $request, VendorReviewRepository $reviews): View
     {
         $search = trim((string) $request->query('q', ''));
         $search = mb_substr($search, 0, 100);
@@ -39,13 +40,16 @@ class VendorController
             ->orderByDesc('id')
             ->paginate(12)->withQueryString();
 
-        return view('storefront.vendors.index', compact('vendors', 'search', 'sort'));
+        $reviewSummaries = $reviews->publicSummariesForVendors($vendors->getCollection()->modelKeys());
+
+        return view('storefront.vendors.index', compact('vendors', 'search', 'sort', 'reviewSummaries'));
     }
 
     public function show(
         string $publicId,
         VendorBrowsingRepository $repository,
         Request $request,
+        VendorReviewRepository $reviews,
     ): View|RedirectResponse {
         $vendor = VendorProfile::query()
             ->with(['primaryCity', 'primaryGovernorate'])
@@ -64,9 +68,11 @@ class VendorController
         }
 
         $services = $repository->servicesFor($vendor->id, null, 12);
+        $reviewSummary = $reviews->publicSummariesForVendors([$vendor->id])[$vendor->id];
 
         return view('storefront.vendors.show', [
             'vendor' => $vendor,
+            'reviewSummary' => $reviewSummary,
             'services' => $services,
             'serviceTypeCounts' => $repository->serviceTypeCountsFor($vendor->id),
             'galleryItems' => $vendor->getMedia('portfolio')->map(fn ($media): array => [

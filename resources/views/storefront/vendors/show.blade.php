@@ -30,7 +30,7 @@
                     <div>
                         <div class="flex flex-wrap items-center gap-3">
                             <p class="text-sm font-bold uppercase tracking-[0.2em] text-secondary-200">{{ __('storefront.vendor.verified_badge') }}</p>
-                            <x-storefront.vendor-rating :vendor="$vendor" class="text-accent-300" />
+                            <x-storefront.vendor-public-reviews :summary="$reviewSummary" class="text-accent-300" />
                         </div>
                         <h1 class="mt-2 text-3xl font-extrabold sm:text-4xl">{{ $vendorName }}</h1>
                         @if ($city || $governorate)<p class="mt-2 text-sm text-white/80">{{ collect([$city, $governorate])->filter()->join(' · ') }}</p>@endif
