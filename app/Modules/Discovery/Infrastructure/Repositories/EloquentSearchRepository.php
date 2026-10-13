@@ -15,7 +15,7 @@ class EloquentSearchRepository implements SearchRepository
 {
     public function resolveOccasionId(string $code): ?int
     {
-        return Occasion::where('code', $code)->value('id');
+        return Occasion::query()->where('code', $code)->where('is_active', true)->value('id');
     }
 
     public function resolveVendorId(string $publicId): ?int

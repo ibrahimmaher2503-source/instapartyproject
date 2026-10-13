@@ -54,6 +54,13 @@ class AddItemToBookingAction
                 $this->abortWith(Response::HTTP_NOT_FOUND, 'Service not found or unavailable');
             }
 
+            if (! $this->catalogReader->isServiceEligibleForOccasion($service->id, (int) $booking->occasion_id)) {
+                $this->abortWith(
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    __('storefront.wizard.validation.service_occasion_mismatch'),
+                );
+            }
+
             $this->transportPricing->snapshotBaseFee($booking);
 
             // One currency per draft (mobile audit 2026-06-06): every item must

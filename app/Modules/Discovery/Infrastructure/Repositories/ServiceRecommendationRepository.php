@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Discovery\Infrastructure\Repositories;
 
 use App\Modules\Catalog\Domain\Models\Service;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -29,6 +30,12 @@ class ServiceRecommendationRepository
 
         return Service::query()
             ->displayable()
+            ->when($occasionId !== null, fn (Builder $services) => $services->whereHas(
+                'category.occasions',
+                fn (Builder $occasions) => $occasions
+                    ->whereKey($occasionId)
+                    ->where('occasions.is_active', true),
+            ))
             ->with(['category', 'vendor'])
             ->selectRaw("services.*, {$score} AS recommendation_score", [
                 $occasionId, $occasionId,

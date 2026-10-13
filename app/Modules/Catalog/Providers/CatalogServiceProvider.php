@@ -7,11 +7,13 @@ namespace App\Modules\Catalog\Providers;
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Catalog\Application\Listeners\ArchiveServicesOnAccountDeletedListener;
 use App\Modules\Catalog\Application\Listeners\ArchiveServicesOnTypeRevokedListener;
+use App\Modules\Catalog\Application\Listeners\ReindexServicesForOccasionCategoriesChanged;
 use App\Modules\Catalog\Application\Listeners\RevalidateFrontendCatalogListener;
 use App\Modules\Catalog\Application\Listeners\WriteServiceChangeRequestAuditListener;
 use App\Modules\Catalog\Application\Timeline\ChangeRequestTimelineDescriptors;
 use App\Modules\Catalog\Application\Timeline\ServiceTimelineDescriptors;
 use App\Modules\Catalog\Domain\Contracts\VendorServicePresenceQuery;
+use App\Modules\Catalog\Domain\Events\OccasionCategoriesChanged;
 use App\Modules\Catalog\Domain\Events\ServiceChangeRequestApproved;
 use App\Modules\Catalog\Domain\Events\ServiceChangeRequestClarificationReplied;
 use App\Modules\Catalog\Domain\Events\ServiceChangeRequestClarificationRequested;
@@ -56,6 +58,7 @@ class CatalogServiceProvider extends ServiceProvider
 
         Event::listen(VendorTypeRevoked::class, ArchiveServicesOnTypeRevokedListener::class);
         Event::listen(VendorAccountDeleted::class, ArchiveServicesOnAccountDeletedListener::class);
+        Event::listen(OccasionCategoriesChanged::class, ReindexServicesForOccasionCategoriesChanged::class);
 
         // Trigger ISR revalidation on the customer frontend when a service is published
         Event::listen(ServicePublished::class, RevalidateFrontendCatalogListener::class);

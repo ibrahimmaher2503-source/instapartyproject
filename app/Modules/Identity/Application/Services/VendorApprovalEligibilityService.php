@@ -12,12 +12,29 @@ use App\Modules\Identity\Domain\Enums\DocumentType;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 final class VendorApprovalEligibilityService
 {
     public function __construct(
         private readonly RequiredVendorDocumentTypesResolver $documentTypesResolver,
     ) {}
+
+    /**
+     * @param  Builder<VendorProfile>  $query
+     * @return Builder<VendorProfile>
+     */
+    public function withEligibilityRelations(Builder $query): Builder
+    {
+        return $query->with([
+            'user',
+            'primaryCity',
+            'businessHours',
+            'coverageAreas',
+            'latestDocumentsPerType',
+        ]);
+    }
 
     public function evaluate(VendorProfile $vendor, ?CarbonImmutable $asOf = null): VendorApprovalEligibilityResult
     {
@@ -30,6 +47,13 @@ final class VendorApprovalEligibilityService
         $documentIssues = $businessType === null
             ? null
             : $this->requiredDocumentIssues($vendor, $businessType, $asOf);
+        $primaryCityMatchesGovernorate = filled($vendor->primary_governorate_id)
+            && filled($vendor->primary_city_id)
+            && ($vendor->relationLoaded('primaryCity')
+                ? (int) $vendor->primaryCity?->governorate_id === (int) $vendor->primary_governorate_id
+                : $vendor->primaryCity()
+                    ->where('governorate_id', $vendor->primary_governorate_id)
+                    ->exists());
 
         $checks = [
             'identity' => filled($vendor->user?->name),
@@ -37,16 +61,16 @@ final class VendorApprovalEligibilityService
                 && filled($vendor->user?->phone_e164)
                 && $vendor->user?->email_verified_at !== null,
             'profile' => $this->hasRequiredBusinessFields($vendor, $businessType),
-            'geography' => filled($vendor->primary_governorate_id)
-                && filled($vendor->primary_city_id)
-                && $vendor->primaryCity()
-                    ->where('governorate_id', $vendor->primary_governorate_id)
-                    ->exists(),
+            'geography' => $primaryCityMatchesGovernorate,
             'banking' => ! MaskBankData::isAbsent($vendor->bank_name)
                 && ! MaskBankData::isAbsent($vendor->bank_account_holder)
                 && ! MaskBankData::isAbsent($vendor->bank_iban),
-            'hours' => $vendor->businessHours()->exists(),
-            'coverage' => $vendor->coverageAreas()->exists(),
+            'hours' => $vendor->relationLoaded('businessHours')
+                ? $vendor->businessHours->isNotEmpty()
+                : $vendor->businessHours()->exists(),
+            'coverage' => $vendor->relationLoaded('coverageAreas')
+                ? $vendor->coverageAreas->isNotEmpty()
+                : $vendor->coverageAreas()->exists(),
             'documents' => $documentIssues !== null && $documentIssues === [],
         ];
 
@@ -99,13 +123,24 @@ final class VendorApprovalEligibilityService
         CarbonImmutable $asOf,
     ): array {
         $requiredTypes = $this->documentTypesResolver->forBusinessType($businessType->value);
-        $latest = $vendor->documents()
-            ->whereIn('doc_type', $requiredTypes)
-            ->latestPerType()
-            ->get()
-            ->keyBy(fn (VendorDocument $document): string => $document->doc_type instanceof DocumentType
+        $documents = $vendor->relationLoaded('latestDocumentsPerType')
+            ? $vendor->latestDocumentsPerType
+            : ($vendor->relationLoaded('documents')
+                ? $vendor->documents
+                : $vendor->documents()->whereIn('doc_type', $requiredTypes)->latestPerType()->get());
+        $latest = $documents
+            ->filter(fn (VendorDocument $document): bool => in_array(
+                $document->doc_type instanceof DocumentType ? $document->doc_type->value : (string) $document->doc_type,
+                $requiredTypes,
+                true,
+            ))
+            ->groupBy(fn (VendorDocument $document): string => $document->doc_type instanceof DocumentType
                 ? $document->doc_type->value
-                : (string) $document->doc_type);
+                : (string) $document->doc_type)
+            ->map(fn (Collection $documents) => $documents->sort(
+                fn (VendorDocument $left, VendorDocument $right): int => ($right->created_at <=> $left->created_at)
+                    ?: ($right->getKey() <=> $left->getKey()),
+            )->first());
         $issues = [];
 
         foreach ($requiredTypes as $type) {

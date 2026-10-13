@@ -9,6 +9,7 @@ final class OccasionDTO
     /**
      * @param  array<string, string>  $name
      * @param  array<string, string>|null  $description
+     * @param  list<int>|null  $categoryIds  Null preserves existing links for callers that omit the relation.
      */
     public function __construct(
         public readonly string $code,
@@ -17,6 +18,7 @@ final class OccasionDTO
         public readonly ?string $iconPath = null,
         public readonly int $sortOrder = 0,
         public readonly bool $isActive = true,
+        public readonly ?array $categoryIds = null,
     ) {}
 
     /** @param  array<string, mixed>  $data */
@@ -29,6 +31,9 @@ final class OccasionDTO
             iconPath: $data['icon_path'] ?? null,
             sortOrder: (int) ($data['sort_order'] ?? 0),
             isActive: (bool) ($data['is_active'] ?? true),
+            categoryIds: array_key_exists('category_ids', $data)
+                ? array_values(array_unique(array_map('intval', (array) ($data['category_ids'] ?? []))))
+                : null,
         );
     }
 

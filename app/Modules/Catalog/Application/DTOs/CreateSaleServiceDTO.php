@@ -23,6 +23,8 @@ readonly class CreateSaleServiceDTO
         public ?array $customizationFields,
         /** @var array<string, mixed>|null */
         public ?array $categoryFieldValues = null,
+        /** @var array{en: string, ar: string}|null */
+        public ?array $longDescription = null,
     ) {}
 
     public static function fromRequest(CreateSaleServiceRequest $request, int $vendorProfileId): self

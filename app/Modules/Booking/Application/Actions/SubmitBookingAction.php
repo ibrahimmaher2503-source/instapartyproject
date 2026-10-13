@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Booking\Application\Actions;
 
 use App\Modules\Booking\Application\DTOs\SubmitBookingDTO;
+use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Booking\Domain\Contracts\TaxRateResolver;
 use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Enums\VendorSubStatus;
@@ -22,6 +23,7 @@ class SubmitBookingAction
     public function __construct(
         private readonly TaxRateResolver $taxRateResolver,
         private readonly EnforceCoverageAreaMinimumOrderAction $enforceMinimumOrder,
+        private readonly CatalogServiceReader $catalogReader,
     ) {}
 
     public function execute(SubmitBookingDTO $dto): Booking
@@ -48,22 +50,30 @@ class SubmitBookingAction
                 'Booking is not in draft status'
             );
 
-            $hasItems = DB::table('booking_items')
+            $items = DB::table('booking_items')
                 ->join('booking_vendors', 'booking_vendors.id', '=', 'booking_items.booking_vendor_id')
                 ->where('booking_vendors.booking_id', $booking->id)
-                ->exists();
+                ->select(
+                    'booking_items.id',
+                    'booking_items.service_id',
+                    'booking_items.product_type',
+                    'booking_items.unit_price_minor',
+                    'booking_items.quantity',
+                )
+                ->get();
 
-            abort_if(! $hasItems, Response::HTTP_UNPROCESSABLE_ENTITY, 'Booking has no items');
+            abort_if($items->isEmpty(), Response::HTTP_UNPROCESSABLE_ENTITY, 'Booking has no items');
+
+            foreach ($items as $item) {
+                if (! $this->catalogReader->isServiceEligibleForOccasion((int) $item->service_id, (int) $booking->occasion_id)) {
+                    abort(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.service_occasion_mismatch'));
+                }
+            }
 
             $this->enforceMinimumOrder->execute($booking->id);
 
             // Resolve and snapshot VAT per booking item
             $totalVatMinor = 0;
-            $items = DB::table('booking_items')
-                ->join('booking_vendors', 'booking_vendors.id', '=', 'booking_items.booking_vendor_id')
-                ->where('booking_vendors.booking_id', $booking->id)
-                ->select('booking_items.id', 'booking_items.product_type', 'booking_items.unit_price_minor', 'booking_items.quantity')
-                ->get();
 
             foreach ($items as $item) {
                 $rateBps = $this->taxRateResolver->resolveRateBpsForProductType($item->product_type);

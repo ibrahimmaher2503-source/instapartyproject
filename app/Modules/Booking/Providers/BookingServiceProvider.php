@@ -17,7 +17,6 @@ use App\Modules\Booking\Application\Listeners\OnBookingVendorTimedOutNotifyVendo
 use App\Modules\Booking\Application\Listeners\OnCustomerReviewReminderSentNotifyCustomer;
 use App\Modules\Booking\Application\Listeners\RecalculateBookingTotalsListener;
 use App\Modules\Booking\Application\Listeners\ReleaseInventoryOnCancellationListener;
-use App\Modules\Booking\Application\Listeners\WriteBookingStateTransitionListener;
 use App\Modules\Booking\Application\Listeners\WriteInitialBookingSnapshotListener;
 use App\Modules\Booking\Application\Listeners\WriteNegotiationSnapshotListener;
 use App\Modules\Booking\Application\Services\BookingVendorStatusMapCache;
@@ -111,9 +110,8 @@ class BookingServiceProvider extends ServiceProvider
             ExpireStaleVendorReviewsCommand::class,
         ]);
 
-        // Booking draft events (listener-driven state transition for initial draft)
+        // Booking draft events
         Event::listen(BookingDraftCreated::class, WriteInitialBookingSnapshotListener::class);
-        Event::listen(BookingDraftCreated::class, WriteBookingStateTransitionListener::class);
         Event::listen(BookingItemAdded::class, RecalculateBookingTotalsListener::class);
         Event::listen(BookingItemRemoved::class, RecalculateBookingTotalsListener::class);
 
