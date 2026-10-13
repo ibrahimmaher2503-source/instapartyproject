@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App\Modules\Settlement\Filament\Resources;
 
+use App\Modules\Settlement\Application\Actions\AssignReconciliationFindingAction;
+use App\Modules\Settlement\Application\Actions\IgnoreReconciliationFindingAction;
 use App\Modules\Settlement\Application\Support\FinanceIdentityPresenter;
 use App\Modules\Settlement\Domain\Enums\ReconciliationFindingSeverity;
 use App\Modules\Settlement\Domain\Enums\ReconciliationFindingType;
 use App\Modules\Settlement\Domain\Models\ReconciliationFinding;
 use App\Modules\Settlement\Filament\Resources\ReconciliationFindingResource\Pages\ListReconciliationFindings;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ReconciliationFindingResource extends Resource
 {
@@ -113,7 +119,7 @@ class ReconciliationFindingResource extends Resource
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
                         'auto_repaired' => 'success',
-                        'ignored' => 'gray',
+                        'ignored_known_issue' => 'gray',
                         default => 'warning',
                     })
                     ->default(__('settlement.findings.unresolved'))
@@ -123,8 +129,24 @@ class ReconciliationFindingResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->label(__('settlement.columns.detected_at')),
+
+                TextColumn::make('last_seen_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->label(__('settlement.columns.last_seen_at')),
+
+                TextColumn::make('resolution_note')
+                    ->wrap()
+                    ->label(__('settlement.actions.ignore_reason')),
+
+                TextColumn::make('assignedTo.name')
+                    ->label(__('settlement.columns.assigned_to')),
             ])
             ->filters([
+                Filter::make('current_conditions')
+                    ->label(__('settlement.findings.current_conditions'))
+                    ->default()
+                    ->query(fn (Builder $query): Builder => $query->canonicalConditions()),
                 SelectFilter::make('severity')
                     ->options(ReconciliationFindingSeverity::class)
                     ->label(__('settlement.columns.severity')),
@@ -136,11 +158,31 @@ class ReconciliationFindingResource extends Resource
                 SelectFilter::make('resolution')
                     ->options([
                         'auto_repaired' => __('settlement.findings.auto_repaired'),
-                        'ignored' => __('settlement.findings.ignored'),
+                        'ignored_known_issue' => __('settlement.findings.ignored'),
                     ])
                     ->label(__('settlement.columns.resolution')),
             ])
             ->actions([
+                Action::make('assign')
+                    ->label(__('settlement.actions.assign_finding'))
+                    ->form([
+                        Select::make('admin_id')
+                            ->label(__('settlement.columns.assigned_to'))
+                            ->options(fn () => DB::table('users')
+                                ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+                                ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+                                ->where('users.status', 'active')
+                                ->whereNull('users.deleted_at')
+                                ->where('model_has_roles.model_type', 'App\\Modules\\Identity\\Domain\\Models\\User')
+                                ->where('roles.guard_name', 'web')
+                                ->whereIn('roles.name', ['admin', 'super_admin'])
+                                ->distinct()->pluck('users.name', 'users.id'))
+                            ->searchable()
+                            ->required(),
+                    ])
+                    ->action(fn (ReconciliationFinding $record, array $data) => app(AssignReconciliationFindingAction::class)->execute($record, (int) $data['admin_id']))
+                    ->visible(fn (ReconciliationFinding $record): bool => $record->resolved_at === null
+                        && (auth()->user()?->can('update', $record) ?? false)),
                 Action::make('markIgnored')
                     ->label(__('settlement.actions.mark_ignored'))
                     ->icon('heroicon-o-eye-slash')
@@ -152,21 +194,19 @@ class ReconciliationFindingResource extends Resource
                         Textarea::make('reason')
                             ->label(__('settlement.actions.ignore_reason'))
                             ->required()
+                            ->maxLength(2000)
                             ->rows(3),
                     ])
                     ->action(function (ReconciliationFinding $record, array $data): void {
-                        $record->update([
-                            'resolution' => 'ignored',
-                            'resolved_by_user_id' => auth()->id(),
-                            'resolved_at' => now(),
-                        ]);
+                        app(IgnoreReconciliationFindingAction::class)->execute($record, (string) $data['reason']);
 
                         Notification::make()
                             ->title(__('settlement.actions.marked_ignored_success'))
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (ReconciliationFinding $record): bool => $record->resolution === null),
+                    ->visible(fn (ReconciliationFinding $record): bool => $record->resolution === null
+                        && (auth()->user()?->can('update', $record) ?? false)),
             ]);
     }
 

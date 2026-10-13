@@ -55,6 +55,9 @@ return [
     ],
 
     'columns' => [
+        'assigned_to' => 'Assigned to',
+        'last_seen_at' => 'Last seen',
+        'failure_message' => 'Failure reason',
         'public_id' => 'Public ID',
         'booking_item' => 'Booking Item',
         'payment' => 'Payment',
@@ -144,6 +147,7 @@ return [
     ],
 
     'withdrawal' => [
+        'missing_reserve' => 'This withdrawal has no valid reserved funds. Review the ledger before approval.',
         'queue_empty' => 'No withdrawal requests need action',
         'queue_empty_description' => 'New or approved withdrawal requests will appear here.',
         'nav_audit' => 'Withdrawal Audit',
@@ -265,6 +269,7 @@ return [
     ],
 
     'actions' => [
+        'assign_finding' => 'Assign finding',
         'approve' => 'Approve',
         'approve_description' => 'Approve this withdrawal request. The vendor will be notified.',
         'mark_paid' => 'Mark Paid',
@@ -280,6 +285,9 @@ return [
     ],
 
     'findings' => [
+        'current_conditions' => 'Current conditions (hide duplicate history)',
+        'high_alert_title' => 'High severity financial finding',
+        'high_alert_body' => ':finding requires review. Reference: :public_id.',
         'unresolved' => 'Unresolved',
         'auto_repaired' => 'Auto-Repaired',
         'ignored' => 'Ignored (Known Issue)',
@@ -287,6 +295,8 @@ return [
 
     'reconciliation_run' => [
         'summary' => 'Run Summary',
+        'failed' => 'Financial reconciliation failed. Review the command error before retrying.',
+        'timed_out' => 'Financial reconciliation exceeded the 15-minute time limit.',
     ],
 
     'reconciliation_dashboard' => [

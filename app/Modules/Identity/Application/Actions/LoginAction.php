@@ -19,7 +19,9 @@ class LoginAction
 
         $user = User::where($field, $login)->first();
 
-        if ($user === null || ! Hash::check($password, $user->password)) {
+        if ($user === null
+            || $user->hasAnyRole(['admin', 'super_admin', 'booking_manager', 'panel_user'])
+            || ! Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
                 'login' => __('identity.invalid_credentials'),
             ]);

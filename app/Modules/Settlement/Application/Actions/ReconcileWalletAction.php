@@ -42,16 +42,17 @@ class ReconcileWalletAction
 
             foreach ($allDetections as $detected) {
                 $finding = $this->reconciliationRepo->recordFinding($run, $detected);
-                $findings[] = $finding;
+                $findings[$finding->id] = $finding;
 
                 // Auto-repair wallet cache drift (warning severity)
                 if ($detected->severity === ReconciliationFindingSeverity::Warning) {
                     $this->projector->project($walletId);
-                    $finding->update(['resolution' => 'auto_repaired', 'resolved_at' => now()]);
+                    $finding->update(['resolution' => 'auto_repaired', 'resolved_at' => now(), 'open_condition_key' => null]);
                 }
 
                 // Emit event for high-severity findings so listeners can notify admins
-                if ($detected->severity === ReconciliationFindingSeverity::High) {
+                if ($detected->severity === ReconciliationFindingSeverity::High
+                    && ($finding->wasRecentlyCreated || array_key_exists('open_condition_key', $finding->getChanges()))) {
                     DB::afterCommit(fn () => event(new ReconciliationFindingRaised(
                         findingId: $finding->id,
                         findingPublicId: (string) $finding->public_id,
@@ -65,13 +66,14 @@ class ReconcileWalletAction
         });
 
         $autoRepaired = count(array_filter($findings, fn ($f) => $f->resolution === 'auto_repaired'));
-        $manualReview = count($findings) - $autoRepaired;
+        $manualReview = count(array_filter($findings, fn ($f) => in_array($f->resolution, [null, 'manual_review_required'], true)));
 
         return new ReconcileWalletResult(
             walletId: $walletId,
             findingsCount: count($findings),
             autoRepairedCount: $autoRepaired,
             manualReviewCount: $manualReview,
+            findingResolutions: array_map(fn ($finding) => $finding->resolution, $findings),
         );
     }
 }

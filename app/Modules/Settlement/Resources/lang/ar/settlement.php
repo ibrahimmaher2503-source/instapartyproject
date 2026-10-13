@@ -55,6 +55,9 @@ return [
     ],
 
     'columns' => [
+        'assigned_to' => 'مسندة إلى',
+        'last_seen_at' => 'آخر رصد',
+        'failure_message' => 'سبب الفشل',
         'public_id' => 'المعرّف العام',
         'booking_item' => 'عنصر الحجز',
         'payment' => 'عملية الدفع',
@@ -144,6 +147,7 @@ return [
     ],
 
     'withdrawal' => [
+        'missing_reserve' => 'لا يوجد حجز أموال صحيح لهذا السحب. راجع دفتر الأستاذ قبل الاعتماد.',
         'queue_empty' => 'لا توجد طلبات سحب تحتاج إلى إجراء',
         'queue_empty_description' => 'ستظهر طلبات السحب الجديدة أو المعتمدة هنا.',
         'nav_audit' => 'مراجعة السحوبات',
@@ -265,6 +269,7 @@ return [
     ],
 
     'actions' => [
+        'assign_finding' => 'إسناد النتيجة',
         // Phase 4.11 — Finance Audit
         'approve' => 'اعتماد',
         'approve_description' => 'اعتماد طلب السحب هذا. سيتم إبلاغ المورد.',
@@ -281,6 +286,9 @@ return [
     ],
 
     'findings' => [
+        'current_conditions' => 'الحالات الحالية (إخفاء السجل المتكرر)',
+        'high_alert_title' => 'نتيجة مالية عالية الخطورة',
+        'high_alert_body' => ':finding تتطلب المراجعة. المرجع: :public_id.',
         'unresolved' => 'غير محلولة',
         'auto_repaired' => 'إصلاح تلقائي',
         'ignored' => 'متجاهلة (مشكلة معروفة)',
@@ -288,6 +296,8 @@ return [
 
     'reconciliation_run' => [
         'summary' => 'ملخص الدورة',
+        'failed' => 'فشلت المطابقة المالية. راجع خطأ الأمر قبل إعادة المحاولة.',
+        'timed_out' => 'تجاوزت المطابقة المالية المهلة المحددة وهي 15 دقيقة.',
     ],
 
     'reconciliation_dashboard' => [

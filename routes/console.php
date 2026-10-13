@@ -3,7 +3,9 @@
 use App\Modules\Booking\Application\Actions\ExpireStaleBookingModificationsAction;
 use App\Modules\Payments\Application\Actions\ExpirePendingPaymentsAction;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentIdempotencyKeyRepository;
+use App\Modules\Settlement\Application\Actions\ExpireStaleReconciliationRunsAction;
 use App\Modules\Shared\Infrastructure\Jobs\OrphanMediaCleanupJob;
+use App\Modules\Subscriptions\Application\Actions\ExpireSubscriptionsAction;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -37,6 +39,18 @@ Schedule::call(fn () => app(EloquentIdempotencyKeyRepository::class)->purgeExpir
     ->withoutOverlapping();
 
 // Settlement reconciliation — hourly recent-touch and daily full scan
+Schedule::call(fn () => app(ExpireStaleReconciliationRunsAction::class)->execute())
+    ->name('settlement:expire-stale-reconciliation-runs')
+    ->everyMinute()
+    ->onOneServer()
+    ->withoutOverlapping();
+
+Schedule::call(fn () => app(ExpireSubscriptionsAction::class)->execute())
+    ->name('subscriptions:expire')
+    ->everyMinute()
+    ->onOneServer()
+    ->withoutOverlapping();
+
 Schedule::command('reconcile:run --scope=recent_touch --window=60min')
     ->hourly()
     ->withoutOverlapping()

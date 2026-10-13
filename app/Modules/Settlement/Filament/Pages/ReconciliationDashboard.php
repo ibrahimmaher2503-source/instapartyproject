@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Settlement\Filament\Pages;
 
 use App\Modules\Settlement\Domain\Enums\ReconciliationFindingSeverity;
+use App\Modules\Settlement\Domain\Models\ReconciliationFinding;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 
@@ -33,9 +34,8 @@ class ReconciliationDashboard extends Page
 
     public function getOpenHighFindingsCount(): int
     {
-        return (int) DB::table('reconciliation_findings')
+        return ReconciliationFinding::query()->canonicalConditions()
             ->where('severity', ReconciliationFindingSeverity::High->value)
-            ->whereNull('resolution')
             ->count();
     }
 

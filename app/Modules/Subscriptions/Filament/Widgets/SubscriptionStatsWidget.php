@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Subscriptions\Filament\Widgets;
 
+use App\Modules\Subscriptions\Domain\Enums\BillingCycle;
+use App\Modules\Subscriptions\Domain\Models\VendorSubscription;
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Facades\DB;
 
 class SubscriptionStatsWidget extends StatsOverviewWidget
 {
@@ -16,20 +19,32 @@ class SubscriptionStatsWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $active = DB::table('vendor_subscriptions')->where('status', 'active')->count();
+        $at = now();
+        $activeQuery = VendorSubscription::query()->active()->effectiveAt($at);
+        $active = (clone $activeQuery)->count();
 
-        $mrr = DB::table('vendor_subscriptions')
+        $paidQuery = (clone $activeQuery)
             ->join('subscription_plans', 'subscription_plans.id', '=', 'vendor_subscriptions.subscription_plan_id')
-            ->where('vendor_subscriptions.status', 'active')
-            ->sum('subscription_plans.monthly_price_minor');
+            ->where('is_admin_override', false);
 
-        $expiringCount = DB::table('vendor_subscriptions')
-            ->where('status', 'active')
-            ->whereBetween('current_period_end', [now(), now()->addDays(30)])
+        $monthlyMinor = (clone $paidQuery)
+            ->where('billing_cycle', BillingCycle::Monthly->value)
+            ->where('subscription_plans.monthly_price_currency', 'EGP')
+            ->sum('subscription_plans.monthly_price_minor');
+        $yearlyMinor = (clone $paidQuery)
+            ->where('billing_cycle', BillingCycle::Yearly->value)
+            ->where('subscription_plans.yearly_price_currency', 'EGP')
+            ->sum('subscription_plans.yearly_price_minor');
+        $mrr = Money::ofMinor($monthlyMinor, 'EGP')->plus(
+            Money::ofMinor($yearlyMinor, 'EGP')->dividedBy(12, RoundingMode::HALF_EVEN),
+        );
+
+        $expiringCount = (clone $activeQuery)
+            ->whereBetween('current_period_end', [$at, $at->copy()->addDays(30)])
             ->count();
 
-        $overrideCount = DB::table('vendor_subscriptions')
-            ->whereNotNull('override_expires_at')
+        $overrideCount = (clone $activeQuery)
+            ->adminOverride()
             ->count();
 
         return [
@@ -38,7 +53,7 @@ class SubscriptionStatsWidget extends StatsOverviewWidget
                 ->icon('heroicon-o-check-circle')
                 ->color('success'),
 
-            Stat::make(__('subscriptions::subscription.mrr'), 'EGP '.number_format($mrr / 100, 0))
+            Stat::make(__('subscriptions::subscription.mrr'), $mrr->formatTo(app()->getLocale()))
                 ->description(__('subscriptions::subscription.billing_cycle.monthly'))
                 ->icon('heroicon-o-banknotes')
                 ->color('primary'),

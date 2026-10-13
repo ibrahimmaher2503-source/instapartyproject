@@ -8,6 +8,7 @@ use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Settlement\Domain\Enums\ReconciliationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ReconciliationRun extends Model
@@ -54,6 +55,11 @@ class ReconciliationRun extends Model
     public function findings(): HasMany
     {
         return $this->hasMany(ReconciliationFinding::class);
+    }
+
+    public function observedFindings(): BelongsToMany
+    {
+        return $this->belongsToMany(ReconciliationFinding::class, 'reconciliation_finding_runs', 'reconciliation_run_id', 'reconciliation_finding_id');
     }
 
     public function triggeredBy(): BelongsTo

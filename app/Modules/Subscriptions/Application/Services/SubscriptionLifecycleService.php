@@ -8,7 +8,6 @@ use App\Modules\Subscriptions\Domain\Enums\SubscriptionEventType;
 use App\Modules\Subscriptions\Domain\Models\VendorSubscription;
 use App\Modules\Subscriptions\Domain\States\ExpiredState;
 use App\Modules\Subscriptions\Domain\States\PastDueState;
-use Illuminate\Support\Facades\DB;
 
 class SubscriptionLifecycleService
 {
@@ -22,7 +21,7 @@ class SubscriptionLifecycleService
         $before = ['status' => $subscription->status->getValue()];
 
         $subscription->status->transitionTo(PastDueState::class);
-        $subscription->grace_period_ends_at = now()->addDays($graceDays);
+        $subscription->grace_period_ends_at = ($subscription->current_period_end ?? now())->copy()->addDays($graceDays);
         $subscription->save();
 
         $this->auditWriter->write(
@@ -34,13 +33,13 @@ class SubscriptionLifecycleService
         );
     }
 
-    /** Transition to expired and nullify period end. Must be called inside DB::transaction. */
-    public function expire(VendorSubscription $subscription): void
+    /** Transition to expired while retaining period history. Must be called inside DB::transaction. */
+    public function expire(VendorSubscription $subscription, string $reason = 'grace_expired'): void
     {
         $before = ['status' => $subscription->status->getValue()];
 
         $subscription->status->transitionTo(ExpiredState::class);
-        $subscription->ended_reason = 'grace_expired';
+        $subscription->ended_reason = $reason;
         $subscription->save();
 
         $this->auditWriter->write(

@@ -24,7 +24,7 @@ class VerifyPhoneAction
 
         $user = User::where('phone_e164', $phoneE164)->first();
 
-        if ($user === null) {
+        if ($user === null || $user->hasAnyRole(['admin', 'super_admin', 'booking_manager', 'panel_user'])) {
             throw ValidationException::withMessages(['phone_e164' => __('identity.user_not_found')]);
         }
 

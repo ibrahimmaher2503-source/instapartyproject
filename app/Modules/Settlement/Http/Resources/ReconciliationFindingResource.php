@@ -44,7 +44,9 @@ class ReconciliationFindingResource extends JsonResource
             'actual' => $this->actual,
             'delta' => $this->delta,
             'resolution' => $this->resolution,
+            'resolution_note' => $this->resolution_note,
             'detected_at' => $this->created_at?->toISOString(),
+            'last_seen_at' => $this->last_seen_at?->toISOString(),
         ];
     }
 }

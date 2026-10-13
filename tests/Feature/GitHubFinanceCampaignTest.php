@@ -27,14 +27,18 @@ use App\Modules\Payments\Infrastructure\Repositories\EloquentRefundRepository;
 use App\Modules\Settlement\Application\Actions\ApproveWithdrawalAction;
 use App\Modules\Settlement\Application\Actions\CalculateCommissionAction;
 use App\Modules\Settlement\Application\Actions\ReconcileCompletedRefundsAction;
+use App\Modules\Settlement\Application\Actions\RequestWithdrawalAction;
+use App\Modules\Settlement\Application\DTOs\RequestWithdrawalDto;
 use App\Modules\Settlement\Domain\Contracts\LedgerWriter;
 use App\Modules\Settlement\Domain\Contracts\SettlementBookingReader;
 use App\Modules\Settlement\Domain\Contracts\SettlementPaymentReader;
 use App\Modules\Settlement\Domain\Enums\LedgerEntryType;
 use App\Modules\Settlement\Domain\Exceptions\OverRefundAttemptedException;
+use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Domain\Models\WalletLedgerEntry;
-use App\Modules\Settlement\Domain\Models\Withdrawal;
+use App\Modules\Settlement\Domain\ValueObjects\BankAccountSnapshot;
 use Brick\Money\Money;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -114,7 +118,15 @@ it('keeps an ambiguous gateway operation reserved and never redispatches its pro
 
 it('does not overwrite a persisted withdrawal request timestamp from an incoming dirty model', function (): void {
     $admin = User::factory()->superAdmin()->create();
-    $withdrawal = Withdrawal::factory()->create(['requested_at' => '2026-05-22 16:49:00']);
+    $wallet = Wallet::factory()->withBalance(100000)->create();
+    WalletLedgerEntry::factory()->commissionCredit()->create(['wallet_id' => $wallet->id, 'amount_minor' => 100000]);
+    $vendor = $wallet->owner;
+    $this->travelTo(Carbon::parse('2026-05-22 16:49:00'));
+    $withdrawal = app(RequestWithdrawalAction::class)->execute(new RequestWithdrawalDto(
+        vendorProfileId: $vendor->id, requestedByUserId: $vendor->user_id, amountMinor: 20000, currency: 'EGP',
+        bankAccount: new BankAccountSnapshot('Test Vendor', 'EG380019000500000000263180002', 'Test Bank', 'TESTEGCX'),
+    ));
+    $this->travelBack();
     $withdrawal->requested_at = '2026-10-12 16:49:00';
     $approved = app(ApproveWithdrawalAction::class)->execute($withdrawal, $admin);
     expect($approved->requested_at->format('Y-m-d H:i:s'))->toBe('2026-05-22 16:49:00');
