@@ -148,6 +148,7 @@ it('completes the approved sale service purchase chain with idempotent payment',
         'code' => 'full-purchase-'.Str::lower(Str::random(8)),
         'is_active' => true,
     ]);
+    $category->occasions()->attach($occasion->id);
     $city = City::factory()->create([
         'name' => ['en' => 'Full Journey City', 'ar' => 'مدينة الرحلة الكاملة'],
         'is_active' => true,

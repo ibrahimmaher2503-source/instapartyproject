@@ -48,6 +48,7 @@ class CreateDigitalServiceAction
                 'product_type' => ProductType::Digital,
                 'name' => $dto->name,
                 'short_description' => $dto->shortDescription,
+                ...($dto->longDescription === null ? [] : ['long_description' => $dto->longDescription]),
                 'slug' => Str::slug($dto->name['en']).'-'.Str::lower(Str::random(6)),
                 'status' => ServiceStatus::Draft->value,
                 'base_price_minor' => $dto->basePriceMinor,

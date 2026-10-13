@@ -201,6 +201,11 @@ class VendorProfile extends Model implements ChangeRequestSubject, HasMedia
         return $this->hasMany(VendorDocument::class);
     }
 
+    public function latestDocumentsPerType(): HasMany
+    {
+        return $this->hasMany(VendorDocument::class)->latestPerType();
+    }
+
     public function approvedTypes(): HasMany
     {
         return $this->hasMany(VendorApprovedProductType::class)->whereNull('revoked_at');

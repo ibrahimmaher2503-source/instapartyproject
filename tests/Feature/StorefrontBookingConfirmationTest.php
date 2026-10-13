@@ -17,7 +17,8 @@ it('takes a successful submission to its booking with a reference and confirmati
     $booking = Booking::factory()->draft()->create(['customer_id' => $customer->id]);
     BookingAddress::factory()->create(['booking_id' => $booking->id]);
     $vendor = BookingVendor::factory()->create(['booking_id' => $booking->id]);
-    BookingItem::factory()->{$productType}()->create(['booking_vendor_id' => $vendor->id]);
+    $item = BookingItem::factory()->{$productType}()->create(['booking_vendor_id' => $vendor->id]);
+    $item->service->category->occasions()->attach($booking->occasion_id);
 
     $url = "/{$locale}/account/bookings/{$booking->public_id}";
     $this->actingAs($customer)->post("/{$locale}/cart/{$booking->public_id}/submit")
@@ -33,7 +34,8 @@ it('keeps failed submissions in the cart with errors and no success state', func
     $booking = Booking::factory()->draft()->create(['customer_id' => $customer->id]);
     if ($withItem) {
         $vendor = BookingVendor::factory()->create(['booking_id' => $booking->id]);
-        BookingItem::factory()->create(['booking_vendor_id' => $vendor->id]);
+        $item = BookingItem::factory()->create(['booking_vendor_id' => $vendor->id]);
+        $item->service->category->occasions()->attach($booking->occasion_id);
     }
 
     $this->actingAs($customer)->post("/{$locale}/cart/{$booking->public_id}/submit")

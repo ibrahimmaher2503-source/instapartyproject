@@ -643,6 +643,7 @@ return [
             'date_placeholder' => 'Pick a date',
             'skip_date' => 'I\'ll decide the date later',
             'no_occasions' => 'No occasions available.',
+            'no_service_occasions' => 'This service is not linked to an active occasion yet. Please choose another service.',
         ],
         'step2' => [
             'headline' => 'Where\'s the party?',
@@ -674,6 +675,8 @@ return [
         'validation' => [
             'city_mismatch' => 'Choose a city inside the selected governorate.',
             'occasion_required' => 'Choose an occasion before continuing.',
+            'service_occasion_mismatch' => 'This service is not available for the selected occasion. Choose an occasion linked to its category.',
+            'draft_occasion_mismatch' => 'Your cart already contains items for another occasion. Finish that booking or remove its items before starting a different occasion.',
             'times_required' => 'Add the event start time.',
             'times_invalid' => 'Choose a valid time range that starts in the future.',
             'rental_duration_required' => 'This rental has no default duration. Enter an end time to continue.',

@@ -12,6 +12,7 @@ use App\Modules\Catalog\Filament\Resources\OccasionResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class EditOccasion extends EditRecord
 {
@@ -36,5 +37,17 @@ class EditOccasion extends EditRecord
             OccasionDTO::fromArray($data),
             auth()->user(),
         );
+    }
+
+    /** @param array<string, mixed> $data */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['category_ids'] = DB::table('occasion_category')
+            ->where('occasion_id', $this->record->getKey())
+            ->pluck('category_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        return $data;
     }
 }

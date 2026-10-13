@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages;
 
+use App\Modules\Identity\Application\Services\VendorApprovalEligibilityService;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListVendorApprovalQueue extends ListRecords
 {
@@ -14,5 +16,12 @@ class ListVendorApprovalQueue extends ListRecords
     public function getTitle(): string
     {
         return __('identity.nav.queue');
+    }
+
+    protected function getTableQuery(): ?Builder
+    {
+        $query = parent::getTableQuery();
+
+        return $query === null ? null : app(VendorApprovalEligibilityService::class)->withEligibilityRelations($query);
     }
 }

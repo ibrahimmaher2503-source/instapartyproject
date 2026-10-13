@@ -104,7 +104,12 @@ class CartController
                 throw $exception;
             }
 
-            return redirect()->route('storefront.cart')->withErrors(['booking' => __($exception->getStatusCode() === 409 ? 'account.booking_submit_conflict' : 'account.booking_submit_empty')]);
+            $message = $exception->getStatusCode() === 422
+                && $exception->getMessage() === __('storefront.wizard.validation.service_occasion_mismatch')
+                ? $exception->getMessage()
+                : __($exception->getStatusCode() === 409 ? 'account.booking_submit_conflict' : 'account.booking_submit_empty');
+
+            return redirect()->route('storefront.cart')->withErrors(['booking' => $message]);
         }
 
         return redirect()->route('storefront.account.bookings.show', $submittedBooking->public_id)

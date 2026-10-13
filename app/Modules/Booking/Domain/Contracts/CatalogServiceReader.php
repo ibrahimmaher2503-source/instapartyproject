@@ -11,4 +11,6 @@ interface CatalogServiceReader
     public function findPublishedById(int $id): ?ServiceReadDTO;
 
     public function resolvePublicId(string $publicId): ?int;
+
+    public function isServiceEligibleForOccasion(int $serviceId, int $occasionId): bool;
 }

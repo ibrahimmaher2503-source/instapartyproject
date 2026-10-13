@@ -33,12 +33,28 @@ class AddServiceToEventAction
                 throw ValidationException::withMessages(['service_id' => __('storefront.service.add_error')]);
             }
 
+            if (! $this->catalogReader->isServiceEligibleForOccasion($serviceId, $draft->occasionId)) {
+                throw ValidationException::withMessages([
+                    'service_id' => __('storefront.wizard.validation.service_occasion_mismatch'),
+                ]);
+            }
+
             $booking = Booking::query()
                 ->where('customer_id', $customerId)
                 ->whereState('lifecycle_status', DraftState::class)
                 ->latest('id')
                 ->lockForUpdate()
                 ->first();
+
+            if ($booking !== null && (int) $booking->occasion_id !== $draft->occasionId) {
+                if ($booking->items()->exists()) {
+                    throw ValidationException::withMessages([
+                        'service_id' => __('storefront.wizard.validation.draft_occasion_mismatch'),
+                    ]);
+                }
+
+                $booking = null;
+            }
 
             if ($booking === null) {
                 $booking = $this->createDraft->execute($draft);

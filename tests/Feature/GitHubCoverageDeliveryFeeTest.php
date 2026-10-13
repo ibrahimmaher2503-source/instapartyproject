@@ -27,6 +27,7 @@ it('snapshots coverage delivery once per physical vendor and exempts digital del
     $booking = Booking::factory()->draft()->create();
     BookingAddress::factory()->create(['booking_id' => $booking->id, 'city_id' => $city->id]);
     $service = Service::factory()->published()->create(['product_type' => $type, 'base_price_minor' => 90000]);
+    $service->category->occasions()->attach($booking->occasion_id);
     VendorCoverageArea::factory()->create([
         'vendor_profile_id' => $service->vendor_profile_id, 'city_id' => $city->id,
         'delivery_fee_minor' => 7500, 'delivery_fee_currency' => 'EGP',
@@ -46,6 +47,7 @@ it('snapshots coverage delivery once per physical vendor and exempts digital del
     $anotherService = Service::factory()->published()->create([
         'vendor_profile_id' => $service->vendor_profile_id, 'product_type' => $type, 'base_price_minor' => 90000,
     ]);
+    $anotherService->category->occasions()->attach($booking->occasion_id);
     $another = app(AddItemToBookingAction::class)->execute(new AddBookingItemDTO(
         bookingId: $booking->id, customerId: $booking->customer_id, serviceId: $anotherService->id,
         quantity: 1, effectiveStartsAt: null, effectiveEndsAt: null, customizationData: null,
@@ -63,6 +65,8 @@ it('clears delivery after removing the last physical item from a mixed vendor ca
     BookingAddress::factory()->create(['booking_id' => $booking->id, 'city_id' => $city->id]);
     $sale = Service::factory()->sale()->published()->create(['base_price_minor' => 90000]);
     $digital = Service::factory()->digital()->published()->create(['vendor_profile_id' => $sale->vendor_profile_id, 'base_price_minor' => 10000]);
+    $sale->category->occasions()->attach($booking->occasion_id);
+    $digital->category->occasions()->attach($booking->occasion_id);
     VendorCoverageArea::factory()->create(['vendor_profile_id' => $sale->vendor_profile_id, 'city_id' => $city->id, 'delivery_fee_minor' => 7500]);
     foreach ([$digital, $sale] as $service) {
         $item = app(AddItemToBookingAction::class)->execute(new AddBookingItemDTO(
@@ -82,6 +86,7 @@ it('rejects a coverage fee currency mismatch without persisting cart items', fun
     $booking = Booking::factory()->draft()->create();
     $address = BookingAddress::factory()->create(['booking_id' => $booking->id]);
     $service = Service::factory()->sale()->published()->create();
+    $service->category->occasions()->attach($booking->occasion_id);
     VendorCoverageArea::factory()->create([
         'vendor_profile_id' => $service->vendor_profile_id, 'city_id' => $address->city_id,
         'delivery_fee_minor' => 7500, 'delivery_fee_currency' => 'USD',

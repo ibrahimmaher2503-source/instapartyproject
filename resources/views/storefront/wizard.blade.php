@@ -7,7 +7,6 @@
         __('storefront.wizard.steps.details'),
     ];
     $storefrontText = app(App\Modules\Shared\Application\Services\StorefrontText::class);
-    $bookingMode = request()->filled('service');
     $isRtl = app()->getLocale() === 'ar';
     $nextIcon = $isRtl ? '←' : '→';
     $backIcon = $isRtl ? '→' : '←';
@@ -67,7 +66,7 @@
                     @csrf
                     <input type="hidden" name="timezone" value="{{ old('timezone') }}" data-browser-timezone>
                     @if ($bookingMode)
-                        <input type="hidden" name="service_id" value="{{ request('service') }}">
+                        <input type="hidden" name="service_id" value="{{ $servicePublicId }}">
                     @endif
                     <input type="hidden" name="occasion" value="{{ old('occasion', request('occasion')) }}" data-planner-occasion>
                     <input type="hidden" name="city_public_id" value="{{ old('city_public_id', request('city_public_id')) }}" data-planner-city>
@@ -111,7 +110,7 @@
                                     @endif
                                 </button>
                             @empty
-                                <p class="sf-wizard-empty">{{ __('storefront.wizard.step1.no_occasions') }}</p>
+                                <p class="sf-wizard-empty">{{ $bookingMode ? __('storefront.wizard.step1.no_service_occasions') : __('storefront.wizard.step1.no_occasions') }}</p>
                             @endforelse
                         </div>
 

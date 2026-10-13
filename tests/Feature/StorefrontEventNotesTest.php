@@ -22,6 +22,7 @@ function eventNotesFixture(): array
     $occasion = Occasion::factory()->active()->create();
     $city = City::factory()->create(['is_active' => true]);
     $service = Service::factory()->sale()->published()->create();
+    $service->category->occasions()->attach($occasion->id);
     ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'stock_quantity' => 10]);
 
     return [$customer, $service, $occasion, $city, [

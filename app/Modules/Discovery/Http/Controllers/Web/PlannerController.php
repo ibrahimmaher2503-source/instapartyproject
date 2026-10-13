@@ -20,10 +20,19 @@ class PlannerController
 
     public function __invoke(Request $request, ListPublicOccasionsAction $occasions): View|RedirectResponse
     {
-        if ($request->filled('service') && $request->user() === null) {
+        $requestedService = $request->query('service');
+        $servicePublicId = is_string($requestedService) && $requestedService !== ''
+            ? $requestedService
+            : null;
+
+        if ($servicePublicId !== null && $request->user() === null) {
             return redirect()->guest(route('storefront.auth.login'));
         }
 
-        return view('storefront.wizard', ['occasions' => $occasions->execute()]);
+        return view('storefront.wizard', [
+            'bookingMode' => $servicePublicId !== null,
+            'occasions' => $occasions->execute($servicePublicId),
+            'servicePublicId' => $servicePublicId,
+        ]);
     }
 }

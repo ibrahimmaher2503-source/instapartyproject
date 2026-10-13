@@ -8,6 +8,8 @@ use App\Modules\Booking\Application\DTOs\ServiceReadDTO;
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
+use App\Modules\Catalog\Domain\Models\Service;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class EloquentCatalogServiceReader implements CatalogServiceReader
@@ -59,5 +61,15 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
         $row = DB::table('services')->where('public_id', $publicId)->whereNull('deleted_at')->first(['id']);
 
         return $row?->id;
+    }
+
+    public function isServiceEligibleForOccasion(int $serviceId, int $occasionId): bool
+    {
+        return Service::query()
+            ->whereKey($serviceId)
+            ->whereHas('category.occasions', fn (Builder $occasions) => $occasions
+                ->whereKey($occasionId)
+                ->where('occasions.is_active', true))
+            ->exists();
     }
 }

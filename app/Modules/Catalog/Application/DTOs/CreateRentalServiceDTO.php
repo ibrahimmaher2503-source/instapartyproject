@@ -28,6 +28,8 @@ readonly class CreateRentalServiceDTO
         public ?string $heightM = null,
         /** @var array<string, mixed>|null */
         public ?array $categoryFieldValues = null,
+        /** @var array{en: string, ar: string}|null */
+        public ?array $longDescription = null,
     ) {}
 
     public static function fromRequest(CreateRentalServiceRequest $request, int $vendorProfileId): self
