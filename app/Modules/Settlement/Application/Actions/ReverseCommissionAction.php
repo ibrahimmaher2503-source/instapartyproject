@@ -96,18 +96,13 @@ class ReverseCommissionAction
                     $cumulativeRefundedGrossMinor,
                     $grossTotal->getMinorAmount()->toInt(),
                 ));
-                $vendorTarget = $this->cumulativeComponentTarget(
-                    $vendorTotal,
-                    $grossTotal->getMinorAmount()->toInt(),
-                    $cumulativeGrossMinor,
-                    $currency,
-                );
                 $platformTarget = $this->cumulativeComponentTarget(
                     $platformTotal,
                     $grossTotal->getMinorAmount()->toInt(),
                     $cumulativeGrossMinor,
                     $currency,
                 );
+                $vendorTarget = Money::ofMinor($cumulativeGrossMinor, $currency)->minus($platformTarget);
             } else {
                 $vendorTarget = $this->incrementalComponentTarget(
                     $vendorTotal,
@@ -267,7 +262,7 @@ class ReverseCommissionAction
             ->dividedBy($grossMinor, 0, RoundingMode::HALF_EVEN)
             ->toInt();
 
-        return Money::ofMinor($targetMinor, $currency);
+        return Money::min($component, Money::ofMinor($targetMinor, $currency));
     }
 
     private function incrementalComponentTarget(Money $component, Money $alreadyReversed, int $refundMinor, int $grossMinor, string $currency): Money

@@ -9,6 +9,8 @@ use App\Modules\Settlement\Application\DTOs\RefundSnapshotDto;
 
 interface SettlementPaymentReader
 {
+    public function lockForRefundReconciliation(int $paymentId): bool;
+
     public function findById(int $id): ?PaymentSnapshotDto;
 
     public function findRefundById(int $id): ?RefundSnapshotDto;

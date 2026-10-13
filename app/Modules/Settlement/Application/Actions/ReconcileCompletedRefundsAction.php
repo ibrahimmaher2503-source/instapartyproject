@@ -8,10 +8,15 @@ use App\Modules\Settlement\Application\DTOs\BookingItemSnapshotDto;
 use App\Modules\Settlement\Application\DTOs\RefundSnapshotDto;
 use App\Modules\Settlement\Domain\Contracts\SettlementBookingReader;
 use App\Modules\Settlement\Domain\Contracts\SettlementPaymentReader;
+use App\Modules\Settlement\Domain\Enums\LedgerDirection;
+use App\Modules\Settlement\Domain\Enums\LedgerEntryType;
+use App\Modules\Settlement\Domain\Enums\SuspenseAccount;
+use App\Modules\Settlement\Domain\Enums\TransactionKind;
 use App\Modules\Settlement\Infrastructure\Repositories\EloquentCommissionRepository;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ReconcileCompletedRefundsAction
@@ -24,6 +29,21 @@ class ReconcileCompletedRefundsAction
     ) {}
 
     public function execute(int $paymentId): void
+    {
+        DB::transaction(function () use ($paymentId): void {
+            if (! $this->paymentReader->lockForRefundReconciliation($paymentId)) {
+                Log::error('Settlement: cannot reconcile completed refunds for missing payment', [
+                    'payment_id' => $paymentId,
+                ]);
+
+                return;
+            }
+
+            $this->reconcileLockedPayment($paymentId);
+        });
+    }
+
+    private function reconcileLockedPayment(int $paymentId): void
     {
         $payment = $this->paymentReader->findById($paymentId);
 
@@ -44,7 +64,9 @@ class ReconcileCompletedRefundsAction
         usort($items, static fn (BookingItemSnapshotDto $left, BookingItemSnapshotDto $right): int => $left->id <=> $right->id);
 
         $currency = $items[0]->totalCurrency;
+        $commissionByItem = [];
         $remainingByItem = [];
+        $refundedByItem = [];
         $remainingServiceGross = Money::ofMinor(0, $currency);
 
         foreach ($items as $item) {
@@ -60,15 +82,20 @@ class ReconcileCompletedRefundsAction
             }
 
             $itemGross = Money::ofMinor($item->totalMinor, $currency);
-            $remainingByItem[$item->id] = $itemGross->getMinorAmount()->toInt();
-            $remainingServiceGross = $remainingServiceGross->plus($itemGross);
+            $commission = $this->commissionRepo->findByBookingItemId($item->id);
+            $commissionByItem[$item->id] = $commission;
+            $actualReversed = $commission === null
+                ? Money::ofMinor(0, $currency)
+                : Money::ofMinor($this->actualReversedForCommission($commission->id, $currency), $currency);
+            $actualReversed = Money::min($itemGross, $actualReversed);
+            $remainingByItem[$item->id] = $itemGross->minus($actualReversed)->getMinorAmount()->toInt();
+            $refundedByItem[$item->id] = $actualReversed->getMinorAmount()->toInt();
+            $remainingServiceGross = $remainingServiceGross->plus($itemGross->minus($actualReversed));
         }
 
         if ($remainingServiceGross->isZero()) {
             return;
         }
-
-        $refundedByItem = array_fill_keys(array_keys($remainingByItem), 0);
 
         foreach ($this->paymentReader->completedRefundsForPayment($paymentId) as $refund) {
             if ($refund->currency !== $currency) {
@@ -82,9 +109,16 @@ class ReconcileCompletedRefundsAction
                 continue;
             }
 
+            $actualReversalsForRefund = $this->actualReversalsForRefund($refund->id, $currency);
+            $actualRefundGross = $this->sumMinorAmounts($actualReversalsForRefund, $currency);
+            $refundGross = Money::ofMinor($refund->amountMinor, $currency);
+            $remainingRefundBudget = $refundGross->isGreaterThan($actualRefundGross)
+                ? $refundGross->minus($actualRefundGross)
+                : Money::ofMinor(0, $currency);
+            $remainingRefundBudgetMinor = $remainingRefundBudget->getMinorAmount()->toInt();
             $allocations = $refund->bookingItemId === null
-                ? $this->allocateAcrossRemainingItems($refund->amountMinor, $remainingByItem, $currency)
-                : $this->allocateToItem($refund->bookingItemId, $refund->amountMinor, $remainingByItem, $currency);
+                ? $this->allocateAcrossRemainingItems($remainingRefundBudgetMinor, $remainingByItem, $currency)
+                : $this->allocateToItem($refund->bookingItemId, $remainingRefundBudgetMinor, $remainingByItem, $currency);
 
             foreach ($allocations as $bookingItemId => $allocatedMinor) {
                 $allocatedMoney = Money::ofMinor($allocatedMinor, $currency);
@@ -97,7 +131,7 @@ class ReconcileCompletedRefundsAction
                     ->getMinorAmount()
                     ->toInt();
 
-                $commission = $this->commissionRepo->findByBookingItemId($bookingItemId);
+                $commission = $commissionByItem[$bookingItemId] ?? null;
 
                 if ($commission === null) {
                     Log::warning('Settlement: commission is not accrued yet for a completed refund allocation', [
@@ -106,6 +140,21 @@ class ReconcileCompletedRefundsAction
                         'booking_item_id' => $bookingItemId,
                     ]);
 
+                    continue;
+                }
+
+                $actualCommissionReversalMinor = $this->actualReversedForCommission($commission->id, $currency);
+                $actualCommissionReversal = Money::ofMinor($actualCommissionReversalMinor, $currency);
+                $cumulativeRefundTarget = Money::min(
+                    Money::min(
+                        Money::ofMinor($refundedByItem[$bookingItemId], $currency),
+                        $actualCommissionReversal->plus(Money::ofMinor($allocatedMinor, $currency)),
+                    ),
+                    Money::ofMinor((int) $commission->gross_amount_minor, $currency),
+                );
+                $cumulativeRefundTargetMinor = $cumulativeRefundTarget->getMinorAmount()->toInt();
+
+                if (! $cumulativeRefundTarget->isGreaterThan($actualCommissionReversal)) {
                     continue;
                 }
 
@@ -122,10 +171,66 @@ class ReconcileCompletedRefundsAction
                 $this->reverseCommission->execute(
                     $commission,
                     $allocatedRefund,
-                    cumulativeRefundedGrossMinor: $refundedByItem[$bookingItemId],
+                    idempotencyKey: "comm_rev:{$commission->id}:refund:{$refund->id}:target:{$cumulativeRefundTargetMinor}",
+                    cumulativeRefundedGrossMinor: $cumulativeRefundTargetMinor,
                 );
+
             }
         }
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function actualReversalsForRefund(int $refundId, string $currency): array
+    {
+        return DB::table('wallet_ledger')
+            ->join('wallets', 'wallets.id', '=', 'wallet_ledger.wallet_id')
+            ->join('ledger_transaction_groups', 'ledger_transaction_groups.id', '=', 'wallet_ledger.transaction_group_id')
+            ->where('wallets.owner_type', 'platform_account')
+            ->where('wallets.owner_id', SuspenseAccount::PlatformClearing->value)
+            ->where('wallet_ledger.direction', LedgerDirection::Credit->value)
+            ->where('wallet_ledger.entry_type', LedgerEntryType::CommissionReversal->value)
+            ->where('wallet_ledger.related_entity_type', 'commission')
+            ->where('wallet_ledger.currency', $currency)
+            ->where('ledger_transaction_groups.kind', TransactionKind::CommissionReversal->value)
+            ->where('ledger_transaction_groups.metadata->refund_id', $refundId)
+            ->groupBy('wallet_ledger.related_entity_id')
+            ->select('wallet_ledger.related_entity_id')
+            ->selectRaw('SUM(wallet_ledger.amount_minor) as reversed_minor')
+            ->get()
+            ->mapWithKeys(static fn (object $row): array => [(int) $row->related_entity_id => (int) $row->reversed_minor])
+            ->all();
+    }
+
+    private function actualReversedForCommission(int $commissionId, string $currency): int
+    {
+        return (int) DB::table('wallet_ledger')
+            ->join('wallets', 'wallets.id', '=', 'wallet_ledger.wallet_id')
+            ->join('ledger_transaction_groups', 'ledger_transaction_groups.id', '=', 'wallet_ledger.transaction_group_id')
+            ->where('wallets.owner_type', 'platform_account')
+            ->where('wallets.owner_id', SuspenseAccount::PlatformClearing->value)
+            ->where('wallet_ledger.direction', LedgerDirection::Credit->value)
+            ->where('wallet_ledger.entry_type', LedgerEntryType::CommissionReversal->value)
+            ->where('wallet_ledger.related_entity_type', 'commission')
+            ->where('wallet_ledger.related_entity_id', $commissionId)
+            ->where('wallet_ledger.currency', $currency)
+            ->where('ledger_transaction_groups.kind', TransactionKind::CommissionReversal->value)
+            ->sum('wallet_ledger.amount_minor');
+    }
+
+    /**
+     * @param array<int, int> $amountsById
+     */
+    private function sumMinorAmounts(array $amountsById, string $currency): Money
+    {
+        $total = Money::ofMinor(0, $currency);
+
+        foreach ($amountsById as $amountMinor) {
+            $total = $total->plus(Money::ofMinor($amountMinor, $currency));
+        }
+
+        return $total;
     }
 
     /**

@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\DB;
 
 class EloquentSettlementPaymentReader implements SettlementPaymentReader
 {
+    public function lockForRefundReconciliation(int $paymentId): bool
+    {
+        return DB::table('payments')
+            ->where('id', $paymentId)
+            ->lockForUpdate()
+            ->first() !== null;
+    }
+
     public function findById(int $id): ?PaymentSnapshotDto
     {
         $row = DB::table('payments')->where('id', $id)->first();
