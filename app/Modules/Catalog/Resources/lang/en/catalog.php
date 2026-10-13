@@ -154,6 +154,7 @@ return [
     'subcategory' => 'Subcategory',
     'choose_main_category_first' => 'Choose a main category first',
     'category_pair_invalid' => 'Choose an active main category and a subcategory belonging to it for this service type.',
+    'vendor_category_requires_subcategory_help' => 'Only active main categories with at least one active subcategory for this service type are listed. If a category is missing, ask an administrator to add an eligible subcategory.',
     'legacy_category_help' => 'This service uses a main category. Choose a valid subcategory before saving; existing data is unchanged until you save.',
     'base_price' => 'Base Price',
     'price_major_helper' => 'Enter the price in :currency, e.g. 250 or 250.50.',
@@ -202,6 +203,10 @@ return [
 
     // Section headings
     'occasion_details' => 'Occasion Details',
+    'occasion_categories' => 'Eligible Service Subcategories',
+    'occasion_categories_helper' => 'Select the service subcategories for this occasion. Services in these subcategories appear when customers choose the occasion. Existing links stay visible so you can retain or remove them.',
+    'occasion_categories_invalid' => 'Choose only active eligible subcategories or categories already linked to this occasion.',
+    'occasion_category_existing' => 'existing link',
     'category_details' => 'Category Details',
     'service_theme_details' => 'Service Theme Details',
     'shared' => 'General Information',

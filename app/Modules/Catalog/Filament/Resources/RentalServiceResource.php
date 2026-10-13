@@ -24,6 +24,7 @@ use App\Modules\Discovery\Filament\Actions\ReindexServicesAction;
 use App\Modules\Shared\Application\Services\StorefrontText;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -216,6 +217,17 @@ class RentalServiceResource extends Resource
                         ->numeric()
                         ->minValue(1)
                         ->label(__('catalog.minimum_space_sqm')),
+                    Grid::make(3)->schema(array_map(
+                        fn (string $dimension): TextInput => TextInput::make($dimension.'_m')
+                            ->label(__('catalog.dimension_'.$dimension))
+                            ->suffix(__('catalog.metres_unit'))
+                            ->numeric()
+                            ->step('0.01')
+                            ->rules(['nullable', 'gt:0', 'max:999999.99', 'decimal:0,2'])
+                            ->dehydrateStateUsing(fn (mixed $state): ?string => filled($state) ? (string) $state : null)
+                            ->extraInputAttributes(['dir' => 'ltr']),
+                        ['length', 'width', 'height'],
+                    )),
                 ])
                 ->columns(2),
 

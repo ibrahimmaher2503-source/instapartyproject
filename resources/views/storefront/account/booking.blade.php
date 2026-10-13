@@ -4,11 +4,14 @@
 @php($viewerTimezone = auth()->user()?->timezone ?? 'Africa/Cairo')
 @php
     $lifecycle = $booking->lifecycle_status->getValue();
+    $hasItems = $booking->vendors->contains(fn ($vendor) => $vendor->items->isNotEmpty());
+    $hasActivePayment = $booking->payments->contains(fn ($payment) => in_array($payment->status->getValue(), ['pending', 'authorized', 'captured'], true));
     $canCancel = ! in_array($lifecycle, ['active', 'completed', 'cancelled'], true)
         && ! $booking->vendors->contains(fn ($vendor) => in_array($vendor->sub_status->value, ['in_progress', 'completed'], true));
     $canPay = $lifecycle === 'confirmed' && $booking->payment_status->getValue() === 'unpaid'
-        && $booking->vendors->contains(fn ($vendor) => $vendor->items->isNotEmpty())
-        && ! $booking->payments->contains(fn ($payment) => in_array($payment->status->getValue(), ['pending', 'authorized', 'captured'], true));
+        && $hasItems && ! $hasActivePayment;
+    $paymentAwaitingConfirmation = in_array($lifecycle, ['submitted', 'vendor_review', 'customer_review'], true)
+        && $booking->payment_status->getValue() === 'unpaid' && $hasItems && ! $hasActivePayment;
 @endphp
 <a class="sf-text-link" href="{{ route('storefront.account.bookings') }}">{{ __('account.back_bookings') }}</a>
 @if (session('booking_submitted') === $booking->public_id)
@@ -64,7 +67,10 @@
             <p data-booking-feedback role="status" aria-live="polite"></p>
         </form>
     @else
-        <p>{{ __('account.payment_unavailable') }}</p>
+        <div data-payment-continuation>
+            <p>{{ $paymentAwaitingConfirmation ? __('account.payment_waiting_for_confirmation') : __('account.payment_unavailable') }}</p>
+            <a class="sf-text-link" href="{{ route('storefront.account.bookings') }}">{{ __('account.view_booking_status') }}</a>
+        </div>
     @endif
     @unless (in_array(true, $reviewableItems, true))
         <p>{{ __('account.review_unavailable') }}</p>

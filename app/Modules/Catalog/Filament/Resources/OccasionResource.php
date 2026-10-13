@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Filament\Resources;
 
 use App\Modules\Catalog\Application\Actions\DeleteOccasionAction;
+use App\Modules\Catalog\Domain\Enums\ProductType;
+use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Occasion;
 use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\CreateOccasion;
 use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\EditOccasion;
 use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\ListOccasions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
@@ -22,6 +25,8 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class OccasionResource extends Resource
 {
@@ -108,7 +113,125 @@ class OccasionResource extends Resource
                         ]),
                 ])
                 ->columnSpanFull(),
+
+            Section::make(__('catalog.occasion_categories'))
+                ->schema([
+                    Select::make('category_ids')
+                        ->label(__('catalog.occasion_categories'))
+                        ->multiple()
+                        ->searchable()
+                        ->preload()
+                        ->default([])
+                        ->options(fn (?Occasion $record): array => self::occasionCategoryOptions($record))
+                        ->helperText(__('catalog.occasion_categories_helper'))
+                        ->rules(fn (?Occasion $record): array => [
+                            'array',
+                            function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                                if (! is_array($value)) {
+                                    return;
+                                }
+
+                                $validIds = array_values(array_unique([
+                                    ...self::eligibleOccasionCategories()->modelKeys(),
+                                    ...self::linkedCategoryIds($record),
+                                ]));
+
+                                foreach ($value as $id) {
+                                    if (! is_int($id) && (! is_string($id) || ! ctype_digit($id))) {
+                                        $fail(__('catalog.occasion_categories_invalid'));
+
+                                        return;
+                                    }
+
+                                    if (! in_array((int) $id, $validIds, true)) {
+                                        $fail(__('catalog.occasion_categories_invalid'));
+
+                                        return;
+                                    }
+                                }
+                            },
+                        ])
+                        ->nestedRecursiveRules(['integer', 'distinct']),
+                ]),
         ]);
+    }
+
+    /** @return array<int, string> */
+    private static function occasionCategoryOptions(?Occasion $record): array
+    {
+        $eligible = self::eligibleOccasionCategories();
+        $eligibleIds = $eligible->modelKeys();
+        $legacy = self::linkedCategories($record)->reject(
+            fn (Category $category): bool => in_array($category->getKey(), $eligibleIds, true),
+        );
+
+        return $eligible->merge($legacy)
+            ->unique('id')
+            ->mapWithKeys(function (Category $category) use ($eligibleIds): array {
+                $name = $category->getTranslation('name', app()->getLocale(), useFallbackLocale: true);
+                $parentName = $category->parent?->getTranslation('name', app()->getLocale(), useFallbackLocale: true);
+                $label = filled($parentName) ? "{$parentName} — {$name}" : $name;
+
+                if (! in_array($category->getKey(), $eligibleIds, true)) {
+                    $label .= ' — '.__('catalog.occasion_category_existing');
+                }
+
+                return [$category->getKey() => $label];
+            })
+            ->all();
+    }
+
+    /** @return Collection<int, Category> */
+    private static function eligibleOccasionCategories(): Collection
+    {
+        return Category::query()
+            ->active()
+            ->whereNotNull('parent_id')
+            ->whereHas('parent', fn ($parents) => $parents->active()->whereNull('parent_id'))
+            ->with('parent')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (Category $category): bool => self::sharesAllowedProductType($category))
+            ->values();
+    }
+
+    private static function sharesAllowedProductType(Category $category): bool
+    {
+        $parentTypes = $category->parent?->allowed_product_types ?? [];
+        $categoryTypes = $category->allowed_product_types ?? [];
+        $supportedTypes = array_map(static fn (ProductType $type): string => $type->value, ProductType::cases());
+
+        return array_intersect($parentTypes, $categoryTypes, $supportedTypes) !== [];
+    }
+
+    /** @return list<int> */
+    private static function linkedCategoryIds(?Occasion $record): array
+    {
+        if ($record === null) {
+            return [];
+        }
+
+        return DB::table('occasion_category')
+            ->where('occasion_id', $record->getKey())
+            ->pluck('category_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+    }
+
+    /** @return Collection<int, Category> */
+    private static function linkedCategories(?Occasion $record): Collection
+    {
+        $ids = self::linkedCategoryIds($record);
+
+        if ($ids === []) {
+            return new Collection;
+        }
+
+        return Category::withTrashed()
+            ->with(['parent' => fn ($parents) => $parents->withTrashed()])
+            ->whereIn('id', $ids)
+            ->get();
     }
 
     public static function table(Table $table): Table

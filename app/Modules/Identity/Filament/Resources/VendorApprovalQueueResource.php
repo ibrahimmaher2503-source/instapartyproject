@@ -257,13 +257,6 @@ class VendorApprovalQueueResource extends Resource
                 ]),
 
             InfolistSection::make(__('identity.approval_eligibility.checklist'))
-                ->description(function (VendorProfile $record): string {
-                    $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
-
-                    return $result->eligible
-                        ? __('identity.approval_eligibility.checklist_description')
-                        : implode(' ', $result->errors);
-                })
                 ->schema([
                     RepeatableEntry::make('approval_eligibility_checklist')
                         ->hiddenLabel()
@@ -271,13 +264,18 @@ class VendorApprovalQueueResource extends Resource
                             $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
 
                             return collect($result->checks)
-                                ->map(fn (bool $passed, string $check): array => [
-                                    'requirement' => __('identity.approval_eligibility.requirements.'.$check),
-                                    'status' => $passed
-                                        ? __('identity.approval_eligibility.complete')
-                                        : __('identity.approval_eligibility.incomplete'),
-                                    'passed' => $passed,
-                                ])
+                                ->map(function (bool $passed, string $check) use ($result): array {
+                                    $requirement = __('identity.approval_eligibility.requirements.'.$check);
+                                    $error = $result->errors[$check] ?? null;
+
+                                    return [
+                                        'requirement' => $error === null ? $requirement : $requirement.' — '.$error,
+                                        'status' => $passed
+                                            ? __('identity.approval_eligibility.complete')
+                                            : __('identity.approval_eligibility.incomplete'),
+                                        'passed' => $passed,
+                                    ];
+                                })
                                 ->values()
                                 ->all();
                         })

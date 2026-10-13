@@ -29,20 +29,27 @@ trait HasCategoryOccasionHelper
             Select::make('main_category_id')
                 ->label(__('catalog.main_category'))
                 ->options(fn () => Category::query()->active()->forProductType($type)->whereNull('parent_id')
+                    ->whereHas('children', fn ($children) => $children->active()->forProductType($type))
                     ->orderBy('sort_order')->get()->mapWithKeys(fn (Category $category): array => [
                         $category->id => $category->getTranslation('name', app()->getLocale()),
                     ]))
                 ->searchable()->preload()->required()->live()->dehydrated(false)
                 ->rules(['integer', Rule::exists('categories', 'id')->where(fn ($query) => $query
                     ->whereNull('parent_id')->whereNull('deleted_at')->where('is_active', true)
-                    ->whereJsonContains('allowed_product_types', $type->value))])
+                    ->whereJsonContains('allowed_product_types', $type->value)
+                    ->whereExists(fn ($children) => $children->selectRaw('1')->from('categories as eligible_subcategories')
+                        ->whereColumn('eligible_subcategories.parent_id', 'categories.id')
+                        ->whereNull('eligible_subcategories.deleted_at')
+                        ->where('eligible_subcategories.is_active', true)
+                        ->whereJsonContains('eligible_subcategories.allowed_product_types', $type->value)))])
                 ->validationMessages(['exists' => __('catalog.category_pair_invalid')])
                 ->afterStateUpdated(function (Set $set, Select $component): void {
                     $set('category_id', null);
                     static::resetCategorySchemaFields($set, $component);
                 })
-                ->helperText(fn (?Service $record): ?string => $record !== null && $record->category?->parent_id === null
-                    ? __('catalog.legacy_category_help') : null),
+                ->helperText(fn (?Service $record): string => $record !== null && $record->category?->parent_id === null
+                    ? __('catalog.legacy_category_help')
+                    : __('catalog.vendor_category_requires_subcategory_help')),
             Select::make('category_id')
                 ->label(__('catalog.subcategory'))
                 ->key(fn (Get $get): string => 'category-'.($get('main_category_id') ?? 'none'))

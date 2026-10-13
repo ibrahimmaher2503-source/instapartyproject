@@ -104,7 +104,9 @@ class VendorRentalServiceResource extends Resource
                                 ->maxLength(500),
                             Textarea::make('long_description.en')
                                 ->label(__('catalog.long_description').' (EN)')
-                                ->rows(5),
+                                ->rows(5)
+                                ->maxLength(5000)
+                                ->requiredWith('long_description.ar'),
                         ]),
                     Tab::make(__('catalog.language_arabic'))
                         ->schema([
@@ -118,7 +120,9 @@ class VendorRentalServiceResource extends Resource
                                 ->maxLength(500),
                             Textarea::make('long_description.ar')
                                 ->label(__('catalog.long_description').' (AR)')
-                                ->rows(5),
+                                ->rows(5)
+                                ->maxLength(5000)
+                                ->requiredWith('long_description.en'),
                         ]),
                 ])
                 ->columnSpanFull(),

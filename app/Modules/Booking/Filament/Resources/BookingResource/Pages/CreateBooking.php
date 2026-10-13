@@ -10,6 +10,8 @@ use App\Modules\Booking\Application\Actions\SubmitBookingAction;
 use App\Modules\Booking\Application\DTOs\AddBookingItemDTO;
 use App\Modules\Booking\Application\DTOs\CreateBookingDraftDTO;
 use App\Modules\Booking\Application\DTOs\SubmitBookingDTO;
+use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
+use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Filament\Resources\BookingResource;
 use App\Modules\Catalog\Domain\Models\Occasion;
 use App\Modules\Catalog\Domain\Models\Service;
@@ -24,9 +26,13 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -67,6 +73,10 @@ class CreateBooking extends CreateRecord
 
                         Select::make('occasion_id')
                             ->label(__('booking.create.occasion'))
+                            ->live()
+                            ->afterStateUpdated(function (Set $set): void {
+                                $set('service_id', null);
+                            })
                             ->options(function (): array {
                                 return Occasion::query()
                                     ->where('is_active', true)
@@ -163,9 +173,17 @@ class CreateBooking extends CreateRecord
                     ->schema([
                         Select::make('service_id')
                             ->label(__('booking.create.service'))
-                            ->options(function (): array {
+                            ->options(function (Get $get): array {
+                                $occasionId = $get('occasion_id');
+                                if (! is_numeric($occasionId)) {
+                                    return [];
+                                }
+
                                 return Service::query()
-                                    ->where('status', 'published')
+                                    ->displayable()
+                                    ->whereHas('category.occasions', fn (Builder $occasions) => $occasions
+                                        ->whereKey((int) $occasionId)
+                                        ->where('occasions.is_active', true))
                                     ->with('vendor')
                                     ->get()
                                     ->mapWithKeys(function (Service $s) {
@@ -181,6 +199,7 @@ class CreateBooking extends CreateRecord
                                     })
                                     ->toArray();
                             })
+                            ->disabled(fn (Get $get): bool => ! is_numeric($get('occasion_id')))
                             ->searchable()
                             ->required()
                             ->columnSpanFull(),
@@ -209,6 +228,16 @@ class CreateBooking extends CreateRecord
         try {
             $eventStartsAt = Carbon::parse($data['event_starts_at']);
             $eventEndsAt = Carbon::parse($data['event_ends_at']);
+            $serviceId = (int) $data['service_id'];
+            $catalogReader = app(CatalogServiceReader::class);
+
+            if ($catalogReader->findPublishedById($serviceId) === null) {
+                abort(422, __('storefront.service.add_error'));
+            }
+
+            if (! $catalogReader->isServiceEligibleForOccasion($serviceId, (int) $data['occasion_id'])) {
+                abort(422, __('storefront.wizard.validation.service_occasion_mismatch'));
+            }
 
             $draftDto = new CreateBookingDraftDTO(
                 customerId: (int) $data['customer_id'],
@@ -232,34 +261,29 @@ class CreateBooking extends CreateRecord
                 recipientPhoneE164: $data['recipient_phone_e164'],
             );
 
-            $booking = app(CreateBookingDraftAction::class)->execute($draftDto);
+            $booking = DB::transaction(function () use ($data, $draftDto, $eventStartsAt, $eventEndsAt, $serviceId): Booking {
+                $booking = app(CreateBookingDraftAction::class)->execute($draftDto);
 
-            $addItemDto = new AddBookingItemDTO(
-                bookingId: $booking->id,
-                customerId: (int) $data['customer_id'],
-                serviceId: (int) $data['service_id'],
-                quantity: (int) $data['quantity'],
-                effectiveStartsAt: $eventStartsAt,
-                effectiveEndsAt: $eventEndsAt,
-                customizationData: null,
-            );
+                $addItemDto = new AddBookingItemDTO(
+                    bookingId: $booking->id,
+                    customerId: (int) $data['customer_id'],
+                    serviceId: $serviceId,
+                    quantity: (int) $data['quantity'],
+                    effectiveStartsAt: $eventStartsAt,
+                    effectiveEndsAt: $eventEndsAt,
+                    customizationData: null,
+                );
 
-            app(AddItemToBookingAction::class)->execute($addItemDto);
+                app(AddItemToBookingAction::class)->execute($addItemDto);
 
-            $submitDto = new SubmitBookingDTO(
-                bookingId: $booking->id,
-                customerId: (int) $data['customer_id'],
-                idempotencyKey: (string) Str::uuid(),
-            );
+                $submitDto = new SubmitBookingDTO(
+                    bookingId: $booking->id,
+                    customerId: (int) $data['customer_id'],
+                    idempotencyKey: (string) Str::uuid(),
+                );
 
-            app(SubmitBookingAction::class)->execute($submitDto);
-
-            Notification::make()
-                ->title(__('booking.create.success'))
-                ->success()
-                ->send();
-
-            return $booking->fresh();
+                return app(SubmitBookingAction::class)->execute($submitDto);
+            });
         } catch (Throwable $e) {
             Notification::make()
                 ->title(__('booking.create.error'))
@@ -267,8 +291,15 @@ class CreateBooking extends CreateRecord
                 ->danger()
                 ->send();
 
-            $this->halt();
+            $this->halt(true);
         }
+
+        Notification::make()
+            ->title(__('booking.create.success'))
+            ->success()
+            ->send();
+
+        return $booking->fresh();
     }
 
     protected function getRedirectUrl(): string

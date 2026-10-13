@@ -24,6 +24,7 @@ class CreateVendorDigitalService extends CreateRecord
             categoryId: (int) $data['category_id'],
             name: $data['name'],
             shortDescription: $data['short_description'] ?? ['en' => '', 'ar' => ''],
+            longDescription: $data['long_description'] ?? null,
             basePriceMinor: (int) $data['base_price_minor'],
             categoryFieldValues: $data['category_field_values'] ?? [],
             deliveryMethod: $data['digitalDetail']['delivery_method'] ?? 'email',
