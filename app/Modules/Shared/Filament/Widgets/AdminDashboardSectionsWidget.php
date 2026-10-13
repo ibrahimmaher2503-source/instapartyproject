@@ -23,6 +23,7 @@ use App\Modules\Discovery\Filament\Resources\PackageRecommendationResource;
 use App\Modules\Identity\Domain\Enums\ApprovalStatus;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource;
+use App\Modules\Identity\Filament\Resources\VendorProfileResource;
 use App\Modules\Payments\Domain\Enums\PaymentStatus;
 use App\Modules\Payments\Domain\Enums\RefundStatus;
 use App\Modules\Payments\Domain\Models\Payment;
@@ -32,6 +33,7 @@ use App\Modules\Payments\Filament\Resources\RefundResource;
 use App\Modules\Settlement\Domain\Enums\WithdrawalStatus;
 use App\Modules\Settlement\Domain\Models\Commission;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
+use App\Modules\Settlement\Filament\Resources\CommissionResource;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource;
 use Brick\Money\Money;
 use Filament\Widgets\Widget;
@@ -50,43 +52,49 @@ class AdminDashboardSectionsWidget extends Widget
 
     public function getViewData(): array
     {
-        $financialVisible = $this->canAny([
-            'view_any_payment',
-            'view_any_refund',
-            'view_any_commission',
-            'view_any_withdrawal',
-            'view_any_wallet_ledger_entry',
-        ]);
-
-        $operationsVisible = $this->canAny([
-            'view_any_booking',
-            'view_any_bookings::monitor',
-            'view_any_vendor_profile',
-            'view_any_booking_modification',
-            'view_any_admin_booking_intervention',
-            'view_any_notification_dispatch',
-        ]);
+        $financialAccess = [
+            'payments' => PaymentResource::canViewAny(),
+            'refunds' => RefundResource::canViewAny(),
+            'commissions' => CommissionResource::canViewAny(),
+            'withdrawals' => WithdrawalsQueueResource::canViewAny(),
+        ];
+        $operationsAccess = [
+            'bookings' => BookingResource::canViewAny(),
+            'monitor' => BookingsMonitorResource::canViewAny(),
+            'vendors' => VendorProfileResource::canViewAny(),
+            'modifications' => BookingModificationResource::canViewAny(),
+            'interventions' => AdminBookingInterventionResource::canViewAny(),
+            'notifications' => NotificationDispatchResource::canViewAny(),
+        ];
+        $homepagePackagesVisible = PackageRecommendationResource::canViewAny();
+        $financialVisible = in_array(true, $financialAccess, true);
+        $operationsVisible = in_array(true, $operationsAccess, true);
+        $accessFingerprint = implode('', array_map(
+            static fn (bool $allowed): string => $allowed ? '1' : '0',
+            array_merge(array_values($financialAccess), array_values($operationsAccess), [$homepagePackagesVisible]),
+        ));
 
         $userId = (string) (auth()->id() ?? 'guest');
         $locale = app()->getLocale();
 
         return Cache::store('database')->remember(
-            "admin_dashboard_content:{$userId}:{$locale}:".(int) $financialVisible.':'.(int) $operationsVisible,
+            "admin_dashboard_content:{$userId}:{$locale}:{$accessFingerprint}",
             now()->addSeconds(30),
             fn (): array => [
+                'upcomingBookingsVisible' => $operationsAccess['bookings'],
+                'negotiationMonitoringVisible' => $operationsAccess['monitor'],
+                'vendorOperationsVisible' => $operationsAccess['vendors'],
                 'financialVisible' => $financialVisible,
                 'operationsVisible' => $operationsVisible,
-                'financials' => $financialVisible ? $this->financialData() : [],
-                'operations' => $operationsVisible ? $this->operationsData() : [],
-                'homepagePackages' => $this->homepagePackageData(),
+                'financials' => $financialVisible ? $this->financialData($financialAccess) : [],
+                'operations' => $operationsVisible ? $this->operationsData($operationsAccess) : [],
+                'homepagePackages' => $this->homepagePackageData($homepagePackagesVisible),
             ],
         );
     }
 
-    private function homepagePackageData(): array
+    private function homepagePackageData(bool $visible): array
     {
-        $visible = PackageRecommendationResource::canViewAny();
-
         return [
             'visible' => $visible,
             'published' => $visible ? PackageRecommendation::query()->published()->count() : 0,
@@ -96,61 +104,101 @@ class AdminDashboardSectionsWidget extends Widget
         ];
     }
 
-    private function financialData(): array
+    private function financialData(array $access): array
     {
         $currency = 'EGP';
-        $capturedMinor = (int) Payment::query()->where('status', PaymentStatus::Captured->value)->sum('amount_minor');
-        $refundMinor = (int) Refund::query()->where('status', RefundStatus::Completed->value)->sum('amount_minor');
-        $commissionMinor = (int) Commission::query()->sum('commission_minor');
-        $pendingPaymentsMinor = (int) Payment::query()->where('status', PaymentStatus::Pending->value)->sum('amount_minor');
-        $payablesMinor = (int) Withdrawal::query()
-            ->whereIn('status', [WithdrawalStatus::Pending->value, WithdrawalStatus::Approved->value])
-            ->sum('requested_amount_minor');
+        $capturedMinor = $access['payments']
+            ? (int) Payment::query()->where('status', PaymentStatus::Captured->value)->sum('amount_minor')
+            : 0;
+        $refundMinor = $access['refunds']
+            ? (int) Refund::query()->where('status', RefundStatus::Completed->value)->sum('amount_minor')
+            : 0;
+        $commissionMinor = $access['commissions']
+            ? (int) Commission::query()->sum('commission_minor')
+            : 0;
+        $pendingPaymentsMinor = $access['payments']
+            ? (int) Payment::query()->where('status', PaymentStatus::Pending->value)->sum('amount_minor')
+            : 0;
+        $payablesMinor = $access['withdrawals']
+            ? (int) Withdrawal::query()
+                ->whereIn('status', [WithdrawalStatus::Pending->value, WithdrawalStatus::Approved->value])
+                ->sum('requested_amount_minor')
+            : 0;
 
-        $netRevenue = Money::ofMinor($capturedMinor, $currency)->minus(Money::ofMinor($refundMinor, $currency));
+        $kpis = [];
+        $summary = [];
+        $statuses = [];
+        $attention = [];
 
-        return [
-            'kpis' => [
-                $this->metric(__('shared::dashboard.financials.gross_revenue'), $this->formatMinor($capturedMinor, $currency), 'heroicon-o-banknotes', 'info', description: __('shared::dashboard.financials.captured_payments_formula')),
-                $this->metric(__('shared::dashboard.financials.net_revenue'), $netRevenue->formatTo(app()->getLocale()), 'heroicon-o-arrow-trending-up', 'success', description: __('shared::dashboard.financials.net_collected_formula')),
-                $this->metric(__('shared::dashboard.financials.platform_commission'), $this->formatMinor($commissionMinor, $currency), 'heroicon-o-building-office-2', 'primary', description: __('shared::dashboard.financials.platform_commission_formula')),
-                $this->metric(__('shared::dashboard.financials.pending_payments'), $this->formatMinor($pendingPaymentsMinor, $currency), 'heroicon-o-clock', 'warning', PaymentResource::getUrl('index').'?tableFilters[status][value]=pending', description: __('shared::dashboard.financials.pending_payments_formula')),
-                $this->metric(__('shared::dashboard.financials.vendor_payables'), $this->formatMinor($payablesMinor, $currency), 'heroicon-o-arrow-up-tray', 'warning', WithdrawalsQueueResource::getUrl('index')),
-            ],
-            'chart' => [
-                'title' => __('shared::dashboard.financials.trend_title'),
-                'caption' => __('shared::dashboard.financials.trend_caption'),
-                'series' => $this->financialSeries(7),
-            ],
-            'summary' => [
-                ['label' => __('shared::dashboard.financials.gross_revenue'), 'value' => $this->formatMinor($capturedMinor, $currency), 'tone' => 'info'],
-                ['label' => __('shared::dashboard.financials.platform_commission'), 'value' => $this->formatMinor($commissionMinor, $currency), 'tone' => 'primary'],
-                ['label' => __('shared::dashboard.financials.refunds'), 'value' => $this->formatMinor($refundMinor, $currency), 'tone' => 'danger'],
-                ['label' => __('shared::dashboard.financials.outstanding'), 'value' => $this->formatMinor($pendingPaymentsMinor, $currency), 'tone' => 'warning'],
-            ],
-            'vendors' => $this->topVendorsByRevenue($currency),
-            'statuses' => [
+        if ($access['payments']) {
+            $kpis[] = $this->metric(__('shared::dashboard.financials.gross_revenue'), $this->formatMinor($capturedMinor, $currency), 'heroicon-o-banknotes', 'info', description: __('shared::dashboard.financials.captured_payments_formula'));
+            $summary[] = ['label' => __('shared::dashboard.financials.gross_revenue'), 'value' => $this->formatMinor($capturedMinor, $currency), 'tone' => 'info'];
+
+            $statuses = [
                 $this->statusMetric(__('shared::dashboard.financials.paid'), PaymentStatus::Captured->value, PaymentResource::getUrl('index').'?tableFilters[status][value]=captured', 'success'),
                 $this->statusMetric(__('shared::dashboard.financials.pending'), PaymentStatus::Pending->value, PaymentResource::getUrl('index').'?tableFilters[status][value]=pending', 'warning'),
                 $this->statusMetric(__('shared::dashboard.financials.refunded'), PaymentStatus::Refunded->value, PaymentResource::getUrl('index').'?tableFilters[status][value]=refunded', 'info'),
                 $this->statusMetric(__('shared::dashboard.financials.failed'), PaymentStatus::Failed->value, PaymentResource::getUrl('index').'?tableFilters[status][value]=failed', 'danger'),
+            ];
+            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.payment_failures'), (int) Payment::query()->where('status', PaymentStatus::Failed->value)->where('created_at', '>=', now()->subHours(48))->count(), PaymentResource::getUrl('index').'?tableFilters[status][value]=failed', 'danger');
+        }
+
+        if ($access['payments'] && $access['refunds']) {
+            $netRevenue = Money::ofMinor($capturedMinor, $currency)->minus(Money::ofMinor($refundMinor, $currency));
+            $kpis[] = $this->metric(__('shared::dashboard.financials.net_revenue'), $netRevenue->formatTo(app()->getLocale()), 'heroicon-o-arrow-trending-up', 'success', description: __('shared::dashboard.financials.net_collected_formula'));
+        }
+
+        if ($access['commissions']) {
+            $kpis[] = $this->metric(__('shared::dashboard.financials.platform_commission'), $this->formatMinor($commissionMinor, $currency), 'heroicon-o-building-office-2', 'primary', description: __('shared::dashboard.financials.platform_commission_formula'));
+            $summary[] = ['label' => __('shared::dashboard.financials.platform_commission'), 'value' => $this->formatMinor($commissionMinor, $currency), 'tone' => 'primary'];
+        }
+
+        if ($access['refunds']) {
+            $summary[] = ['label' => __('shared::dashboard.financials.refunds'), 'value' => $this->formatMinor($refundMinor, $currency), 'tone' => 'danger'];
+        }
+
+        if ($access['payments']) {
+            $kpis[] = $this->metric(__('shared::dashboard.financials.pending_payments'), $this->formatMinor($pendingPaymentsMinor, $currency), 'heroicon-o-clock', 'warning', PaymentResource::getUrl('index').'?tableFilters[status][value]=pending', description: __('shared::dashboard.financials.pending_payments_formula'));
+            $summary[] = ['label' => __('shared::dashboard.financials.outstanding'), 'value' => $this->formatMinor($pendingPaymentsMinor, $currency), 'tone' => 'warning'];
+        }
+
+        if ($access['withdrawals']) {
+            $kpis[] = $this->metric(__('shared::dashboard.financials.vendor_payables'), $this->formatMinor($payablesMinor, $currency), 'heroicon-o-arrow-up-tray', 'warning', WithdrawalsQueueResource::getUrl('index'));
+            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.pending_withdrawals'), (int) Withdrawal::query()->where('status', WithdrawalStatus::Pending->value)->count(), WithdrawalsQueueResource::getUrl('index'), 'warning');
+        }
+
+        if ($access['refunds']) {
+            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.refund_issues'), (int) Refund::query()->where('status', RefundStatus::Failed->value)->count(), RefundResource::getUrl('index'), 'danger');
+        }
+
+        $financialSeries = $this->financialSeries(7, $access);
+
+        return [
+            'chart' => [
+                'title' => __('shared::dashboard.financials.trend_title'),
+                'caption' => __('shared::dashboard.financials.trend_caption'),
+                'series' => $financialSeries,
             ],
-            'attention' => [
-                $this->attentionMetric(__('shared::dashboard.attention.payment_failures'), (int) Payment::query()->where('status', PaymentStatus::Failed->value)->where('created_at', '>=', now()->subHours(48))->count(), PaymentResource::getUrl('index').'?tableFilters[status][value]=failed', 'danger'),
-                $this->attentionMetric(__('shared::dashboard.attention.pending_withdrawals'), (int) Withdrawal::query()->where('status', WithdrawalStatus::Pending->value)->count(), WithdrawalsQueueResource::getUrl('index'), 'warning'),
-                $this->attentionMetric(__('shared::dashboard.attention.refund_issues'), (int) Refund::query()->where('status', RefundStatus::Failed->value)->count(), RefundResource::getUrl('index'), 'danger'),
-            ],
+            'chartVisible' => $financialSeries !== [],
+            'kpis' => $kpis,
+            'summary' => $summary,
+            'vendorsVisible' => $access['commissions'],
+            'vendors' => $access['commissions'] ? $this->topVendorsByRevenue($currency) : [],
+            'payablesVisible' => $access['withdrawals'],
+            'payables' => $access['withdrawals'] ? $this->formatMinor($payablesMinor, $currency) : null,
+            'statuses' => $statuses,
+            'attention' => $attention,
         ];
     }
 
-    private function operationsData(): array
+    private function operationsData(array $access): array
     {
-        $bookingAccess = $this->canAny(['view_any_booking']);
-        $monitorAccess = $this->canAny(['view_any_bookings::monitor']);
-        $vendorAccess = $this->canAny(['view_any_vendor_profile']);
-        $modificationAccess = $this->canAny(['view_any_booking_modification']);
-        $interventionAccess = $this->canAny(['view_any_admin_booking_intervention']);
-        $notificationAccess = $this->canAny(['view_any_notification_dispatch']);
+        $bookingAccess = $access['bookings'];
+        $monitorAccess = $access['monitor'];
+        $vendorAccess = $access['vendors'];
+        $modificationAccess = $access['modifications'];
+        $interventionAccess = $access['interventions'];
+        $notificationAccess = $access['notifications'];
 
         $lateResponses = $monitorAccess
             ? (int) app(GetNegotiationMonitorQueryAction::class)->execute('late')->count()
@@ -180,7 +228,7 @@ class AdminDashboardSectionsWidget extends Widget
             'chart' => [
                 'title' => __('shared::dashboard.operations.activity_title'),
                 'caption' => __('shared::dashboard.operations.activity_caption'),
-                'series' => $bookingAccess ? $this->operationsSeries() : [],
+                'series' => $this->operationsSeries($access),
             ],
             'attention' => [
                 $this->attentionMetric(__('shared::dashboard.attention.new_requests'), $pendingRequests, $bookingAccess ? BookingResource::getUrl('index').'?tableFilters[lifecycle_status][value]=customer_review' : null, 'warning', $bookingAccess),
@@ -212,22 +260,42 @@ class AdminDashboardSectionsWidget extends Widget
         ];
     }
 
-    private function financialSeries(int $days): array
+    private function financialSeries(int $days, array $access): array
     {
-        return [
-            ['label' => __('shared::dashboard.financials.revenue'), 'color' => 'primary', 'values' => $this->dailyTotals(Payment::query()->where('status', PaymentStatus::Captured->value), 'amount_minor', $days)],
-            ['label' => __('shared::dashboard.financials.commission'), 'color' => 'success', 'values' => $this->dailyTotals(Commission::query(), 'commission_minor', $days)],
-            ['label' => __('shared::dashboard.financials.refunds'), 'color' => 'danger', 'values' => $this->dailyTotals(Refund::query()->where('status', RefundStatus::Completed->value), 'amount_minor', $days)],
-        ];
+        $series = [];
+
+        if ($access['payments']) {
+            $series[] = ['label' => __('shared::dashboard.financials.revenue'), 'color' => 'primary', 'values' => $this->dailyTotals(Payment::query()->where('status', PaymentStatus::Captured->value), 'amount_minor', $days)];
+        }
+
+        if ($access['commissions']) {
+            $series[] = ['label' => __('shared::dashboard.financials.commission'), 'color' => 'success', 'values' => $this->dailyTotals(Commission::query(), 'commission_minor', $days)];
+        }
+
+        if ($access['refunds']) {
+            $series[] = ['label' => __('shared::dashboard.financials.refunds'), 'color' => 'danger', 'values' => $this->dailyTotals(Refund::query()->where('status', RefundStatus::Completed->value), 'amount_minor', $days)];
+        }
+
+        return $series;
     }
 
-    private function operationsSeries(): array
+    private function operationsSeries(array $access): array
     {
-        return [
-            ['label' => __('shared::dashboard.operations.bookings'), 'color' => 'primary', 'values' => $this->dailyCounts(Booking::query(), 7)],
-            ['label' => __('shared::dashboard.operations.vendor_responses'), 'color' => 'success', 'values' => $this->dailyCounts(BookingVendor::query()->whereNotNull('responded_at'), 7, 'responded_at')],
-            ['label' => __('shared::dashboard.operations.modifications'), 'color' => 'warning', 'values' => $this->dailyCounts(BookingModification::query(), 7)],
-        ];
+        $series = [];
+
+        if ($access['bookings']) {
+            $series[] = ['label' => __('shared::dashboard.operations.bookings'), 'color' => 'primary', 'values' => $this->dailyCounts(Booking::query(), 7)];
+        }
+
+        if ($access['monitor']) {
+            $series[] = ['label' => __('shared::dashboard.operations.vendor_responses'), 'color' => 'success', 'values' => $this->dailyCounts(BookingVendor::query()->whereNotNull('responded_at'), 7, 'responded_at')];
+        }
+
+        if ($access['modifications']) {
+            $series[] = ['label' => __('shared::dashboard.operations.modifications'), 'color' => 'warning', 'values' => $this->dailyCounts(BookingModification::query(), 7)];
+        }
+
+        return $series;
     }
 
     private function topVendorsByRevenue(string $currency): array
@@ -299,8 +367,4 @@ class AdminDashboardSectionsWidget extends Widget
         return Money::ofMinor($minor, $currency)->formatTo(app()->getLocale());
     }
 
-    private function canAny(array $permissions): bool
-    {
-        return auth()->user()?->canAny($permissions) ?? false;
-    }
 }

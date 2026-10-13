@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Providers;
 
 use App\Modules\Booking\Domain\Contracts\BookingHistoryReader;
+use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingHistoryReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingReferenceReader;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\Listeners\CreateChatThreadOnBookingConfirmed;
 use App\Modules\Communication\Application\Listeners\DispatchChatFlagEscalatedNotificationsListener;
@@ -115,6 +117,7 @@ class CommunicationServiceProvider extends ServiceProvider
         $this->bindChatTokenMinter();
         $this->app->bind(NotificationDispatcher::class, DispatchNotificationAction::class);
         $this->app->singleton(BookingHistoryReader::class, EloquentBookingHistoryReader::class);
+        $this->app->scoped(BookingReferenceReader::class, EloquentBookingReferenceReader::class);
         $this->app->singleton(SegmentResolver::class);
 
         // in_app is read directly from notification_dispatches — no external delivery.

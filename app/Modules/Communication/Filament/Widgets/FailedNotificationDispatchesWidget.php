@@ -22,7 +22,7 @@ class FailedNotificationDispatchesWidget extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->can('view_any_notification_dispatch') ?? false;
+        return NotificationDispatchResource::canViewAny();
     }
 
     protected function getStats(): array

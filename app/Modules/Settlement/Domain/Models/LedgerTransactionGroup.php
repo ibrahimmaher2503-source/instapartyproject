@@ -22,6 +22,11 @@ class LedgerTransactionGroup extends Model
 
     protected $table = 'ledger_transaction_groups';
 
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
+    }
+
     protected $fillable = [
         'public_id',
         'kind',

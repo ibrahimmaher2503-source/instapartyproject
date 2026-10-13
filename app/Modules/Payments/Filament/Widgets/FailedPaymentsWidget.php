@@ -22,7 +22,7 @@ class FailedPaymentsWidget extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->can('view_any_payment') ?? false;
+        return PaymentResource::canViewAny();
     }
 
     protected function getStats(): array

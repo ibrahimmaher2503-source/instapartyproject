@@ -8,9 +8,12 @@ use App\Modules\Booking\Application\Actions\GetNegotiationMonitorQueryAction;
 use App\Modules\Booking\Filament\Resources\BookingsMonitorResource;
 use App\Modules\Identity\Domain\Enums\ApprovalStatus;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Identity\Filament\Resources\VendorProfileResource;
 use App\Modules\Payments\Domain\Enums\PaymentStatus;
 use App\Modules\Payments\Domain\Models\Payment;
+use App\Modules\Payments\Filament\Resources\PaymentResource;
 use App\Modules\Settlement\Domain\Models\WalletLedgerEntry;
+use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Cache;
@@ -23,26 +26,34 @@ class AdminDashboardHeaderWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $monitorAccess = auth()->user()?->can('view_any_bookings::monitor') ?? false;
+        $access = [
+            'vendors' => VendorProfileResource::canViewAny(),
+            'monitor' => BookingsMonitorResource::canViewAny(),
+            'payments' => PaymentResource::canViewAny(),
+            'wallet_ledger' => WalletLedgerViewerResource::canViewAny(),
+        ];
+        $userId = (string) (auth()->id() ?? 'guest');
+        $accessFingerprint = implode('', array_map(
+            static fn (bool $allowed): string => $allowed ? '1' : '0',
+            array_values($access),
+        ));
 
-        $metrics = Cache::remember('admin_dashboard_header_metrics:'.(int) $monitorAccess, 120, function () use ($monitorAccess): array {
-            $pendingVendors = VendorProfile::query()
-                ->where('approval_status', ApprovalStatus::Pending->value)
-                ->count();
+        $metrics = Cache::remember("admin_dashboard_header_metrics:{$userId}:{$accessFingerprint}", 120, function () use ($access): array {
+            $pendingVendors = $access['vendors']
+                ? VendorProfile::query()->where('approval_status', ApprovalStatus::Pending->value)->count()
+                : 0;
 
-            $overdueResponses = $monitorAccess
+            $overdueResponses = $access['monitor']
                 ? app(GetNegotiationMonitorQueryAction::class)->execute('late')->count()
                 : 0;
 
-            $failedPaymentsToday = Payment::query()
-                ->where('status', PaymentStatus::Failed->value)
-                ->whereDate('created_at', today())
-                ->count();
+            $failedPaymentsToday = $access['payments']
+                ? Payment::query()->where('status', PaymentStatus::Failed->value)->whereDate('created_at', today())->count()
+                : 0;
 
-            $revenueToday = WalletLedgerEntry::query()
-                ->whereDate('created_at', today())
-                ->where('direction', 'credit')
-                ->sum('amount_minor');
+            $revenueToday = $access['wallet_ledger']
+                ? WalletLedgerEntry::query()->whereDate('created_at', today())->where('direction', 'credit')->sum('amount_minor')
+                : 0;
 
             return [
                 'pendingVendors' => $pendingVendors,
@@ -52,8 +63,10 @@ class AdminDashboardHeaderWidget extends StatsOverviewWidget
             ];
         });
 
-        return [
-            Stat::make(
+        $stats = [];
+
+        if ($access['vendors']) {
+            $stats[] = Stat::make(
                 __('identity::widgets.pending_vendor_approvals_heading'),
                 number_format($metrics['pendingVendors']),
             )
@@ -63,9 +76,11 @@ class AdminDashboardHeaderWidget extends StatsOverviewWidget
                     ['count' => $metrics['pendingVendors']],
                 ))
                 ->descriptionIcon('heroicon-o-user-plus')
-                ->color($metrics['pendingVendors'] > 0 ? 'warning' : 'gray'),
+                ->color($metrics['pendingVendors'] > 0 ? 'warning' : 'gray');
+        }
 
-            Stat::make(
+        if ($access['monitor']) {
+            $stats[] = Stat::make(
                 __('booking::widgets.late_vendor_responses_heading'),
                 number_format($metrics['overdueResponses']),
             )
@@ -76,11 +91,11 @@ class AdminDashboardHeaderWidget extends StatsOverviewWidget
                 ))
                 ->descriptionIcon('heroicon-o-clock')
                 ->color($metrics['overdueResponses'] > 0 ? 'danger' : 'success')
-                ->url($monitorAccess
-                    ? BookingsMonitorResource::getUrl('index').'?tableFilters[negotiation_scope][value]=late'
-                    : null),
+                ->url(BookingsMonitorResource::getUrl('index').'?tableFilters[negotiation_scope][value]=late');
+        }
 
-            Stat::make(
+        if ($access['payments']) {
+            $stats[] = Stat::make(
                 __('payments::widgets.failed_payments_heading'),
                 number_format($metrics['failedPaymentsToday']),
             )
@@ -90,15 +105,19 @@ class AdminDashboardHeaderWidget extends StatsOverviewWidget
                     ['count' => $metrics['failedPaymentsToday']],
                 ))
                 ->descriptionIcon('heroicon-o-exclamation-triangle')
-                ->color($metrics['failedPaymentsToday'] > 0 ? 'danger' : 'success'),
+                ->color($metrics['failedPaymentsToday'] > 0 ? 'danger' : 'success');
+        }
 
-            Stat::make(
+        if ($access['wallet_ledger']) {
+            $stats[] = Stat::make(
                 __('admin.dashboard.revenue_today'),
                 $metrics['revenueToday'].' '.__('admin.common.egp'),
             )
                 ->description(__('admin.dashboard.live_summary'))
                 ->descriptionIcon('heroicon-o-banknotes')
-                ->color('info'),
-        ];
+                ->color('info');
+        }
+
+        return $stats;
     }
 }

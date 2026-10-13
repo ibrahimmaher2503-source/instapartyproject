@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Filament\Resources;
 
+use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
 use App\Modules\Communication\Application\Actions\AcknowledgeInboxItemAction;
 use App\Modules\Communication\Application\Actions\BatchResolveInboxItemsAction;
 use App\Modules\Communication\Application\Actions\ReassignInboxItemAction;
@@ -82,13 +83,43 @@ class AdminInboxResource extends Resource
                     ->label(__('communication.inbox.severity')),
 
                 TextColumn::make('title')
-                    ->getStateUsing(fn (AdminInboxItem $record): string => $record->getTranslation('title', app()->getLocale()))
+                    ->getStateUsing(function (AdminInboxItem $record): string {
+                        $title = $record->getTranslation('title', app()->getLocale());
+
+                        if ($record->source_type !== 'booking') {
+                            return $title;
+                        }
+
+                        $reference = app(BookingReferenceReader::class)->referenceNoFor((int) $record->source_id);
+
+                        if ($reference === null) {
+                            return preg_replace(
+                                '/(?<=#)[0-9A-HJKMNP-TV-Z]{26}(?![0-9A-HJKMNP-TV-Z])/i',
+                                '—',
+                                $title,
+                            ) ?? $title;
+                        }
+
+                        return preg_replace(
+                            '/(?<=#)[0-9A-HJKMNP-TV-Z]{26}(?![0-9A-HJKMNP-TV-Z])/i',
+                            $reference,
+                            $title,
+                        ) ?? $title;
+                    })
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(title, '$.en')) LIKE ?", ["%{$search}%"]))
                     ->limit(60)
                     ->label(__('communication.inbox.title')),
 
                 TextColumn::make('source')
-                    ->getStateUsing(fn (AdminInboxItem $record): string => "{$record->source_type} #{$record->source_id}")
+                    ->getStateUsing(function (AdminInboxItem $record): string {
+                        if ($record->source_type === 'booking') {
+                            $reference = app(BookingReferenceReader::class)->referenceNoFor((int) $record->source_id);
+
+                            return $reference === null ? 'booking' : "booking #{$reference}";
+                        }
+
+                        return "{$record->source_type} #{$record->source_id}";
+                    })
                     ->label(__('communication.inbox.source')),
 
                 TextColumn::make('status')

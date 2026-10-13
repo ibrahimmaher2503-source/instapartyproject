@@ -12,6 +12,15 @@ return [
         'plural' => 'Support tickets',
         'details' => 'Request details',
     ],
+    'faq_categories' => [
+        'singular' => 'FAQ category',
+        'plural' => 'FAQ categories',
+        'section' => 'Category details',
+        'name' => 'Name',
+        'slug' => 'Short link',
+        'sort_order' => 'Display order',
+        'is_active' => 'Active',
+    ],
     'columns' => [
         'reference' => 'Reference', 'requester' => 'Requester', 'subject' => 'Subject',
         'status' => 'Status', 'assignee' => 'Assignee', 'email' => 'Email',

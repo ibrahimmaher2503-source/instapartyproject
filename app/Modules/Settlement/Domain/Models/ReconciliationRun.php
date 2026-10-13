@@ -16,6 +16,11 @@ class ReconciliationRun extends Model
 
     protected $table = 'reconciliation_runs';
 
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
+    }
+
     protected $fillable = [
         'public_id',
         'scope_type',
