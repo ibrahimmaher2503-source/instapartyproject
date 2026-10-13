@@ -52,7 +52,8 @@ class VendorWithdrawalsPage extends VendorWalletPage
                     ->weight(FontWeight::SemiBold),
                 TextColumn::make('requested_at')
                     ->label(__('vendor-portal.withdrawals.requested_at'))
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y H:i e')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->sortable(),
                 TextColumn::make('public_id')
                     ->label(__('vendor-portal.withdrawals.reference'))
@@ -76,12 +77,14 @@ class VendorWithdrawalsPage extends VendorWalletPage
                 Stack::make([
                     TextColumn::make('approved_at')
                         ->label(__('vendor-portal.withdrawals.approved_at'))
-                        ->dateTime('d M Y H:i')
+                        ->dateTime('d M Y H:i e')
+                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                         ->icon('heroicon-m-check-badge')
                         ->placeholder('—'),
                     TextColumn::make('paid_at')
                         ->label(__('vendor-portal.withdrawals.paid_at'))
-                        ->dateTime('d M Y H:i')
+                        ->dateTime('d M Y H:i e')
+                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                         ->icon('heroicon-m-banknotes')
                         ->placeholder('—'),
                 ]),

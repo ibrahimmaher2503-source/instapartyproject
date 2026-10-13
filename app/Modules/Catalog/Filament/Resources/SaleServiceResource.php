@@ -20,6 +20,8 @@ use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\EditSaleSer
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\ListSaleServices;
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\PendingSaleServicesPage;
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\ViewSaleService;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasServicePriceInput;
 use App\Modules\Discovery\Filament\Actions\ReindexServicesAction;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Application\Services\StorefrontText;
@@ -36,6 +38,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -58,6 +61,9 @@ use Illuminate\Support\Facades\Storage;
 
 class SaleServiceResource extends Resource
 {
+    use HasCategorySchemaFields;
+    use HasServicePriceInput;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
@@ -166,6 +172,8 @@ class SaleServiceResource extends Resource
                         ->rule('required')
                         ->label(__('catalog.vendor')),
                     Select::make('category_id')
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set, Select $component) => static::resetCategorySchemaFields($set, $component))
                         ->relationship('category', 'name')
                         ->getOptionLabelFromRecordUsing(fn ($record): string => $record->getTranslation('name', app()->getLocale(), useFallbackLocale: true))
                         ->searchable(['name->en', 'name->ar'])
@@ -174,13 +182,7 @@ class SaleServiceResource extends Resource
                         ->markAsRequired()
                         ->rule('required')
                         ->label(__('catalog.category')),
-                    TextInput::make('base_price_minor')
-                        ->label(__('catalog.base_price'))
-                        ->helperText(__('catalog.price_helper'))
-                        ->numeric()
-                        ->minValue(0)
-                        ->markAsRequired()
-                        ->rule('required'),
+                    static::servicePriceField(),
                     Select::make('status')
                         ->options(ServiceStatus::class)
                         ->default(ServiceStatus::Draft->value)
@@ -191,6 +193,8 @@ class SaleServiceResource extends Resource
                         ->label(__('catalog.is_featured')),
                 ])
                 ->columns(2),
+
+            static::categorySchemaSection(ProductType::Sale),
 
             Section::make(__('catalog.sale_details'))
                 ->relationship('saleDetail')

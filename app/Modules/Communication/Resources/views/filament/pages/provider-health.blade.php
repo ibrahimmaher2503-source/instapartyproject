@@ -1,4 +1,16 @@
 <x-filament-panels::page>
+    <x-filament::section :heading="__('communication::setup.title')">
+        <p>{{ __('communication::setup.readiness_hint') }}</p>
+        <ul>
+            @foreach ($setupChecklist as $item)
+                <li>{{ __('communication::setup.' . $item['label']) }}:
+                    {{ $item['configured'] ? __('communication::setup.settings_present') : __('communication::setup.settings_missing') }}
+                </li>
+            @endforeach
+        </ul>
+        <p>{{ __('communication::setup.queue_hint') }}</p>
+        <p>{{ __('communication::setup.acceptance_hint') }}</p>
+    </x-filament::section>
     @foreach ($cards as $card)
         @php
             $statusColor = match ($card['statusBadge']) {
@@ -46,14 +58,14 @@
                 @if ($card['lastSuccessAt'])
                     <div>
                         <dt>{{ __('communication.provider_health.card.last_success') }}</dt>
-                        <dd>{{ $card['lastSuccessAt']?->diffForHumans() }}</dd>
+                        <dd>{{ \Illuminate\Support\Carbon::parse($card['lastSuccessAt'])->diffForHumans() }}</dd>
                     </div>
                 @endif
 
                 @if ($card['lastFailureAt'])
                     <div>
                         <dt>{{ __('communication.provider_health.card.last_failure') }}</dt>
-                        <dd>{{ $card['lastFailureAt']?->diffForHumans() }}</dd>
+                        <dd>{{ \Illuminate\Support\Carbon::parse($card['lastFailureAt'])->diffForHumans() }}</dd>
                     </div>
                 @endif
 

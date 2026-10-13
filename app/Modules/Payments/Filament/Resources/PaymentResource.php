@@ -7,6 +7,7 @@ namespace App\Modules\Payments\Filament\Resources;
 use App\Modules\Payments\Domain\Enums\PaymentMethod;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Payments\Domain\States\PaymentStatus\PaymentState;
+use App\Modules\Payments\Filament\Actions\RefundPaymentAction;
 use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ListPayments;
 use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ViewPayment;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
@@ -131,6 +132,7 @@ class PaymentResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
+                RefundPaymentAction::make(),
             ])
             ->filters([
                 SelectFilter::make('status')

@@ -1,0 +1,36 @@
+meta {
+  name: Admin partial or remaining refund
+  type: http
+  seq: 20
+}
+post {
+  url: {{baseUrl}}/api/v1/admin/bookings/{{bookingPublicId}}/refunds
+  body: json
+  auth: bearer
+}
+auth:bearer {
+  token: {{adminToken}}
+}
+headers {
+  Accept: application/json
+  Accept-Language: en
+  Idempotency-Key: {{refundRequestKey}}
+}
+body:json {
+  "reason_code": "customer_request",
+  "reason_notes": {"en": "Partial service refund", "ar": "استرداد جزئي للخدمة"},
+  "amount_minor": 25000
+}
+assert {
+  res.status: eq 201
+  res.body.data.amount_minor: eq 25000
+  res.body.data.amount_currency: eq EGP
+}
+docs {
+  Set a new request key for a new operation; repeat the same key and body for replay.
+  Omit amount_minor to refund remaining eligible service cash, bounded by the payment
+  and shared booking subtotal minus discount and loyalty. Vendor delivery is retained;
+  recorded VAT is not adjusted separately. All non-failed reservations across the booking
+  count against the cap. A processing status requires provider confirmation;
+  do not treat it as a completed refund. A distinct new request returns a localized 409 while a previous request is pending or processing; replay the original key/body and wait for confirmation. No real provider operation was verified here.
+}

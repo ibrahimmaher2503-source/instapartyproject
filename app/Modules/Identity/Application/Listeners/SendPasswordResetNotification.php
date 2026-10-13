@@ -6,14 +6,24 @@ namespace App\Modules\Identity\Application\Listeners;
 
 use App\Modules\Identity\Domain\Contracts\OtpGatewayInterface;
 use App\Modules\Identity\Domain\Events\PasswordResetRequested;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-class SendPasswordResetNotification implements ShouldQueue
+class SendPasswordResetNotification implements ShouldBeEncrypted, ShouldQueue
 {
     public string $queue = 'notifications';
+
+    public bool $afterCommit = true;
+
+    public int $tries = 3;
+
+    public function backoff(): array
+    {
+        return [30, 120, 600];
+    }
 
     public function __construct(private readonly OtpGatewayInterface $smsGateway) {}
 
@@ -42,12 +52,10 @@ class SendPasswordResetNotification implements ShouldQueue
                 },
             );
         } catch (Throwable $e) {
-            // Failure is non-fatal — log so observability captures it. The
-            // user already saw a neutral success response per FR-EXT-202.
             Log::warning('password-reset.email.failed', [
-                'identifier' => $email,
-                'error' => $e->getMessage(),
+                'error_class' => class_basename($e),
             ]);
+            throw $e;
         }
     }
 }

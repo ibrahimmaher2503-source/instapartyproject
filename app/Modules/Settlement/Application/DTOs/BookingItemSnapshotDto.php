@@ -21,5 +21,7 @@ final readonly class BookingItemSnapshotDto
         public ?int $bookingVendorId = null,
         public int $deliveryFeeMinor = 0,
         public ?string $deliveryFeeCurrency = null,
+        public ?int $bookingServiceCashMinor = null,
+        public ?string $bookingServiceCashCurrency = null,
     ) {}
 }

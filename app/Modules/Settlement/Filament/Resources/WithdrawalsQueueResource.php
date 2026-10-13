@@ -109,7 +109,8 @@ class WithdrawalsQueueResource extends Resource
 
                         TextEntry::make('requested_at')
                             ->label(__('settlement.columns.requested_at'))
-                            ->dateTime(),
+                            ->dateTime('d M Y H:i e')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
 
                         TextEntry::make('vendorProfile.business_name')
                             ->label(__('settlement.columns.vendor'))
@@ -186,12 +187,14 @@ class WithdrawalsQueueResource extends Resource
                     }),
 
                 TextColumn::make('requested_at')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i e')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->label(__('settlement.columns.requested_at'))
                     ->sortable(),
 
                 TextColumn::make('approved_at')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i e')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->label(__('settlement.columns.approved_at'))
                     ->sortable()
                     ->placeholder('—'),

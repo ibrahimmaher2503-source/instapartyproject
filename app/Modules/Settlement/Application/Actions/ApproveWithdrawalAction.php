@@ -31,14 +31,18 @@ class ApproveWithdrawalAction
             return $withdrawal->fresh();
         }
 
-        if (! ($withdrawal->status instanceof PendingState)) {
-            throw new InvalidWithdrawalTransitionException(
-                (string) class_basename($withdrawal->status::class),
-                'Approved'
-            );
-        }
-
         return DB::transaction(function () use ($withdrawal, $admin, $idempotencyKey): Withdrawal {
+            // Use persisted history, not an incoming model's dirty request timestamp.
+            $withdrawal = Withdrawal::query()->lockForUpdate()->findOrFail($withdrawal->id);
+            if ($withdrawal->status instanceof ApprovedState) {
+                return $withdrawal;
+            }
+            if (! ($withdrawal->status instanceof PendingState)) {
+                throw new InvalidWithdrawalTransitionException(
+                    (string) class_basename($withdrawal->status::class),
+                    'Approved',
+                );
+            }
             $withdrawal->update([
                 'status' => ApprovedState::class,
                 'approved_at' => now(),

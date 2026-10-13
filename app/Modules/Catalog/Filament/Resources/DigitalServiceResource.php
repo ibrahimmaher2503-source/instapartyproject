@@ -19,6 +19,8 @@ use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\CreateDi
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\EditDigitalService;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\ListDigitalServices;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\PendingDigitalServicesPage;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasServicePriceInput;
 use App\Modules\Discovery\Filament\Actions\ReindexServicesAction;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Application\Services\StorefrontText;
@@ -34,6 +36,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -55,6 +58,9 @@ use Illuminate\Support\Facades\Storage;
 
 class DigitalServiceResource extends Resource
 {
+    use HasCategorySchemaFields;
+    use HasServicePriceInput;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-device-phone-mobile';
@@ -163,6 +169,8 @@ class DigitalServiceResource extends Resource
                         ->rule('required')
                         ->label(__('catalog.vendor')),
                     Select::make('category_id')
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set, Select $component) => static::resetCategorySchemaFields($set, $component))
                         ->relationship('category', 'id')
                         ->getOptionLabelFromRecordUsing(fn ($record): string => $record->getTranslation('name', app()->getLocale(), useFallbackLocale: true))
                         ->searchable()
@@ -170,13 +178,7 @@ class DigitalServiceResource extends Resource
                         ->markAsRequired()
                         ->rule('required')
                         ->label(__('catalog.category')),
-                    TextInput::make('base_price_minor')
-                        ->label(__('catalog.base_price'))
-                        ->helperText(__('catalog.price_helper'))
-                        ->numeric()
-                        ->minValue(0)
-                        ->markAsRequired()
-                        ->rule('required'),
+                    static::servicePriceField(),
                     Select::make('status')
                         ->options(ServiceStatus::class)
                         ->default(ServiceStatus::Draft->value)
@@ -187,6 +189,8 @@ class DigitalServiceResource extends Resource
                         ->label(__('catalog.is_featured')),
                 ])
                 ->columns(2),
+
+            static::categorySchemaSection(ProductType::Digital),
 
             Section::make(__('catalog.digital_details'))
                 ->relationship('digitalDetail')

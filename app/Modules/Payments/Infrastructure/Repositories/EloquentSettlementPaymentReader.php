@@ -24,7 +24,13 @@ class EloquentSettlementPaymentReader implements SettlementPaymentReader
 
     public function findById(int $id): ?PaymentSnapshotDto
     {
-        $row = DB::table('payments')->where('id', $id)->first();
+        $query = DB::table('payments')->where('id', $id);
+        // A locking current read avoids freezing a snapshot before the shared
+        // booking budget lock can wait for another payment's reconciliation.
+        if (DB::transactionLevel() > 0) {
+            $query->lockForUpdate();
+        }
+        $row = $query->first();
 
         if ($row === null) {
             return null;

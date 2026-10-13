@@ -11,5 +11,7 @@ final readonly class CoverageAreaDTO
         public int $cityId,
         public int $minOrderMinor,
         public string $minOrderCurrency,
+        public int $deliveryFeeMinor = 0,
+        public string $deliveryFeeCurrency = 'EGP',
     ) {}
 }

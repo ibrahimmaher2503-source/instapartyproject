@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class UserResource extends Resource
@@ -42,6 +43,17 @@ class UserResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return __('identity.models.user.plural');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->status === 'active'
+            && auth()->user()?->hasRole('super_admin', 'web') === true;
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return static::canViewAny();
     }
 
     public static function canCreate(): bool
@@ -76,6 +88,7 @@ class UserResource extends Resource
                     ->searchable(),
                 TextColumn::make('phone_e164')
                     ->label(__('identity.columns.phone'))
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->searchable(),
                 TextColumn::make('status')
                     ->label(__('identity.columns.status'))
@@ -111,7 +124,9 @@ class UserResource extends Resource
                 ->schema([
                     TextEntry::make('name')->label(__('identity.columns.name')),
                     TextEntry::make('email')->label(__('identity.columns.email'))->copyable(),
-                    TextEntry::make('phone_e164')->label(__('identity.columns.phone')),
+                    TextEntry::make('phone_e164')
+                        ->label(__('identity.columns.phone'))
+                        ->extraAttributes(['dir' => 'ltr']),
                     TextEntry::make('status')->label(__('identity.columns.status'))->badge(),
                     TextEntry::make('roles.name')
                         ->label(__('identity.columns.role'))

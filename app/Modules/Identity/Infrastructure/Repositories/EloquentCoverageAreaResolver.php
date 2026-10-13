@@ -19,7 +19,7 @@ final class EloquentCoverageAreaResolver implements CoverageAreaResolver
         $rows = VendorCoverageArea::query()
             ->where('city_id', $cityId)
             ->whereIn('vendor_profile_id', $vendorProfileIds)
-            ->get(['vendor_profile_id', 'city_id', 'min_order_minor', 'min_order_currency']);
+            ->get(['vendor_profile_id', 'city_id', 'min_order_minor', 'min_order_currency', 'delivery_fee_minor', 'delivery_fee_currency']);
 
         $byVendor = [];
         foreach ($rows as $row) {
@@ -28,6 +28,8 @@ final class EloquentCoverageAreaResolver implements CoverageAreaResolver
                 cityId: $row->city_id,
                 minOrderMinor: (int) $row->min_order_minor,
                 minOrderCurrency: $row->min_order_currency,
+                deliveryFeeMinor: (int) $row->delivery_fee_minor,
+                deliveryFeeCurrency: $row->delivery_fee_currency,
             );
         }
 

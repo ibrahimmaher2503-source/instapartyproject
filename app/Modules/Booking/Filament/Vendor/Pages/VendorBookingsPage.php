@@ -102,7 +102,11 @@ class VendorBookingsPage extends Page implements HasTable
                 TextColumn::make('booking.customer.name')
                     ->label(__('vendor-portal.bookings.customer')),
                 TextColumn::make('booking.event_starts_at')
-                    ->label(__('vendor-portal.bookings.event_date'))
+                    ->label(fn (): string => __('booking.display_timezone', [
+                        'field' => __('vendor-portal.bookings.event_date'),
+                        'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                    ]))
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->dateTime('d M Y H:i')
                     ->sortable(),
                 TextColumn::make('subtotal_minor')

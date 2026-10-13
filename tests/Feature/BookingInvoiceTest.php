@@ -8,6 +8,7 @@ use App\Modules\Booking\Domain\Models\BookingAddress;
 use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Identity\Domain\Models\User;
+use Brick\Money\Money;
 
 it('renders a printable bilingual invoice breakdown with transport lines', function (string $locale): void {
     $admin = User::factory()->create();
@@ -33,5 +34,7 @@ it('renders a printable bilingual invoice breakdown with transport lines', funct
         ->assertSee(__('booking.columns.transport_base', [], $locale))
         ->assertSee(__('booking.columns.transportation_adjustment', [], $locale))
         ->assertSee('invoice:manual-transport')
+        ->assertSee(__('booking.invoice.recorded_delivery_adjustment', [], $locale))
+        ->assertSee(Money::ofMinor(500, 'EGP')->formatTo($locale))
         ->assertSee(__('booking.invoice.print', [], $locale));
 })->with(['en', 'ar']);

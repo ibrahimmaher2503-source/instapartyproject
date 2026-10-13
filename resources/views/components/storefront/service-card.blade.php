@@ -10,7 +10,8 @@
         [(string) ($service->category?->code ?? ''), $categoryName, $serviceName],
     );
     $fallbackImage = asset($fallbackPath);
-    $mediaImage = $service->getFirstMediaUrl('gallery', 'medium');
+    $media = $service->getFirstMedia('gallery');
+    $mediaImage = $media ? app(App\Modules\Shared\Application\Services\PublicMediaUrl::class)->for($media, 'medium') : null;
     $image = blank($mediaImage) ? $fallbackImage : $mediaImage;
     $vendorName = $service->vendor ? $storefrontText->translation($service->vendor, 'business_name') : '';
     $locationName = $service->vendor?->primaryCity

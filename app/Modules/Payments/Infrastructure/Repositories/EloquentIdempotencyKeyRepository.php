@@ -8,6 +8,11 @@ use App\Modules\Payments\Domain\Models\IdempotencyKey;
 
 class EloquentIdempotencyKeyRepository
 {
+    public function purgeExpired(): int
+    {
+        return IdempotencyKey::query()->expired()->delete();
+    }
+
     public function lookup(string $key, ?int $userId, string $route): ?IdempotencyKey
     {
         return IdempotencyKey::query()

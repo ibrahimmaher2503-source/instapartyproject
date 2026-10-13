@@ -8,11 +8,33 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Payments\Application\DTOs\PaymentBookingItemReadDto;
 use App\Modules\Payments\Application\DTOs\PaymentBookingReadDto;
 use App\Modules\Payments\Domain\Contracts\PaymentsBookingReader;
+use Brick\Money\Money;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class EloquentPaymentsBookingReader implements PaymentsBookingReader
 {
+    public function refundCashBudget(int $bookingId, bool $lock = false): ?Money
+    {
+        $query = DB::table('bookings')->where('id', $bookingId);
+        $row = ($lock ? $query->lockForUpdate() : $query)->first();
+        if ($row === null) {
+            return null;
+        }
+
+        $currency = (string) $row->subtotal_currency;
+        foreach ([['subtotal_minor', 'subtotal_currency'], ['discount_total_minor', 'discount_total_currency'], ['loyalty_redeemed_minor', 'loyalty_redeemed_currency']] as [$amount, $moneyCurrency]) {
+            abort_if((int) $row->{$amount} < 0
+                || ((int) $row->{$amount} > 0 && (string) $row->{$moneyCurrency} !== $currency), 409, 'Invalid booking refund budget');
+        }
+
+        // Recorded VAT is informational; delivery is retained by the vendor.
+        return Money::max(Money::ofMinor(0, $currency),
+            Money::ofMinor((int) $row->subtotal_minor, $currency)
+                ->minus(Money::ofMinor((int) $row->discount_total_minor, $currency))
+                ->minus(Money::ofMinor((int) $row->loyalty_redeemed_minor, $currency)));
+    }
+
     public function findByPublicId(string $ulid): ?PaymentBookingReadDto
     {
         $row = DB::table('bookings')->where('public_id', $ulid)->first();

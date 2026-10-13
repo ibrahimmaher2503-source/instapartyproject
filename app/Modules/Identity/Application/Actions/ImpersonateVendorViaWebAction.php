@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Application\Actions;
 
+use App\Modules\Identity\Application\Services\AdminMfaSession;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
@@ -27,6 +28,7 @@ class ImpersonateVendorViaWebAction
             (int) Auth::guard('web')->id() !== (int) $adminUser->id
             || $adminUser->status !== 'active'
             || ! $adminUser->canAccessPanel(filament()->getPanel('admin'))
+            || ! AdminMfaSession::hasProof($adminUser)
             || Session::has('impersonator_id')
             || Auth::guard('vendor')->check()
         ) {

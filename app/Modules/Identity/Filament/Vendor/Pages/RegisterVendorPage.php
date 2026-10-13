@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Vendor\Pages;
 
-use App\Modules\Geography\Domain\Models\City;
-use App\Modules\Geography\Domain\Models\Governorate;
+use App\Modules\Geography\Domain\Contracts\GeographyRepository;
 use App\Modules\Identity\Application\Actions\RegisterVendorAction;
 use App\Modules\Identity\Application\DTOs\RegisterVendorDTO;
 use App\Modules\Identity\Application\Services\VendorRegistrationRules;
@@ -156,11 +155,8 @@ class RegisterVendorPage extends Register
                                         ->required(),
                                     Select::make('primary_governorate_id')
                                         ->label(__('identity.fields.governorate_id'))
-                                        ->options(fn (): array => Governorate::query()
-                                            ->active()
-                                            ->orderBy('sort_order')
-                                            ->get()
-                                            ->mapWithKeys(fn (Governorate $governorate): array => [
+                                        ->options(fn (): array => app(GeographyRepository::class)->activeGovernorates()
+                                            ->mapWithKeys(fn ($governorate): array => [
                                                 $governorate->id => $governorate->getTranslation('name', app()->getLocale()),
                                             ])
                                             ->all())
@@ -169,12 +165,9 @@ class RegisterVendorPage extends Register
                                         ->afterStateUpdated(fn (callable $set) => $set('primary_city_id', null)),
                                     Select::make('primary_city_id')
                                         ->label(__('identity.fields.city_id'))
-                                        ->options(fn (callable $get): array => City::query()
-                                            ->active()
-                                            ->where('governorate_id', $get('primary_governorate_id'))
-                                            ->orderBy('sort_order')
-                                            ->get()
-                                            ->mapWithKeys(fn (City $city): array => [
+                                        ->options(fn (callable $get): array => app(GeographyRepository::class)
+                                            ->listCitiesByGovernorate((int) $get('primary_governorate_id'))
+                                            ->mapWithKeys(fn ($city): array => [
                                                 $city->id => $city->getTranslation('name', app()->getLocale()),
                                             ])
                                             ->all())

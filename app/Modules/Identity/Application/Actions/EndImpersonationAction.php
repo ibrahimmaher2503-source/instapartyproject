@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Application\Actions;
 
+use App\Modules\Identity\Application\Services\AdminMfaSession;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,7 @@ class EndImpersonationAction
         $keepAdminSession = $admin !== null
             && (int) Auth::guard('web')->id() === (int) $adminId
             && $admin->status === 'active'
+            && AdminMfaSession::hasProof($admin)
             && $admin->canAccessPanel(filament()->getPanel('admin'))
             && $admin->hasPermissionTo('impersonate_vendor', 'web');
 
@@ -51,6 +53,7 @@ class EndImpersonationAction
 
         if (! $keepAdminSession) {
             Auth::guard('web')->logout();
+            Session::forget(['admin_mfa_verified', 'admin_mfa_pending', 'admin_mfa_recovery_codes']);
         }
 
         Session::regenerate();

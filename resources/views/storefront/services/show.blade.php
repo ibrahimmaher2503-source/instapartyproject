@@ -10,19 +10,24 @@
     $shortDescription = $storefrontText->translation($service, 'short_description');
     $vendor = $service->vendor;
     $vendorName = $vendor ? $storefrontText->translation($vendor, 'business_name') : '';
+    $mediaUrls = app(App\Modules\Shared\Application\Services\PublicMediaUrl::class);
+    $vendorLogo = $mediaUrls->publicPath($vendor?->logo_path);
     $categoryName = $service->category ? $storefrontText->translation($service->category, 'name') : '';
     $ratingCount = (int) ($service->rating_count ?? 0);
     $isOutOfStock = $service->product_type === ProductType::Sale
         && $service->saleDetail?->stock_quantity !== null
         && $service->saleDetail->stock_quantity <= 0;
-    $gallery = $service->getMedia('gallery');
+    $gallery = $service->getMedia('gallery')->map(fn ($media): array => [
+        'url' => $mediaUrls->for($media, 'large'),
+        'thumb' => $mediaUrls->for($media, 'thumb'),
+    ])->filter(fn (array $item): bool => $item['url'] !== null && $item['thumb'] !== null)->values();
     $fallbackPath = app(App\Modules\Shared\Application\Services\StorefrontImageFallback::class)->service(
         (string) $service->public_id,
         $service->product_type->value,
         [(string) ($service->category?->code ?? ''), $categoryName, $serviceName],
     );
     $fallbackImage = asset($fallbackPath);
-    $primaryImage = $gallery->isEmpty() ? $fallbackImage : $gallery->first()?->getUrl('large');
+    $primaryImage = $gallery->isEmpty() ? $fallbackImage : $gallery->first()['url'];
 @endphp
 
 @section('title', $serviceName.' · '.__('storefront.common.site_name'))
@@ -50,9 +55,9 @@
                         </div>
                         @if ($gallery->count() > 1)
                             <div class="flex gap-3 overflow-x-auto sm:flex-col" aria-label="{{ __('storefront.service.gallery_heading') }}">
-                                @foreach ($gallery as $media)
-                                    <button type="button" data-service-gallery-image="{{ $media->getUrl('large') }}" aria-label="{{ $serviceName }} · {{ $loop->iteration }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}" class="w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600 aria-pressed:border-secondary-600 sm:w-full">
-                                        <img src="{{ $media->getUrl('thumb') }}" alt="" width="200" height="200" class="aspect-square w-full object-cover" loading="lazy" onerror="this.closest('button').hidden=true;">
+                                @foreach ($gallery as $image)
+                                    <button type="button" data-service-gallery-image="{{ $image['url'] }}" aria-label="{{ $serviceName }} · {{ $loop->iteration }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}" class="w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600 aria-pressed:border-secondary-600 sm:w-full">
+                                        <img src="{{ $image['thumb'] }}" alt="" width="200" height="200" class="aspect-square w-full object-cover" loading="lazy" onerror="this.closest('button').hidden=true;">
                                     </button>
                                 @endforeach
                             </div>
@@ -111,8 +116,8 @@
 
                     @if ($vendor)
                         <a href="{{ route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="sf-service-vendor mt-5 flex items-center gap-4 rounded-[1.35rem] border border-ink-200 bg-white p-5 transition hover:border-secondary-300 hover:shadow-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600">
-                            @if ($vendor->logo_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($vendor->logo_path) }}" alt="" width="52" height="52" class="size-13 rounded-full object-cover" loading="lazy" onerror="this.onerror=null;this.hidden=true;this.nextElementSibling.hidden=false;">
+                            @if ($vendorLogo)
+                                <img src="{{ $vendorLogo }}" alt="" width="52" height="52" class="size-13 rounded-full object-cover" loading="lazy" onerror="this.onerror=null;this.hidden=true;this.nextElementSibling.hidden=false;">
                                 <span hidden class="flex size-13 items-center justify-center rounded-full bg-secondary-50 text-lg font-extrabold text-secondary-700">{{ mb_substr((string) $vendorName, 0, 1) }}</span>
                             @else
                                 <span class="flex size-13 items-center justify-center rounded-full bg-secondary-50 text-lg font-extrabold text-secondary-700">{{ mb_substr((string) $vendorName, 0, 1) }}</span>

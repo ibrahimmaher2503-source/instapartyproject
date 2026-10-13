@@ -8,7 +8,9 @@ use App\Modules\Booking\Application\DTOs\AddBookingItemDTO;
 use App\Modules\Booking\Application\DTOs\ServiceReadDTO;
 use App\Modules\Booking\Application\Services\BookingTransportPricingService;
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
+use App\Modules\Booking\Domain\Contracts\CoverageAreaResolver;
 use App\Modules\Booking\Domain\Events\BookingItemAdded;
+use App\Modules\Booking\Domain\Exceptions\CurrencyMismatchException;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingItem;
 use App\Modules\Booking\Domain\Models\BookingVendor;
@@ -29,12 +31,13 @@ class AddItemToBookingAction
         private readonly CatalogServiceReader $catalogReader,
         private readonly CommissionRateResolver $commissionRateResolver,
         private readonly BookingTransportPricingService $transportPricing,
+        private readonly CoverageAreaResolver $coverageResolver,
     ) {}
 
     public function execute(AddBookingItemDTO $dto): BookingItem
     {
         return DB::transaction(function () use ($dto): BookingItem {
-            $booking = Booking::find($dto->bookingId);
+            $booking = Booking::query()->whereKey($dto->bookingId)->lockForUpdate()->first();
 
             // Cross-customer access is 404, not 403 — no existence leak (same
             // convention as every other customer booking endpoint; IDOR audit
@@ -102,6 +105,28 @@ class AddItemToBookingAction
                     'vendor_payout_currency' => $service->basePriceCurrency,
                 ]
             );
+
+            $requiresDelivery = match ($service->productType) {
+                ProductType::Rental, ProductType::Sale => true,
+                ProductType::Digital => false,
+            };
+
+            if ($requiresDelivery && ! $vendor->items()->whereIn('product_type', [ProductType::Rental->value, ProductType::Sale->value])->exists()) {
+                $cityId = $booking->address?->city_id;
+                $coverage = $cityId === null ? null : ($this->coverageResolver->resolveForCity((int) $cityId, [$service->vendorProfileId])[$service->vendorProfileId] ?? null);
+
+                if ($coverage !== null) {
+                    if ($coverage->deliveryFeeMinor > 0 && $coverage->deliveryFeeCurrency !== $booking->total_currency) {
+                        throw new CurrencyMismatchException($booking->total_currency, $coverage->deliveryFeeCurrency);
+                    }
+
+                    // Snapshot once per vendor delivery, independent of platform transport pricing.
+                    $vendor->update([
+                        'delivery_fee_minor' => $coverage->deliveryFeeMinor,
+                        'delivery_fee_currency' => $coverage->deliveryFeeCurrency,
+                    ]);
+                }
+            }
 
             $lineTotal = $service->basePriceMinor * $dto->quantity;
             $commissionBps = $this->commissionRateResolver->resolve($service->categoryId, $service->productType) ?? 0;

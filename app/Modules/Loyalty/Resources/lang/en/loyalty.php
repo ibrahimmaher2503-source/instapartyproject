@@ -105,6 +105,7 @@ return [
         'booking_not_draft' => 'Booking is no longer in a draft state.',
         'cross_customer_forbidden' => 'You do not own this booking.',
         'discount_zero' => 'Computed discount is zero.',
+        'currency_mismatch' => 'The loyalty program currency does not match this booking currency.',
     ],
     'directions' => [
         'earn' => 'Earn',

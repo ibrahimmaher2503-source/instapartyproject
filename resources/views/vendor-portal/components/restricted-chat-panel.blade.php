@@ -13,8 +13,8 @@
         >
             <p>{{ __('communication::chat.frozen_banner_body') }}</p>
 
-            @if ($this->thread?->frozenByUser)
-                <p>{{ __('communication::chat.frozen_by', ['name' => $this->thread->frozenByUser->name]) }}</p>
+            @if ($this->frozenByName)
+                <p>{{ __('communication::chat.frozen_by', ['name' => $this->frozenByName]) }}</p>
             @endif
         </x-filament::section>
 

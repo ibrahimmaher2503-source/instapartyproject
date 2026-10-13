@@ -22,6 +22,7 @@ use App\Modules\Reviews\Domain\Enums\ModerationStatus;
 use App\Modules\Reviews\Domain\Models\ServiceReview;
 use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Filament\Vendor\Pages\VendorWalletPage;
+use Brick\Money\Money;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -50,8 +51,8 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
 
         $vendorId = $vendorProfile->id;
 
-        $data = Cache::remember("vendor_dashboard_stats_{$vendorId}", 300, function () use ($vendorId): array {
-            $now = now();
+        $data = Cache::remember("vendor_dashboard_stats_{$vendorId}_".app()->getLocale(), 300, function () use ($vendorId): array {
+            $now = now('UTC');
             $som = $now->copy()->startOfMonth();
 
             $bookingsThisMonth = BookingVendor::query()
@@ -99,6 +100,7 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
                 ->where('vendor_profile_id', $vendorId)
                 ->whereIn('sub_status', [VendorSubStatus::Accepted->value, VendorSubStatus::InProgress->value, VendorSubStatus::Completed->value])
                 ->whereBetween('created_at', [$som, $now])
+                ->where('vendor_payout_currency', 'EGP')
                 ->sum('vendor_payout_minor');
 
             $upcomingEvents = BookingVendor::query()
@@ -117,7 +119,7 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
 
             return [
                 'bookingsThisMonth' => $bookingsThisMonth,
-                'revenueEgp' => number_format($revenueThisMonthMinor / 100, 0),
+                'revenueEgp' => Money::ofMinor((int) $revenueThisMonthMinor, 'EGP')->formatTo(app()->getLocale()),
                 'pendingServices' => $pendingServices,
                 'serviceCountsByType' => collect(ProductType::cases())
                     ->mapWithKeys(fn (ProductType $type): array => [
@@ -127,7 +129,7 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
                 'pendingBookings' => $pendingBookings,
                 'activeBookings' => $activeBookings,
                 'avgRating' => $avgRating ? number_format((float) $avgRating, 1) : '—',
-                'walletBalance' => number_format($balanceMinor / 100, 0),
+                'walletBalance' => Money::ofMinor((int) $balanceMinor, 'EGP')->formatTo(app()->getLocale()),
                 'upcomingEvents' => $upcomingEvents,
                 'nextDeadline' => $nextDeadline ? Carbon::parse($nextDeadline) : null,
             ];
@@ -170,67 +172,21 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
 
         return [
             Stat::make(
-                __('vendor-portal.dashboard.revenue_this_month'),
-                $data['revenueEgp'].' EGP',
-            )
-                ->description(now()->translatedFormat('F Y'))
-                ->descriptionIcon('heroicon-o-banknotes')
-                ->color('success')
-                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorWalletPage::getUrl()),
-
-            Stat::make(
-                __('vendor-portal.dashboard.bookings_this_month'),
-                (string) $data['bookingsThisMonth'],
-            )
-                ->descriptionIcon('heroicon-o-calendar-days')
-                ->color('info'),
-
-            Stat::make(
                 __('vendor-portal.dashboard.pending_bookings'),
                 (string) $data['pendingBookings'],
             )
+                ->description(__('shared::panel.current_queue'))
                 ->descriptionIcon('heroicon-o-clock')
                 ->color($data['pendingBookings'] > 0 ? 'warning' : 'gray')
                 ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorIncomingBookingsPage::getUrl()),
 
             Stat::make(
-                __('vendor-portal.dashboard.active_bookings'),
-                (string) $data['activeBookings'],
-            )
-                ->descriptionIcon('heroicon-o-play-circle')
-                ->color('primary')
-                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorActiveBookingsPage::getUrl()),
-
-            Stat::make(
                 __('vendor-portal.dashboard.pending_services'),
                 (string) $data['pendingServices'],
             )
+                ->description(__('shared::panel.current_queue'))
                 ->descriptionIcon('heroicon-o-square-3-stack-3d')
                 ->color($data['pendingServices'] > 0 ? 'warning' : 'gray'),
-
-            Stat::make(
-                __('vendor-portal.dashboard.average_rating'),
-                $data['avgRating'],
-            )
-                ->descriptionIcon('heroicon-o-star')
-                ->color('warning'),
-
-            Stat::make(
-                __('vendor-portal.dashboard.wallet_balance'),
-                $data['walletBalance'].' EGP',
-            )
-                ->description(__('vendor-portal.dashboard.available_balance'))
-                ->descriptionIcon('heroicon-o-wallet')
-                ->color('success')
-                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorWalletPage::getUrl()),
-
-            Stat::make(
-                __('vendor-portal.dashboard.upcoming_events'),
-                (string) $data['upcomingEvents'],
-            )
-                ->descriptionIcon('heroicon-o-calendar')
-                ->color('info')
-                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorBookingsPage::getUrl(['statusFilter' => 'accepted'])),
 
             Stat::make(
                 __('vendor-portal.dashboard.sla_countdown'),
@@ -241,6 +197,57 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-clock')
                 ->color($data['nextDeadline'] !== null ? 'warning' : 'gray')
                 ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorBookingsPage::getUrl(['statusFilter' => 'pending'])),
+
+            Stat::make(
+                __('vendor-portal.dashboard.revenue_this_month'),
+                $data['revenueEgp'],
+            )
+                ->description(__('shared::panel.month_window'))
+                ->descriptionIcon('heroicon-o-banknotes')
+                ->color('success')
+                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorWalletPage::getUrl()),
+
+            Stat::make(
+                __('vendor-portal.dashboard.bookings_this_month'),
+                (string) $data['bookingsThisMonth'],
+            )
+                ->description(__('shared::panel.month_dates'))
+                ->descriptionIcon('heroicon-o-calendar-days')
+                ->color('info'),
+
+            Stat::make(
+                __('vendor-portal.dashboard.active_bookings'),
+                (string) $data['activeBookings'],
+            )
+                ->descriptionIcon('heroicon-o-play-circle')
+                ->color('primary')
+                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorActiveBookingsPage::getUrl()),
+
+            Stat::make(
+                __('vendor-portal.dashboard.average_rating'),
+                $data['avgRating'],
+            )
+                ->descriptionIcon('heroicon-o-star')
+                ->color('warning'),
+
+            Stat::make(
+                __('vendor-portal.dashboard.wallet_balance'),
+                $data['walletBalance'],
+            )
+                ->description(__('vendor-portal.dashboard.available_balance'))
+                ->descriptionIcon('heroicon-o-wallet')
+                ->color('success')
+                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorWalletPage::getUrl()),
+
+            Stat::make(
+                __('vendor-portal.dashboard.upcoming_events'),
+                (string) $data['upcomingEvents'],
+            )
+                ->description(__('shared::panel.seven_days'))
+                ->descriptionIcon('heroicon-o-calendar')
+                ->color('info')
+                ->url(env('MINIMAL_FILAMENT_PANELS', false) ? '/vendor-portal' : VendorBookingsPage::getUrl(['statusFilter' => 'accepted'])),
+
             ...$serviceTypeStats,
         ];
     }

@@ -16,7 +16,7 @@ final class AdminEditProfile extends EditProfile
     protected function getPasswordFormComponent(): Component
     {
         return parent::getPasswordFormComponent()
-            ->rule(Password::min(8)->mixedCase()->numbers()->symbols());
+            ->rule(Password::min(12)->mixedCase()->numbers()->symbols());
     }
 
     /**

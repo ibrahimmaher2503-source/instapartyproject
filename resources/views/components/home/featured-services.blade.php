@@ -33,7 +33,8 @@
                             [(string) ($service->category?->code ?? ''), $categoryName, $serviceName],
                         );
                         $fallback = asset($fallbackPath);
-                        $mediaImage = $service->getFirstMediaUrl('gallery', 'medium');
+                        $media = $service->getFirstMedia('gallery');
+                        $mediaImage = $media ? app(App\Modules\Shared\Application\Services\PublicMediaUrl::class)->for($media, 'medium') : null;
                         $serviceImage = blank($mediaImage) ? $fallback : $mediaImage;
                         $serviceUrl = url('/'.app()->getLocale().'/services/'.$service->public_id);
                         $price = \Brick\Money\Money::ofMinor((int) $service->base_price_minor, (string) $service->base_price_currency)->formatTo(app()->getLocale());

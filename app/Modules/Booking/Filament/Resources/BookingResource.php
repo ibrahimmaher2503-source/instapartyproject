@@ -31,6 +31,7 @@ use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\Book
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\BookingStateTransitionsRelationManager;
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\BookingVendorsRelationManager;
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\PaymentsRelationManager;
+use App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
@@ -213,6 +214,8 @@ class BookingResource extends Resource
                             ->money('EGP', divideBy: 100),
                         TextEntry::make('amount_paid_minor')
                             ->label(__('booking.columns.amount_paid'))
+                            ->state(fn (Booking $record): int => app(BookingPaymentTotalsReader::class)
+                                ->forBooking($record->id, (string) $record->total_currency)['net_paid_minor'])
                             ->money('EGP', divideBy: 100)
                             ->icon('heroicon-m-credit-card')
                             ->size('lg')
@@ -220,6 +223,7 @@ class BookingResource extends Resource
                             ->color('info'),
                         TextEntry::make('guest_count')
                             ->label(__('booking.columns.guest_count'))
+                            ->placeholder('—')
                             ->icon('heroicon-m-user-group')
                             ->size('lg')
                             ->weight(FontWeight::SemiBold),
@@ -317,12 +321,20 @@ class BookingResource extends Resource
                             ->columnSpanFull()
                             ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name') ?? '#'.$record->occasion_id),
                         TextEntry::make('event_starts_at')
-                            ->label(__('booking.columns.event_starts_at'))
+                            ->label(fn (): string => __('booking.display_timezone', [
+                                'field' => __('booking.columns.event_starts_at'),
+                                'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                            ]))
                             ->icon('heroicon-m-calendar')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                             ->dateTime(),
                         TextEntry::make('event_ends_at')
-                            ->label(__('booking.columns.event_ends_at'))
+                            ->label(fn (): string => __('booking.display_timezone', [
+                                'field' => __('booking.columns.event_ends_at'),
+                                'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                            ]))
                             ->icon('heroicon-m-calendar-days')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                             ->dateTime(),
                         TextEntry::make('submitted_at')
                             ->label(__('booking.columns.submitted_at'))

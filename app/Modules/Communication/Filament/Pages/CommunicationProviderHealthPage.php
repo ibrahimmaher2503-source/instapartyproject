@@ -12,6 +12,8 @@ use App\Modules\Communication\Application\DTOs\TestEmailDTO;
 use App\Modules\Communication\Application\DTOs\TestPushDTO;
 use App\Modules\Communication\Application\DTOs\TestSmsDTO;
 use App\Modules\Communication\Application\DTOs\TestWhatsAppDTO;
+use App\Modules\Communication\Application\Services\MailReadiness;
+use App\Modules\Communication\Application\Services\ProviderSettingsResolver;
 use App\Modules\Communication\Domain\Enums\DispatchStatus;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
@@ -61,6 +63,15 @@ class CommunicationProviderHealthPage extends Page
             'cards' => collect($channels)
                 ->map(fn (NotificationChannel $channel): array => $this->providerCard($channel))
                 ->all(),
+            'setupChecklist' => [
+                ['label' => 'email', 'configured' => MailReadiness::configured()],
+                ['label' => 'sms', 'configured' => $this->isConfigured(NotificationChannel::Sms)],
+                ['label' => 'firebase', 'configured' => $this->isConfigured(NotificationChannel::Push)],
+                ['label' => 'paymob', 'configured' => filled(config('services.paymob.api_key'))
+                    && filled(config('services.paymob.hmac_secret')) && filled(config('services.paymob.integration_id'))
+                    && filled(config('services.paymob.iframe_id'))],
+                ['label' => 'whatsapp', 'configured' => false],
+            ],
         ];
     }
 
@@ -75,6 +86,7 @@ class CommunicationProviderHealthPage extends Page
 
         try {
             $sentCount = NotificationDispatch::query()
+                ->whereNotIn('provider_name', ['null', 'whatsapp_stub'])
                 ->forChannel($channel)
                 ->inLast24h()
                 ->withStatus(DispatchStatus::Sent)
@@ -85,6 +97,7 @@ class CommunicationProviderHealthPage extends Page
                 ->withStatus(DispatchStatus::Failed)
                 ->count();
             $lastSuccess = NotificationDispatch::query()
+                ->whereNotIn('provider_name', ['null', 'whatsapp_stub'])
                 ->forChannel($channel)
                 ->withStatus(DispatchStatus::Sent)
                 ->latest('sent_at')
@@ -104,20 +117,20 @@ class CommunicationProviderHealthPage extends Page
         $statusBadge = match (true) {
             ! $configured => 'not_configured',
             $failedCount > $sentCount => 'degraded',
-            $lastSuccess === null => 'unknown',
-            default => 'healthy',
+            default => 'unknown',
         };
 
         return [
             'channel' => $channel,
             'channelLabel' => __('communication.provider_health.channels.'.$channel->value),
             'configured' => $configured,
-            'isReachable' => $configured && $lastSuccess !== null,
+            'isReachable' => false,
             'latencyMs' => null,
             'note' => $lastFailure !== null
                 ? __('communication.provider_health.card.failure_recorded')
                 : null,
-            'providerName' => __('communication.provider_settings.providers.'.$channel->value),
+            'providerName' => $channel === NotificationChannel::Email
+                ? __('communication::setup.laravel_mail') : __('communication.provider_settings.providers.'.$channel->value),
             'sentLast24h' => $sentCount,
             'failedLast24h' => $failedCount,
             'lastSuccessAt' => $lastSuccess,
@@ -128,15 +141,15 @@ class CommunicationProviderHealthPage extends Page
 
     private function isConfigured(NotificationChannel $channel): bool
     {
+        $settings = app(ProviderSettingsResolver::class);
+        $firebase = $channel === NotificationChannel::Push ? $settings->firebase() : [];
+        $sms = $channel === NotificationChannel::Sms ? $settings->smsMisr() : [];
+
         return match ($channel) {
-            NotificationChannel::Push => filled(config('services.firebase.project_id'))
-                && filled(config('services.firebase.credentials')),
-            NotificationChannel::Sms => filled(config('services.sms_misr.username'))
-                && filled(config('services.sms_misr.password'))
-                && filled(config('services.sms_misr.sender')),
-            NotificationChannel::Whatsapp => filled(config('services.whatsapp.access_token'))
-                && filled(config('services.whatsapp.phone_number_id')),
-            NotificationChannel::Email => ! in_array(config('mail.default'), ['array', 'log'], true),
+            NotificationChannel::Push => ($firebase['enabled'] ?? false) && filled($firebase['project_id']) && filled($firebase['credentials']),
+            NotificationChannel::Sms => ($sms['enabled'] ?? false) && filled($sms['username']) && filled($sms['password']) && filled($sms['sender']),
+            NotificationChannel::Whatsapp => false,
+            NotificationChannel::Email => MailReadiness::configured(),
         };
     }
 
@@ -158,6 +171,7 @@ class CommunicationProviderHealthPage extends Page
                         ->maxLength(500),
                 ])
                 ->action(function (array $data) {
+                    abort_unless($this->canSendTest(NotificationChannel::Push), 403);
                     $dto = new TestPushDTO(
                         deviceToken: $data['device_token'],
                         adminUserId: auth()->id() ?? 0,
@@ -171,7 +185,7 @@ class CommunicationProviderHealthPage extends Page
                         ->send();
                 })
                 ->modalHeading(__('communication.provider_health.modal.send_test_push_heading'))
-                ->visible(fn () => auth()->user()?->can('send_test_notification')),
+                ->visible(fn () => $this->canSendTest(NotificationChannel::Push)),
 
             Action::make('send_test_sms')
                 ->label(__('communication.provider_health.channels.sms'))
@@ -187,6 +201,7 @@ class CommunicationProviderHealthPage extends Page
                         ->maxLength(500),
                 ])
                 ->action(function (array $data) {
+                    abort_unless($this->canSendTest(NotificationChannel::Sms), 403);
                     $dto = new TestSmsDTO(
                         phoneE164: $data['phone_e164'],
                         adminUserId: auth()->id() ?? 0,
@@ -200,7 +215,7 @@ class CommunicationProviderHealthPage extends Page
                         ->send();
                 })
                 ->modalHeading(__('communication.provider_health.modal.send_test_sms_heading'))
-                ->visible(fn () => auth()->user()?->can('send_test_notification')),
+                ->visible(fn () => $this->canSendTest(NotificationChannel::Sms)),
 
             Action::make('send_test_whatsapp')
                 ->label(__('communication.provider_health.channels.whatsapp'))
@@ -216,6 +231,7 @@ class CommunicationProviderHealthPage extends Page
                         ->maxLength(500),
                 ])
                 ->action(function (array $data) {
+                    abort_unless($this->canSendTest(NotificationChannel::Whatsapp), 403);
                     $dto = new TestWhatsAppDTO(
                         phoneE164: $data['phone_e164'],
                         adminUserId: auth()->id() ?? 0,
@@ -229,7 +245,7 @@ class CommunicationProviderHealthPage extends Page
                         ->send();
                 })
                 ->modalHeading(__('communication.provider_health.modal.send_test_whatsapp_heading'))
-                ->visible(fn () => auth()->user()?->can('send_test_notification')),
+                ->visible(fn () => $this->canSendTest(NotificationChannel::Whatsapp)),
 
             Action::make('send_test_email')
                 ->label(__('communication.provider_health.channels.email'))
@@ -248,6 +264,7 @@ class CommunicationProviderHealthPage extends Page
                         ->maxLength(500),
                 ])
                 ->action(function (array $data) {
+                    abort_unless($this->canSendTest(NotificationChannel::Email), 403);
                     $dto = new TestEmailDTO(
                         emailAddress: $data['email_address'],
                         adminUserId: auth()->id() ?? 0,
@@ -262,7 +279,14 @@ class CommunicationProviderHealthPage extends Page
                         ->send();
                 })
                 ->modalHeading(__('communication.provider_health.modal.send_test_email_heading'))
-                ->visible(fn () => auth()->user()?->can('send_test_notification')),
+                ->visible(fn () => $this->canSendTest(NotificationChannel::Email)),
         ];
+    }
+
+    private function canSendTest(NotificationChannel $channel): bool
+    {
+        return ! app()->environment(['local', 'testing']) && static::canAccess()
+            && auth()->user()?->status === 'active' && auth()->user()?->can('send_test_notification') === true
+            && $this->isConfigured($channel);
     }
 }

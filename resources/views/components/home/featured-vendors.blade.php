@@ -27,9 +27,7 @@
                             ->take(2)
                             ->map(static fn (string $part): string => mb_substr($part, 0, 1))
                             ->implode('');
-                        $logo = $vendor->logo_path
-                            ? Illuminate\Support\Facades\Storage::disk('public')->url($vendor->logo_path)
-                            : null;
+                        $logo = app(App\Modules\Shared\Application\Services\PublicMediaUrl::class)->publicPath($vendor->logo_path);
                         $profileUrl = route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]);
                     @endphp
                     <li>

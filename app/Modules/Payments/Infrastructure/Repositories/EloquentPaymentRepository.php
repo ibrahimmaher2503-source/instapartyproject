@@ -41,7 +41,7 @@ class EloquentPaymentRepository
     public function findActiveCaptureForBooking(int $bookingId): ?Payment
     {
         return Payment::query()
-            ->whereState('status', CapturedState::class)
+            ->whereIn('status', ['captured', 'partially_refunded'])
             ->where('booking_id', $bookingId)
             ->latest('id')
             ->first();

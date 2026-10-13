@@ -94,7 +94,11 @@ class VendorBookingDetailPage extends Page implements HasInfolists
                             TextEntry::make('booking.reference_no')
                                 ->label(__('vendor-portal.bookings.reference')),
                             TextEntry::make('booking.event_starts_at')
-                                ->label(__('vendor-portal.bookings.event_date'))
+                                ->label(fn (): string => __('booking.display_timezone', [
+                                    'field' => __('vendor-portal.bookings.event_date'),
+                                    'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                                ]))
+                                ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                                 ->dateTime('d M Y, H:i'),
                             TextEntry::make('booking.customer.name')
                                 ->label(__('vendor-portal.bookings.customer')),

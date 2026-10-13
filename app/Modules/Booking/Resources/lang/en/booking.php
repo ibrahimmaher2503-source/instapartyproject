@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'display_timezone' => ':field (Timezone: :timezone)',
     'sub_status' => 'Vendor status',
     'vendor_total' => 'Vendor total',
     'nav' => [
@@ -171,6 +172,13 @@ return [
         'transportation_line_added' => 'Transportation line added and totals recalculated.',
     ],
     'invoice' => [
+        'currency_mismatch' => 'The recorded invoice components use different currencies and cannot be combined.',
+        'item_subtotal' => 'Item subtotal',
+        'recorded_subtotal_adjustment' => 'Recorded subtotal adjustment (reason not stored)',
+        'recorded_delivery_adjustment' => 'Recorded delivery adjustment (reason not stored)',
+        'recorded_total_adjustment' => 'Recorded total adjustment (reason not stored)',
+        'recorded_vat' => 'Recorded VAT amount',
+        'tax_context' => 'Tax amounts are shown as recorded. This booking document does not assign a tax rate or certify a tax invoice.',
         'title' => 'Booking invoice',
         'print' => 'Print invoice',
         'customer' => 'Customer',
@@ -179,6 +187,15 @@ return [
         'item' => 'Item',
         'amount' => 'Amount',
         'vendor_delivery' => 'Vendor delivery',
+        'discount' => 'Booking discount',
+        'loyalty_redemption' => 'Loyalty redemption',
+        'booking_reference' => 'Booking reference',
+        'document_reference' => 'Document reference (booking reference)',
+        'vendor' => 'Vendor',
+        'invoice_name' => 'Invoice recipient',
+        'invoice_tax_id' => 'Tax ID',
+        'no_tax_details_recorded' => 'No tax details recorded for this booking',
+        'payment_status' => 'Payment status',
     ],
 
     'empty_states' => [
