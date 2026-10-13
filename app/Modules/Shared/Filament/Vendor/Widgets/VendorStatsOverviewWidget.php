@@ -93,7 +93,7 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
                 ->where('currency', 'EGP')
                 ->first();
 
-            $balanceMinor = $wallet ? max(0, $wallet->balance_minor - $wallet->pending_withdrawal_minor) : 0;
+            $balanceMinor = $wallet ? max(0, $wallet->balance_minor) : 0;
 
             $revenueThisMonthMinor = BookingVendor::query()
                 ->where('vendor_profile_id', $vendorId)
@@ -133,7 +133,14 @@ class VendorStatsOverviewWidget extends StatsOverviewWidget
             ];
         });
 
+        /** @var list<string> $approvedProductTypes */
+        $approvedProductTypes = $vendorProfile->approvedTypes()
+            ->pluck('product_type')
+            ->map(static fn (mixed $type): string => $type instanceof ProductType ? $type->value : (string) $type)
+            ->all();
+
         $serviceTypeStats = collect(ProductType::cases())
+            ->filter(fn (ProductType $type): bool => in_array($type->value, $approvedProductTypes, true))
             ->filter(fn (ProductType $type): bool => $type !== ProductType::Digital || config('catalog.digital_services_enabled', false))
             ->map(function (ProductType $type) use ($data): Stat {
                 $resource = match ($type) {

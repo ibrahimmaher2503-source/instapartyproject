@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Application\Services;
 
 use App\Modules\Identity\Application\DTOs\VendorApprovalEligibilityResult;
+use App\Modules\Identity\Application\Support\MaskBankData;
 use App\Modules\Identity\Domain\Enums\BusinessType;
 use App\Modules\Identity\Domain\Enums\DocumentStatus;
 use App\Modules\Identity\Domain\Enums\DocumentType;
@@ -38,9 +39,9 @@ final class VendorApprovalEligibilityService
                 && $vendor->primaryCity()
                     ->where('governorate_id', $vendor->primary_governorate_id)
                     ->exists(),
-            'banking' => filled($vendor->bank_name)
-                && filled($vendor->bank_account_holder)
-                && filled($vendor->bank_iban),
+            'banking' => ! MaskBankData::isAbsent($vendor->bank_name)
+                && ! MaskBankData::isAbsent($vendor->bank_account_holder)
+                && ! MaskBankData::isAbsent($vendor->bank_iban),
             'hours' => $vendor->businessHours()->exists(),
             'coverage' => $vendor->coverageAreas()->exists(),
             'documents' => $this->hasValidRequiredDocuments($vendor, $businessType, $asOf),

@@ -9,6 +9,7 @@ use App\Modules\Communication\Domain\Enums\DispatchStatus;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Filament\Resources\NotificationDispatchResource\Pages\ListNotificationDispatches;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
@@ -74,7 +75,19 @@ class NotificationDispatchResource extends Resource
                 TextColumn::make('public_id')
                     ->label(__('communication.columns.public_id'))
                     ->copyable()
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, ['' => ['public_id', 'provider_ref', 'provider_message_id']]);
+                        $userType = 'App\\Modules\\Identity\\Domain\\Models\\User';
+                        $match->orWhereIn('user_id', ReferenceSearch::apply($userType::query(), $search, [
+                            '' => ['public_id', 'name', 'email', 'phone_e164'],
+                        ])->select('id'));
+                        $bookingType = 'App\\Modules\\Booking\\Domain\\Models\\Booking';
+                        $match->orWhere(fn (Builder $reference): Builder => $reference
+                            ->whereIn('reference_type', ['booking', $bookingType])
+                            ->whereIn('reference_id', ReferenceSearch::apply($bookingType::query(), $search, [
+                                '' => ['public_id', 'reference_no'],
+                            ])->select('id')));
+                    })),
                 TextColumn::make('template.event_key')
                     ->label(__('communication.columns.template'))
                     ->badge()

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Support\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use App\Modules\Support\Application\Actions\TransitionSupportTicketStatusAction;
 use App\Modules\Support\Domain\Enums\SupportTicketStatus;
 use App\Modules\Support\Domain\Models\SupportTicket;
@@ -21,6 +22,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
 
 class SupportTicketResource extends Resource
 {
@@ -86,7 +88,16 @@ class SupportTicketResource extends Resource
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('support::support.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, [
+                            '' => ['public_id', 'email', 'subject'],
+                            'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        ]);
+                        $match->orWhereIn('booking_id', fn ($bookings) => $bookings->select('id')->from('bookings')->where(function ($references) use ($search): void {
+                            $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $search).'%';
+                            $references->whereRaw("public_id LIKE ? ESCAPE '!'", [$pattern])->orWhereRaw("reference_no LIKE ? ESCAPE '!'", [$pattern]);
+                        }));
+                    }))
                     ->copyable()
                     ->limit(14)
                     ->tooltip(fn (SupportTicket $record): string => $record->public_id),

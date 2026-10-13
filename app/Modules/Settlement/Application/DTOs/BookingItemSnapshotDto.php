@@ -18,5 +18,8 @@ final readonly class BookingItemSnapshotDto
         public int $totalMinor,
         public string $totalCurrency,
         public ?int $commissionBps,
+        public ?int $bookingVendorId = null,
+        public int $deliveryFeeMinor = 0,
+        public ?string $deliveryFeeCurrency = null,
     ) {}
 }

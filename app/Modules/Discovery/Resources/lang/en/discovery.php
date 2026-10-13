@@ -74,6 +74,10 @@ return [
     ],
 
     'package_recommendations' => [
+        'name_en' => 'Name (EN)',
+        'description_en' => 'Description (EN)',
+        'name_ar' => 'Name (AR)',
+        'description_ar' => 'Description (AR)',
         'nav' => 'Homepage Packages',
         'singular' => 'Homepage Package',
         'plural' => 'Homepage Packages',

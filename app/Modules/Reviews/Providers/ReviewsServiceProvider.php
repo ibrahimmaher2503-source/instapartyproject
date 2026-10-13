@@ -7,6 +7,7 @@ namespace App\Modules\Reviews\Providers;
 use App\Modules\Reviews\Application\Commands\SendDailyReviewSummaryCommand;
 use App\Modules\Reviews\Application\Listeners\RecomputeRatingOnApproval;
 use App\Modules\Reviews\Application\Timeline\ReviewTimelineDescriptors;
+use App\Modules\Reviews\Domain\Contracts\CustomerReviewReader;
 use App\Modules\Reviews\Domain\Contracts\ReviewModerationLogRepository;
 use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
 use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
@@ -14,14 +15,18 @@ use App\Modules\Reviews\Domain\Events\ReviewApproved;
 use App\Modules\Reviews\Domain\Events\ReviewHidden;
 use App\Modules\Reviews\Domain\Events\ReviewRejected;
 use App\Modules\Reviews\Domain\Events\ReviewSelfDeleted;
+use App\Modules\Reviews\Domain\Models\ReviewResponse;
 use App\Modules\Reviews\Domain\Models\ServiceReview;
 use App\Modules\Reviews\Domain\Models\VendorReview;
+use App\Modules\Reviews\Domain\Policies\ReviewResponsePolicy;
+use App\Modules\Reviews\Infrastructure\Repositories\EloquentCustomerReviewReader;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentReviewModerationLogRepository;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentServiceReviewRepository;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentVendorReviewRepository;
 use App\Modules\Shared\Application\Timeline\TimelineSourceRegistry;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +34,7 @@ class ReviewsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(CustomerReviewReader::class, EloquentCustomerReviewReader::class);
         $this->app->singleton(ServiceReviewRepository::class, EloquentServiceReviewRepository::class);
         $this->app->singleton(VendorReviewRepository::class, EloquentVendorReviewRepository::class);
         $this->app->singleton(ReviewModerationLogRepository::class, EloquentReviewModerationLogRepository::class);
@@ -36,6 +42,8 @@ class ReviewsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(ReviewResponse::class, ReviewResponsePolicy::class);
+
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'reviews');
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'reviews');

@@ -20,6 +20,8 @@ class ImpersonationBannerWidget extends Widget
 
     public string $startedAt = '';
 
+    public string $expiresAt = '';
+
     public bool $isImpersonating = false;
 
     public function mount(): void
@@ -31,6 +33,10 @@ class ImpersonationBannerWidget extends Widget
             $startedAt = session('impersonation_started_at');
             $this->startedAt = $startedAt
                 ? Carbon::parse($startedAt)->format('d M Y, H:i')
+                : '';
+            $expiresAt = session('impersonation_expires_at');
+            $this->expiresAt = $expiresAt
+                ? Carbon::parse($expiresAt)->format('d M Y, H:i')
                 : '';
         }
     }

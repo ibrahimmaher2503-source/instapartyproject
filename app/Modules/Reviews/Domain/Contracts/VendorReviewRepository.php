@@ -24,6 +24,12 @@ interface VendorReviewRepository
     /** @return array{average: float, count: int} */
     public function aggregateApprovedForVendor(int $vendorProfileId): array;
 
+    /**
+     * @param  list<int>  $vendorProfileIds
+     * @return array<int, array{average: float, count: int, featured_review: ?array{rating: int, body: string, reviewer_first_name: ?string, created_at: string}}>
+     */
+    public function publicSummariesForVendors(array $vendorProfileIds): array;
+
     public function softDelete(VendorReview $review): void;
 
     public function transition(VendorReview $review, string $toStatus, int $moderatorId): void;

@@ -8,6 +8,7 @@ use App\Modules\Reviews\Application\DTOs\SubmitReviewData;
 use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
 use App\Modules\Reviews\Domain\Enums\ModerationStatus;
 use App\Modules\Reviews\Domain\Models\VendorReview;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class EloquentVendorReviewRepository implements VendorReviewRepository
@@ -90,6 +91,77 @@ class EloquentVendorReviewRepository implements VendorReviewRepository
             'average' => round((float) ($result->average ?? 0), 2),
             'count' => (int) ($result->count ?? 0),
         ];
+    }
+
+    public function publicSummariesForVendors(array $vendorProfileIds): array
+    {
+        $vendorProfileIds = array_values(array_unique(array_filter(
+            array_map(static fn (mixed $id): int => (int) $id, $vendorProfileIds),
+            static fn (int $id): bool => $id > 0,
+        )));
+
+        if ($vendorProfileIds === []) {
+            return [];
+        }
+
+        $aggregates = VendorReview::query()
+            ->whereIn('vendor_profile_id', $vendorProfileIds)
+            ->where('moderation_status', ModerationStatus::Approved->value)
+            ->selectRaw('vendor_profile_id, AVG(rating) as average, COUNT(*) as count')
+            ->groupBy('vendor_profile_id')
+            ->get()
+            ->keyBy('vendor_profile_id');
+
+        $rankedReviews = VendorReview::query()
+            ->whereIn('vendor_profile_id', $vendorProfileIds)
+            ->where('moderation_status', ModerationStatus::Approved->value)
+            ->whereNotNull('body')
+            ->select(['id', 'vendor_profile_id'])
+            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY vendor_profile_id ORDER BY rating DESC, id DESC) AS vendor_review_rank');
+
+        $featuredReviewIds = DB::query()
+            ->fromSub($rankedReviews->toBase(), 'ranked_vendor_reviews')
+            ->where('vendor_review_rank', 1)
+            ->pluck('id');
+
+        $featuredReviews = $featuredReviewIds->isEmpty()
+            ? collect()
+            : VendorReview::query()
+                ->join('users as featured_reviewers', 'featured_reviewers.id', '=', 'vendor_reviews.user_id')
+                ->whereKey($featuredReviewIds)
+                ->get([
+                    'vendor_reviews.vendor_profile_id',
+                    'vendor_reviews.rating',
+                    'vendor_reviews.body',
+                    'vendor_reviews.created_at',
+                    'featured_reviewers.name as reviewer_name',
+                ])
+                ->mapWithKeys(function (VendorReview $review): array {
+                    $reviewerName = trim((string) $review->reviewer_name);
+
+                    return [(int) $review->vendor_profile_id => [
+                        'rating' => (int) $review->rating,
+                        'body' => (string) $review->body,
+                        'reviewer_first_name' => $reviewerName === ''
+                            ? null
+                            : (preg_split('/\s+/', $reviewerName)[0] ?? null),
+                        'created_at' => (string) $review->getRawOriginal('created_at'),
+                    ]];
+                });
+
+        $summaries = [];
+
+        foreach ($vendorProfileIds as $vendorProfileId) {
+            $aggregate = $aggregates->get($vendorProfileId);
+
+            $summaries[$vendorProfileId] = [
+                'average' => round((float) ($aggregate->average ?? 0), 2),
+                'count' => (int) ($aggregate->count ?? 0),
+                'featured_review' => $featuredReviews->get($vendorProfileId),
+            ];
+        }
+
+        return $summaries;
     }
 
     public function softDelete(VendorReview $review): void

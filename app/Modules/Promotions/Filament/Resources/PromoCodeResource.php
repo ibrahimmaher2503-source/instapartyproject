@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Promotions\Filament\Resources;
 
+use App\Modules\Promotions\Application\Actions\DeleteUnusedPromoCodeAction;
 use App\Modules\Promotions\Domain\Enums\PromoCodeScope;
 use App\Modules\Promotions\Domain\Enums\PromoCodeType;
 use App\Modules\Promotions\Domain\Models\PromoCode;
@@ -17,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
@@ -60,19 +62,19 @@ class PromoCodeResource extends Resource
                         ->minValue(1)
                         ->maxValue(100)
                         ->label('Discount Percent (%)')
-                        ->visible(fn (Forms\Components\Utilities\Get $get) => $get('type') === PromoCodeType::Percentage->value),
+                        ->visible(fn (Forms\Get $get) => $get('type') === PromoCodeType::Percentage->value),
 
                     TextInput::make('discount_minor')
                         ->numeric()
                         ->minValue(1)
                         ->label('Discount Amount (piastres)')
-                        ->visible(fn (Forms\Components\Utilities\Get $get) => $get('type') === PromoCodeType::Fixed->value),
+                        ->visible(fn (Forms\Get $get) => $get('type') === PromoCodeType::Fixed->value),
 
                     TextInput::make('max_discount_minor')
                         ->numeric()
                         ->label('Max Discount Cap (piastres)')
                         ->helperText('Leave empty for uncapped percentage discounts.')
-                        ->visible(fn (Forms\Components\Utilities\Get $get) => $get('type') === PromoCodeType::Percentage->value),
+                        ->visible(fn (Forms\Get $get) => $get('type') === PromoCodeType::Percentage->value),
                 ])
                 ->columns(2),
 
@@ -89,7 +91,7 @@ class PromoCodeResource extends Resource
                         ->numeric()
                         ->label('Scope Entity ID')
                         ->helperText('Vendor / Category / Service ID for non-platform codes.')
-                        ->visible(fn (Forms\Components\Utilities\Get $get) => $get('scope') !== PromoCodeScope::Platform->value),
+                        ->visible(fn (Forms\Get $get) => $get('scope') !== PromoCodeScope::Platform->value),
 
                     TextInput::make('min_order_minor')
                         ->numeric()
@@ -175,7 +177,14 @@ class PromoCodeResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn (PromoCode $record): bool => $record->is_active)
                     ->action(fn (PromoCode $record) => $record->update(['is_active' => false])),
-                DeleteAction::make(),
+                DeleteAction::make()->using(function (PromoCode $record): bool {
+                    $deleted = app(DeleteUnusedPromoCodeAction::class)->execute($record);
+                    if (! $deleted) {
+                        Notification::make()->warning()->title(__('promotions::promotions.used_code_cannot_delete'))->send();
+                    }
+
+                    return $deleted;
+                }),
             ])
             ->defaultSort('created_at', 'desc');
     }

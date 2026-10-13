@@ -11,6 +11,7 @@ use App\Modules\Settlement\Application\DTOs\MarkWithdrawalPaidInput;
 use App\Modules\Settlement\Domain\Enums\WithdrawalStatus;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource\Pages\ListWithdrawalsQueue;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
@@ -146,7 +147,11 @@ class WithdrawalsQueueResource extends Resource
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'bank_transfer_reference'],
+                        'vendorProfile' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->copyable()
                     ->limit(14)
                     ->tooltip(fn (Withdrawal $record): string => $record->public_id),
@@ -348,7 +353,7 @@ class WithdrawalsQueueResource extends Resource
                                 ->send();
                         })
                         ->visible(fn (Withdrawal $record): bool => $record->getRawOriginal('status') === WithdrawalStatus::Pending->value
-                            && auth()->user()?->can('reject_withdrawal')
+                            && auth()->user()?->can('settlement.reject_withdrawal')
                         ),
                 ])
                     ->tooltip(__('admin.actions.more')),

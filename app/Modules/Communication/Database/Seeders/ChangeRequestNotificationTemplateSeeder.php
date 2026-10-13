@@ -75,6 +75,17 @@ final class ChangeRequestNotificationTemplateSeeder extends Seeder
                 'variables' => ['subject_type', 'cycle_number', 'change_request_link'],
             ],
             [
+                'event_key' => 'vendor.changes_requested',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Vendor,
+                'subject' => ['en' => 'Changes requested for your vendor profile', 'ar' => 'مطلوب إجراء تغييرات على ملفك التجاري'],
+                'body' => [
+                    'en' => "Changes requested for your vendor profile:\n{{requested_changes}}",
+                    'ar' => "التغييرات المطلوبة على ملفك التجاري:\n{{requested_changes}}",
+                ],
+                'variables' => ['requested_changes'],
+            ],
+            [
                 'event_key' => 'vendor.resubmitted',
                 'channel' => NotificationChannel::Push,
                 'audience' => NotificationAudience::Vendor,

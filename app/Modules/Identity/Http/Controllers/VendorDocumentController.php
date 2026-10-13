@@ -43,7 +43,7 @@ class VendorDocumentController extends Controller
         return ApiResponse::success(new VendorDocumentResource($document), [], 201);
     }
 
-    /** Vendor-portal 3.4 — delete a document (rejected-only per ADR-0021; existing action). */
+    /** Delete an owned pending or rejected document; approved documents are protected. */
     public function destroy(Request $request, string $publicId, DeleteVendorDocumentAction $action): JsonResponse
     {
         $vendorProfile = $this->vendorProfileForUser($request->user());

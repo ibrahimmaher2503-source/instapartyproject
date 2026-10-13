@@ -16,5 +16,6 @@ class InitiateRefundDto extends Data
         public RefundReasonCode $reasonCode,
         public array $reasonNotes,
         public ?int $requestedAmountMinor = null,
+        public ?string $idempotencyKey = null,
     ) {}
 }

@@ -6,6 +6,7 @@ namespace App\Modules\Identity\Filament\Resources;
 
 use App\Modules\Identity\Domain\Models\CustomerProfile;
 use App\Modules\Identity\Filament\Resources\CustomerProfileResource\Pages\ListCustomerProfiles;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -66,7 +67,9 @@ class CustomerProfileResource extends Resource
             ->columns([
                 TextColumn::make('user.name')
                     ->label(__('identity.columns.name'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->sortable(),
                 TextColumn::make('user.email')
                     ->label(__('identity.columns.email'))

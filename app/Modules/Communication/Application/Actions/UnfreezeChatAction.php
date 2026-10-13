@@ -30,6 +30,8 @@ final readonly class UnfreezeChatAction
 
     public function execute(ChatThread $thread, UnfreezeChatDTO $dto, User $actor): ChatThread
     {
+        abort_unless($actor->can('chat_moderation.unfreeze'), 403);
+
         return DB::transaction(function () use ($thread, $dto, $actor): ChatThread {
             /** @var ChatThread $thread */
             $thread = ChatThread::query()->lockForUpdate()->findOrFail($thread->id);

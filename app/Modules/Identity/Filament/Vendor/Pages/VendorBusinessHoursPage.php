@@ -70,15 +70,18 @@ class VendorBusinessHoursPage extends Page implements HasForms
                         Toggle::make("day_{$day->value}_open")
                             ->label(__('vendor-portal.business_hours.open'))
                             ->live()
-                            ->default($day !== DayOfWeek::Friday),
+                            ->default(false),
                         TimePicker::make("day_{$day->value}_opens_at")
                             ->label(__('vendor-portal.business_hours.opens_at'))
                             ->seconds(false)
+                            ->required(fn (callable $get): bool => (bool) $get("day_{$day->value}_open"))
                             ->visible(fn (callable $get) => (bool) $get("day_{$day->value}_open"))
                             ->default('09:00'),
                         TimePicker::make("day_{$day->value}_closes_at")
                             ->label(__('vendor-portal.business_hours.closes_at'))
+                            ->helperText(__('vendor-portal.business_hours.overnight_hint'))
                             ->seconds(false)
+                            ->required(fn (callable $get): bool => (bool) $get("day_{$day->value}_open"))
                             ->visible(fn (callable $get) => (bool) $get("day_{$day->value}_open"))
                             ->default('22:00'),
                     ]),

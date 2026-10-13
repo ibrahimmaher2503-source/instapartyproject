@@ -59,6 +59,12 @@ return [
         'hidden' => 'مخفي',
     ],
 
+    'response' => [
+        'body' => 'الرد',
+        'status' => 'حالة الرد',
+        'not_submitted' => 'لم يتم الرد بعد',
+    ],
+
     'review_type' => [
         'service' => 'تقييم خدمة',
         'vendor' => 'تقييم مورد',
@@ -82,6 +88,8 @@ return [
     ],
 
     'actions' => [
+        'respond' => 'رد',
+        'edit_response' => 'تعديل الرد',
         'approve' => 'قبول',
         'reject' => 'رفض',
         'hide' => 'إخفاء',

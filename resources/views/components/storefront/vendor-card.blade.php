@@ -1,4 +1,4 @@
-@props(['vendor'])
+@props(['vendor', 'reviewSummary' => null])
 
 @php
     $text = app(App\Modules\Shared\Application\Services\StorefrontText::class);
@@ -37,7 +37,7 @@
             @if ($city)
                 <p class="text-sm text-ink-600">{{ $city }}</p>
             @endif
-            <x-storefront.vendor-rating :vendor="$vendor" class="text-accent-600" />
+            <x-storefront.vendor-public-reviews :summary="$reviewSummary" class="text-accent-600" />
             @if ($bio)
                 <p class="line-clamp-2 text-sm leading-6 text-ink-600">{{ $bio }}</p>
             @endif

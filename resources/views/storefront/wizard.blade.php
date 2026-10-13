@@ -207,10 +207,14 @@
                                     type="number"
                                     name="guest_count"
                                     min="1"
+                                    max="10000"
+                                    step="1"
+                                    aria-describedby="planner-guest-count-hint"
                                     value="{{ old('guest_count', request('guest_count')) }}"
                                     placeholder="{{ __('storefront.wizard.step3.guests_placeholder') }}"
                                     class="sf-field sf-wizard-field"
                                 >
+                                <small id="planner-guest-count-hint">{{ __('storefront.wizard.step3.guests_max_hint') }}</small>
                             </label>
                             <label class="sf-wizard-field-card">
                                 <span class="sf-wizard-field-label">{{ __('storefront.wizard.step3.notes_label') }}</span>

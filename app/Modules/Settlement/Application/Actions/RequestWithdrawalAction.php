@@ -55,10 +55,9 @@ class RequestWithdrawalAction
                 $wallet = Wallet::query()->lockForUpdate()->findOrFail($wallet->id);
             }
 
-            [$balanceMinor, $pendingMinor] = $wallet instanceof Wallet
-                ? [$wallet->balance_minor, $wallet->pending_withdrawal_minor]
-                : [0, 0];
-            $availableMinor = (int) max(0, $balanceMinor - $pendingMinor);
+            $balanceMinor = $wallet?->balance_minor ?? 0;
+            // Withdrawal reserve debits are already included in the ledger balance.
+            $availableMinor = (int) max(0, $balanceMinor);
 
             if ($balanceMinor < 0) {
                 throw new RuntimeException(__('settlement::settlement.errors.negative_balance_blocked'));

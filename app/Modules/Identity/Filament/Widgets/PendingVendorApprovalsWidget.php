@@ -22,7 +22,7 @@ class PendingVendorApprovalsWidget extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->can('view_any_vendor_profile') ?? false;
+        return auth()->user()?->can('view_any_vendor::profile') ?? false;
     }
 
     protected function getStats(): array

@@ -10,7 +10,7 @@ final class CategoryFieldSchemaDTO
 {
     /**
      * @param  array<string, string>  $fieldLabel
-     * @param  array<int, string>|null  $options
+     * @param  list<array{value: string, label: array{en: string, ar: string}}>|null  $options
      * @param  array<int, string>|null  $validationRules
      */
     public function __construct(

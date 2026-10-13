@@ -6,6 +6,7 @@ namespace App\Modules\Payments\Filament\Resources;
 
 use App\Modules\Payments\Domain\Models\PaymentAttempt;
 use App\Modules\Payments\Filament\Resources\PaymentAttemptResource\Pages\ListPaymentAttempts;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -66,7 +67,13 @@ class PaymentAttemptResource extends Resource
                 TextColumn::make('payment.public_id')
                     ->label(__('payments.columns.payment'))
                     ->copyable()
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'payment' => ['public_id', 'gateway_ref'],
+                        'payment.booking' => ['public_id', 'reference_no'],
+                        'payment.booking.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'payment.booking.vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'payment.booking.vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('attempt_no')
                     ->label(__('payments.columns.attempt_no'))
                     ->sortable(),

@@ -12,6 +12,7 @@ use App\Modules\Booking\Filament\Resources\BookingModificationResource\Pages\Vie
 use App\Modules\Shared\Application\Services\StorefrontText;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Brick\Money\Money;
 use Carbon\CarbonInterval;
 use Filament\Infolists\Components\Grid;
@@ -80,8 +81,13 @@ class BookingModificationResource extends Resource
                     ->label(__('booking.columns.public_id'))
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(query: fn (Builder $query, string $search): Builder => $query
-                        ->where('public_id', 'like', '%'.self::escapeLike($search).'%')),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'bookingVendor.booking' => ['public_id', 'reference_no'],
+                        'bookingVendor.booking.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'bookingVendor.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'bookingVendor.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('bookingVendor.booking.reference_no')
                     ->label(__('booking.columns.reference_no'))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(

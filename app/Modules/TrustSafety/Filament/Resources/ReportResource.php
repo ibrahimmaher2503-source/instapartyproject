@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\TrustSafety\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use App\Modules\TrustSafety\Application\Actions\DismissReportAction;
 use App\Modules\TrustSafety\Application\Actions\MarkReportUnderReviewAction;
 use App\Modules\TrustSafety\Application\Actions\ResolveReportAction;
@@ -19,6 +20,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReportResource extends Resource
 {
@@ -37,7 +39,19 @@ class ReportResource extends Resource
             ->columns([
                 TextColumn::make('reporter.name')
                     ->label('Reporter')
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, [
+                            '' => ['public_id'],
+                            'reporter' => ['public_id', 'name', 'email', 'phone_e164'],
+                        ]);
+                        $vendorType = 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile';
+                        $match->orWhere(fn (Builder $target): Builder => $target
+                            ->whereIn('reportable_type', ['vendor', 'vendor_profile', $vendorType])
+                            ->whereIn('reportable_id', ReferenceSearch::apply($vendorType::query(), $search, [
+                                '' => ['public_id', 'business_name->en', 'business_name->ar'],
+                                'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                            ])->select('id')));
+                    })),
 
                 TextColumn::make('reportable_type')
                     ->badge()

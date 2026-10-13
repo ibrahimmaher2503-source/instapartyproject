@@ -12,11 +12,11 @@ use App\Modules\Identity\Application\DTOs\VendorOnboardingChecklistItemDTO;
 use App\Modules\Identity\Domain\Enums\BusinessType;
 use App\Modules\Identity\Domain\Enums\ChecklistItemStatus;
 use App\Modules\Identity\Domain\Enums\DocumentStatus;
+use App\Modules\Identity\Domain\Enums\DocumentType;
 use App\Modules\Identity\Domain\Enums\RejectionState;
 use App\Modules\Identity\Domain\Enums\VendorOnboardingChecklistItemKey;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
-use App\Modules\Identity\Filament\Vendor\Pages\VendorAccountPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorBusinessHoursPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorCoverageAreasPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorDocumentsPage;
@@ -68,8 +68,11 @@ class VendorOnboardingChecklistService
         $latestDocsByType = $vendor->documents()
             ->whereIn('doc_type', $requiredTypes)
             ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->get()
-            ->groupBy('doc_type')
+            ->groupBy(fn ($document): string => $document->doc_type instanceof DocumentType
+                ? $document->doc_type->value
+                : (string) $document->doc_type)
             ->map(fn (Collection $docs) => $docs->first());
 
         $approvedTypeRows = $vendor->approvedTypes()->get();
@@ -186,7 +189,7 @@ class VendorOnboardingChecklistService
             status: $complete ? ChecklistItemStatus::Complete : ChecklistItemStatus::Pending,
             label: __('identity::vendor-onboarding.rows.banking.label'),
             subText: null,
-            url: $complete ? null : $this->safeUrl(fn () => VendorAccountPage::getUrl()),
+            url: $complete ? null : $this->safeUrl(fn () => VendorProfilePage::getUrl()),
         );
     }
 
@@ -208,56 +211,28 @@ class VendorOnboardingChecklistService
     private function docsApprovedItem(VendorProfile $vendor, array $requiredTypes, Collection $latestDocsByType, bool $eligible): VendorOnboardingChecklistItemDTO
     {
         $now = Carbon::now();
+        $statuses = collect($requiredTypes)->map(function (string $type) use ($latestDocsByType, $now): ChecklistItemStatus {
+            $document = $latestDocsByType->get($type);
+
+            if ($document === null) {
+                return ChecklistItemStatus::Pending;
+            }
+
+            return match ($document->status) {
+                DocumentStatus::Rejected => ChecklistItemStatus::Danger,
+                DocumentStatus::Pending => ChecklistItemStatus::Info,
+                DocumentStatus::Approved => $document->expires_at !== null
+                    && Carbon::parse($document->expires_at->toDateString(), config('app.timezone', 'UTC'))->endOfDay()->lt($now)
+                        ? ChecklistItemStatus::Warning
+                        : ChecklistItemStatus::Complete,
+            };
+        });
+
         $status = $eligible ? ChecklistItemStatus::Complete : ChecklistItemStatus::Pending;
-
-        foreach ($requiredTypes as $type) {
-            $doc = $latestDocsByType->get($type);
-
-            if (! $doc) {
-                $status = ChecklistItemStatus::Pending;
+        foreach ([ChecklistItemStatus::Danger, ChecklistItemStatus::Warning, ChecklistItemStatus::Pending, ChecklistItemStatus::Info] as $candidate) {
+            if ($statuses->contains($candidate)) {
+                $status = $candidate;
                 break;
-            }
-
-            $docStatus = $doc->status instanceof DocumentStatus
-                ? $doc->status->value
-                : (string) $doc->status;
-
-            if ($docStatus === 'rejected') {
-                $status = ChecklistItemStatus::Danger;
-                break;
-            }
-
-            if ($docStatus === 'pending') {
-                $status = ChecklistItemStatus::Info;
-
-                // don't break — a rejected doc takes precedence if found later
-                continue;
-            }
-
-            if ($docStatus === 'approved') {
-                if ($doc->expires_at !== null && Carbon::parse($doc->expires_at, config('app.timezone', 'UTC'))->endOfDay()->lt($now)) {
-                    $status = ChecklistItemStatus::Warning;
-
-                    continue;
-                }
-                // approved and not expired — this type is fine
-                if ($status === ChecklistItemStatus::Pending) {
-                    $status = ChecklistItemStatus::Complete;
-                }
-            }
-        }
-
-        // Re-scan for danger (highest priority) to ensure correct final status
-        foreach ($requiredTypes as $type) {
-            $doc = $latestDocsByType->get($type);
-            if ($doc) {
-                $ds = $doc->status instanceof DocumentStatus
-                    ? $doc->status->value
-                    : (string) $doc->status;
-                if ($ds === 'rejected') {
-                    $status = ChecklistItemStatus::Danger;
-                    break;
-                }
             }
         }
 

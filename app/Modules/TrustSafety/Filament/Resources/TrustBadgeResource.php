@@ -36,6 +36,21 @@ class TrustBadgeResource extends Resource
         return __('admin.nav.groups.trust_safety');
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('trust-safety::trust-safety.badges.plural');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('trust-safety::trust-safety.badges.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('trust-safety::trust-safety.badges.plural');
+    }
+
     public static function getTranslatableLocales(): array
     {
         return ['en', 'ar'];
@@ -44,27 +59,27 @@ class TrustBadgeResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make('Translations')
+            Tabs::make(__('trust-safety::trust-safety.badges.translations'))
                 ->tabs([
-                    Tab::make('English')
+                    Tab::make(__('trust-safety::trust-safety.badges.tab_english'))
                         ->schema([
                             TextInput::make('name.en')
-                                ->label('Name (EN)')
+                                ->label(__('trust-safety::trust-safety.badges.name_en'))
                                 ->required()
                                 ->maxLength(255),
                             Textarea::make('description.en')
-                                ->label('Description (EN)')
+                                ->label(__('trust-safety::trust-safety.badges.description_en'))
                                 ->required()
                                 ->rows(3),
                         ]),
-                    Tab::make('العربية')
+                    Tab::make(__('trust-safety::trust-safety.badges.tab_arabic'))
                         ->schema([
                             TextInput::make('name.ar')
-                                ->label('Name (AR)')
+                                ->label(__('trust-safety::trust-safety.badges.name_ar'))
                                 ->required()
                                 ->maxLength(255),
                             Textarea::make('description.ar')
-                                ->label('Description (AR)')
+                                ->label(__('trust-safety::trust-safety.badges.description_ar'))
                                 ->required()
                                 ->rows(3),
                         ]),
@@ -76,16 +91,16 @@ class TrustBadgeResource extends Resource
                 ->minValue(1)
                 ->maxValue(5)
                 ->default(1)
-                ->label('Badge Level'),
+                ->label(__('trust-safety::trust-safety.badges.level')),
 
             Toggle::make('is_active')
                 ->default(true)
-                ->label('Active'),
+                ->label(__('trust-safety::trust-safety.badges.active')),
 
             SpatieMediaLibraryFileUpload::make('trust-badge-icon')
                 ->collection('trust-badge-icon')
                 ->image()
-                ->label('Badge Icon'),
+                ->label(__('trust-safety::trust-safety.badges.icon')),
         ]);
     }
 
@@ -94,21 +109,21 @@ class TrustBadgeResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('trust-safety::trust-safety.badges.name'))
                     ->searchable(),
 
                 TextColumn::make('level')
                     ->badge()
-                    ->label('Level'),
+                    ->label(__('trust-safety::trust-safety.badges.level')),
 
                 IconColumn::make('is_active')
                     ->boolean()
-                    ->label('Active'),
+                    ->label(__('trust-safety::trust-safety.badges.active')),
 
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->label('Created'),
+                    ->label(__('trust-safety::trust-safety.badges.created_at')),
             ])
             ->actions([
                 EditAction::make(),

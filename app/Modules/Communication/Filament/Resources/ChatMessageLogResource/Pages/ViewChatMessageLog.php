@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Filament\Resources\ChatMessageLogResource\Pages;
 
 use App\Modules\Communication\Application\Actions\MarkOffPlatformContactAttemptAction;
+use App\Modules\Communication\Application\Actions\RecordChatModerationReadAction;
 use App\Modules\Communication\Application\DTOs\MarkOffPlatformContactDTO;
 use App\Modules\Communication\Domain\Enums\ChatFlagType;
 use App\Modules\Communication\Domain\Models\ChatMessageLog;
@@ -21,6 +22,14 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewChatMessageLog extends ViewRecord
 {
     protected static string $resource = ChatMessageLogResource::class;
+
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+        abort_unless($this->record instanceof ChatMessageLog, 404);
+        app(RecordChatModerationReadAction::class)
+            ->execute($this->record, auth()->id());
+    }
 
     protected function getHeaderActions(): array
     {

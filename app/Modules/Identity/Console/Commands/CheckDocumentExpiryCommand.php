@@ -70,13 +70,9 @@ final class CheckDocumentExpiryCommand extends Command
 
     private function latestApprovedDocuments(): Builder
     {
-        $latestIds = VendorDocument::query()
-            ->selectRaw('MAX(id)')
-            ->groupBy('vendor_profile_id', 'doc_type');
-
         return VendorDocument::query()
             ->withExpiry()
-            ->whereIn('id', $latestIds)
+            ->latestPerType()
             ->where('status', 'approved');
     }
 

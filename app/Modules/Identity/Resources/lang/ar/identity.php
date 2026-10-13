@@ -89,6 +89,10 @@ return [
 
     // Compliance / document expiry section
     'compliance' => [
+        'required_documents' => 'المستندات المطلوبة (آخر رفع)',
+        'required_missing' => 'لم يُرفع بعد',
+        'expiring_soon' => 'تنتهي الصلاحية خلال 30 يومًا',
+        'expiring_alert' => 'تنتهي صلاحية :count مستندات معتمدة خلال 30 يومًا. استخدم فلتر الصلاحية لمراجعتها.',
         'document_context' => 'بيانات المستند والمراجعة',
         'delete_document_warning' => 'هل تريد حذف هذا المستند نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.',
         'expiry_and_criticality' => 'تاريخ الانتهاء والأهمية',
@@ -127,6 +131,8 @@ return [
         'force_logout_customer' => 'سيتم إلغاء جميع الجلسات النشطة لـ :name.',
         'approve_vendor_heading' => 'اعتماد هذا المورد؟',
         'approve_vendor_description' => 'سيمنح هذا الإجراء المورد حالة الاعتماد. يمكنك منح صلاحيات لأنواع المنتجات بعد ذلك.',
+        'suspend_vendor_heading' => 'هل تريد إيقاف هذا المورد؟',
+        'suspend_vendor_description' => 'سيُمنع المورد فورًا من استخدام ميزات بوابة المورد، وسيُسجّل السبب في سجل التدقيق.',
     ],
 
     // Page titles
@@ -244,6 +250,7 @@ return [
         'replace_coverage' => 'استبدال مناطق التغطية',
         're_upload_document' => 'إعادة رفع المستند',
         'request_changes' => 'طلب تعديلات',
+        'add_requested_change' => 'إضافة تعديل مطلوب آخر',
         'approve_for_rental' => 'اعتماد للإيجار',
         'approve_for_sale' => 'اعتماد للبيع',
         'approve_for_digital' => 'اعتماد للرقمي',
@@ -268,6 +275,9 @@ return [
         'business_name_ar' => 'اسم النشاط التجاري بالعربية',
         'bio_en' => 'النبذة بالإنجليزية',
         'bio_ar' => 'النبذة بالعربية',
+        'vendor_suspension_reason' => 'سبب الإيقاف',
+        'impersonation_reason_en' => 'سبب العمل باسم هذا المورد (بالإنجليزية)',
+        'impersonation_reason_ar' => 'سبب العمل باسم هذا المورد (بالعربية)',
     ],
 
     // Notification titles
@@ -277,6 +287,7 @@ return [
         'customer_logged_out' => 'تم إنهاء جلسات العميل',
         'profile_updated_by_admin' => 'تم تحديث ملف العميل',
         'vendor_approved' => 'تمت الموافقة على الملف التجاري',
+        'vendor_approval_failed' => 'تعذر إكمال اعتماد المورد',
         'vendor_rejected' => 'تم رفض الملف التجاري',
         'vendor_suspended' => 'تم إيقاف المورد',
         'vendor_unsuspended' => 'تم إعادة تفعيل المورد',
@@ -344,6 +355,10 @@ return [
         'day_of_week' => 'يوم الأسبوع',
         'label' => 'التسمية',
         'address_line' => 'العنوان',
+        'change_request_fields' => [
+            'address_line_en' => 'العنوان (بالإنجليزية)',
+            'address_line_ar' => 'العنوان (بالعربية)',
+        ],
         'recipient_name' => 'اسم المستلم',
         'recipient_phone' => 'هاتف المستلم',
         'is_default' => 'تعيين كافتراضي',
@@ -457,6 +472,16 @@ return [
     ],
 
     'approval_eligibility' => [
+        'requirements' => [
+            'identity' => 'هوية المورد',
+            'contact' => 'البريد الإلكتروني الموثق ورقم التواصل',
+            'profile' => 'بيانات النشاط والهوية باللغتين',
+            'geography' => 'تطابق المدينة والمحافظة',
+            'banking' => 'البيانات البنكية',
+            'hours' => 'مواعيد العمل',
+            'coverage' => 'مناطق التغطية',
+            'documents' => 'المستندات المطلوبة المعتمدة والسارية',
+        ],
         'checklist' => 'متطلبات الاعتماد',
         'checklist_description' => 'يجب استكمال جميع المتطلبات قبل اعتماد المورد.',
         'complete' => 'مكتمل',
@@ -496,6 +521,7 @@ return [
         'document_not_reuploadable' => 'لا يمكن إعادة رفع إلا مستند مرفوض.',
         'document_already_pending' => 'يوجد بالفعل مستند بديل قيد المراجعة.',
         'invalid_change_request_items' => 'عنصر واحد أو أكثر لا ينتمي إلى طلب التعديل الحالي.',
+        'unsupported_change_request_field' => 'اختر حقلاً مدعوماً لكل تعديل مطلوب.',
         'unresolved_change_request_items' => 'يجب معالجة جميع التعديلات المطلوبة قبل إعادة الإرسال.',
         'idempotency_key_required' => 'ترويسة Idempotency-Key مطلوبة.',
         'idempotency_key_conflict' => 'تم استخدام مفتاح Idempotency-Key هذا لطلب مختلف.',
@@ -513,6 +539,8 @@ return [
     // Success messages
     'messages' => [
         'registered' => 'تم التسجيل بنجاح. يرجى التحقق من رقم هاتفك.',
+        'registration_request_received_title' => 'تحقق من بريدك الإلكتروني',
+        'registration_request_received_body' => 'إذا كان هذا العنوان مؤهلاً للتسجيل، فسنرسل إليك الخطوات التالية عبر البريد الإلكتروني. يمكن للمستخدمين الحاليين تسجيل الدخول أو إعادة تعيين كلمة المرور.',
         'phone_verified' => 'تم التحقق من رقم الهاتف بنجاح.',
         'logged_in' => 'تم تسجيل الدخول بنجاح.',
         'logged_out' => 'تم تسجيل الخروج بنجاح.',
@@ -540,14 +568,20 @@ return [
     'account_suspended' => 'تم إيقاف حسابك. يرجى التواصل مع الدعم.',
     'account_suspended_title' => 'الحساب موقوف',
     'account_suspended_body' => 'تم إيقاف حساب المورد الخاص بك. يرجى التواصل مع دعم إنستا باتي لحل هذه المشكلة.',
+    'impersonation' => [
+        'not_allowed' => 'غير مصرح لك ببدء جلسة المورد هذه.',
+        'reason_required' => 'أدخل سبباً باللغتين، بين 5 و500 حرف لكل لغة.',
+        'vendor_not_eligible' => 'يمكن الوصول فقط إلى حساب مورد نشط وموثّق ومعتمد.',
+    ],
     'vendor_portal' => [
-        'impersonation_banner' => 'فريق دعم إنستا باتي يتصرف الآن نيابةً عن حسابك. بدأ في: :time.',
+        'impersonation_banner' => 'جلسة دعم الإدارة',
+        'impersonation_description' => 'يتصرف فريق الدعم باسم :admin. بدأت في :time. تنتهي هذه الجلسة في :expires.',
         'impersonation_end' => 'إنهاء الجلسة',
     ],
 
     'errors' => [
         'document_not_owned' => 'هذه الوثيقة لا تنتمي إلى ملفك الشخصي.',
-        'document_not_deletable' => 'يمكن حذف الوثائق المرفوضة فقط.',
+        'document_not_deletable' => 'يمكن حذف الوثائق المعلقة أو المرفوضة فقط.',
         'profile_not_approved' => 'يجب أن يكون ملفك الشخصي معتمداً قبل طلب اعتماد نوع المنتج.',
         'type_already_approved' => 'أنت معتمد بالفعل لهذا النوع من المنتجات.',
         'vendor_suspended' => 'حسابك موقوف. يمكنك عرض بياناتك ولكن لا يمكنك إجراء تغييرات.',

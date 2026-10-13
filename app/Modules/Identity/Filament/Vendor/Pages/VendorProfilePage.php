@@ -72,16 +72,16 @@ class VendorProfilePage extends Page implements HasForms
             'facebook_url' => $profile->facebook_url,
             'website_url' => $profile->website_url,
             'instagram_url' => $profile->instagram_url,
-            'bank_name' => filled($profile->getRawOriginal('bank_name'))
+            'bank_name' => ! MaskBankData::isAbsent($profile->getRawOriginal('bank_name'))
                 ? MaskBankData::forField('bank_name', $profile->getRawOriginal('bank_name'))
                 : null,
-            'bank_account_holder' => filled($profile->getRawOriginal('bank_account_holder'))
+            'bank_account_holder' => ! MaskBankData::isAbsent($profile->getRawOriginal('bank_account_holder'))
                 ? MaskBankData::forField('bank_account_holder', $profile->getRawOriginal('bank_account_holder'))
                 : null,
-            'bank_iban' => filled($profile->getRawOriginal('bank_iban'))
+            'bank_iban' => ! MaskBankData::isAbsent($profile->getRawOriginal('bank_iban'))
                 ? MaskBankData::forField('bank_iban', $profile->getRawOriginal('bank_iban'))
                 : null,
-            'bank_swift' => filled($profile->getRawOriginal('bank_swift_bic'))
+            'bank_swift' => ! MaskBankData::isAbsent($profile->getRawOriginal('bank_swift_bic'))
                 ? MaskBankData::forField('bank_swift_bic', $profile->getRawOriginal('bank_swift_bic'))
                 : null,
             // logo_path intentionally omitted — FileUpload must start empty to avoid
@@ -100,14 +100,14 @@ class VendorProfilePage extends Page implements HasForms
                             ->label(__('vendor-portal.profile.logo'))
                             ->content(function (): HtmlString {
                                 $logoPath = $this->getVendorProfile()->logo_path;
-                                if (! $logoPath) {
+                                if (! $logoPath || ! Storage::disk('public')->exists($logoPath)) {
                                     return new HtmlString(
                                         '<span class="text-sm text-gray-400">'.__('vendor-portal.profile.no_logo').'</span>'
                                     );
                                 }
 
                                 return new HtmlString(
-                                    '<img src="'.e(Storage::url($logoPath)).'" alt="Business logo"'
+                                    '<img src="'.e(Storage::disk('public')->url($logoPath)).'" alt="Business logo"'
                                     .' class="h-20 w-20 rounded-full object-cover border border-gray-200">'
                                 );
                             })

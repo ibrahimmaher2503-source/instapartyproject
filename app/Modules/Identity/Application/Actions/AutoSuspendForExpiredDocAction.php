@@ -32,7 +32,8 @@ final class AutoSuspendForExpiredDocAction
             $latestId = VendorDocument::query()
                 ->where('vendor_profile_id', $vendorProfile->getKey())
                 ->where('doc_type', $lockedDocument->doc_type->value)
-                ->max('id');
+                ->latestPerType()
+                ->value('id');
             $requiredTypes = $this->requiredDocuments->forBusinessType($vendorProfile->business_type);
             $today = CarbonImmutable::today((string) config('app.timezone', 'UTC'));
 

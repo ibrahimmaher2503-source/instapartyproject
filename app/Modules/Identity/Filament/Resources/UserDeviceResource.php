@@ -6,6 +6,7 @@ namespace App\Modules\Identity\Filament\Resources;
 
 use App\Modules\Identity\Domain\Models\UserDevice;
 use App\Modules\Identity\Filament\Resources\UserDeviceResource\Pages\ListUserDevices;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -65,7 +66,9 @@ class UserDeviceResource extends Resource
             ->columns([
                 TextColumn::make('user.name')
                     ->label(__('identity.columns.user_id'))
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('platform')
                     ->label(__('identity.columns.platform'))
                     ->badge(),

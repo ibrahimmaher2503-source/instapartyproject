@@ -94,7 +94,19 @@ class VendorDocument extends Model
     {
         $expiryDate = today()->addDays($days)->toDateString();
 
-        return $query->where('expires_at', '<=', $expiryDate);
+        return $query->whereBetween('expires_at', [today()->toDateString(), $expiryDate]);
+    }
+
+    public function scopeLatestPerType($query)
+    {
+        $table = $this->getTable();
+
+        return $query->where($table.'.id', '=', function ($latest) use ($table): void {
+            $latest->from($table.' as latest_document')->select('latest_document.id')
+                ->whereColumn('latest_document.vendor_profile_id', $table.'.vendor_profile_id')
+                ->whereColumn('latest_document.doc_type', $table.'.doc_type')
+                ->orderByDesc('latest_document.created_at')->orderByDesc('latest_document.id')->limit(1);
+        });
     }
 
     public function scopeExpired($query)

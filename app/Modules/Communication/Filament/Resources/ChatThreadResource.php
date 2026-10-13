@@ -221,9 +221,11 @@ class ChatThreadResource extends Resource
                                 $reasonEn = $changes['reason_en'] ?? $changes['note_en'] ?? $changes['summary_en'] ?? null;
                                 $reasonAr = $changes['reason_ar'] ?? $changes['note_ar'] ?? $changes['summary_ar'] ?? null;
                                 $reason = trim(($reasonEn ?? '').(($reasonEn && $reasonAr) ? ' / ' : '').($reasonAr ?? ''));
+                                $actionKey = 'chat_moderation.audit.actions.'.$row->action;
+                                $action = __($actionKey);
 
                                 return [
-                                    'action' => $row->action,
+                                    'action' => $action === $actionKey ? $row->action : $action,
                                     'actor' => $row->actor_name ?? '—',
                                     'reason' => $reason !== '' ? $reason : '—',
                                     'created_at' => $row->created_at,

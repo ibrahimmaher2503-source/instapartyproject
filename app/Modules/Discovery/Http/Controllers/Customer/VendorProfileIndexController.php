@@ -7,6 +7,7 @@ namespace App\Modules\Discovery\Http\Controllers\Customer;
 use App\Modules\Discovery\Http\Resources\VendorProfileResource;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
 use App\Modules\Shared\Http\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use Illuminate\Http\Request;
  */
 class VendorProfileIndexController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, VendorReviewRepository $reviews): JsonResponse
     {
         $perPage = min((int) $request->query('per_page', 6), 24);
 
@@ -29,6 +30,14 @@ class VendorProfileIndexController
             ->orderByDesc('rating_avg')
             ->limit($perPage)
             ->get();
+
+        $reviewSummaries = $reviews->publicSummariesForVendors($vendors->modelKeys());
+
+        foreach ($vendors as $vendor) {
+            $summary = $reviewSummaries[$vendor->id];
+            $vendor->setAttribute('rating_avg', $summary['average']);
+            $vendor->setAttribute('rating_count', $summary['count']);
+        }
 
         return ApiResponse::success(VendorProfileResource::collection($vendors));
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Modules\Identity\Filament\Auth\AdminEditProfile;
 use App\Modules\Identity\Filament\Auth\IsolatedPanelLogin;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
@@ -68,6 +69,7 @@ class AdminPanelProvider extends PanelProvider
                 ->brandName('InstaParty')
                 ->login(IsolatedPanelLogin::class)
                 ->authGuard('web')
+                ->profile(AdminEditProfile::class)
                 ->pages([
                     Dashboard::class,
                 ])
@@ -114,6 +116,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('InstaParty')
             ->login(IsolatedPanelLogin::class)
             ->authGuard('web')
+            ->profile(AdminEditProfile::class)
             ->colors([
                 'primary' => Color::hex('#1C2B54'),
                 'success' => Color::hex('#087F5B'),

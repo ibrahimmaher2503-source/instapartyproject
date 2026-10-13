@@ -22,6 +22,7 @@ use App\Modules\Identity\Domain\Events\VendorRegistered;
 use App\Modules\Identity\Domain\Events\VendorRejected;
 use App\Modules\Identity\Domain\Events\VendorSuspended;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Identity\Http\Controllers\PanelLogoutController;
 use App\Modules\Identity\Http\Middleware\EnsureAccountIsActive;
 use App\Modules\Identity\Http\Middleware\EnsureVendorApproved;
 use App\Modules\Identity\Http\Middleware\EnsureVendorNotSuspended;
@@ -36,6 +37,7 @@ use App\Modules\Identity\Infrastructure\Repositories\EloquentVendorRatingWriter;
 use App\Modules\Loyalty\Domain\Contracts\VendorLookup;
 use App\Modules\Reviews\Domain\Contracts\VendorRatingWriter;
 use App\Modules\Shared\Application\Timeline\TimelineSourceRegistry;
+use Filament\Http\Controllers\Auth\LogoutController;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
 use Illuminate\Auth\Events\Login;
@@ -48,6 +50,7 @@ class IdentityServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(LogoutController::class, PanelLogoutController::class);
         $this->app->bind(LoginResponse::class, PanelLoginResponse::class);
         $this->app->bind(RegistrationResponse::class, VendorRegistrationResponse::class);
         $this->app->bind(OtpGatewayInterface::class, fn ($app) => $app->make(

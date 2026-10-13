@@ -22,6 +22,11 @@ final class MaskBankData
         return $field === 'bank_iban' ? self::iban($value) : self::label($value);
     }
 
+    public static function isAbsent(mixed $value): bool
+    {
+        return $value === null || (is_string($value) && in_array(trim($value), ['', '—', '–', '-'], true));
+    }
+
     public static function label(?string $value): string
     {
         return $value === null || $value === '' ? '—' : mb_substr($value, 0, 1).'***';

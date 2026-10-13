@@ -74,6 +74,10 @@ return [
     ],
 
     'package_recommendations' => [
+        'name_en' => 'الاسم (EN)',
+        'description_en' => 'الوصف (EN)',
+        'name_ar' => 'الاسم (AR)',
+        'description_ar' => 'الوصف (AR)',
         'nav' => 'باقات الصفحة الرئيسية',
         'singular' => 'باقة رئيسية',
         'plural' => 'باقات الصفحة الرئيسية',

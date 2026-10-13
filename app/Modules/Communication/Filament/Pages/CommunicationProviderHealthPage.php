@@ -117,7 +117,7 @@ class CommunicationProviderHealthPage extends Page
             'note' => $lastFailure !== null
                 ? __('communication.provider_health.card.failure_recorded')
                 : null,
-            'providerName' => __('communication.provider_health.providers.'.$channel->value),
+            'providerName' => __('communication.provider_settings.providers.'.$channel->value),
             'sentLast24h' => $sentCount,
             'failedLast24h' => $failedCount,
             'lastSuccessAt' => $lastSuccess,

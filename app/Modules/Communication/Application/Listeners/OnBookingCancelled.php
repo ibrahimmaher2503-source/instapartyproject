@@ -42,7 +42,7 @@ class OnBookingCancelled implements ShouldQueue
         ];
 
         if ($booking->customer_id !== null) {
-            foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
                 $this->dispatcher->execute(new DispatchNotificationDTO(
                     eventKey: 'booking.cancelled',
                     channel: $channel,

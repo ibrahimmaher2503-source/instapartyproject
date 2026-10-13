@@ -19,6 +19,8 @@ use App\Modules\Settlement\Domain\States\CommissionStatus\PartiallyReversedState
 use App\Modules\Settlement\Domain\States\CommissionStatus\ReversedState;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Brick\Money\Money;
+use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -36,8 +38,9 @@ class ReverseCommissionAction
         ?string $idempotencyKey = null,
         ?string $correlationId = null,
         ?string $causationId = null,
+        ?int $cumulativeRefundedGrossMinor = null,
     ): Commission {
-        return DB::transaction(function () use ($commission, $refund, $idempotencyKey, $correlationId, $causationId) {
+        return DB::transaction(function () use ($commission, $refund, $idempotencyKey, $correlationId, $causationId, $cumulativeRefundedGrossMinor) {
             $commission = Commission::query()->lockForUpdate()->findOrFail($commission->id);
             $refundId = is_int($refund) ? $refund : $refund->id;
             $refundAmount = is_int($refund) ? $commission->gross_amount_minor : $refund->amountMinor;
@@ -47,29 +50,108 @@ class ReverseCommissionAction
                 return $commission;
             }
 
-            $refundAmount = min($refundAmount, $commission->gross_amount_minor);
+            $currency = $commission->gross_amount_currency;
 
-            $proportionDecimal = BigDecimal::of($refundAmount)
-                ->dividedBy($commission->gross_amount_minor, 10, RoundingMode::HALF_EVEN);
+            if ($refund instanceof RefundSnapshotDto && $refund->currency !== $currency) {
+                throw new InvalidArgumentException('Refund and commission currencies must match.');
+            }
 
-            $reversalMinor = min(
-                $commission->vendor_share_minor - $commission->reversed_amount_minor,
-                (int) BigDecimal::of($commission->vendor_share_minor)
-                    ->multipliedBy($proportionDecimal)
-                    ->toScale(0, RoundingMode::HALF_EVEN)
-                    ->toInt(),
+            $grossTotal = Money::ofMinor($commission->gross_amount_minor, $currency);
+
+            if ($grossTotal->isZero()) {
+                return $commission;
+            }
+
+            $refundAmount = max(0, min($refundAmount, $grossTotal->getMinorAmount()->toInt()));
+
+            if ($refundAmount === 0) {
+                return $commission;
+            }
+
+            $vendorTotal = Money::ofMinor($commission->vendor_share_minor, $currency);
+            $storedVendorReversedMinor = max(0, (int) $commission->reversed_amount_minor);
+            $vendorAlreadyReversed = Money::ofMinor(
+                min($storedVendorReversedMinor, $vendorTotal->getMinorAmount()->toInt()),
+                $currency,
             );
 
-            $commissionReversalMinor = (int) BigDecimal::of($commission->commission_minor)
-                ->multipliedBy($proportionDecimal)
-                ->toScale(0, RoundingMode::HALF_EVEN)
-                ->toInt();
+            $platformTotal = Money::ofMinor($commission->commission_minor, $currency);
+            $platformAlreadyReversedMinor = (int) DB::table('wallet_ledger')
+                ->join('wallets', 'wallets.id', '=', 'wallet_ledger.wallet_id')
+                ->where('wallets.owner_type', 'platform_account')
+                ->where('wallets.owner_id', SuspenseAccount::PlatformCommissionReceivable->value)
+                ->where('wallet_ledger.direction', LedgerDirection::Debit->value)
+                ->where('wallet_ledger.entry_type', LedgerEntryType::CommissionReversal->value)
+                ->where('wallet_ledger.related_entity_type', 'commission')
+                ->where('wallet_ledger.related_entity_id', $commission->id)
+                ->where('wallet_ledger.currency', $currency)
+                ->sum('wallet_ledger.amount_minor');
+            $platformAlreadyReversed = Money::ofMinor(
+                min(max(0, $platformAlreadyReversedMinor), $platformTotal->getMinorAmount()->toInt()),
+                $currency,
+            );
 
-            $newReversed = $commission->reversed_amount_minor + $reversalMinor;
-            $isFullReversal = $newReversed >= $commission->vendor_share_minor;
+            if ($cumulativeRefundedGrossMinor !== null) {
+                $cumulativeGrossMinor = max(0, min(
+                    $cumulativeRefundedGrossMinor,
+                    $grossTotal->getMinorAmount()->toInt(),
+                ));
+                $platformTarget = $this->cumulativeComponentTarget(
+                    $platformTotal,
+                    $grossTotal->getMinorAmount()->toInt(),
+                    $cumulativeGrossMinor,
+                    $currency,
+                );
+                $vendorTarget = Money::ofMinor($cumulativeGrossMinor, $currency)->minus($platformTarget);
+            } else {
+                $vendorTarget = $this->incrementalComponentTarget(
+                    $vendorTotal,
+                    $vendorAlreadyReversed,
+                    $refundAmount,
+                    $grossTotal->getMinorAmount()->toInt(),
+                    $currency,
+                );
+                $platformTarget = $this->incrementalComponentTarget(
+                    $platformTotal,
+                    $platformAlreadyReversed,
+                    $refundAmount,
+                    $grossTotal->getMinorAmount()->toInt(),
+                    $currency,
+                );
+            }
+
+            $vendorRemaining = $vendorTotal->minus($vendorAlreadyReversed);
+            $platformRemaining = $platformTotal->minus($platformAlreadyReversed);
+            $reversalMinor = Money::min(
+                $this->positiveDifference($vendorTarget, $vendorAlreadyReversed, $currency),
+                $vendorRemaining,
+            )
+                ->getMinorAmount()
+                ->toInt();
+            $commissionReversalMinor = Money::min(
+                $this->positiveDifference($platformTarget, $platformAlreadyReversed, $currency),
+                $platformRemaining,
+            )
+                ->getMinorAmount()
+                ->toInt();
+            $grossReversal = Money::ofMinor($reversalMinor, $currency)
+                ->plus(Money::ofMinor($commissionReversalMinor, $currency));
+
+            if ($grossReversal->isZero()) {
+                return $commission;
+            }
+
+            $newReversedMinor = max(
+                $storedVendorReversedMinor,
+                $vendorAlreadyReversed->plus(Money::ofMinor($reversalMinor, $currency))->getMinorAmount()->toInt(),
+            );
+            $platformReversedAfterThisEntry = $platformAlreadyReversed
+                ->plus(Money::ofMinor($commissionReversalMinor, $currency));
+            $isFullReversal = $newReversedMinor >= $vendorTotal->getMinorAmount()->toInt()
+                && ! $platformReversedAfterThisEntry->isLessThan($platformTotal);
 
             $commission->update([
-                'reversed_amount_minor' => $newReversed,
+                'reversed_amount_minor' => $newReversedMinor,
                 'status' => $isFullReversal
                     ? ReversedState::class
                     : PartiallyReversedState::class,
@@ -79,10 +161,11 @@ class ReverseCommissionAction
             //   Debit:  vendor wallet (clawback vendor's share)
             //   Debit:  platform_commission_receivable (clawback platform's cut)
             //   Credit: platform_clearing (the gross amount returns to clearing)
-            $grossReversalMinor = $reversalMinor + $commissionReversalMinor;
+            $grossReversalMinor = $grossReversal->getMinorAmount()->toInt();
+            $entries = [];
 
-            $entries = [
-                new LedgerEntryInput(
+            if ($reversalMinor > 0) {
+                $entries[] = new LedgerEntryInput(
                     walletOwnerType: self::VENDOR_OWNER_TYPE,
                     walletOwnerId: $commission->vendor_profile_id,
                     direction: LedgerDirection::Debit,
@@ -94,21 +177,22 @@ class ReverseCommissionAction
                     descriptionParams: ['commission_id' => $commission->id],
                     relatedEntityType: 'refund',
                     relatedEntityId: $refundId,
-                ),
-                new LedgerEntryInput(
-                    walletOwnerType: 'platform_account',
-                    walletOwnerId: SuspenseAccount::PlatformClearing->value,
-                    direction: LedgerDirection::Credit,
-                    amountMinor: $grossReversalMinor,
-                    entryType: LedgerEntryType::CommissionReversal,
-                    counterAccountType: self::VENDOR_OWNER_TYPE,
-                    counterAccountId: $commission->vendor_profile_id,
-                    descriptionKey: 'settlement.commission.reversal_clearing_credit',
-                    descriptionParams: ['commission_id' => $commission->id],
-                    relatedEntityType: 'commission',
-                    relatedEntityId: $commission->id,
-                ),
-            ];
+                );
+            }
+
+            $entries[] = new LedgerEntryInput(
+                walletOwnerType: 'platform_account',
+                walletOwnerId: SuspenseAccount::PlatformClearing->value,
+                direction: LedgerDirection::Credit,
+                amountMinor: $grossReversalMinor,
+                entryType: LedgerEntryType::CommissionReversal,
+                counterAccountType: self::VENDOR_OWNER_TYPE,
+                counterAccountId: $commission->vendor_profile_id,
+                descriptionKey: 'settlement.commission.reversal_clearing_credit',
+                descriptionParams: ['commission_id' => $commission->id],
+                relatedEntityType: 'commission',
+                relatedEntityId: $commission->id,
+            );
 
             if ($commissionReversalMinor > 0) {
                 $entries[] = new LedgerEntryInput(
@@ -161,5 +245,45 @@ class ReverseCommissionAction
 
             return $commission;
         });
+    }
+
+    private function cumulativeComponentTarget(Money $component, int $grossMinor, int $cumulativeRefundedGrossMinor, string $currency): Money
+    {
+        if ($component->isZero() || $cumulativeRefundedGrossMinor <= 0) {
+            return Money::ofMinor(0, $currency);
+        }
+
+        if ($cumulativeRefundedGrossMinor >= $grossMinor) {
+            return $component;
+        }
+
+        $targetMinor = BigDecimal::of($component->getMinorAmount())
+            ->multipliedBy($cumulativeRefundedGrossMinor)
+            ->dividedBy($grossMinor, 0, RoundingMode::HALF_EVEN)
+            ->toInt();
+
+        return Money::min($component, Money::ofMinor($targetMinor, $currency));
+    }
+
+    private function incrementalComponentTarget(Money $component, Money $alreadyReversed, int $refundMinor, int $grossMinor, string $currency): Money
+    {
+        if ($component->isZero() || $refundMinor <= 0) {
+            return $alreadyReversed;
+        }
+
+        $incrementMinor = BigDecimal::of($component->getMinorAmount())
+            ->multipliedBy($refundMinor)
+            ->dividedBy($grossMinor, 0, RoundingMode::HALF_EVEN)
+            ->toInt();
+        $target = $alreadyReversed->plus(Money::ofMinor($incrementMinor, $currency));
+
+        return Money::min($component, $target);
+    }
+
+    private function positiveDifference(Money $target, Money $current, string $currency): Money
+    {
+        return $target->isGreaterThan($current)
+            ? $target->minus($current)
+            : Money::ofMinor(0, $currency);
     }
 }

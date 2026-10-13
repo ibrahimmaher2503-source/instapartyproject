@@ -7,6 +7,7 @@ namespace App\Modules\Settlement\Application\Listeners;
 use App\Modules\Payments\Domain\Enums\PaymentStatus;
 use App\Modules\Payments\Domain\Events\PaymentCaptured;
 use App\Modules\Settlement\Application\Actions\CalculateCommissionAction;
+use App\Modules\Settlement\Application\Actions\ReconcileCompletedRefundsAction;
 use App\Modules\Settlement\Domain\Contracts\SettlementBookingReader;
 use App\Modules\Settlement\Domain\Contracts\SettlementPaymentReader;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,6 +22,7 @@ class CalculateCommissionOnPaymentCapturedListener implements ShouldQueue
         private SettlementPaymentReader $paymentReader,
         private SettlementBookingReader $bookingReader,
         private CalculateCommissionAction $calculateCommission,
+        private ReconcileCompletedRefundsAction $reconcileRefunds,
     ) {}
 
     /** @return array<int, int> */
@@ -41,8 +43,12 @@ class CalculateCommissionOnPaymentCapturedListener implements ShouldQueue
             return;
         }
 
-        if ($payment->status !== PaymentStatus::Captured) {
-            Log::error('Settlement: PaymentCaptured received but payment status is not captured', [
+        if (! in_array($payment->status, [
+            PaymentStatus::Captured,
+            PaymentStatus::Refunded,
+            PaymentStatus::PartiallyRefunded,
+        ], true)) {
+            Log::error('Settlement: PaymentCaptured received but payment status is not eligible for commission accrual', [
                 'payment_id' => $event->paymentId,
                 'status' => $payment->status->value,
             ]);
@@ -69,5 +75,7 @@ class CalculateCommissionOnPaymentCapturedListener implements ShouldQueue
                 throw $e;
             }
         }
+
+        $this->reconcileRefunds->execute($payment->id);
     }
 }

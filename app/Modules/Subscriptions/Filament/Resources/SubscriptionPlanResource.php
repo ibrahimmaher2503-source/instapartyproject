@@ -77,6 +77,7 @@ class SubscriptionPlanResource extends Resource
                         Select::make('plan_code')
                             ->options(PlanCode::class)
                             ->required()
+                            ->unique(ignoreRecord: true)
                             ->disabled(fn ($record) => $record !== null),
 
                         TextInput::make('monthly_price_minor')

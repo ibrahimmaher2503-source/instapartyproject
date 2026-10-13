@@ -36,6 +36,7 @@ class OnVendorResponseTimedOut implements ShouldQueue
         $booking->loadMissing(['vendors.vendor']);
 
         $bookingNumber = $booking->public_id;
+        $adminBookingReference = $booking->reference_no ?: $bookingNumber;
         $eventDate = $booking->event_starts_at?->format('Y-m-d') ?? '';
 
         // Notify customer
@@ -76,12 +77,12 @@ class OnVendorResponseTimedOut implements ShouldQueue
             sourceType: 'booking',
             sourceId: $booking->id,
             title: [
-                'en' => "[TIMEOUT] Booking #{$bookingNumber} — vendor(s) did not respond",
-                'ar' => "[انتهاء المهلة] الحجز #{$bookingNumber} — لم يستجب المورد",
+                'en' => "[TIMEOUT] Booking #{$adminBookingReference} — vendor(s) did not respond",
+                'ar' => "[انتهاء المهلة] الحجز #{$adminBookingReference} — لم يستجب المورد",
             ],
             body: [
-                'en' => "Booking #{$bookingNumber} (event {$eventDate}): {$timedOutVendors} did not respond within the 24h SLA. Manual intervention required.",
-                'ar' => "الحجز #{$bookingNumber} (الحدث {$eventDate}): {$timedOutVendors} لم يستجب خلال 24 ساعة. يلزم التدخل اليدوي.",
+                'en' => "Booking #{$adminBookingReference} (event {$eventDate}): {$timedOutVendors} did not respond within the 24h SLA. Manual intervention required.",
+                'ar' => "الحجز #{$adminBookingReference} (الحدث {$eventDate}): {$timedOutVendors} لم يستجب خلال 24 ساعة. يلزم التدخل اليدوي.",
             ],
         );
     }

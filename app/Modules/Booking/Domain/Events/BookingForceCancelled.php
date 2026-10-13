@@ -9,8 +9,12 @@ use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
 
 final class BookingForceCancelled
 {
+    /**
+     * @param list<int>|null $engagedVendorUserIds Captured before cancellation; null keeps compatibility with older event producers.
+     */
     public function __construct(
         public readonly Booking $booking,
         public readonly BookingAdminIntervention $intervention,
+        public readonly ?array $engagedVendorUserIds = null,
     ) {}
 }

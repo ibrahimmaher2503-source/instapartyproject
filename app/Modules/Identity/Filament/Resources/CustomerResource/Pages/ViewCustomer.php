@@ -17,11 +17,11 @@ use App\Modules\Reviews\Domain\Models\ServiceReview;
 use App\Modules\Reviews\Domain\Models\VendorReview;
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\Tabs;
 use Filament\Infolists\Components\Tabs\Tab;
 use Filament\Infolists\Components\TextEntry;
@@ -39,7 +39,7 @@ class ViewCustomer extends ViewRecord
 
     public function infolist(Infolist $schema): Infolist
     {
-        return $infolist->schema([
+        return $schema->schema([
             Tabs::make(__('identity.customer'))
                 ->tabs([
                     Tab::make(__('identity.tabs.overview'))

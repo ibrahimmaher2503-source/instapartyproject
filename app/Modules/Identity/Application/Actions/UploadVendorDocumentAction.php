@@ -12,6 +12,7 @@ use App\Modules\Identity\Domain\Models\VendorProfile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
@@ -20,6 +21,13 @@ class UploadVendorDocumentAction
 {
     public function execute(VendorProfile $vendorProfile, UploadedFile $file, DocumentType $docType): VendorDocument
     {
+        Validator::make(['file' => $file], [
+            'file' => ['required', 'file', 'max:10240', 'mimetypes:application/pdf,image/jpeg,image/png', 'mimes:pdf,jpg,jpeg,png'],
+        ], [
+            'file.mimetypes' => __('identity::identity.validation.file_mime_invalid'),
+            'file.mimes' => __('identity::identity.validation.file_mime_invalid'),
+        ])->validate();
+
         $extension = $file->getClientOriginalExtension() ?: $file->extension();
         $storedName = (string) Str::ulid().'.'.$extension;
         $directory = "vendors/{$vendorProfile->id}/documents";

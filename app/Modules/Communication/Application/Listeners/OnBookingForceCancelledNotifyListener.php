@@ -26,7 +26,7 @@ class OnBookingForceCancelledNotifyListener implements ShouldQueue
 
         $reason = $event->intervention->reason;
 
-        // Notify customer via Push + Email
+        // Notify customer via in-app + Push + Email
         if ($booking->customer_id !== null) {
             $customerContext = [
                 'booking_number' => $booking->public_id,
@@ -35,7 +35,7 @@ class OnBookingForceCancelledNotifyListener implements ShouldQueue
                 'refund_days' => '5–7',
             ];
 
-            foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
                 $this->dispatcher->execute(new DispatchNotificationDTO(
                     eventKey: 'booking.force_cancelled',
                     channel: $channel,
@@ -49,20 +49,30 @@ class OnBookingForceCancelledNotifyListener implements ShouldQueue
             }
         }
 
-        // Notify engaged vendors via Push
+        // A non-null list is captured before the booking-vendor statuses changed.
+        // Null is retained for compatibility with events queued by older producers.
         $engaged = [
             VendorSubStatus::Pending, VendorSubStatus::Accepted,
             VendorSubStatus::Modified, VendorSubStatus::InProgress,
         ];
-
         $customerName = $booking->customer?->name ?? '';
 
-        foreach ($booking->vendors as $bookingVendor) {
-            $vendorUserId = $bookingVendor->vendor?->user_id;
+        $vendorUserIds = $event->engagedVendorUserIds;
 
-            if ($vendorUserId === null || ! in_array($bookingVendor->sub_status, $engaged, true)) {
-                continue;
-            }
+        if ($vendorUserIds === null) {
+            $vendorUserIds = $booking->vendors
+                ->filter(fn ($bookingVendor): bool => in_array($bookingVendor->sub_status, $engaged, true))
+                ->map(fn ($bookingVendor) => $bookingVendor->vendor?->user_id)
+                ->filter(fn ($userId): bool => $userId !== null)
+                ->map(fn ($userId): int => (int) $userId)
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        // Notify engaged vendors via Push. Captured empty lists stay empty so
+        // current terminal rows are never re-added after cancellation.
+        foreach (array_unique(array_filter($vendorUserIds, fn ($userId): bool => $userId !== null)) as $vendorUserId) {
 
             $this->dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'booking.force_cancelled.vendor',

@@ -27,6 +27,11 @@ class EloquentPaymentRepository
         return Payment::query()->find($id);
     }
 
+    public function findByIdForUpdate(int $id): ?Payment
+    {
+        return Payment::query()->lockForUpdate()->find($id);
+    }
+
     /** @return Builder<Payment> */
     public function queryForBooking(int $bookingId): Builder
     {

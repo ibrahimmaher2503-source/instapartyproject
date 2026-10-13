@@ -8,6 +8,7 @@ use App\Modules\Loyalty\Application\Actions\AdjustLoyaltyBalanceAction;
 use App\Modules\Loyalty\Domain\Enums\LedgerDirection;
 use App\Modules\Loyalty\Domain\Models\LoyaltyLedgerEntry;
 use App\Modules\Loyalty\Filament\Resources\LoyaltyLedgerResource\Pages\ListLoyaltyLedger;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use DomainException;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -74,7 +75,12 @@ class LoyaltyLedgerResource extends Resource
                 TextColumn::make('public_id')
                     ->label(__('loyalty.columns.public_id'))
                     ->copyable()
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendorProfile' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->limit(10),
                 TextColumn::make('user.name')
                     ->label(__('loyalty.columns.user'))

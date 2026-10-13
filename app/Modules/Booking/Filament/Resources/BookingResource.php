@@ -33,6 +33,7 @@ use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\Book
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\PaymentsRelationManager;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -113,7 +114,12 @@ class BookingResource extends Resource
                 TextColumn::make('public_id')
                     ->label(__('booking.columns.public_id'))
                     ->copyable()
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'reference_no'],
+                        'customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('reference_no')
                     ->label(__('booking.columns.reference_no'))
