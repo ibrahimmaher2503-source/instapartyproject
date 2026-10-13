@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Subscriptions\Filament\Widgets;
 
-use App\Modules\Subscriptions\Domain\Enums\SubscriptionStatus;
 use App\Modules\Subscriptions\Domain\Models\VendorSubscription;
 use Filament\Widgets\ChartWidget;
 
@@ -27,7 +26,8 @@ class VendorsByTierWidget extends ChartWidget
     protected function getData(): array
     {
         $data = VendorSubscription::query()
-            ->where('status', SubscriptionStatus::Active->value)
+            ->active()
+            ->effectiveAt(now())
             ->selectRaw('subscription_plan_id, COUNT(*) as count')
             ->groupBy('subscription_plan_id')
             ->with('plan:id,plan_code')

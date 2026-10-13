@@ -340,7 +340,7 @@
                     <div class="sf-search-empty">
                         <div aria-hidden="true">⌕</div>
                         <h3>{{ __('storefront.search.empty_title') }}</h3>
-                        <p>{{ __('storefront.search.empty_body') }}</p>
+                        <p>{{ __($selectedOccasion ? 'storefront.search.empty_occasion_body' : 'storefront.search.empty_body') }}</p>
                         <div class="sf-search-empty__actions">
                             @if (! empty($filters['q']))
                                 <a href="{{ $clearSearchUrl }}" class="sf-button sf-button--navy">{{ __('storefront.search.clear_search') }}</a>

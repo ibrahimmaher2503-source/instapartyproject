@@ -30,12 +30,15 @@ class ExpiringSubscriptionsWidget extends TableWidget
 
     public function table(Table $table): Table
     {
+        $at = now();
+
         return $table
             ->query(
                 VendorSubscription::query()
                     ->with(['vendor', 'plan'])
-                    ->where('status', 'active')
-                    ->whereBetween('current_period_end', [now(), now()->addDays(30)])
+                    ->active()
+                    ->effectiveAt($at)
+                    ->whereBetween('current_period_end', [$at, $at->copy()->addDays(30)])
                     ->orderBy('current_period_end')
             )
             ->columns([

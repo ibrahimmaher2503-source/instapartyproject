@@ -700,6 +700,7 @@ return [
         ],
         'empty_title' => 'No services found',
         'empty_body' => 'Try a different search term or adjust your filters.',
+        'empty_occasion_body' => 'No published services match this occasion and your selected filters. Services appear when their category is linked to the occasion. When you select a location or date, services must cover that location and rentals must be available at that time. Change your filters or clear them to browse available services.',
         'empty_action' => 'Clear filters',
         'clear_search' => 'Clear search',
         'error' => 'Could not load services. Please try again.',

@@ -171,6 +171,11 @@ class ReconciliationRunResource extends Resource
                         TextEntry::make('completed_at')
                             ->dateTime()
                             ->label(__('settlement.columns.completed_at')),
+
+                        TextEntry::make('failure_message')
+                            ->formatStateUsing(fn (string $state): string => __($state))
+                            ->label(__('settlement.columns.failure_message'))
+                            ->visible(fn (ReconciliationRun $record): bool => filled($record->failure_message)),
                     ]),
                 ]),
         ]);
