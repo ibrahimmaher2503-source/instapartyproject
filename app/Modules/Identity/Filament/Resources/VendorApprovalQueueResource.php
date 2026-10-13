@@ -248,7 +248,7 @@ class VendorApprovalQueueResource extends Resource
 
                             return collect($result->checks)
                                 ->map(fn (bool $passed, string $check): array => [
-                                    'requirement' => __('identity.approval_eligibility.'.$check),
+                                    'requirement' => __('identity.approval_eligibility.requirements.'.$check),
                                     'status' => $passed
                                         ? __('identity.approval_eligibility.complete')
                                         : __('identity.approval_eligibility.incomplete'),

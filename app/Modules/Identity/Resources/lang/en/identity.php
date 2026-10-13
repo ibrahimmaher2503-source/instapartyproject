@@ -457,6 +457,16 @@ return [
     ],
 
     'approval_eligibility' => [
+        'requirements' => [
+            'identity' => 'Vendor identity',
+            'contact' => 'Verified email and contact phone',
+            'profile' => 'Bilingual business and identity fields',
+            'geography' => 'City and governorate match',
+            'banking' => 'Banking information',
+            'hours' => 'Business hours',
+            'coverage' => 'Coverage areas',
+            'documents' => 'Approved and valid required documents',
+        ],
         'checklist' => 'Approval requirements',
         'checklist_description' => 'Every requirement must be complete before this vendor can be approved.',
         'complete' => 'Complete',

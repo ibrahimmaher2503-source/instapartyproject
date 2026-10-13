@@ -8,6 +8,7 @@ use App\Modules\Support\Domain\Models\FaqItem;
 use App\Modules\Support\Filament\Resources\FaqItemResource\Pages\CreateFaqItem;
 use App\Modules\Support\Filament\Resources\FaqItemResource\Pages\EditFaqItem;
 use App\Modules\Support\Filament\Resources\FaqItemResource\Pages\ListFaqItems;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
