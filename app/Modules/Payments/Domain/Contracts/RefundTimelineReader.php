@@ -17,4 +17,12 @@ interface RefundTimelineReader
      * @return Collection<int, RefundTimelineEntryDto>
      */
     public function findByBookingId(int $bookingId): Collection;
+
+    /**
+     * Return refund rows for the given bookings, grouped by booking ID.
+     *
+     * @param  array<int, int>  $bookingIds
+     * @return array<int, Collection<int, RefundTimelineEntryDto>>
+     */
+    public function findByBookingIds(array $bookingIds): array;
 }
