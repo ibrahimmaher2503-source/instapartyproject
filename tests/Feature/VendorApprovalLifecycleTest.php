@@ -21,10 +21,18 @@ use App\Modules\Identity\Domain\Models\VendorCoverageArea;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Identity\Domain\States\VendorApprovalStatus\PendingState;
+use App\Modules\Identity\Domain\States\VendorApprovalStatus\RejectedState;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\SuspendedState;
+use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource;
+use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages\ListVendorApprovalQueue;
+use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages\ReviewVendorApplication;
 use Carbon\CarbonImmutable;
+use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -104,6 +112,80 @@ it('accepts required documents through the end of the configured timezone day', 
     expect(app(VendorApprovalEligibilityService::class)->evaluate($profile, $endOfDay)->eligible)->toBeTrue()
         ->and(app(VendorApprovalEligibilityService::class)->evaluate($profile, $endOfDay->addSecond())->eligible)->toBeFalse();
 });
+
+it('explains incomplete approval in the queue and review while allowing valid rejection', function (string $locale): void {
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $this->actingAs(vendorLifecycleActor(['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile', 'reject_vendor_profile']));
+    $profile = eligibleVendorProfile();
+    $profile->businessHours()->delete();
+    $failure = Notification::make()
+        ->title(__('identity.notifications.vendor_approval_failed'))
+        ->body(__('identity::identity.approval_eligibility.hours'))
+        ->danger();
+
+    Livewire::test(ListVendorApprovalQueue::class)
+        ->assertTableActionEnabled('approve', $profile)
+        ->assertTableActionEnabled('reject', $profile)
+        ->assertSee(__('identity::identity.approval_eligibility.hours'))
+        ->callTableAction('approve', $profile)
+        ->assertNotified($failure);
+    Livewire::test(ReviewVendorApplication::class, ['record' => $profile->getRouteKey()])
+        ->assertActionEnabled('approve')
+        ->assertActionEnabled('reject')
+        ->assertSee(__('identity::identity.approval_eligibility.hours'))
+        ->callAction('approve')
+        ->assertNotified($failure);
+    expect($profile->refresh()->approval_status)->toBeInstanceOf(PendingState::class);
+})->with(['en', 'ar']);
+
+it('notifies when eligibility becomes incomplete after approval was offered', function (string $locale, string $surface): void {
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $this->actingAs(vendorLifecycleActor(['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile']));
+    $profile = eligibleVendorProfile();
+    $page = $surface === 'queue'
+        ? Livewire::test(ListVendorApprovalQueue::class)
+        : Livewire::test(ReviewVendorApplication::class, ['record' => $profile->getRouteKey()]);
+    if ($surface === 'queue') {
+        $page->assertTableActionEnabled('approve', $profile)->mountTableAction('approve', $profile);
+    } else {
+        $page->assertActionEnabled('approve')->mountAction('approve');
+    }
+
+    $profile->businessHours()->delete();
+    if ($surface === 'queue') {
+        $page->callMountedTableAction();
+    } else {
+        $page->callMountedAction();
+    }
+
+    $page->assertNotified(Notification::make()
+        ->title(__('identity.notifications.vendor_approval_failed'))
+        ->body(__('identity::identity.approval_eligibility.hours'))
+        ->danger());
+    expect($profile->refresh()->approval_status)->toBeInstanceOf(PendingState::class);
+})->with(['en', 'ar'])->with(['queue', 'review']);
+
+it('shows successful moderation and removes the vendor from the pending queue', function (string $surface, string $decision): void {
+    Event::fake();
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $this->actingAs(vendorLifecycleActor(['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile', 'reject_vendor_profile']));
+    $profile = eligibleVendorProfile();
+    $data = ['rejection_reason_en' => 'Review rejected', 'rejection_reason_ar' => 'تم رفض الطلب'];
+    $page = $surface === 'queue'
+        ? Livewire::test(ListVendorApprovalQueue::class)->callTableAction($decision, $profile, data: $data)
+        : Livewire::test(ReviewVendorApplication::class, ['record' => $profile->getRouteKey()])->callAction($decision, data: $data);
+
+    $page->assertNotified(Notification::make()
+        ->title(__('identity.notifications.vendor_'.($decision === 'approve' ? 'approved' : 'rejected')))
+        ->success());
+    expect($profile->refresh()->approval_status)->toBeInstanceOf($decision === 'approve' ? ApprovedState::class : RejectedState::class);
+    if ($surface === 'review') {
+        $page->assertRedirect(VendorApprovalQueueResource::getUrl('index'));
+    }
+    Livewire::test(ListVendorApprovalQueue::class)->assertCanNotSeeTableRecords([$profile]);
+})->with(['queue', 'review'])->with(['approve', 'reject']);
 
 it('approves once without requiring a product type and rejects unauthorized approval', function (): void {
     Event::fake();

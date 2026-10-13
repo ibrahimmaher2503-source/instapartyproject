@@ -32,7 +32,7 @@ function cairoDateTime(hoursFromNow: number): string {
     return parts.replace(' ', 'T');
 }
 
-async function saveAndContinue(page: Page, locale: 'en' | 'ar', options: { service?: string; startHour?: number; optionalEnd?: boolean; browse?: boolean } = {}): Promise<void> {
+async function saveAndContinue(page: Page, locale: 'en' | 'ar', options: { service?: string; startHour?: number; optionalEnd?: boolean; browse?: boolean; checkRecipientPhone?: boolean } = {}): Promise<void> {
     const startHour = options.startHour ?? 48;
     await page.goto(options.browse ? `/${locale}/wizard` : `/${locale}/wizard?service=${options.service ?? servicePublicId}`);
     await page.locator('[data-planner-occasion-option]').first().click();
@@ -77,7 +77,48 @@ async function saveAndContinue(page: Page, locale: 'en' | 'ar', options: { servi
     if (!options.browse) {
         await page.locator('[name="address[address_line]"]').fill('20 Browser Checkout Street');
         await page.locator('[name="address[recipient_name]"]').fill('Browser Customer');
-        await page.locator('[name="address[recipient_phone_e164]"]').fill('+201001234567');
+        const phone = page.locator('[name="address[recipient_phone_e164]"]');
+        if (options.checkRecipientPhone) {
+            await expect(page.locator('#planner-recipient-phone-hint')).toBeVisible();
+            for (const invalidPhone of ['01000000000', 'abc', '']) {
+                await phone.fill(invalidPhone);
+                await page.locator('[data-planner-panel="2"] button[type="submit"]').click();
+                await expect(page.locator('[data-planner-recipient-phone-error]')).toBeVisible();
+                await expect(page.locator('[data-planner-recipient-phone-error]')).toContainText('+201000000000');
+                await expect(phone).toHaveAttribute('aria-invalid', 'true');
+                await expect(phone).toHaveValue(invalidPhone);
+                await expect(page.locator('textarea[name="notes"]')).toHaveValue(notes);
+            }
+            await phone.fill('abc');
+            await phone.evaluate((input) => input.removeAttribute('pattern'));
+            await page.locator('[data-planner-panel="2"] button[type="submit"]').click();
+            await expect(page.locator('[data-planner-panel="2"]')).toBeVisible();
+            await expect(city.locator('option')).not.toHaveCount(1, { timeout: 15_000 });
+            await expect(page.locator('[data-planner-error]')).toBeVisible();
+            await expect(page.locator('[data-planner-recipient-phone-error]')).toBeVisible();
+            await expect(phone).toHaveValue('abc');
+            await expect(page.locator('[name="address[address_line]"]')).toHaveValue('20 Browser Checkout Street');
+            await expect(page.locator('textarea[name="notes"]')).toHaveValue(notes);
+
+            const restoredGovernorate = await governorate.inputValue();
+            const restoredCity = await city.inputValue();
+            await page.locator('[data-planner-panel="2"] [data-planner-back]').click();
+            const otherGovernorateValue = await governorate.locator('option').evaluateAll((items, current) => items.map((item) => (item as HTMLOptionElement).value).find((value) => value !== '' && value !== current), restoredGovernorate);
+            expect(otherGovernorateValue).toBeTruthy();
+            await governorate.selectOption(otherGovernorateValue!);
+            await expect(page.locator('[data-planner-loading]')).toHaveAttribute('data-planner-status', 'idle', { timeout: 15_000 });
+            await expect(city).toHaveValue('');
+            await expect(page.locator('[data-planner-city]')).toHaveValue('');
+            await expect(page.locator('[data-planner-booking-city]')).toHaveValue('');
+            await page.locator('[data-planner-panel="1"] [data-planner-next]').click();
+            await expect(page.locator('[data-planner-panel="1"]')).toBeVisible();
+            await expect(page.locator('[data-planner-error]')).toBeVisible();
+            await governorate.selectOption(restoredGovernorate);
+            await expect(page.locator('[data-planner-booking-city]')).toHaveValue(restoredCity, { timeout: 15_000 });
+            await page.locator('[data-planner-panel="1"] [data-planner-next]').click();
+            await expect(page.locator('[data-planner-panel="2"]')).toBeVisible();
+        }
+        await phone.fill('+201001234567');
     }
     await page.locator('[data-planner-panel="2"] button[type="submit"]').click();
 
@@ -111,10 +152,10 @@ test('Save and continue works in English desktop and Arabic mobile checkout', as
     await expect(page).toHaveURL(/\/en$/);
 
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await saveAndContinue(page, 'en');
+    await saveAndContinue(page, 'en', { checkRecipientPhone: true });
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await saveAndContinue(page, 'ar');
+    await saveAndContinue(page, 'ar', { checkRecipientPhone: true });
 });
 
 test('start-only events save from the real wizard for rental, sale and digital in both locales', async ({ page }) => {
