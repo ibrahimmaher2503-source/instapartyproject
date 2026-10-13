@@ -27,7 +27,7 @@ class SubscriptionPaymentResource extends Resource
         return __('subscriptions::subscription.payments');
     }
 
-    protected static ?string $recordTitleAttribute = 'public_id';
+    protected static ?string $recordTitleAttribute = 'gateway_ref';
 
     public static function table(Table $table): Table
     {
