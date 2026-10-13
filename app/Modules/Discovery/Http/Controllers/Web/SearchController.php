@@ -48,7 +48,7 @@ class SearchController
                 'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
                 'price_min' => ['nullable', 'integer', 'min:0'],
                 'price_max' => ['nullable', 'integer', 'min:0', 'gte:price_min'],
-                'guest_count' => ['nullable', 'integer', 'min:1'],
+                'guest_count' => ['nullable', 'integer', 'min:1', 'max:10000'],
                 'min_rating' => ['nullable', 'numeric', 'min:1', 'max:5'],
                 'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'rating_desc', 'newest'])],
                 'page' => ['nullable', 'integer', 'min:1'],
@@ -79,12 +79,14 @@ class SearchController
                 && filter_var($priceMax, FILTER_VALIDATE_INT) !== false
                 && (int) $priceMin > (int) $priceMax;
 
+            $message = in_array('guest_count', $errorKeys, true)
+                ? __('storefront.search.validation.guest_count_range')
+                : ($hasInvertedPriceRange
+                    ? __('storefront.search.validation.price_range')
+                    : __('storefront.search.validation.invalid_filters'));
+
             return redirect()->route('storefront.search', $query)
-                ->withErrors([
-                    'search' => $hasInvertedPriceRange
-                        ? __('storefront.search.validation.price_range')
-                        : __('storefront.search.validation.invalid_filters'),
-                ])
+                ->withErrors(['search' => $message])
                 ->withInput($request->query());
         }
 
