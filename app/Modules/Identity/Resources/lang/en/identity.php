@@ -557,7 +557,7 @@ return [
 
     'errors' => [
         'document_not_owned' => 'This document does not belong to your profile.',
-        'document_not_deletable' => 'Only rejected documents can be deleted.',
+        'document_not_deletable' => 'Only pending or rejected documents can be deleted.',
         'profile_not_approved' => 'Your profile must be approved before requesting product-type approval.',
         'type_already_approved' => 'You are already approved for this product type.',
         'vendor_suspended' => 'Your account is suspended. You can view your data but cannot make changes.',

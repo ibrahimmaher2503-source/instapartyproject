@@ -9,6 +9,7 @@ use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
+use App\Modules\Shared\Domain\Enums\ChangeRequestSubjectType;
 use App\Modules\Shared\Domain\Events\ChangeRequestCreated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -22,23 +23,38 @@ class DispatchVendorChangesRequestedNotificationListener implements ShouldQueue
     {
         $changeRequest = $event->changeRequest;
 
-        if ($changeRequest->subject_type === 'vendor') {
+        if ($changeRequest->subject_type === ChangeRequestSubjectType::VendorProfile->value) {
             $vendor = $changeRequest->subject;
+            $vendor->loadMissing('user');
+            $items = $changeRequest->items;
+            $locale = $vendor->user?->preferred_locale === 'ar' ? 'ar' : 'en';
 
             $context = [
                 'vendor_name' => $vendor->getTranslation('business_name', app()->getLocale(), false) ?: '',
                 'cycle_number' => $changeRequest->cycle_number,
-                'items_count' => $changeRequest->items()->count(),
+                'items_count' => $items->count(),
             ];
 
-            foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            $requestedChanges = $items
+                ->map(fn ($item): string => $item->field_path.': '.$item->{'requested_change_'.$locale})
+                ->implode("\n");
+
+            foreach ([NotificationChannel::Push, NotificationChannel::Email, NotificationChannel::InApp] as $channel) {
+                $channelContext = $channel === NotificationChannel::InApp
+                    ? [
+                        ...$context,
+                        'requested_changes' => $requestedChanges,
+                        'action_url' => route('filament.vendor.pages.vendor-profile-correction-page'),
+                    ]
+                    : $context;
+
                 $this->dispatcher->execute(new DispatchNotificationDTO(
                     eventKey: 'vendor.changes_requested',
                     channel: $channel,
                     audience: NotificationAudience::Vendor,
                     eventCategory: EventCategory::System,
                     userId: $vendor->user_id,
-                    context: $context,
+                    context: $channelContext,
                     referenceType: 'change_request',
                     referenceId: $changeRequest->id,
                 ));

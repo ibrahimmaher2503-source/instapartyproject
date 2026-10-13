@@ -70,7 +70,7 @@ return [
     ],
     'phone_verification' => [
         'title' => 'Verify Phone Number',
-        'description' => 'Confirm the phone number registered for your vendor account before completing approval requirements.',
+        'description' => 'Verify your current phone number. Business pages remain locked until verification succeeds, including after changing your number.',
         'phone' => 'Phone number',
         'code' => 'Verification code',
         'send_code' => 'Send verification code',

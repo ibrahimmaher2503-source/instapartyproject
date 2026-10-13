@@ -197,6 +197,14 @@ final class GapNotificationTemplateSeeder extends Seeder
                 'variables' => ['doc_type'],
             ],
             [
+                'event_key' => 'vendor.document.approved',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Vendor,
+                'subject' => ['en' => 'Document approved', 'ar' => 'تمت الموافقة على المستند'],
+                'body' => ['en' => 'Your document was approved.', 'ar' => 'تمت الموافقة على مستندك.'],
+                'variables' => [],
+            ],
+            [
                 'event_key' => 'vendor.document.rejected',
                 'channel' => NotificationChannel::Push,
                 'audience' => NotificationAudience::Vendor,

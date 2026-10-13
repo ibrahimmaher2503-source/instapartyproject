@@ -11,6 +11,7 @@ use App\Modules\Identity\Domain\Models\VendorDocument;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -26,6 +27,13 @@ final class ReuploadVendorDocumentAction
         $actor ??= auth()->user();
         $ownsDocument = $actor?->vendorProfile?->getKey() === $document->vendor_profile_id;
         abort_unless($actor !== null && ($ownsDocument || $actor->can('review_vendor_documents')), 403);
+
+        Validator::make(['file' => $file], [
+            'file' => ['required', 'file', 'max:10240', 'mimetypes:application/pdf,image/jpeg,image/png', 'mimes:pdf,jpg,jpeg,png'],
+        ], [
+            'file.mimetypes' => __('identity::identity.validation.file_mime_invalid'),
+            'file.mimes' => __('identity::identity.validation.file_mime_invalid'),
+        ])->validate();
 
         $extension = $file->getClientOriginalExtension() ?: $file->extension();
         $diskName = config('filesystems.disks.s3-private.key') ? 's3-private' : config('filesystems.default', 'local');

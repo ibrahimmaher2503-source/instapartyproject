@@ -24,6 +24,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -124,7 +125,7 @@ class VendorDocumentsPage extends Page implements HasTable
                             ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
                             ->storeFiles(false),
                     ])
-                    ->action(function (VendorDocument $record, array $data): void {
+                    ->action(function (VendorDocument $record, array $data, TableAction $action): void {
                         /** @var TemporaryUploadedFile $temporaryFile */
                         $temporaryFile = $data['file'];
                         $uploadedFile = new UploadedFile(
@@ -135,7 +136,14 @@ class VendorDocumentsPage extends Page implements HasTable
                             true,
                         );
 
-                        app(ReuploadVendorDocumentAction::class)->execute($record, $uploadedFile, auth()->user());
+                        try {
+                            app(ReuploadVendorDocumentAction::class)->execute($record, $uploadedFile, auth()->user());
+                        } catch (ValidationException $exception) {
+                            Notification::make()->title($exception->errors()['file'][0] ?? $exception->getMessage())->danger()->send();
+                            $action->halt();
+
+                            return;
+                        }
 
                         Notification::make()
                             ->title(__('identity.notifications.document_upload_success'))
@@ -147,7 +155,7 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn (VendorDocument $record) => $record->status === DocumentStatus::Rejected)
+                    ->visible(fn (VendorDocument $record) => in_array($record->status, [DocumentStatus::Pending, DocumentStatus::Rejected], true))
                     ->action(function (VendorDocument $record): void {
                         app(DeleteVendorDocumentAction::class)->execute(
                             $this->getVendorProfile(),
@@ -226,11 +234,18 @@ class VendorDocumentsPage extends Page implements HasTable
                         true,
                     );
 
-                    app(UploadVendorDocumentAction::class)->execute(
-                        $profile,
-                        $uploadedFile,
-                        DocumentType::from($data['doc_type']),
-                    );
+                    try {
+                        app(UploadVendorDocumentAction::class)->execute(
+                            $profile,
+                            $uploadedFile,
+                            DocumentType::from($data['doc_type']),
+                        );
+                    } catch (ValidationException $exception) {
+                        Notification::make()->title($exception->errors()['file'][0] ?? $exception->getMessage())->danger()->send();
+                        $action->halt();
+
+                        return;
+                    }
 
                     Notification::make()->title(__('identity.notifications.document_upload_success'))->success()->send();
                 }),

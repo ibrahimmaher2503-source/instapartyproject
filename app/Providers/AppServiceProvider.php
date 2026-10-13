@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'service' => Service::class,
             'vendor' => VendorProfile::class,
+            'vendor_profile' => VendorProfile::class,
         ]);
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
