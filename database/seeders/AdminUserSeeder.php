@@ -17,6 +17,10 @@ class AdminUserSeeder extends Seeder
 
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
         fake()->seed(2026050301);
 
         $adminEmail = 'admin@instaparty.local';

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Application\Actions;
 
+use App\Modules\Communication\Domain\Contracts\EmailTransportReadiness;
 use App\Modules\Identity\Application\DTOs\RequestPasswordResetDTO;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\SuspendedState;
@@ -60,7 +61,7 @@ class AdminSendUserPasswordResetLinkAction
         $actorId = (int) $actor->id;
 
         try {
-            if (! in_array(config('mail.mailers.'.config('mail.default').'.transport'), ['smtp', 'ses', 'ses-v2', 'postmark', 'resend', 'sendmail'], true)) {
+            if (! app(EmailTransportReadiness::class)->isConfigured()) {
                 throw new RuntimeException('Mail transport unavailable');
             }
             if ($isCustomer) {

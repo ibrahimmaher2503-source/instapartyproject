@@ -11,6 +11,7 @@ return [
     'customer' => 'Customer',
     'vendor' => 'Vendor',
     'admin' => 'Admin',
+    'product_type_approval_guidance' => 'To approve a product type, open All Vendors and use the Approve Product Type row action. The vendor account must already be approved.',
 
     // Navigation labels
     'nav' => [
@@ -239,6 +240,7 @@ return [
         'suspend' => 'Suspend',
         'unsuspend' => 'Unsuspend',
         'approve_for_type' => 'Approve Product Type',
+        'manage_product_type_approvals' => 'Open All Vendors to approve types',
         'revoke_type' => 'Revoke Product Type Approval',
         'download' => 'View',
         'suspend_customer' => 'Suspend Customer',
@@ -505,6 +507,15 @@ return [
         'hours' => 'At least one business-hours entry is required.',
         'coverage' => 'At least one coverage area is required.',
         'documents' => 'The latest required documents must be approved and valid.',
+        'documents_business_type_missing' => 'Select a valid business type to determine which documents are required.',
+        'documents_need_attention' => 'Required documents needing attention: :documents.',
+        'document_issue' => ':document — :status',
+        'document_status' => [
+            'missing' => 'not submitted',
+            'pending' => 'awaiting review',
+            'rejected' => 'rejected',
+            'expired' => 'expired',
+        ],
     ],
 
     // Validation messages

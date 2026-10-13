@@ -13,8 +13,16 @@ return [
     ],
     'services' => [
         'title' => 'My Services',
+        'create_rental' => 'Add Rental Service',
+        'create_sale' => 'Add Sale Service',
+        'create_digital' => 'Add Digital Service',
         'type' => 'Type',
         'status' => 'Status',
+        'product_type_separator' => ', ',
+        'pending_product_types' => 'Service creation is available only for approved product types. These types are pending admin approval: :types.',
+        'product_type_pending' => ':type services are unavailable until an administrator approves this product type.',
+        'digital_services_disabled' => 'Digital services are currently unavailable on the platform.',
+        'check_product_type_status' => 'View product-type status',
         'last_modified' => 'Last Modified',
         'draft' => 'Draft',
         'pending_review' => 'Pending Review',
@@ -40,6 +48,19 @@ return [
         'occasion_helper_empty' => 'Pick a category to see which occasions it appears under.',
         'occasion_helper_none' => 'This category is not linked to any occasion yet.',
         'occasion_separator' => ', ',
+    ],
+
+    'approval' => [
+        'title' => 'Approval status',
+        'overall' => 'Account approval',
+        'per_type' => 'Per product type',
+        'approved' => 'Approved',
+        'pending' => 'Pending',
+        'unavailable' => 'Unavailable',
+        'rejected' => 'Rejected',
+        'suspended' => 'Suspended',
+        'rejection_reason' => 'Rejection reason',
+        'per_type_guidance' => 'Account approval and product-type approval are separate. Only approved types can create services; pending types stay blocked until an admin approves them. Digital services are available only when enabled on the platform.',
     ],
 
     'imports' => [

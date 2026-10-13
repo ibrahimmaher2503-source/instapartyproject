@@ -35,6 +35,7 @@ use App\Modules\Subscriptions\Database\Seeders\SubscriptionPlansSeeder;
 use App\Modules\Tax\Database\Seeders\TaxRateDevelopmentSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
+use RuntimeException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -43,6 +44,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new RuntimeException('Development database seeding is unavailable outside local/testing.');
+        }
+
         $this->call([
             IdentityRolesSeeder::class,
         ]);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Application\Actions;
 
+use App\Modules\Communication\Domain\Contracts\EmailTransportReadiness;
 use App\Modules\Identity\Domain\Models\User;
 use Filament\Facades\Filament;
 use Filament\Notifications\Auth\VerifyEmail;
@@ -30,7 +31,7 @@ final class AdminResendVendorVerificationAction
         RateLimiter::hit($key, 600);
         $accepted = false;
         try {
-            if (in_array(config('mail.mailers.'.config('mail.default').'.transport'), ['smtp', 'ses', 'ses-v2', 'postmark', 'resend', 'sendmail'], true)) {
+            if (app(EmailTransportReadiness::class)->isConfigured()) {
                 $notification = app(VerifyEmail::class);
                 $notification->url = Filament::getPanel('vendor')->getVerifyEmailUrl($target);
                 $target->notifyNow($notification);

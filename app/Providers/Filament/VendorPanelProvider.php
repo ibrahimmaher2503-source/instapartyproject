@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Modules\Identity\Filament\Auth\IsolatedPanelLogin;
+use App\Modules\Identity\Filament\Auth\PanelRequestPasswordReset;
 use App\Modules\Identity\Filament\Auth\VendorEmailVerificationPrompt;
 use App\Modules\Identity\Filament\Vendor\Pages\RegisterVendorPage;
 use App\Modules\Identity\Http\Middleware\CheckVendorSuspension;
@@ -103,7 +104,7 @@ class VendorPanelProvider extends PanelProvider
             ->registration(RegisterVendorPage::class)
             ->emailVerification(VendorEmailVerificationPrompt::class)
             ->homeUrl('/vendor-portal')
-            ->passwordReset()
+            ->passwordReset(requestAction: PanelRequestPasswordReset::class)
             ->brandName('InstaParty Vendor')
             ->colors([
                 // Jewel-grade amber-orange — richer saturation at 400/500/600 than

@@ -27,6 +27,7 @@ use App\Modules\Identity\Domain\States\VendorApprovalStatus\SuspendedState;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages\ListVendorApprovalQueue;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages\ReviewVendorApplication;
+use App\Modules\Identity\Filament\Resources\VendorProfileResource\Pages\ListVendorProfiles;
 use Carbon\CarbonImmutable;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
@@ -102,6 +103,71 @@ it('denies incomplete approval with a localized structured checklist', function 
     }
 
     expect($profile->refresh()->approval_status)->not->toBeInstanceOf(ApprovedState::class);
+})->with(['en', 'ar']);
+
+it('names the required documents and their current status when blocking company approval', function (string $locale): void {
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $actor = vendorLifecycleActor(['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile']);
+    $this->actingAs($actor);
+
+    $profile = eligibleVendorProfile();
+    $profile->update([
+        'business_type' => 'company',
+        'commercial_register_no' => 'CR-TEST-1',
+        'tax_id' => 'TAX-TEST-1',
+    ]);
+    VendorDocument::factory()->approved()->create([
+        'vendor_profile_id' => $profile->id,
+        'doc_type' => DocumentType::Cr,
+        'expires_at' => null,
+    ]);
+    $profile->documents()
+        ->where('doc_type', DocumentType::IbanProof->value)
+        ->latest('created_at')
+        ->latest('id')
+        ->firstOrFail()
+        ->update(['expires_at' => CarbonImmutable::now(config('app.timezone', 'UTC'))->subDay()->toDateString()]);
+
+    $eligibility = app(VendorApprovalEligibilityService::class)->evaluate($profile->fresh());
+    $missingTaxCard = __('identity::identity.approval_eligibility.document_issue', [
+        'document' => __('identity::identity.document_type.tax_card'),
+        'status' => __('identity::identity.approval_eligibility.document_status.missing'),
+    ]);
+    $expiredIbanProof = __('identity::identity.approval_eligibility.document_issue', [
+        'document' => __('identity::identity.document_type.iban_proof'),
+        'status' => __('identity::identity.approval_eligibility.document_status.expired'),
+    ]);
+    expect($eligibility->passes('documents'))->toBeFalse()
+        ->and($eligibility->errors['documents'])->toContain($missingTaxCard)
+        ->and($eligibility->errors['documents'])->toContain($expiredIbanProof);
+    $pendingTaxCard = __('identity::identity.approval_eligibility.document_issue', [
+        'document' => __('identity::identity.document_type.tax_card'),
+        'status' => __('identity::identity.approval_eligibility.document_status.pending'),
+    ]);
+
+    Livewire::test(ListVendorProfiles::class)
+        ->assertSuccessful()
+        ->assertTableActionEnabled('approve', $profile);
+
+    $queue = Livewire::test(ListVendorApprovalQueue::class)
+        ->assertSuccessful()
+        ->assertTableActionEnabled('approve', $profile)
+        ->assertSee($eligibility->errors['documents'])
+        ->mountTableAction('approve', $profile);
+    VendorDocument::factory()->create([
+        'vendor_profile_id' => $profile->id,
+        'doc_type' => DocumentType::TaxCard,
+        'status' => 'pending',
+    ]);
+
+    $queue->callMountedTableAction()
+        ->assertNotified(Notification::make()
+            ->title(__('identity.notifications.vendor_approval_failed'))
+            ->body(implode(' ', [$pendingTaxCard, $expiredIbanProof]))
+            ->danger());
+
+    expect($profile->fresh()->approval_status)->toBeInstanceOf(PendingState::class);
 })->with(['en', 'ar']);
 
 it('accepts required documents through the end of the configured timezone day', function (): void {

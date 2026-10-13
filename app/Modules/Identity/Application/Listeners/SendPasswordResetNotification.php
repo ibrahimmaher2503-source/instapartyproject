@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Application\Listeners;
 
+use App\Modules\Communication\Domain\Contracts\EmailTransportReadiness;
 use App\Modules\Identity\Domain\Contracts\OtpGatewayInterface;
 use App\Modules\Identity\Domain\Events\PasswordResetRequested;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 use Throwable;
 
 class SendPasswordResetNotification implements ShouldBeEncrypted, ShouldQueue
@@ -25,7 +27,10 @@ class SendPasswordResetNotification implements ShouldBeEncrypted, ShouldQueue
         return [30, 120, 600];
     }
 
-    public function __construct(private readonly OtpGatewayInterface $smsGateway) {}
+    public function __construct(
+        private readonly OtpGatewayInterface $smsGateway,
+        private readonly EmailTransportReadiness $emailReadiness,
+    ) {}
 
     public function handle(PasswordResetRequested $event): void
     {
@@ -40,6 +45,14 @@ class SendPasswordResetNotification implements ShouldBeEncrypted, ShouldQueue
 
     private function sendEmail(string $email, string $token, string $locale): void
     {
+        if (! app()->environment(['local', 'testing']) && ! $this->emailReadiness->isConfigured()) {
+            Log::warning('password-reset.email.unavailable', [
+                'failure_code' => 'MAIL_NOT_CONFIGURED',
+            ]);
+
+            throw new RuntimeException('MAIL_NOT_CONFIGURED');
+        }
+
         $appUrl = rtrim((string) config('app.url'), '/');
         $resetUrl = "{$appUrl}/{$locale}/auth/reset?token={$token}&identifier=".urlencode($email);
 
@@ -55,7 +68,8 @@ class SendPasswordResetNotification implements ShouldBeEncrypted, ShouldQueue
             Log::warning('password-reset.email.failed', [
                 'error_class' => class_basename($e),
             ]);
-            throw $e;
+
+            throw new RuntimeException('EMAIL_DELIVERY_FAILED');
         }
     }
 }

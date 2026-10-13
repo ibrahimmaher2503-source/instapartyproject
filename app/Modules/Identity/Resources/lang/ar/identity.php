@@ -11,6 +11,7 @@ return [
     'customer' => 'العميل',
     'vendor' => 'مقدم الخدمة',
     'admin' => 'المسؤول',
+    'product_type_approval_guidance' => 'لاعتماد نوع منتج، افتح صفحة جميع مقدمي الخدمات واستخدم إجراء اعتماد نوع المنتج في صف مقدم الخدمة. يجب اعتماد حساب مقدم الخدمة أولاً.',
 
     // Navigation labels
     'nav' => [
@@ -239,6 +240,7 @@ return [
         'suspend' => 'إيقاف',
         'unsuspend' => 'إلغاء الإيقاف',
         'approve_for_type' => 'اعتماد نوع منتج',
+        'manage_product_type_approvals' => 'فتح جميع مقدمي الخدمات لاعتماد الأنواع',
         'revoke_type' => 'سحب اعتماد النوع',
         'download' => 'عرض',
         'suspend_customer' => 'تعليق العميل',
@@ -505,6 +507,15 @@ return [
         'hours' => 'يجب إضافة موعد عمل واحد على الأقل.',
         'coverage' => 'يجب إضافة منطقة تغطية واحدة على الأقل.',
         'documents' => 'يجب أن تكون أحدث المستندات المطلوبة معتمدة وسارية.',
+        'documents_business_type_missing' => 'اختر نوع نشاط صحيحاً لتحديد المستندات المطلوبة.',
+        'documents_need_attention' => 'المستندات المطلوبة التي تحتاج إلى إجراء: :documents.',
+        'document_issue' => ':document — :status',
+        'document_status' => [
+            'missing' => 'لم يُقدّم',
+            'pending' => 'بانتظار المراجعة',
+            'rejected' => 'مرفوض',
+            'expired' => 'منتهي الصلاحية',
+        ],
     ],
 
     // Validation messages

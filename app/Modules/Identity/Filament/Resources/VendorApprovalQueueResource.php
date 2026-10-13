@@ -133,11 +133,6 @@ class VendorApprovalQueueResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof PendingState
                         && (bool) auth()->user()?->can('approve_vendor_profile'))
-                    ->tooltip(function (VendorProfile $record): ?string {
-                        $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
-
-                        return $result->eligible ? null : implode(' ', $result->errors);
-                    })
                     ->action(function (VendorProfile $record): void {
                         try {
                             app(ApproveVendorProfileAction::class)->execute($record);
