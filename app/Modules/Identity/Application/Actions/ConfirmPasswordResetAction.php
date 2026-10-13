@@ -47,7 +47,7 @@ class ConfirmPasswordResetAction
                 ? User::where('email', $dto->identifier)->first()
                 : User::where('phone_e164', $dto->identifier)->first();
 
-            if (! $user) {
+            if (! $user || $user->hasAnyRole(['admin', 'super_admin', 'booking_manager', 'panel_user'])) {
                 throw new RuntimeException('invalid_or_expired');
             }
 

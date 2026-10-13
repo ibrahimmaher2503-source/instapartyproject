@@ -13,6 +13,7 @@ use App\Modules\Settlement\Domain\States\WithdrawalStatus\ApprovedState;
 use App\Modules\Settlement\Domain\States\WithdrawalStatus\PendingState;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ApproveWithdrawalAction
 {
@@ -43,6 +44,30 @@ class ApproveWithdrawalAction
                     'Approved',
                 );
             }
+            // Approval consumes the request-time reserve; it must never create another debit.
+            $hasReserve = DB::table('wallet_ledger as reserve')
+                ->join('wallets as wallet', 'wallet.id', '=', 'reserve.wallet_id')
+                ->join('ledger_transaction_groups as reserve_group', 'reserve_group.id', '=', 'reserve.transaction_group_id')
+                ->where('reserve.id', $withdrawal->reserved_ledger_entry_id)
+                ->where('wallet.owner_type', 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile')
+                ->where('wallet.owner_id', $withdrawal->vendor_profile_id)
+                ->where('wallet.currency', $withdrawal->requested_amount_currency)
+                ->where('reserve.currency', $withdrawal->requested_amount_currency)
+                ->where('reserve.amount_minor', $withdrawal->requested_amount_minor)
+                ->where('reserve.direction', 'debit')
+                ->where('reserve.entry_type', 'withdrawal_reserve')
+                ->where('reserve.related_entity_type', 'withdrawal')
+                ->where('reserve.related_entity_id', $withdrawal->id)
+                ->whereNotNull('reserve.posted_at')
+                ->where('reserve_group.kind', 'withdrawal_reserve')
+                ->where('reserve_group.currency', $withdrawal->requested_amount_currency)
+                ->whereNotNull('reserve_group.posted_at')
+                ->exists();
+
+            if (! $hasReserve) {
+                throw ValidationException::withMessages(['withdrawal' => __('settlement.withdrawal.missing_reserve')]);
+            }
+
             $withdrawal->update([
                 'status' => ApprovedState::class,
                 'approved_at' => now(),

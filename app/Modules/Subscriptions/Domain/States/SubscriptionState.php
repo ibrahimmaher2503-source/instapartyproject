@@ -19,6 +19,7 @@ abstract class SubscriptionState extends State
         return parent::config()
             ->default(ActiveState::class)
             ->allowTransition(ActiveState::class, PastDueState::class, MarkPastDueTransition::class)
+            ->allowTransition(ActiveState::class, ExpiredState::class, ExpireSubscriptionTransition::class)
             ->allowTransition(ActiveState::class, CancelledState::class, CancelSubscriptionTransition::class)
             ->allowTransition(ActiveState::class, SupersededState::class, SupersedeSubscriptionTransition::class)
             ->allowTransition(PastDueState::class, ActiveState::class, RenewSubscriptionTransition::class)

@@ -46,6 +46,7 @@ class ReconciliationRunResource extends JsonResource
             'manual_review_count' => $this->manual_review_count,
             'started_at' => $this->started_at?->toISOString(),
             'completed_at' => $this->completed_at?->toISOString(),
+            'failure_message' => $this->failure_message ? __($this->failure_message) : null,
         ];
     }
 }

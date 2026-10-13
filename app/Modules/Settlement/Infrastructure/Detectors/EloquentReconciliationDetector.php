@@ -171,10 +171,27 @@ class EloquentReconciliationDetector implements ReconciliationDetector
         $missing = DB::table('withdrawals')
             ->join('wallets', function ($join) use ($walletId): void {
                 $join->on('wallets.owner_id', '=', 'withdrawals.vendor_profile_id')
-                    ->where('wallets.id', '=', $walletId);
+                    ->where('wallets.id', '=', $walletId)
+                    ->where('wallets.owner_type', '=', 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile')
+                    ->on('wallets.currency', '=', 'withdrawals.requested_amount_currency');
             })
-            ->whereIn('withdrawals.status', ['approved', 'paid'])
-            ->whereNull('withdrawals.reserved_ledger_entry_id')
+            ->whereIn('withdrawals.status', ['pending', 'approved', 'paid'])
+            ->whereNotExists(function ($query): void {
+                $query->from('wallet_ledger as reserve')
+                    ->join('ledger_transaction_groups as reserve_group', 'reserve_group.id', '=', 'reserve.transaction_group_id')
+                    ->whereColumn('reserve.id', 'withdrawals.reserved_ledger_entry_id')
+                    ->whereColumn('reserve.wallet_id', 'wallets.id')
+                    ->whereColumn('reserve.currency', 'withdrawals.requested_amount_currency')
+                    ->whereColumn('reserve.amount_minor', 'withdrawals.requested_amount_minor')
+                    ->where('reserve.entry_type', 'withdrawal_reserve')
+                    ->where('reserve.direction', 'debit')
+                    ->where('reserve.related_entity_type', 'withdrawal')
+                    ->whereColumn('reserve.related_entity_id', 'withdrawals.id')
+                    ->whereNotNull('reserve.posted_at')
+                    ->where('reserve_group.kind', 'withdrawal_reserve')
+                    ->whereColumn('reserve_group.currency', 'withdrawals.requested_amount_currency')
+                    ->whereNotNull('reserve_group.posted_at');
+            })
             ->select('withdrawals.id')
             ->get();
 
@@ -183,8 +200,8 @@ class EloquentReconciliationDetector implements ReconciliationDetector
             severity: ReconciliationFindingSeverity::High,
             resourceType: 'withdrawal',
             resourceId: $row->id,
-            expected: ['reserved_ledger_entry_id' => 'not null'],
-            actual: ['reserved_ledger_entry_id' => null],
+            expected: ['valid_reserve_entry' => true],
+            actual: ['valid_reserve_entry' => false],
             delta: null,
             descriptionKey: 'settlement.findings.withdrawal_without_reserve',
         ))->values()->all();
@@ -194,7 +211,12 @@ class EloquentReconciliationDetector implements ReconciliationDetector
     public function detectNegativeVendorBalances(int $walletId): array
     {
         $wallet = Wallet::find($walletId);
-        if ($wallet === null || (int) $wallet->balance_minor >= 0) {
+        if ($wallet === null || $wallet->owner_type !== 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile') {
+            return [];
+        }
+
+        $balanceMinor = $this->ledgerRepo->projectionFromLedger($walletId)->balanceMinor;
+        if ($balanceMinor >= 0) {
             return [];
         }
 
@@ -204,8 +226,8 @@ class EloquentReconciliationDetector implements ReconciliationDetector
             resourceType: 'wallet',
             resourceId: $walletId,
             expected: ['balance_minor' => '>= 0'],
-            actual: ['balance_minor' => (int) $wallet->balance_minor],
-            delta: ['balance_minor' => (int) $wallet->balance_minor],
+            actual: ['balance_minor' => $balanceMinor],
+            delta: ['balance_minor' => $balanceMinor],
             descriptionKey: 'settlement.findings.negative_vendor_balance',
         )];
     }

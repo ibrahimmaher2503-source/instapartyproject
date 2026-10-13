@@ -8,6 +8,7 @@ use App\Modules\Settlement\Application\DTOs\DetectedFinding;
 use App\Modules\Settlement\Domain\Enums\ReconciliationStatus;
 use App\Modules\Settlement\Domain\Models\ReconciliationFinding;
 use App\Modules\Settlement\Domain\Models\ReconciliationRun;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class EloquentReconciliationRepository
@@ -43,7 +44,42 @@ class EloquentReconciliationRepository
 
     public function recordFinding(ReconciliationRun $run, DetectedFinding $finding): ReconciliationFinding
     {
-        return ReconciliationFinding::create([
+        $conditionKey = hash('sha256', json_encode([
+            $finding->findingType->value,
+            $finding->resourceType,
+            $finding->resourceId,
+            $finding->descriptionKey,
+        ], JSON_THROW_ON_ERROR));
+
+        // Keep acknowledged conditions suppressed while preserving their original evidence and run.
+        $existing = ReconciliationFinding::query()
+            ->where(function ($query) use ($finding, $conditionKey): void {
+                $query->where('open_condition_key', $conditionKey)
+                    ->orWhere(fn ($legacy) => $legacy
+                        ->whereNull('open_condition_key')
+                        ->where('finding_type', $finding->findingType->value)
+                        ->where('resource_type', $finding->resourceType)
+                        ->where('resource_id', $finding->resourceId)
+                        ->where('description_key', $finding->descriptionKey)
+                        ->where(fn ($status) => $status
+                            ->where('resolution', 'ignored_known_issue')
+                            ->orWhere(fn ($open) => $open->whereNull('resolution')->whereNull('resolved_at'))));
+            })
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first();
+
+        if ($existing !== null) {
+            $existing->update([
+                'open_condition_key' => $conditionKey,
+                'last_seen_at' => now(),
+                'last_seen_run_id' => $run->id,
+            ]);
+
+            return $this->recordOccurrence($run, $existing);
+        }
+
+        $record = ReconciliationFinding::query()->firstOrCreate(['open_condition_key' => $conditionKey], [
             'public_id' => Str::ulid()->toBase32(),
             'reconciliation_run_id' => $run->id,
             'finding_type' => $finding->findingType->value,
@@ -56,7 +92,26 @@ class EloquentReconciliationRepository
             'description_key' => $finding->descriptionKey,
             'description_params' => $finding->descriptionParams,
             'created_at' => now(),
+            'last_seen_at' => now(),
+            'last_seen_run_id' => $run->id,
         ]);
+
+        if (! $record->wasRecentlyCreated) {
+            $record->update(['last_seen_at' => now(), 'last_seen_run_id' => $run->id]);
+        }
+
+        return $this->recordOccurrence($run, $record);
+    }
+
+    private function recordOccurrence(ReconciliationRun $run, ReconciliationFinding $finding): ReconciliationFinding
+    {
+        DB::table('reconciliation_finding_runs')->insertOrIgnore([
+            'reconciliation_finding_id' => $finding->id,
+            'reconciliation_run_id' => $run->id,
+            'created_at' => now(),
+        ]);
+
+        return $finding;
     }
 
     public function finalise(ReconciliationRun $run, ReconciliationStatus $status, array $counts): void
