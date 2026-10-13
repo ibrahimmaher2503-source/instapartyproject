@@ -31,7 +31,14 @@ document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
 });
 
 document.querySelectorAll('[data-browser-timezone]').forEach((input) => {
-    if (input instanceof HTMLInputElement) input.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
+    if (!(input instanceof HTMLInputElement)) return;
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
+    try {
+        new Intl.DateTimeFormat('en', { timeZone: input.value || browserTimezone });
+    } catch {
+        input.value = browserTimezone;
+    }
+    if (input.value === '') input.value = browserTimezone;
 });
 
 const searchGeography = document.querySelector('[data-search-geography]');
@@ -192,6 +199,54 @@ if (planner instanceof HTMLElement) {
     const initialGovernorate = planner.dataset.initialGovernorate ?? '';
     const initialCity = planner.dataset.initialCity ?? '';
     const errorBox = planner.querySelector('[data-planner-error]');
+    const timezoneInput = planner.querySelector('[name="timezone"]');
+    const startsAtInput = planner.querySelector('[name="event_starts_at"]');
+    const endsAtInput = planner.querySelector('[name="event_ends_at"]');
+
+    const plannerTimezone = () => timezoneInput instanceof HTMLInputElement && timezoneInput.value !== ''
+        ? timezoneInput.value
+        : (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo');
+    const formatDateTimeInTimezone = (date, timeZone) => {
+        const parts = new Intl.DateTimeFormat('en', {
+            timeZone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        }).formatToParts(date);
+        const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+        return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+    };
+    const addLocalMinutes = (value, minutes) => {
+        const date = new Date(`${value}:00Z`);
+        if (Number.isNaN(date.valueOf())) return '';
+        date.setUTCMinutes(date.getUTCMinutes() + minutes);
+        return date.toISOString().slice(0, 16);
+    };
+    const syncDateMinimums = () => {
+        if (!(startsAtInput instanceof HTMLInputElement) || !(endsAtInput instanceof HTMLInputElement)) return;
+        const minimum = formatDateTimeInTimezone(new Date(Date.now() + 60_000), plannerTimezone());
+        startsAtInput.min = minimum;
+        const afterStart = startsAtInput.value === '' ? '' : addLocalMinutes(startsAtInput.value, 1);
+        endsAtInput.min = afterStart !== '' && afterStart > minimum ? afterStart : minimum;
+    };
+    const restoreInitialDate = (input) => {
+        if (!(input instanceof HTMLInputElement)) return;
+        const initial = input.dataset.initialDate ?? '';
+        if (initial === '') return;
+        if (/[zZ]|[+-]\d{2}:\d{2}$/.test(initial)) {
+            const instant = new Date(initial);
+            if (!Number.isNaN(instant.valueOf())) input.value = formatDateTimeInTimezone(instant, plannerTimezone());
+            return;
+        }
+        input.value = initial;
+    };
+
+    restoreInitialDate(startsAtInput);
+    restoreInitialDate(endsAtInput);
+    syncDateMinimums();
 
     const showPlannerError = (message) => {
         if (!(errorBox instanceof HTMLElement)) return;
@@ -215,16 +270,19 @@ if (planner instanceof HTMLElement) {
                 return false;
             }
 
-            const startsAt = planner.querySelector('[name="event_starts_at"]');
-            const endsAt = planner.querySelector('[name="event_ends_at"]');
-            if (!(startsAt instanceof HTMLInputElement) || !(endsAt instanceof HTMLInputElement) || startsAt.value === '') {
+            syncDateMinimums();
+            if (!(startsAtInput instanceof HTMLInputElement) || !(endsAtInput instanceof HTMLInputElement) || startsAtInput.value === '') {
                 showPlannerError(planner.dataset.errorTimesRequired ?? '');
                 return false;
             }
-            const startsDate = new Date(startsAt.value);
-            const endsDate = endsAt.value === '' ? null : new Date(endsAt.value);
-            if (Number.isNaN(startsDate.valueOf()) || startsDate <= new Date() || (endsDate !== null && (Number.isNaN(endsDate.valueOf()) || endsDate <= startsDate))) {
+            if (startsAtInput.value < startsAtInput.min) {
                 showPlannerError(planner.dataset.errorTimesInvalid ?? '');
+                startsAtInput.focus();
+                return false;
+            }
+            if (endsAtInput.value !== '' && endsAtInput.value < endsAtInput.min) {
+                showPlannerError(planner.dataset.errorTimesInvalid ?? '');
+                endsAtInput.focus();
                 return false;
             }
         }
@@ -368,9 +426,28 @@ if (planner instanceof HTMLElement) {
         });
     }
 
-    planner.querySelectorAll('[name="event_starts_at"], [name="event_ends_at"]').forEach((input) => {
-        input.addEventListener('input', clearPlannerError);
-        input.addEventListener('change', clearPlannerError);
+    [startsAtInput, endsAtInput].forEach((input) => {
+        if (!(input instanceof HTMLInputElement)) return;
+        input.addEventListener('input', () => {
+            syncDateMinimums();
+            clearPlannerError();
+        });
+        input.addEventListener('change', () => {
+            syncDateMinimums();
+            clearPlannerError();
+        });
+    });
+
+    form?.addEventListener('submit', (event) => {
+        syncDateMinimums();
+        if (!(startsAtInput instanceof HTMLInputElement) || !(endsAtInput instanceof HTMLInputElement)) return;
+        if (startsAtInput.value < startsAtInput.min || (endsAtInput.value !== '' && endsAtInput.value < endsAtInput.min)) {
+            event.preventDefault();
+            activeStep = 0;
+            syncPlanner();
+            showPlannerError(planner.dataset.errorTimesInvalid ?? '');
+            (startsAtInput.value < startsAtInput.min ? startsAtInput : endsAtInput).focus();
+        }
     });
 
     const recipientPhone = planner.querySelector('[data-planner-recipient-phone]');

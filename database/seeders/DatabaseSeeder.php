@@ -87,6 +87,7 @@ class DatabaseSeeder extends Seeder
             AppSettingsSeeder::class,
             FeatureFlagsSeeder::class,
             FrontendAppearanceSeeder::class,
+            RefundPolicyCmsPageSeeder::class,
             TaxRateDevelopmentSeeder::class,
             AdvertisementPackageDevelopmentSeeder::class,
             InboxRoutingRuleDevelopmentSeeder::class,

@@ -16,7 +16,7 @@
         return '<h2 id="'.e($id).'">'.$match[1].'</h2>';
     }, $articleHtml) ?? $articleHtml;
 
-    $showContents = in_array($slug, ['terms', 'privacy'], true) && count($headings) >= 4;
+    $showContents = in_array($slug, ['terms', 'privacy', 'refund-policy'], true) && count($headings) >= 4;
 @endphp
 
 <div class="sf-cms-page sf-info-page bg-[var(--sf-ivory)]">

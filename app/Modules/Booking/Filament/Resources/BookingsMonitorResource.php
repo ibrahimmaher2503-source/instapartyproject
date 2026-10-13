@@ -13,6 +13,8 @@ use App\Modules\Booking\Domain\Enums\PaymentStatus;
 use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\BookingLifecycleState;
+use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CancelledState;
+use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CompletedState;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CustomerReviewState;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Booking\Filament\Resources\BookingsMonitorResource\Pages\ListBookingsMonitor;
@@ -20,6 +22,7 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use DomainException;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -175,18 +178,30 @@ class BookingsMonitorResource extends Resource
                             ->maxLength(1000),
                     ])
                     ->visible(fn (Booking $record): bool => auth()->user()?->can('force_cancel_booking') === true
-                        && $record->lifecycle_status !== LifecycleStatus::Completed
+                        && ! ($record->lifecycle_status instanceof CancelledState)
+                        && ! ($record->lifecycle_status instanceof CompletedState)
                     )
                     ->action(function (Booking $record, array $data): void {
-                        app(ForceCancelBookingAction::class)->execute(
-                            $record,
-                            new AdminInterventionDTO(
-                                bookingId: $record->id,
-                                adminId: (int) auth()->id(),
-                                interventionType: InterventionType::ForceCancel,
-                                reason: $data['reason'],
-                            ),
-                        );
+                        abort_unless(auth()->user()?->can('force_cancel_booking') === true, 403);
+
+                        try {
+                            app(ForceCancelBookingAction::class)->execute(
+                                $record,
+                                new AdminInterventionDTO(
+                                    bookingId: $record->id,
+                                    adminId: (int) auth()->id(),
+                                    interventionType: InterventionType::ForceCancel,
+                                    reason: $data['reason'],
+                                ),
+                            );
+                        } catch (DomainException $exception) {
+                            Notification::make()
+                                ->title($exception->getMessage())
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
 
                         Notification::make()
                             ->title(__('booking.notifications.force_cancelled'))

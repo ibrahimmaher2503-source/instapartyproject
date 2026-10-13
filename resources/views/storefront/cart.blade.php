@@ -1,6 +1,7 @@
 @extends('storefront.layouts.app')
 
 @php
+    use App\Modules\Catalog\Domain\Enums\ProductType;
     use Brick\Money\Money;
 
     $items = $booking?->items ?? collect();
@@ -55,9 +56,28 @@
                             </div>
                             <div class="mt-4 divide-y divide-ink-100">
                                 @foreach ($vendor->items as $item)
-                                    @php $itemName = $item->name_snapshot[$locale] ?? $item->name_snapshot['en'] ?? ''; @endphp
+                                    @php
+                                        $itemName = $item->name_snapshot[$locale] ?? $item->name_snapshot['en'] ?? '';
+                                        $quantityEditable = match ($item->product_type) {
+                                            ProductType::Rental => false,
+                                            ProductType::Sale, ProductType::Digital => true,
+                                        };
+                                    @endphp
                                     <div class="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                                        <div class="min-w-0"><p class="font-bold text-ink-900">{{ $itemName }}</p><p class="mt-1 text-sm text-ink-500">{{ __('storefront.service.quantity') }}: {{ $item->quantity }}</p></div>
+                                        <div class="min-w-0">
+                                            <p class="font-bold text-ink-900">{{ $itemName }}</p>
+                                            @if ($quantityEditable)
+                                                <form action="{{ route('storefront.cart.update', [$booking->public_id, $item->public_id]) }}" method="POST" class="mt-2 flex flex-wrap items-center gap-2">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <label for="cart-quantity-{{ $item->public_id }}" class="text-sm text-ink-500">{{ __('storefront.service.quantity') }}</label>
+                                                    <input id="cart-quantity-{{ $item->public_id }}" name="quantity" type="number" min="1" max="100" value="{{ $item->quantity }}" required aria-label="{{ __('storefront.service.quantity') }}: {{ $itemName }}" class="w-20 rounded-lg border border-ink-200 px-2 py-1 text-sm text-ink-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-300">
+                                                    <button type="submit" aria-label="{{ __('booking.actions.change_quantity') }}: {{ $itemName }}" class="text-xs font-bold text-secondary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-300">{{ __('booking.actions.change_quantity') }}</button>
+                                                </form>
+                                            @else
+                                                <p class="mt-1 text-sm text-ink-500">{{ __('storefront.service.quantity') }}: {{ $item->quantity }}</p>
+                                            @endif
+                                        </div>
                                         <div class="shrink-0 text-end"><p class="font-extrabold text-secondary-700"><bdi dir="ltr">{{ Money::ofMinor((int) $item->line_total_minor, (string) ($item->line_total_currency ?: $currency))->formatTo($locale) }}</bdi></p><form action="{{ route('storefront.cart.remove', [$booking->public_id, $item->public_id]) }}" method="POST" class="mt-2">@csrf @method('DELETE')<button class="text-xs font-bold text-ink-400 underline hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-300" type="submit" aria-label="{{ __('storefront.cart.remove_item', ['name' => $itemName]) }}">{{ __('storefront.cart.remove') }}</button></form></div>
                                     </div>
                                 @endforeach

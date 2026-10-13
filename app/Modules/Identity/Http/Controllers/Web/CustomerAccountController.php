@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Http\Controllers\Web;
 
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
+use App\Modules\Booking\Domain\Enums\InterventionType;
+use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
@@ -12,7 +14,10 @@ use App\Modules\Discovery\Domain\Models\Wishlist;
 use App\Modules\Identity\Application\Actions\UpdateCustomerProfileAction;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Http\Requests\UpdateCustomerProfileRequest;
+use App\Modules\Payments\Application\DTOs\RefundTimelineEntryDto;
+use App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader;
 use App\Modules\Payments\Domain\Contracts\RefundTimelineReader;
+use App\Modules\Payments\Domain\Enums\RefundStatus;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Reviews\Domain\Contracts\BookingItemReviewabilityReader;
 use App\Modules\Reviews\Domain\Contracts\CustomerReviewReader;
@@ -45,10 +50,59 @@ final class CustomerAccountController
         return view('storefront.account.bookings', compact('bookings'));
     }
 
-    public function booking(Request $request, string $publicId, RefundTimelineReader $refundReader, CatalogServiceReader $catalogReader, BookingItemReviewabilityReader $reviewability, ServiceReviewRepository $reviews): View
-    {
+    public function booking(
+        Request $request,
+        string $publicId,
+        RefundTimelineReader $refundReader,
+        BookingPaymentTotalsReader $paymentTotalsReader,
+        CatalogServiceReader $catalogReader,
+        BookingItemReviewabilityReader $reviewability,
+        ServiceReviewRepository $reviews,
+    ): View {
         $booking = Booking::query()->where('customer_id', $this->user($request)->id)->where('public_id', $publicId)->with(['vendors.vendor', 'vendors.items.service', 'occasion', 'address.city', 'payments', 'customerNotes'])->firstOrFail();
         $refunds = $refundReader->findByBookingId($booking->id);
+        $cancellation = null;
+
+        if ($booking->lifecycle_status->getValue() === LifecycleStatus::Cancelled->value) {
+            $paymentTotals = $paymentTotalsReader->forBooking($booking->id, (string) $booking->total_currency);
+            $transition = $booking->stateTransitions()
+                ->where('to_state', LifecycleStatus::Cancelled->value)
+                ->latest('id')
+                ->first(['trigger_kind', 'context']);
+            $interventionId = $transition?->trigger_kind === 'admin'
+                ? ($transition->context['intervention_id'] ?? null)
+                : null;
+            $reason = $transition?->trigger_kind === 'customer'
+                ? ($transition->context['reason'] ?? null)
+                : null;
+            $latestRefund = $refunds->first();
+
+            if ($transition?->trigger_kind === 'admin' && $interventionId !== null) {
+                $reason = $booking->adminInterventions()
+                    ->whereKey($interventionId)
+                    ->where('intervention_type', InterventionType::ForceCancel->value)
+                    ->value('reason');
+            }
+            $refundGuidance = match (true) {
+                $refunds->contains(static fn (RefundTimelineEntryDto $refund): bool => in_array(
+                    $refund->status,
+                    [RefundStatus::Pending, RefundStatus::Processing],
+                    true,
+                )) => 'in_progress',
+                $latestRefund?->status === RefundStatus::Failed => 'failed',
+                $paymentTotals['refunded_minor'] > 0 && $paymentTotals['net_paid_minor'] > 0 => 'partial_completed',
+                $paymentTotals['refunded_minor'] > 0 => 'full_completed',
+                $paymentTotals['captured_minor'] > 0 => 'not_requested',
+                default => 'no_payment',
+            };
+
+            $cancellation = [
+                'reason' => is_string($reason) && filled($reason) ? trim($reason) : null,
+                'payment_totals' => $paymentTotals,
+                'refund_guidance' => $refundGuidance,
+            ];
+        }
+
         $availableServices = [];
         $reviewableItems = [];
 
@@ -60,7 +114,7 @@ final class CustomerAccountController
             }
         }
 
-        return view('storefront.account.booking', compact('booking', 'refunds', 'availableServices', 'reviewableItems'));
+        return view('storefront.account.booking', compact('booking', 'refunds', 'availableServices', 'reviewableItems', 'cancellation'));
     }
 
     public function payments(Request $request, RefundTimelineReader $refundReader): View

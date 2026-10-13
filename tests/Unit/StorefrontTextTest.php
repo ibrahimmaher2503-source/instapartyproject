@@ -32,3 +32,17 @@ it('keeps a valid storefront translation in the active locale', function (): voi
 
     expect((new StorefrontText)->translation($model, 'name', 'ar'))->toBe('كيكة عيد ميلاد');
 });
+
+it('uses the locale punctuation in storefront date-time formats', function (): void {
+    $originalLocale = app()->getLocale();
+
+    try {
+        app()->setLocale('en');
+        expect((new StorefrontText)->dateTimeFormat())->toBe('d F Y, H:i');
+
+        app()->setLocale('ar');
+        expect((new StorefrontText)->dateTimeFormat())->toBe('d F Y، H:i');
+    } finally {
+        app()->setLocale($originalLocale);
+    }
+});

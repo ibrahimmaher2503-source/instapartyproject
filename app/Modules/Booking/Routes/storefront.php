@@ -9,5 +9,6 @@ Route::get('cart', CartController::class)->name('cart');
 Route::middleware(['auth:sanctum', 'role:customer'])->group(function (): void {
     Route::post('cart/setup', [CartController::class, 'setup'])->name('cart.setup');
     Route::delete('cart/{bookingPublicId}/items/{itemPublicId}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::put('cart/{bookingPublicId}/items/{itemPublicId}', [CartController::class, 'updateQuantity'])->name('cart.update');
     Route::post('cart/{bookingPublicId}/submit', [CartController::class, 'submit'])->name('cart.submit');
 });

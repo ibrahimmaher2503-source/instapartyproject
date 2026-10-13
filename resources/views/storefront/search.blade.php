@@ -12,6 +12,9 @@
     $selectedDate = $filters['event_date'] ?? ($selectedStartsAt ? substr((string) $selectedStartsAt, 0, 10) : null);
     $selectedGovernorate = $filters['governorate_public_id'] ?? null;
     $plannerContext = ! empty($filters['planner']);
+    $eventDateMinimum = $plannerContext && $selectedDate !== null && $selectedDate < now('UTC')->toDateString()
+        ? $selectedDate
+        : now('UTC')->toDateString();
     $recommendedPackages = $recommendedPackages ?? [];
     $categoryContext = $categoryContext ?? null;
     $occasionContext = $occasionContext ?? null;
@@ -185,7 +188,7 @@
                         <div class="sf-filter-group">
                             <label for="event_date">{{ __('storefront.search.filter_date') }}</label>
                             <span class="sf-localized-date" data-localized-date>
-                                <input id="event_date" name="event_date" value="{{ $selectedDate }}" type="date" lang="{{ app()->getLocale() }}" min="{{ now('UTC')->toDateString() }}" class="sf-field" data-localized-date-input>
+                                <input id="event_date" name="event_date" value="{{ $selectedDate }}" type="date" lang="{{ app()->getLocale() }}" min="{{ $eventDateMinimum }}" class="sf-field" data-localized-date-input>
                                 <span aria-hidden="true" data-localized-date-placeholder>{{ __('storefront.common.date_placeholder') }}</span>
                             </span>
                         </div>

@@ -22,6 +22,11 @@ final class StorefrontText
         return $this->isUnavailable($value) ? '' : $value;
     }
 
+    public function dateTimeFormat(): string
+    {
+        return app()->getLocale() === 'ar' ? 'd F Y، H:i' : 'd F Y, H:i';
+    }
+
     private function isUnavailable(string $value): bool
     {
         return trim($value) === '' || preg_match('/[\p{L}\p{N}]/u', $value) !== 1;
