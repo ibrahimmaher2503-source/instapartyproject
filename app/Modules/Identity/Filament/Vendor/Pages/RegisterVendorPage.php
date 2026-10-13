@@ -4,26 +4,37 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Vendor\Pages;
 
+use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Identity\Application\Actions\RegisterVendorAction;
 use App\Modules\Identity\Application\DTOs\RegisterVendorDTO;
 use App\Modules\Identity\Application\Services\VendorRegistrationRules;
 use App\Modules\Identity\Domain\Enums\BusinessType;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
-use Filament\Notifications\Notification;
 use Filament\Pages\Auth\Register;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class RegisterVendorPage extends Register
 {
+    public function validate($rules = null, $messages = [], $attributes = []): array
+    {
+        // Public Livewire validation must never accept caller-supplied database rules.
+        return parent::validate($this->form->getValidationRules(), $this->form->getValidationMessages(), $this->form->getValidationAttributes());
+    }
+
+    public function validateOnly($field, $rules = null, $messages = [], $attributes = [], $dataOverrides = [])
+    {
+        return parent::validateOnly($field, $this->form->getValidationRules(), $this->form->getValidationMessages(), $this->form->getValidationAttributes());
+    }
+
     protected function beforeValidate(): void
     {
         $this->data = VendorRegistrationRules::normalize($this->data);
@@ -41,7 +52,7 @@ class RegisterVendorPage extends Register
         }
 
         try {
-            $user = $this->wrapInDatabaseTransaction(function (): Model {
+            $this->wrapInDatabaseTransaction(function (): Model {
                 $this->callHook('beforeValidate');
                 $data = $this->form->getState();
                 $this->callHook('afterValidate');
@@ -53,12 +64,56 @@ class RegisterVendorPage extends Register
 
                 return $user;
             });
+        } catch (ValidationException $exception) {
+            $duplicateEmailMessage = __('identity::identity.validation.duplicate_email');
+            $hasDuplicateEmail = false;
+            $remainingErrors = [];
+
+            foreach ($exception->errors() as $field => $messages) {
+                $isEmailField = $field === 'email' || str_ends_with($field, '.email');
+                $filteredMessages = [];
+
+                foreach ($messages as $message) {
+                    if ($isEmailField && $message === $duplicateEmailMessage) {
+                        $hasDuplicateEmail = true;
+
+                        continue;
+                    }
+
+                    $filteredMessages[] = $message;
+                }
+
+                if ($filteredMessages !== []) {
+                    $remainingErrors[$field] = $filteredMessages;
+                }
+            }
+
+            if (! $hasDuplicateEmail) {
+                throw $exception;
+            }
+
+            $remainingErrorBag = [];
+            foreach ($this->getErrorBag()->getMessages() as $field => $messages) {
+                $isEmailField = $field === 'email' || str_ends_with($field, '.email');
+                $filteredMessages = array_values(array_filter(
+                    $messages,
+                    static fn (string $message): bool => ! ($isEmailField && $message === $duplicateEmailMessage),
+                ));
+
+                if ($filteredMessages !== []) {
+                    $remainingErrorBag[$field] = $filteredMessages;
+                }
+            }
+            $this->setErrorBag($remainingErrorBag);
+
+            if ($remainingErrors !== []) {
+                throw ValidationException::withMessages($remainingErrors);
+            }
+
+            return app(RegistrationResponse::class);
         } finally {
             $this->clearSensitiveRegistrationState();
         }
-
-        Filament::auth()->login($user);
-        session()->regenerate();
 
         return app(RegistrationResponse::class);
     }
@@ -109,7 +164,22 @@ class RegisterVendorPage extends Register
                                                 $governorate->id => $governorate->getTranslation('name', app()->getLocale()),
                                             ])
                                             ->all())
-                                        ->required(),
+                                        ->required()
+                                        ->live()
+                                        ->afterStateUpdated(fn (callable $set) => $set('primary_city_id', null)),
+                                    Select::make('primary_city_id')
+                                        ->label(__('identity.fields.city_id'))
+                                        ->options(fn (callable $get): array => City::query()
+                                            ->active()
+                                            ->where('governorate_id', $get('primary_governorate_id'))
+                                            ->orderBy('sort_order')
+                                            ->get()
+                                            ->mapWithKeys(fn (City $city): array => [
+                                                $city->id => $city->getTranslation('name', app()->getLocale()),
+                                            ])
+                                            ->all())
+                                        ->required()
+                                        ->searchable(),
                                 ]),
                             ]),
 
@@ -145,7 +215,6 @@ class RegisterVendorPage extends Register
             ->email()
             ->required()
             ->maxLength(255)
-            ->rule(Rule::unique('users', 'email'))
             ->validationAttribute(__('identity::identity.fields.email'));
     }
 
@@ -199,13 +268,6 @@ class RegisterVendorPage extends Register
         ]);
 
         $vendorProfile = app(RegisterVendorAction::class)->execute($dto);
-
-        Notification::make()
-            ->title(__('vendor-portal.registration.success_title'))
-            ->body(__('vendor-portal.registration.success_body'))
-            ->success()
-            ->persistent()
-            ->send();
 
         return $vendorProfile->user;
     }

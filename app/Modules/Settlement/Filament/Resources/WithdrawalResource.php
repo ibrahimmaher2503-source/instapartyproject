@@ -10,6 +10,7 @@ use App\Modules\Settlement\Filament\Resources\WithdrawalResource\Pages\ListWithd
 use App\Modules\Settlement\Filament\Resources\WithdrawalResource\Pages\ViewWithdrawal;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Exception;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
@@ -20,6 +21,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\ModelStates\State;
 
 class WithdrawalResource extends Resource
@@ -230,7 +232,11 @@ class WithdrawalResource extends Resource
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'bank_transfer_reference'],
+                        'vendorProfile' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->copyable()
                     ->limit(14)
                     ->tooltip(fn (Withdrawal $record): string => $record->public_id),

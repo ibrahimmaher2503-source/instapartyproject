@@ -30,9 +30,11 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 class VendorDocumentFilamentResource extends Resource
@@ -198,6 +200,8 @@ class VendorDocumentFilamentResource extends Resource
                 TextColumn::make('expires_at')
                     ->label(__('identity.fields.expires_at'))
                     ->date()
+                    ->color(fn (VendorDocument $record): ?string => $record->expires_at?->lt(today()) ? 'danger'
+                        : ($record->expires_at?->lte(today()->addDays(30)) ? 'warning' : null))
                     ->sortable(),
                 TextColumn::make('is_critical')
                     ->label(__('identity.fields.is_critical'))
@@ -224,6 +228,9 @@ class VendorDocumentFilamentResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->recordUrl(fn (VendorDocument $record): string => static::getUrl('view', ['record' => $record]))
             ->filters([
+                Filter::make('expiring_soon')
+                    ->label(__('identity.compliance.expiring_soon'))
+                    ->query(fn (Builder $query): Builder => $query->latestPerType()->where('status', DocumentStatus::Approved)->expiringWithinDays(30)),
                 SelectFilter::make('status')
                     ->label(__('identity.columns.status'))
                     ->options([
@@ -250,7 +257,7 @@ class VendorDocumentFilamentResource extends Resource
                     )),
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn (): bool => (bool) auth()->user()?->can('review_vendor_documents'))
+                    ->visible(fn (VendorDocument $record): bool => static::canEdit($record))
                     ->using(function (VendorDocument $record, array $data) {
                         app(SetDocumentExpiryAction::class)->execute(
                             $record,
@@ -320,5 +327,10 @@ class VendorDocumentFilamentResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return parent::canEdit($record) && auth()->user()?->can('review_vendor_documents') === true;
     }
 }

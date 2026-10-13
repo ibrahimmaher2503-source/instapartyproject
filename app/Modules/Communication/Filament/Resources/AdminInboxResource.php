@@ -15,6 +15,7 @@ use App\Modules\Communication\Domain\Enums\AdminInboxStatus;
 use App\Modules\Communication\Domain\Models\AdminInboxItem;
 use App\Modules\Communication\Filament\Resources\AdminInboxResource\Pages\ListAdminInboxItems;
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -106,7 +107,7 @@ class AdminInboxResource extends Resource
                             $title,
                         ) ?? $title;
                     })
-                    ->searchable(query: fn (Builder $query, string $search) => $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(title, '$.en')) LIKE ?", ["%{$search}%"]))
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, ['' => ['public_id', 'title->en', 'title->ar']]))
                     ->limit(60)
                     ->label(__('communication.inbox.title')),
 

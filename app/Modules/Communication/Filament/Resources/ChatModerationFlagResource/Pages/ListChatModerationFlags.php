@@ -10,6 +10,7 @@ use App\Modules\Communication\Domain\Models\ChatModerationFlag;
 use App\Modules\Communication\Filament\Resources\ChatModerationFlagResource;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource;
 use App\Modules\Communication\Infrastructure\Services\MaskModerationPattern;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Actions\ViewAction;
@@ -61,6 +62,15 @@ class ListChatModerationFlags extends ListRecords
                     ->placeholder('—'),
 
                 TextColumn::make('messageLog.thread.public_id')
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'messageLog.thread' => ['public_id'],
+                        'messageLog.thread.booking' => ['public_id'],
+                        'messageLog.thread.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'messageLog.thread.vendorProfile' => ['public_id'],
+                        'messageLog.thread.vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'messageLog.sender' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->label(__('chat_moderation.columns.thread'))
                     ->limit(14)
                     ->copyable()

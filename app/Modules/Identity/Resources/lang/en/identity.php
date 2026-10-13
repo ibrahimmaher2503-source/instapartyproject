@@ -89,6 +89,10 @@ return [
 
     // Compliance / document expiry section
     'compliance' => [
+        'required_documents' => 'Required documents (latest upload)',
+        'required_missing' => 'Not uploaded',
+        'expiring_soon' => 'Expires in the next 30 days',
+        'expiring_alert' => ':count approved document(s) expire in the next 30 days. Use the expiry filter to review them.',
         'document_context' => 'Document context',
         'delete_document_warning' => 'Delete this document permanently? This cannot be undone.',
         'expiry_and_criticality' => 'Expiry & Criticality',
@@ -272,6 +276,8 @@ return [
         'bio_en' => 'Bio in English',
         'bio_ar' => 'Bio in Arabic',
         'vendor_suspension_reason' => 'Reason for suspension',
+        'impersonation_reason_en' => 'Reason for acting as this vendor (English)',
+        'impersonation_reason_ar' => 'Reason for acting as this vendor (Arabic)',
     ],
 
     // Notification titles
@@ -533,6 +539,8 @@ return [
     // Success messages
     'messages' => [
         'registered' => 'Registration successful. Please verify your phone number.',
+        'registration_request_received_title' => 'Check your email',
+        'registration_request_received_body' => 'If this address is eligible for registration, we’ll email the next steps. Existing users can sign in or reset their password.',
         'phone_verified' => 'Phone number verified successfully.',
         'logged_in' => 'Logged in successfully.',
         'logged_out' => 'Logged out successfully.',
@@ -560,8 +568,14 @@ return [
     'account_suspended' => 'Your account has been suspended. Please contact support.',
     'account_suspended_title' => 'Account Suspended',
     'account_suspended_body' => 'Your vendor account has been suspended. Please contact InstaParty support to resolve this.',
+    'impersonation' => [
+        'not_allowed' => 'You are not authorized to start this vendor session.',
+        'reason_required' => 'Enter a reason in both languages, between 5 and 500 characters.',
+        'vendor_not_eligible' => 'Only active, verified, approved vendor accounts can be accessed.',
+    ],
     'vendor_portal' => [
-        'impersonation_banner' => 'InstaParty Support is currently acting on your account. Started :time.',
+        'impersonation_banner' => 'Admin support session',
+        'impersonation_description' => 'Support is acting as :admin. Started :time. This session expires at :expires.',
         'impersonation_end' => 'End Session',
     ],
 

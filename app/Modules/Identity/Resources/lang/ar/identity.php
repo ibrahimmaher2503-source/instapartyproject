@@ -89,6 +89,10 @@ return [
 
     // Compliance / document expiry section
     'compliance' => [
+        'required_documents' => 'المستندات المطلوبة (آخر رفع)',
+        'required_missing' => 'لم يُرفع بعد',
+        'expiring_soon' => 'تنتهي الصلاحية خلال 30 يومًا',
+        'expiring_alert' => 'تنتهي صلاحية :count مستندات معتمدة خلال 30 يومًا. استخدم فلتر الصلاحية لمراجعتها.',
         'document_context' => 'بيانات المستند والمراجعة',
         'delete_document_warning' => 'هل تريد حذف هذا المستند نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.',
         'expiry_and_criticality' => 'تاريخ الانتهاء والأهمية',
@@ -272,6 +276,8 @@ return [
         'bio_en' => 'النبذة بالإنجليزية',
         'bio_ar' => 'النبذة بالعربية',
         'vendor_suspension_reason' => 'سبب الإيقاف',
+        'impersonation_reason_en' => 'سبب العمل باسم هذا المورد (بالإنجليزية)',
+        'impersonation_reason_ar' => 'سبب العمل باسم هذا المورد (بالعربية)',
     ],
 
     // Notification titles
@@ -533,6 +539,8 @@ return [
     // Success messages
     'messages' => [
         'registered' => 'تم التسجيل بنجاح. يرجى التحقق من رقم هاتفك.',
+        'registration_request_received_title' => 'تحقق من بريدك الإلكتروني',
+        'registration_request_received_body' => 'إذا كان هذا العنوان مؤهلاً للتسجيل، فسنرسل إليك الخطوات التالية عبر البريد الإلكتروني. يمكن للمستخدمين الحاليين تسجيل الدخول أو إعادة تعيين كلمة المرور.',
         'phone_verified' => 'تم التحقق من رقم الهاتف بنجاح.',
         'logged_in' => 'تم تسجيل الدخول بنجاح.',
         'logged_out' => 'تم تسجيل الخروج بنجاح.',
@@ -560,8 +568,14 @@ return [
     'account_suspended' => 'تم إيقاف حسابك. يرجى التواصل مع الدعم.',
     'account_suspended_title' => 'الحساب موقوف',
     'account_suspended_body' => 'تم إيقاف حساب المورد الخاص بك. يرجى التواصل مع دعم إنستا باتي لحل هذه المشكلة.',
+    'impersonation' => [
+        'not_allowed' => 'غير مصرح لك ببدء جلسة المورد هذه.',
+        'reason_required' => 'أدخل سبباً باللغتين، بين 5 و500 حرف لكل لغة.',
+        'vendor_not_eligible' => 'يمكن الوصول فقط إلى حساب مورد نشط وموثّق ومعتمد.',
+    ],
     'vendor_portal' => [
-        'impersonation_banner' => 'فريق دعم إنستا باتي يتصرف الآن نيابةً عن حسابك. بدأ في: :time.',
+        'impersonation_banner' => 'جلسة دعم الإدارة',
+        'impersonation_description' => 'يتصرف فريق الدعم باسم :admin. بدأت في :time. تنتهي هذه الجلسة في :expires.',
         'impersonation_end' => 'إنهاء الجلسة',
     ],
 

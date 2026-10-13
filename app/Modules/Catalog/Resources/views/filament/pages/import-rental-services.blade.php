@@ -5,11 +5,11 @@
             :heading="__('catalog.import_upload_heading')"
             :description="__('catalog.import_upload_description')"
         >
-            <form class="ip-import-form" wire:submit="import">
+            <x-filament-panels::form id="catalog-import-form" class="ip-import-form" wire:submit="import">
                 {{ $this->form }}
 
                 <div class="ip-import-actions">
-                    <x-filament::button type="submit" icon="heroicon-o-arrow-up-tray" wire:loading.attr="disabled" wire:target="import">
+                    <x-filament::button type="submit" form="catalog-import-form" icon="heroicon-o-arrow-up-tray" wire:loading.attr="disabled" wire:target="import">
                         <span wire:loading.remove wire:target="import">{{ __('catalog.import_button') }}</span>
                         <span wire:loading wire:target="import">{{ __('catalog.importing') }}</span>
                     </x-filament::button>
@@ -23,7 +23,7 @@
                         {{ __('catalog.import_history') }}
                     </x-filament::button>
                 </div>
-            </form>
+            </x-filament-panels::form>
         </x-filament::section>
 
         @if ($this->lastImport)

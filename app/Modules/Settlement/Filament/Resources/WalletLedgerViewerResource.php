@@ -9,6 +9,7 @@ use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\Pages\ListWalletLedger;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\Pages\ViewWalletLedger;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\RelationManagers\LedgerEntriesRelationManager;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -17,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class WalletLedgerViewerResource extends Resource
 {
@@ -109,7 +111,22 @@ class WalletLedgerViewerResource extends Resource
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, ['' => ['public_id']]);
+                        $vendorType = 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile';
+                        $userType = 'App\\Modules\\Identity\\Domain\\Models\\User';
+                        $match->orWhere(fn (Builder $owner): Builder => $owner
+                            ->whereIn('owner_type', ['vendor', 'vendor_profile', $vendorType])
+                            ->whereIn('owner_id', ReferenceSearch::apply($vendorType::query(), $search, [
+                                '' => ['public_id', 'business_name->en', 'business_name->ar'],
+                                'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                            ])->select('id')));
+                        $match->orWhere(fn (Builder $owner): Builder => $owner
+                            ->whereIn('owner_type', ['customer', 'user', $userType])
+                            ->whereIn('owner_id', ReferenceSearch::apply($userType::query(), $search, [
+                                '' => ['public_id', 'name', 'email', 'phone_e164'],
+                            ])->select('id')));
+                    }))
                     ->copyable(),
 
                 TextColumn::make('owner_id')

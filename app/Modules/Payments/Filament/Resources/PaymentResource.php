@@ -11,6 +11,7 @@ use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ListPayments;
 use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ViewPayment;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -89,7 +90,13 @@ class PaymentResource extends Resource
                 TextColumn::make('public_id')
                     ->label(__('payments.columns.public_id'))
                     ->copyable()
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'gateway_ref'],
+                        'booking' => ['public_id', 'reference_no'],
+                        'booking.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'booking.vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'booking.vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('booking.reference_no')
                     ->label(__('payments.columns.booking'))
                     ->searchable()

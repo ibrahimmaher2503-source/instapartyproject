@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'message_redacted' => 'تم إخفاء الرسالة بواسطة الإشراف',
     // Index columns
     'columns' => [
         'booking_ref' => 'الحجز',

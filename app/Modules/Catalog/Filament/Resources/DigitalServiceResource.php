@@ -300,6 +300,7 @@ class DigitalServiceResource extends Resource
             ->headerActions([
                 ReindexServicesAction::make(),
                 Action::make('importDigitalServices')
+                    ->visible(fn (): bool => auth()->user()?->can('create_digital::service', 'web') ?? false)
                     ->label(__('catalog.import.digital_label'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->form([
@@ -327,6 +328,8 @@ class DigitalServiceResource extends Resource
                             ->required(),
                     ])
                     ->action(function (array $data, ImportDigitalServicesFromExcelAction $action): void {
+                        abort_unless(auth()->user()?->can('create_digital::service', 'web'), 403);
+
                         $absolutePath = Storage::disk('local')->path($data['file']);
                         $file = new UploadedFile($absolutePath, basename($absolutePath), null, null, true);
 

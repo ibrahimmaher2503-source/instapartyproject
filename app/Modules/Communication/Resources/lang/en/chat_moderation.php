@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'message_redacted' => 'Message hidden by moderation',
     // Status pills
     'status' => [
         'open' => 'Open',

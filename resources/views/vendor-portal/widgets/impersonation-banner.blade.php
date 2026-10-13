@@ -6,7 +6,7 @@
             </x-slot>
 
             <x-slot name="description">
-                {{ $adminName }}@if ($startedAt) · {{ $startedAt }}@endif
+                {{ __('identity.vendor_portal.impersonation_description', ['admin' => $adminName, 'time' => $startedAt, 'expires' => $expiresAt]) }}
             </x-slot>
 
             <x-slot name="headerEnd">

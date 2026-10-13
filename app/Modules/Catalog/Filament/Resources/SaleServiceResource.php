@@ -311,6 +311,7 @@ class SaleServiceResource extends Resource
             ->headerActions([
                 ReindexServicesAction::make(),
                 Action::make('importSaleServices')
+                    ->visible(fn (): bool => auth()->user()?->can('create_sale::service', 'web') ?? false)
                     ->label(__('catalog.import.sale_label'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->form([
@@ -338,6 +339,8 @@ class SaleServiceResource extends Resource
                             ->required(),
                     ])
                     ->action(function (array $data, ImportSaleServicesFromExcelAction $action): void {
+                        abort_unless(auth()->user()?->can('create_sale::service', 'web'), 403);
+
                         $absolutePath = Storage::disk('local')->path($data['file']);
                         $file = new UploadedFile($absolutePath, basename($absolutePath), null, null, true);
 

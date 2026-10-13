@@ -7,6 +7,7 @@ namespace App\Modules\Settlement\Filament\Resources;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Settlement\Domain\Models\Commission;
 use App\Modules\Settlement\Filament\Resources\CommissionResource\Pages\ListCommissions;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -69,7 +70,15 @@ class CommissionResource extends Resource
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.public_id'))
                     ->copyable()
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'payment' => ['public_id'],
+                        'payment.booking' => ['public_id', 'reference_no'],
+                        'payment.booking.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'bookingItem' => ['public_id'],
+                    ])),
                 TextColumn::make('vendor.business_name')
                     ->label(__('settlement.columns.vendor'))
                     ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—'))

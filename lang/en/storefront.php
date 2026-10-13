@@ -659,6 +659,7 @@ return [
             'body' => 'This helps vendors prepare the right offer.',
             'guests_label' => 'Approximate guest count',
             'guests_placeholder' => 'e.g. 50',
+            'guests_max_hint' => 'Optional. Enter a whole number from 1 to 10,000.',
             'celebrant_label' => 'Who is celebrating?',
             'celebrant_placeholder' => 'Name (optional)',
             'notes_label' => 'Notes (optional)',
@@ -676,6 +677,7 @@ return [
             'times_invalid' => 'Choose a valid time range that starts in the future.',
             'rental_duration_required' => 'This rental has no default duration. Enter an end time to continue.',
             'location_required' => 'Choose a governorate and city before continuing.',
+            'guest_count_range' => 'Enter a whole number from 1 to 10,000.',
         ],
     ],
     'search' => [
@@ -694,6 +696,7 @@ return [
         'validation' => [
             'invalid_filters' => 'Some search filters are invalid. Please review them and try again.',
             'price_range' => 'Maximum price must be greater than or equal to minimum price.',
+            'guest_count_range' => 'Guest count must be a whole number from 1 to 10,000.',
         ],
         'empty_title' => 'No services found',
         'empty_body' => 'Try a different search term or adjust your filters.',
