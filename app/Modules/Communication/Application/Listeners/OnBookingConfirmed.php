@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Application\Listeners;
 
+use App\Modules\Communication\Application\Actions\DispatchInAppNotificationOnceAction;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Domain\Enums\EventCategory;
@@ -28,9 +29,12 @@ class OnBookingConfirmed implements ShouldQueue
             'vendor_name' => '',
         ];
 
-        // Customer: push + email + sms
-        foreach ([NotificationChannel::Push, NotificationChannel::Email, NotificationChannel::Sms] as $channel) {
-            $this->dispatcher->execute(new DispatchNotificationDTO(
+        // Customer: in-app + push + email + sms
+        foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email, NotificationChannel::Sms] as $channel) {
+            $dispatcher = $channel === NotificationChannel::InApp
+                ? app(DispatchInAppNotificationOnceAction::class)
+                : $this->dispatcher;
+            $dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'booking.confirmed',
                 channel: $channel,
                 audience: NotificationAudience::Customer,

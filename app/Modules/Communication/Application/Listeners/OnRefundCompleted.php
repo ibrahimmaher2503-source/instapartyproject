@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Application\Listeners;
 
+use App\Modules\Communication\Application\Actions\DispatchInAppNotificationOnceAction;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Domain\Enums\EventCategory;
@@ -33,14 +34,18 @@ class OnRefundCompleted implements ShouldQueue
         $amount = number_format($event->amountMinor / 100, 2);
 
         $context = [
+            'event_identity' => (string) $event->refundId,
             'booking_number' => $booking->public_id,
             'amount' => $amount,
             'currency' => $event->amountCurrency,
             'days' => '5–7',
         ];
 
-        foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
-            $this->dispatcher->execute(new DispatchNotificationDTO(
+        foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            $dispatcher = $channel === NotificationChannel::InApp
+                ? app(DispatchInAppNotificationOnceAction::class)
+                : $this->dispatcher;
+            $dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'refund.completed',
                 channel: $channel,
                 audience: NotificationAudience::Customer,

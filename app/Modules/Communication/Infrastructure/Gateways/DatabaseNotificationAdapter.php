@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Infrastructure\Gateways;
 
+use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
 use App\Modules\Communication\Domain\Contracts\NotificationChannelAdapter;
 use App\Modules\Communication\Domain\Enums\DispatchStatus;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
@@ -28,6 +29,24 @@ final class DatabaseNotificationAdapter implements NotificationChannelAdapter
     public function send(NotificationDispatch $dispatch): void
     {
         $context = (array) ($dispatch->context ?? []);
+
+        if (($context['notification_format'] ?? null) === 'filament'
+            && ($context['event_key'] ?? null) === 'booking.submitted'
+            && ($context['audience'] ?? null) === 'vendor'
+            && isset($context['booking_vendor_public_id'])
+            && ! app(BookingReferenceReader::class)->isVendorRequestPending((string) $context['booking_vendor_public_id'], (int) $dispatch->user_id)) {
+            // Queued requests can outlive cancellation or timeout; finish without creating a stale bell notice.
+            $dispatch->update([
+                'status' => DispatchStatus::Suppressed,
+                'provider_name' => $this->name(),
+                'provider_status' => 'suppressed_request_ended',
+                'provider' => $this->name(),
+                'sent_at' => null,
+                'delivered_at' => null,
+            ]);
+
+            return;
+        }
 
         $data = [
             'title' => $context['subject'] ?? null,

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'dispatch_status' => ['suppressed' => 'Suppressed'],
     'provider_settings' => [
         'nav_label' => 'Notification Providers',
         'title' => 'Notification Provider Settings',
@@ -321,6 +322,7 @@ return [
     'routing_target_admin' => 'Admin: :name',
 
     'routing_event_keys' => [
+        'support.ticket.created' => 'Support Ticket Created',
         'vendor.registered' => 'Vendor Registered',
         'payment.failed' => 'Payment Failed',
         'booking.stalled' => 'Booking Stalled',

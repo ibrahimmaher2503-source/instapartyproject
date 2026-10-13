@@ -664,6 +664,7 @@ return [
             'celebrant_placeholder' => 'Name (optional)',
             'notes_label' => 'Notes (optional)',
             'notes_placeholder' => 'Add instructions or details for your event.',
+            'recipient_phone_hint' => 'Use international format (E.164): +, country code, then the number. For Egypt, enter +201000000000 instead of 01000000000.',
         ],
         'nav' => [
             'back' => 'Back',
@@ -677,6 +678,7 @@ return [
             'times_invalid' => 'Choose a valid time range that starts in the future.',
             'rental_duration_required' => 'This rental has no default duration. Enter an end time to continue.',
             'location_required' => 'Choose a governorate and city before continuing.',
+            'recipient_phone_invalid' => 'Enter a phone number in international format, for example +201000000000. Include + and the country code, without spaces.',
             'guest_count_range' => 'Enter a whole number from 1 to 10,000.',
         ],
     ],

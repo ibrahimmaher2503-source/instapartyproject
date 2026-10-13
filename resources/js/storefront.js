@@ -287,12 +287,12 @@ if (planner instanceof HTMLElement) {
         occasionOptions.forEach((option) => {
             option.setAttribute('aria-checked', String(option === button));
         });
-        clearPlannerError();
     };
 
     occasionOptions.forEach((button) => {
         button.addEventListener('click', () => {
             selectOccasion(button);
+            clearPlannerError();
         });
     });
     if (occasionInput instanceof HTMLInputElement && occasionInput.value !== '') {
@@ -351,8 +351,9 @@ if (planner instanceof HTMLElement) {
                 appendOptions(citySelect, cities, citySelect.options[0]?.text ?? '');
                 if (initialCity) {
                     citySelect.value = initialCity;
-                    citySelect.dispatchEvent(new Event('change'));
                 }
+                if (cityInput instanceof HTMLInputElement) cityInput.value = citySelect.value;
+                if (bookingCityInput instanceof HTMLInputElement) bookingCityInput.value = citySelect.value;
                 setLocationStatus('', 'idle');
             } catch {
                 setLocationStatus(planner.dataset.errorLocationLoad ?? '', 'error');
@@ -371,6 +372,22 @@ if (planner instanceof HTMLElement) {
         input.addEventListener('input', clearPlannerError);
         input.addEventListener('change', clearPlannerError);
     });
+
+    const recipientPhone = planner.querySelector('[data-planner-recipient-phone]');
+    const recipientPhoneError = planner.querySelector('[data-planner-recipient-phone-error]');
+    if (recipientPhone instanceof HTMLInputElement && recipientPhoneError instanceof HTMLElement) {
+        recipientPhone.addEventListener('invalid', (event) => {
+            event.preventDefault();
+            recipientPhone.setAttribute('aria-invalid', 'true');
+            recipientPhoneError.classList.remove('hidden');
+            recipientPhone.focus();
+        });
+        recipientPhone.addEventListener('input', () => {
+            recipientPhone.setAttribute('aria-invalid', 'false');
+            recipientPhoneError.classList.add('hidden');
+            clearPlannerError();
+        });
+    }
 
     form?.addEventListener('submit', (event) => {
         if (activeStep < panels.length - 1) {

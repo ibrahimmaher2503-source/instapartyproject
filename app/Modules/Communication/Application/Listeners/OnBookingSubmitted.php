@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Application\Listeners;
 
+use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Events\BookingSubmittedToVendor;
-use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
+use App\Modules\Booking\Filament\Vendor\Pages\VendorBookingDecisionPage;
+use App\Modules\Communication\Application\Actions\DispatchInAppNotificationOnceAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
+use App\Modules\Communication\Domain\Contracts\NotificationDispatcher;
 use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
@@ -15,7 +18,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class OnBookingSubmitted implements ShouldQueue
 {
     public function __construct(
-        private readonly DispatchNotificationAction $dispatcher,
+        private readonly NotificationDispatcher $dispatcher,
     ) {}
 
     public function handle(BookingSubmittedToVendor $event): void
@@ -56,9 +59,31 @@ class OnBookingSubmitted implements ShouldQueue
             }
         }
 
-        // Vendor: push + sms
+        // Vendor: actionable in-app request + existing push and SMS channels.
         $vendorUserId = $vendor?->user_id;
         if ($vendorUserId !== null) {
+            if ($bookingVendor->refresh()->sub_status === VendorSubStatus::Pending) {
+                $locale = $vendor->user?->preferred_locale === 'ar' ? 'ar' : 'en';
+                app(DispatchInAppNotificationOnceAction::class)->execute(new DispatchNotificationDTO(
+                    eventKey: 'booking.submitted',
+                    channel: NotificationChannel::InApp,
+                    audience: NotificationAudience::Vendor,
+                    eventCategory: EventCategory::Booking,
+                    userId: $vendorUserId,
+                    context: [
+                        ...$context,
+                        'booking_number' => $booking->reference_no ?: $booking->public_id,
+                        'booking_vendor_public_id' => $bookingVendor->public_id,
+                        'response_deadline' => $bookingVendor->response_deadline?->format('Y-m-d H:i \U\T\C') ?? '—',
+                        'notification_format' => 'filament',
+                        'action_label' => __('vendor-portal.decision.title', [], $locale),
+                        'action_url' => VendorBookingDecisionPage::getUrl(['bookingVendor' => $bookingVendor->public_id], panel: 'vendor'),
+                    ],
+                    referenceType: 'booking',
+                    referenceId: $booking->id,
+                ), 'vendor_request:'.$bookingVendor->public_id);
+            }
+
             foreach ([NotificationChannel::Push, NotificationChannel::Sms] as $channel) {
                 $this->dispatcher->execute(new DispatchNotificationDTO(
                     eventKey: 'booking.submitted',

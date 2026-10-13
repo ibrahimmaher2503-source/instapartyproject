@@ -7,6 +7,7 @@ return [
         'translations' => 'Translations',
         'tab_english' => 'English',
         'tab_arabic' => 'Arabic',
+        'validation_errors' => 'Errors',
         'name_en' => 'Name (English)',
         'description_en' => 'Description (English)',
         'name_ar' => 'Name (Arabic)',

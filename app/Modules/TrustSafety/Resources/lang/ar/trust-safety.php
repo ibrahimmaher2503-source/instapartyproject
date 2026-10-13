@@ -7,6 +7,7 @@ return [
         'translations' => 'الترجمات',
         'tab_english' => 'الإنجليزية',
         'tab_arabic' => 'العربية',
+        'validation_errors' => 'أخطاء',
         'name_en' => 'الاسم (بالإنجليزية)',
         'description_en' => 'الوصف (بالإنجليزية)',
         'name_ar' => 'الاسم (بالعربية)',

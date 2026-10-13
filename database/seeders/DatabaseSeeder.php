@@ -12,10 +12,12 @@ use App\Modules\Communication\Database\Seeders\ChangeRequestNotificationTemplate
 use App\Modules\Communication\Database\Seeders\ChatModerationPermissionsSeeder;
 use App\Modules\Communication\Database\Seeders\CommunicationDevelopmentSeeder;
 use App\Modules\Communication\Database\Seeders\CommunicationProviderHealthPermissionsSeeder;
+use App\Modules\Communication\Database\Seeders\CustomerCoreInAppNotificationTemplateSeeder;
 use App\Modules\Communication\Database\Seeders\GapNotificationTemplateSeeder;
 use App\Modules\Communication\Database\Seeders\InboxRoutingRuleDevelopmentSeeder;
 use App\Modules\Communication\Database\Seeders\NotificationProviderSettingsPermissionsSeeder;
 use App\Modules\Communication\Database\Seeders\UnifiedLifecycleNotificationTemplateSeeder;
+use App\Modules\Communication\Database\Seeders\VendorBookingInAppNotificationTemplateSeeder;
 use App\Modules\Discovery\Database\Seeders\DiscoveryDevelopmentSeeder;
 use App\Modules\Geography\Database\Seeders\EgyptGeographySeeder;
 use App\Modules\Identity\Database\Seeders\IdentityDevelopmentSeeder;
@@ -71,6 +73,8 @@ class DatabaseSeeder extends Seeder
             ChangeRequestNotificationTemplateSeeder::class,
             GapNotificationTemplateSeeder::class,
             UnifiedLifecycleNotificationTemplateSeeder::class,
+            CustomerCoreInAppNotificationTemplateSeeder::class,
+            VendorBookingInAppNotificationTemplateSeeder::class,
             ChatModerationPermissionsSeeder::class,
             CommunicationProviderHealthPermissionsSeeder::class,
             NotificationProviderSettingsPermissionsSeeder::class,

@@ -11,6 +11,7 @@ enum DispatchStatus: string
     case Delivered = 'delivered';
     case Failed = 'failed';
     case Bounced = 'bounced';
+    case Suppressed = 'suppressed';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum DispatchStatus: string
             self::Delivered => 'Delivered',
             self::Failed => 'Failed',
             self::Bounced => 'Bounced',
+            self::Suppressed => __('communication.dispatch_status.suppressed'),
         };
     }
 }

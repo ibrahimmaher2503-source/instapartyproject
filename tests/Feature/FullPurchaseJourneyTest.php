@@ -195,7 +195,7 @@ it('completes the approved sale service purchase chain with idempotent payment',
         ->assertJsonPath('data.currency', 'EGP');
 
     $this->post('/en/cart/'.$booking->public_id.'/submit')
-        ->assertRedirect('/en/cart');
+        ->assertRedirect('/en/account/bookings/'.$booking->public_id);
 
     $booking->refresh();
     expect($booking->lifecycle_status)->toBeInstanceOf(VendorReviewState::class)

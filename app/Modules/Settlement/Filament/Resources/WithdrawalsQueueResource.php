@@ -11,6 +11,8 @@ use App\Modules\Settlement\Application\DTOs\MarkWithdrawalPaidInput;
 use App\Modules\Settlement\Domain\Enums\WithdrawalStatus;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource\Pages\ListWithdrawalsQueue;
+use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
+use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Tabs\Tab;
@@ -118,6 +120,21 @@ class WithdrawalsQueueResource extends Resource
                     ]),
                 ]),
 
+            Section::make(__('settlement.withdrawal.section_approval'))
+                ->schema([
+                    Grid::make(2)->schema([
+                        TextEntry::make('approved_at')
+                            ->label(__('settlement.fields.approved_at'))
+                            ->dateTime('d M Y H:i e')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                            ->placeholder(__('settlement.withdrawal.not_yet_approved')),
+
+                        TextEntry::make('approvedByAdmin.name')
+                            ->label(__('settlement.fields.approved_by'))
+                            ->placeholder('—'),
+                    ]),
+                ]),
+
             Section::make(__('settlement.withdrawal.section_bank'))
                 ->schema([
                     Grid::make(2)->schema([
@@ -138,6 +155,10 @@ class WithdrawalsQueueResource extends Resource
                             ->state(fn (Withdrawal $record): string => self::maskSensitiveLabel($record->bank_account_snapshot?->swift_bic)),
                     ]),
                 ]),
+            AuditTimelineSection::make()
+                ->audience(TimelineAudience::Admin)
+                ->columnSpanFull()
+                ->visible(fn (): bool => auth()->user()?->can('withdrawal.view_audit') ?? false),
         ]);
     }
 

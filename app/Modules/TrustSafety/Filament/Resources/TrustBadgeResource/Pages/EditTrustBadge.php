@@ -6,20 +6,23 @@ namespace App\Modules\TrustSafety\Filament\Resources\TrustBadgeResource\Pages;
 
 use App\Modules\TrustSafety\Filament\Resources\TrustBadgeResource;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\LocaleSwitcher;
 use Filament\Resources\Pages\EditRecord;
-use Filament\Resources\Pages\EditRecord\Concerns\Translatable;
 
 class EditTrustBadge extends EditRecord
 {
-    use Translatable;
-
     protected static string $resource = TrustBadgeResource::class;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['name'] = $this->getRecord()->getTranslations('name');
+        $data['description'] = $this->getRecord()->getTranslations('description');
+
+        return $data;
+    }
 
     protected function getHeaderActions(): array
     {
         return [
-            LocaleSwitcher::make(),
             DeleteAction::make(),
         ];
     }

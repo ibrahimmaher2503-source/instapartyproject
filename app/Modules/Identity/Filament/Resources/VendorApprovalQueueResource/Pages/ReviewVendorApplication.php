@@ -17,6 +17,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Validation\ValidationException;
 
 class ReviewVendorApplication extends ViewRecord
 {
@@ -39,12 +40,24 @@ class ReviewVendorApplication extends ViewRecord
                 ->modalDescription(__('identity.modals.approve_vendor_description'))
                 ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof PendingState
                     && (bool) auth()->user()?->can('approve_vendor_profile'))
-                ->disabled(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
-                ->tooltip(fn (VendorProfile $record): ?string => app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible
-                    ? null
-                    : (string) __('identity.approval_eligibility.complete_requirements'))
+                ->tooltip(function (VendorProfile $record): ?string {
+                    $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
+
+                    return $result->eligible ? null : implode(' ', $result->errors);
+                })
                 ->action(function (VendorProfile $record): void {
-                    app(ApproveVendorProfileAction::class)->execute($record);
+                    try {
+                        app(ApproveVendorProfileAction::class)->execute($record);
+                    } catch (ValidationException $exception) {
+                        Notification::make()
+                            ->title(__('identity.notifications.vendor_approval_failed'))
+                            ->body(collect($exception->errors())->flatten()->implode(' '))
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
                     Notification::make()->title(__('identity.notifications.vendor_approved'))->success()->send();
                     $this->redirect(VendorApprovalQueueResource::getUrl('index'));
                 }),
@@ -115,7 +128,7 @@ class ReviewVendorApplication extends ViewRecord
                         'ar' => $data['rejection_reason_ar'] ?? null,
                     ]);
                     app(RejectVendorProfileAction::class)->execute($record, $reason);
-                    Notification::make()->title(__('identity.notifications.vendor_rejected'))->danger()->send();
+                    Notification::make()->title(__('identity.notifications.vendor_rejected'))->success()->send();
                     $this->redirect(VendorApprovalQueueResource::getUrl('index'));
                 }),
         ];

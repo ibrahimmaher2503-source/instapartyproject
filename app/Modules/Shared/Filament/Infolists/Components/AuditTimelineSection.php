@@ -65,8 +65,8 @@ class AuditTimelineSection extends Section
                             ->icon('heroicon-o-user'),
                         TextEntry::make('occurred_at')
                             ->label(__('audit_timeline.fields.occurred_at'))
-                            ->dateTime()
-                            ->since(),
+                            ->dateTime('d M Y H:i e')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
                         TextEntry::make('note')
                             ->label(__('audit_timeline.fields.note'))
                             ->columnSpanFull()

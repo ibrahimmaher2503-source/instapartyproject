@@ -22,6 +22,15 @@ class StorefrontBookingRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'address.recipient_phone_e164.required' => __('storefront.wizard.validation.recipient_phone_invalid'),
+            'address.recipient_phone_e164.string' => __('storefront.wizard.validation.recipient_phone_invalid'),
+            'address.recipient_phone_e164.regex' => __('storefront.wizard.validation.recipient_phone_invalid'),
+        ];
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -41,7 +50,7 @@ class StorefrontBookingRequest extends FormRequest
             'address.apartment' => ['nullable', 'string', 'max:20'],
             'address.landmark' => ['nullable', 'string', 'max:255'],
             'address.recipient_name' => ['required', 'string', 'max:120'],
-            'address.recipient_phone_e164' => ['required', 'regex:/^\+[1-9]\d{7,14}$/'],
+            'address.recipient_phone_e164' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
             'quantity' => ['nullable', 'integer', 'min:1', 'max:100'],
             'timezone' => ['nullable', 'timezone'],
         ];

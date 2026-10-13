@@ -6,8 +6,11 @@ namespace App\Modules\Communication\Application\Listeners;
 
 use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Events\BookingForceCancelled;
-use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
+use App\Modules\Booking\Filament\Vendor\Pages\VendorBookingDetailPage;
+use App\Modules\Booking\Filament\Vendor\Pages\VendorBookingsPage;
+use App\Modules\Communication\Application\Actions\DispatchInAppNotificationOnceAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
+use App\Modules\Communication\Domain\Contracts\NotificationDispatcher;
 use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
@@ -16,7 +19,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class OnBookingForceCancelledNotifyListener implements ShouldQueue
 {
     public function __construct(
-        private readonly DispatchNotificationAction $dispatcher,
+        private readonly NotificationDispatcher $dispatcher,
     ) {}
 
     public function handle(BookingForceCancelled $event): void
@@ -70,9 +73,29 @@ class OnBookingForceCancelledNotifyListener implements ShouldQueue
                 ->all();
         }
 
-        // Notify engaged vendors via Push. Captured empty lists stay empty so
+        // Notify engaged vendors in-app and via Push. Captured empty lists stay empty so
         // current terminal rows are never re-added after cancellation.
         foreach (array_unique(array_filter($vendorUserIds, fn ($userId): bool => $userId !== null)) as $vendorUserId) {
+            $bookingVendor = $booking->vendors->first(fn ($row): bool => $row->vendor?->user_id === $vendorUserId);
+            $vendorUser = $bookingVendor?->vendor?->user;
+            $locale = $vendorUser?->preferred_locale === 'ar' ? 'ar' : 'en';
+            app(DispatchInAppNotificationOnceAction::class)->execute(new DispatchNotificationDTO(
+                eventKey: 'booking.force_cancelled.vendor',
+                channel: NotificationChannel::InApp,
+                audience: NotificationAudience::Vendor,
+                eventCategory: EventCategory::Booking,
+                userId: $vendorUserId,
+                context: [
+                    'booking_number' => $booking->reference_no ?: $booking->public_id,
+                    'notification_format' => 'filament',
+                    'action_label' => __('vendor-portal.bookings.view_details', [], $locale),
+                    'action_url' => $bookingVendor !== null
+                        ? VendorBookingDetailPage::getUrl(['bookingVendor' => $bookingVendor->public_id], panel: 'vendor')
+                        : VendorBookingsPage::getUrl(panel: 'vendor'),
+                ],
+                referenceType: 'booking',
+                referenceId: $booking->id,
+            ), 'vendor_force_cancelled:'.$event->intervention->public_id);
 
             $this->dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'booking.force_cancelled.vendor',

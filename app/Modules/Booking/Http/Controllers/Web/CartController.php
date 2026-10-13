@@ -9,12 +9,16 @@ use App\Modules\Booking\Application\Actions\RemoveItemFromBookingAction;
 use App\Modules\Booking\Application\Actions\SubmitBookingAction;
 use App\Modules\Booking\Application\DTOs\SubmitBookingDTO;
 use App\Modules\Booking\Domain\Contracts\BookingRepository;
+use App\Modules\Booking\Domain\Exceptions\BelowCoverageMinimumException;
+use App\Modules\Booking\Domain\Exceptions\CurrencyMismatchException;
+use App\Modules\Booking\Domain\Exceptions\DeliveryCityRequiredException;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\DraftState;
 use App\Modules\Booking\Http\Requests\StorefrontBookingRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CartController
 {
@@ -63,13 +67,28 @@ class CartController
         $booking = $bookings->findByPublicId($bookingPublicId);
         abort_if($booking === null || $booking->customer_id !== auth()->id(), 404);
 
-        $action->execute(new SubmitBookingDTO(
-            bookingId: $booking->id,
-            customerId: (int) auth()->id(),
-            idempotencyKey: (string) Str::uuid(),
-            requestContent: 'storefront-submit:'.$booking->public_id,
-        ));
+        try {
+            $submittedBooking = $action->execute(new SubmitBookingDTO(
+                bookingId: $booking->id,
+                customerId: (int) auth()->id(),
+                idempotencyKey: (string) Str::uuid(),
+                requestContent: 'storefront-submit:'.$booking->public_id,
+            ));
+        } catch (BelowCoverageMinimumException) {
+            return redirect()->route('storefront.cart')->withErrors(['booking' => __('booking.errors.below_coverage_minimum.message')]);
+        } catch (DeliveryCityRequiredException) {
+            return redirect()->route('storefront.cart')->withErrors(['booking' => __('booking.errors.delivery_city_required.message')]);
+        } catch (CurrencyMismatchException) {
+            return redirect()->route('storefront.cart')->withErrors(['booking' => __('account.booking_submit_failed')]);
+        } catch (HttpException $exception) {
+            if (! in_array($exception->getStatusCode(), [409, 422], true)) {
+                throw $exception;
+            }
 
-        return redirect()->route('storefront.cart')->with('booking_submitted', true);
+            return redirect()->route('storefront.cart')->withErrors(['booking' => __($exception->getStatusCode() === 409 ? 'account.booking_submit_conflict' : 'account.booking_submit_empty')]);
+        }
+
+        return redirect()->route('storefront.account.bookings.show', $submittedBooking->public_id)
+            ->with('booking_submitted', $submittedBooking->public_id);
     }
 }

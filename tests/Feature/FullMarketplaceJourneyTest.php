@@ -263,7 +263,7 @@ it('completes registration, approval, sale publication, booking, and payment for
         ->assertJsonPath('data.ready_to_submit', true)
         ->assertJsonPath('data.total_minor', $priceMinor)
         ->assertJsonPath('data.currency', 'EGP');
-    $this->post('/en/cart/'.$booking->public_id.'/submit')->assertRedirect('/en/cart');
+    $this->post('/en/cart/'.$booking->public_id.'/submit')->assertRedirect('/en/account/bookings/'.$booking->public_id);
     $booking->refresh();
     expect($booking->lifecycle_status)->toBeInstanceOf(VendorReviewState::class)
         ->and($booking->payment_status)->toBeInstanceOf(UnpaidState::class);
