@@ -162,13 +162,14 @@ it('registers through the Filament Livewire page with the confirmed field mapped
             'business_name_ar' => 'QA Livewire Events AR',
             'business_type' => 'individual',
             'primary_governorate_id' => $governorate->id,
+            'primary_city_id' => $city->id,
         ])
         ->call('register')
         ->assertHasNoFormErrors();
 
     expect(User::query()->where('email', 'qa-livewire@example.test')->exists())->toBeTrue()
         ->and(VendorProfile::query()->count())->toBe(1)
-        ->and(VendorProfile::query()->sole()->primary_city_id)->toBeNull();
+        ->and(VendorProfile::query()->sole()->primary_city_id)->toBe($city->id);
 });
 
 it('rejects weak passwords and active duplicate contact values without partial records', function (): void {
@@ -211,7 +212,9 @@ it('normalizes Filament contact values before validation and redirects to verifi
         ])
         ->call('register')
         ->assertHasNoFormErrors()
-        ->assertRedirect(Filament::getEmailVerificationPromptUrl());
+        ->assertRedirect(Filament::getLoginUrl());
+
+    expect(auth('vendor')->check())->toBeFalse();
 
     expect(User::query()->where('email', 'qa-filament@example.test')->exists())->toBeTrue()
         ->and(User::query()->where('phone_e164', '+201000007777')->exists())->toBeTrue();
