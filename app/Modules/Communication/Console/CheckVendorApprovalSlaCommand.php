@@ -28,6 +28,7 @@ class CheckVendorApprovalSlaCommand extends Command
         // 48h+ breach — escalate to Critical first so the 24h check doesn't overwrite
         $critical = DB::table('vendor_profiles')
             ->where('approval_status', 'pending')
+            ->whereNull('deleted_at')
             ->where('created_at', '<=', $now->copy()->subHours(48))
             ->select(['id', 'business_name'])
             ->get();
@@ -49,6 +50,7 @@ class CheckVendorApprovalSlaCommand extends Command
 
         $warning = DB::table('vendor_profiles')
             ->where('approval_status', 'pending')
+            ->whereNull('deleted_at')
             ->where('created_at', '<=', $now->copy()->subHours(24))
             ->where('created_at', '>', $now->copy()->subHours(48))
             ->whereNotIn('id', $criticalIds)

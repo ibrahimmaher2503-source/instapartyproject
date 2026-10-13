@@ -39,6 +39,7 @@ use App\Modules\Communication\Application\Listeners\OnReviewSubmitted;
 use App\Modules\Communication\Application\Listeners\OnServicePublished;
 use App\Modules\Communication\Application\Listeners\OnServiceRejected;
 use App\Modules\Communication\Application\Listeners\OnServiceSubmittedForReviewInbox;
+use App\Modules\Communication\Application\Listeners\OnSupportTicketCreatedInbox;
 use App\Modules\Communication\Application\Listeners\OnVendorApprovedForType;
 use App\Modules\Communication\Application\Listeners\OnVendorDocumentApproved;
 use App\Modules\Communication\Application\Listeners\OnVendorDocumentRejected;
@@ -185,6 +186,7 @@ class CommunicationServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'communication');
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'communication');
         $this->commands([
+            CheckVendorApprovalSlaCommand::class,
             WakeupSnoozedInboxItemsCommand::class,
             RetryFailedDispatchesCommand::class,
             DispatchDueCampaignsCommand::class,
@@ -264,6 +266,7 @@ class CommunicationServiceProvider extends ServiceProvider
         Event::listen('App\Modules\Booking\Domain\Events\BookingStalled', OnBookingStalledInbox::class);
         Event::listen('App\Modules\Communication\Domain\Events\ChatFlagged', OnChatFlaggedInbox::class);
         Event::listen('App\Modules\Catalog\Domain\Events\ServiceSubmittedForReview', OnServiceSubmittedForReviewInbox::class);
+        Event::listen('App\Modules\Support\Domain\Events\SupportTicketCreated', OnSupportTicketCreatedInbox::class);
 
         // Chat moderation audit listener — writes one audit_logs row per event.
         Event::listen(ChatThreadFrozen::class, WriteChatModerationAuditListener::class);

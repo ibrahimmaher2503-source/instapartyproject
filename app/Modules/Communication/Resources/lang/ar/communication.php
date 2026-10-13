@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'dispatch_status' => ['suppressed' => 'لم يتم الإرسال لعدم الحاجة'],
     'provider_settings' => [
         'status_enabled' => 'Enabled',
         'status_configured' => 'Configured',
@@ -312,6 +313,7 @@ return [
     'routing_target_admin' => 'المشرف: :name',
 
     'routing_event_keys' => [
+        'support.ticket.created' => 'إنشاء تذكرة دعم',
         'vendor.registered' => 'تسجيل مزود',
         'payment.failed' => 'فشل الدفع',
         'booking.stalled' => 'حجز متوقف',

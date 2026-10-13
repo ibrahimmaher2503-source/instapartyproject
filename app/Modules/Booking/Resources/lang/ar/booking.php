@@ -419,6 +419,7 @@ return [
         'lane_invalid' => 'يجب أن تكون خطوة التنفيذ preparing أو ready أو in_progress أو completed.',
     ],
     'errors' => [
+        'vendor_not_accepted' => 'يجب أن يقبل المورد هذا الحجز قبل بدء التنفيذ.',
         'invalid_transition' => 'خطوة التنفيذ هذه غير مسموح بها للعنصر في حالته الحالية.',
         'condition_photos_rental_only' => 'يمكن رفع صور حالة المعدات لعناصر التأجير فقط.',
         'preview_token_expired' => 'انتهت صلاحية معاينة التعديل. يرجى معاينة التغييرات مرة أخرى.',

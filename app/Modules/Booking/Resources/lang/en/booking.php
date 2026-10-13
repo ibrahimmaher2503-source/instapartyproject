@@ -432,6 +432,7 @@ return [
         'lane_invalid' => 'The fulfillment step must be preparing, ready, in_progress, or completed.',
     ],
     'errors' => [
+        'vendor_not_accepted' => 'The vendor must accept this booking before fulfillment can begin.',
         'invalid_transition' => 'This fulfillment step is not allowed for the item in its current state.',
         'condition_photos_rental_only' => 'Condition photos can only be uploaded for rental items.',
         'preview_token_expired' => 'The modification preview has expired. Please preview your changes again.',

@@ -47,7 +47,7 @@ final class CustomerAccountController
 
     public function booking(Request $request, string $publicId, RefundTimelineReader $refundReader, CatalogServiceReader $catalogReader, BookingItemReviewabilityReader $reviewability, ServiceReviewRepository $reviews): View
     {
-        $booking = Booking::query()->where('customer_id', $this->user($request)->id)->where('public_id', $publicId)->with(['vendors.vendor', 'vendors.items.service', 'occasion', 'address', 'payments', 'customerNotes'])->firstOrFail();
+        $booking = Booking::query()->where('customer_id', $this->user($request)->id)->where('public_id', $publicId)->with(['vendors.vendor', 'vendors.items.service', 'occasion', 'address.city', 'payments', 'customerNotes'])->firstOrFail();
         $refunds = $refundReader->findByBookingId($booking->id);
         $availableServices = [];
         $reviewableItems = [];

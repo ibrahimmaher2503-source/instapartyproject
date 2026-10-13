@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Application\Listeners;
 
+use App\Modules\Communication\Application\Actions\DispatchInAppNotificationOnceAction;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Domain\Enums\EventCategory;
@@ -25,7 +26,7 @@ class OnPaymentCaptured implements ShouldQueue
             ->select('customer_id as user_id', 'public_id as booking_public_id')
             ->first();
 
-        if ($customer === null) {
+        if ($customer === null || $customer->user_id === null) {
             return;
         }
 
@@ -36,9 +37,12 @@ class OnPaymentCaptured implements ShouldQueue
             'amount' => $amount,
         ];
 
-        // Customer: push + email
-        foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
-            $this->dispatcher->execute(new DispatchNotificationDTO(
+        // Customer: in-app + push + email
+        foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            $dispatcher = $channel === NotificationChannel::InApp
+                ? app(DispatchInAppNotificationOnceAction::class)
+                : $this->dispatcher;
+            $dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'payment.captured',
                 channel: $channel,
                 audience: NotificationAudience::Customer,

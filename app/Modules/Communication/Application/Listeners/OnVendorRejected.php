@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Application\Listeners;
 
 use App\Modules\Booking\Domain\Events\VendorRejected;
+use App\Modules\Communication\Application\Actions\DispatchInAppNotificationOnceAction;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Domain\Enums\EventCategory;
@@ -35,13 +36,17 @@ class OnVendorRejected implements ShouldQueue
         $reason = $bookingVendor->rejection_reason;
 
         $context = [
+            'event_identity' => (string) $bookingVendor->public_id,
             'booking_id' => $booking->public_id,
             'vendor_name' => $vendorName,
             'rejection_reason' => is_array($reason) ? ($reason['en'] ?? $reason['ar'] ?? '') : '',
         ];
 
-        foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
-            $this->dispatcher->execute(new DispatchNotificationDTO(
+        foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            $dispatcher = $channel === NotificationChannel::InApp
+                ? app(DispatchInAppNotificationOnceAction::class)
+                : $this->dispatcher;
+            $dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'booking.rejected',
                 channel: $channel,
                 audience: NotificationAudience::Customer,

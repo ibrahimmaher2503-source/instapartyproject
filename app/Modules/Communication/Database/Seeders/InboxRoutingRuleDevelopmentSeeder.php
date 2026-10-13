@@ -19,6 +19,20 @@ class InboxRoutingRuleDevelopmentSeeder extends Seeder
         $adminRole = Role::query()->where('name', 'admin')->first();
         $admin = User::query()->where('email', 'admin@instaparty.local')->first();
 
+        if (! AdminInboxRoutingRule::query()->where('event_key', 'support.ticket.created')->exists()) {
+            foreach ([$adminRole, $superAdminRole] as $role) {
+                if ($role !== null) {
+                    AdminInboxRoutingRule::query()->create([
+                        'public_id' => (string) Str::ulid(),
+                        'event_key' => 'support.ticket.created',
+                        'severity' => AdminInboxSeverity::Info,
+                        'route_to_role_id' => $role->id,
+                        'is_active' => true,
+                    ]);
+                }
+            }
+        }
+
         $rows = [
             [
                 'event_key' => 'booking.payment_failed',
