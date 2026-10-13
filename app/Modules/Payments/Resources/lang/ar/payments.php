@@ -3,6 +3,14 @@
 declare(strict_types=1);
 
 return [
+    'errors' => [
+        'capture_not_authorized' => 'لا يمكن تحصيل الدفعة إلا بعد تفويضها.',
+        'void_not_authorized' => 'لا يمكن إلغاء الدفعة إلا بعد تفويضها.',
+        'gateway_void_failed' => 'تعذر على بوابة الدفع إلغاء هذا التفويض.',
+        'payment_not_found' => 'تعذر العثور على عملية الدفع.',
+        'refund_conflict' => 'يتعارض طلب الاسترداد هذا مع طلب سابق.',
+    ],
+
     'navigation' => [
         'payments' => 'المدفوعات',
         'refunds' => 'طلبات الاسترداد',

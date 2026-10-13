@@ -5,8 +5,9 @@
     $name = $text->translation($vendor, 'business_name');
     $city = $vendor->primaryCity ? $text->translation($vendor->primaryCity, 'name') : '';
     $bio = $text->translation($vendor, 'bio');
-    $cover = $vendor->cover_path ? Illuminate\Support\Facades\Storage::disk('public')->url($vendor->cover_path) : null;
-    $logo = $vendor->logo_path ? Illuminate\Support\Facades\Storage::disk('public')->url($vendor->logo_path) : null;
+    $mediaUrls = app(App\Modules\Shared\Application\Services\PublicMediaUrl::class);
+    $cover = $mediaUrls->publicPath($vendor->cover_path);
+    $logo = $mediaUrls->publicPath($vendor->logo_path);
     $initial = mb_substr((string) $name, 0, 1);
 @endphp
 

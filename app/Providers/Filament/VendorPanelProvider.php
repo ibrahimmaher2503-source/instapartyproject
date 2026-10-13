@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Modules\Identity\Filament\Auth\IsolatedPanelLogin;
+use App\Modules\Identity\Filament\Auth\VendorEmailVerificationPrompt;
 use App\Modules\Identity\Filament\Vendor\Pages\RegisterVendorPage;
 use App\Modules\Identity\Http\Middleware\CheckVendorSuspension;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
@@ -100,7 +101,7 @@ class VendorPanelProvider extends PanelProvider
             ->path('vendor-portal')
             ->login(IsolatedPanelLogin::class)
             ->registration(RegisterVendorPage::class)
-            ->emailVerification()
+            ->emailVerification(VendorEmailVerificationPrompt::class)
             ->homeUrl('/vendor-portal')
             ->passwordReset()
             ->brandName('InstaParty Vendor')

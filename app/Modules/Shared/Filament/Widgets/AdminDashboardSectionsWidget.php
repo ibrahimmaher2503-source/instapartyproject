@@ -36,6 +36,7 @@ use App\Modules\Settlement\Domain\Models\Withdrawal;
 use App\Modules\Settlement\Filament\Resources\CommissionResource;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource;
 use Brick\Money\Money;
+use Carbon\CarbonInterface;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
@@ -107,20 +108,22 @@ class AdminDashboardSectionsWidget extends Widget
     private function financialData(array $access): array
     {
         $currency = 'EGP';
+        $now = now('UTC');
+        $currentStart = $now->copy()->startOfDay()->subDays(6);
         $capturedMinor = $access['payments']
-            ? (int) Payment::query()->where('status', PaymentStatus::Captured->value)->sum('amount_minor')
+            ? (int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Captured->value)->sum('amount_minor')
             : 0;
         $refundMinor = $access['refunds']
-            ? (int) Refund::query()->where('status', RefundStatus::Completed->value)->sum('amount_minor')
+            ? (int) Refund::query()->where('amount_currency', $currency)->where('status', RefundStatus::Completed->value)->sum('amount_minor')
             : 0;
         $commissionMinor = $access['commissions']
-            ? (int) Commission::query()->sum('commission_minor')
+            ? (int) Commission::query()->where('commission_currency', $currency)->sum('commission_minor')
             : 0;
         $pendingPaymentsMinor = $access['payments']
-            ? (int) Payment::query()->where('status', PaymentStatus::Pending->value)->sum('amount_minor')
+            ? (int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Pending->value)->sum('amount_minor')
             : 0;
         $payablesMinor = $access['withdrawals']
-            ? (int) Withdrawal::query()
+            ? (int) Withdrawal::query()->where('requested_amount_currency', $currency)
                 ->whereIn('status', [WithdrawalStatus::Pending->value, WithdrawalStatus::Approved->value])
                 ->sum('requested_amount_minor')
             : 0;
@@ -171,9 +174,13 @@ class AdminDashboardSectionsWidget extends Widget
             $attention[] = $this->attentionMetric(__('shared::dashboard.attention.refund_issues'), (int) Refund::query()->where('status', RefundStatus::Failed->value)->count(), RefundResource::getUrl('index'), 'danger');
         }
 
-        $financialSeries = $this->financialSeries(7, $access);
+        $financialSeries = $this->financialSeries(7, $access, $now);
 
         return [
+            'comparison' => $access['payments'] ? __('shared::panel.comparison', [
+                'current' => $this->formatMinor((int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Captured->value)->whereBetween('created_at', [$currentStart, $now])->sum('amount_minor'), $currency),
+                'previous' => $this->formatMinor((int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Captured->value)->whereBetween('created_at', [$currentStart->copy()->subDays(7), $now->copy()->subDays(7)])->sum('amount_minor'), $currency),
+            ]) : null,
             'chart' => [
                 'title' => __('shared::dashboard.financials.trend_title'),
                 'caption' => __('shared::dashboard.financials.trend_caption'),
@@ -260,20 +267,20 @@ class AdminDashboardSectionsWidget extends Widget
         ];
     }
 
-    private function financialSeries(int $days, array $access): array
+    private function financialSeries(int $days, array $access, CarbonInterface $now): array
     {
         $series = [];
 
         if ($access['payments']) {
-            $series[] = ['label' => __('shared::dashboard.financials.revenue'), 'color' => 'primary', 'values' => $this->dailyTotals(Payment::query()->where('status', PaymentStatus::Captured->value), 'amount_minor', $days)];
+            $series[] = ['label' => __('shared::dashboard.financials.revenue'), 'color' => 'primary', 'values' => $this->dailyTotals(Payment::query()->where('amount_currency', 'EGP')->where('status', PaymentStatus::Captured->value), 'amount_minor', $days, $now)];
         }
 
         if ($access['commissions']) {
-            $series[] = ['label' => __('shared::dashboard.financials.commission'), 'color' => 'success', 'values' => $this->dailyTotals(Commission::query(), 'commission_minor', $days)];
+            $series[] = ['label' => __('shared::dashboard.financials.commission'), 'color' => 'success', 'values' => $this->dailyTotals(Commission::query()->where('commission_currency', 'EGP'), 'commission_minor', $days, $now)];
         }
 
         if ($access['refunds']) {
-            $series[] = ['label' => __('shared::dashboard.financials.refunds'), 'color' => 'danger', 'values' => $this->dailyTotals(Refund::query()->where('status', RefundStatus::Completed->value), 'amount_minor', $days)];
+            $series[] = ['label' => __('shared::dashboard.financials.refunds'), 'color' => 'danger', 'values' => $this->dailyTotals(Refund::query()->where('amount_currency', 'EGP')->where('status', RefundStatus::Completed->value), 'amount_minor', $days, $now)];
         }
 
         return $series;
@@ -301,6 +308,8 @@ class AdminDashboardSectionsWidget extends Widget
     private function topVendorsByRevenue(string $currency): array
     {
         return Commission::query()
+            ->where('gross_amount_currency', $currency)
+            ->where('commission_currency', $currency)
             ->selectRaw('vendor_profile_id, SUM(commission_minor) as commission_total, SUM(gross_amount_minor) as gross_total')
             ->with('vendor')
             ->groupBy('vendor_profile_id')
@@ -314,10 +323,10 @@ class AdminDashboardSectionsWidget extends Widget
             ])->all();
     }
 
-    private function dailyTotals(Builder $query, string $column, int $days): array
+    private function dailyTotals(Builder $query, string $column, int $days, CarbonInterface $now): array
     {
-        $start = now()->startOfDay()->subDays($days - 1);
-        $rows = $query->where('created_at', '>=', $start)
+        $start = $now->copy()->startOfDay()->subDays($days - 1);
+        $rows = $query->whereBetween('created_at', [$start, $now])
             ->selectRaw("DATE(created_at) as day, SUM({$column}) as total")
             ->groupByRaw('DATE(created_at)')
             ->pluck('total', 'day');
@@ -330,8 +339,9 @@ class AdminDashboardSectionsWidget extends Widget
 
     private function dailyCounts(Builder $query, int $days, string $column = 'created_at'): array
     {
-        $start = now()->startOfDay()->subDays($days - 1);
-        $rows = $query->where($column, '>=', $start)
+        $now = now('UTC');
+        $start = $now->copy()->startOfDay()->subDays($days - 1);
+        $rows = $query->whereBetween($column, [$start, $now])
             ->selectRaw("DATE({$column}) as day, COUNT(*) as total")
             ->groupByRaw("DATE({$column})")
             ->pluck('total', 'day');
@@ -366,5 +376,4 @@ class AdminDashboardSectionsWidget extends Widget
     {
         return Money::ofMinor($minor, $currency)->formatTo(app()->getLocale());
     }
-
 }

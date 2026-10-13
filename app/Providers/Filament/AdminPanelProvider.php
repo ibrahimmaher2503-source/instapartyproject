@@ -6,14 +6,20 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Modules\Identity\Filament\Auth\AdminEditProfile;
-use App\Modules\Identity\Filament\Auth\IsolatedPanelLogin;
+use App\Modules\Identity\Filament\Auth\AdminLogin;
+use App\Modules\Identity\Filament\Auth\AdminResetPassword;
+use App\Modules\Identity\Filament\Auth\PanelRequestPasswordReset;
+use App\Modules\Identity\Filament\Pages\AdminSecurityPage;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
+use App\Modules\Identity\Http\Middleware\EnsureAdminMfa;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
 use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
 use App\Modules\Shared\Filament\RenderHooks\TutorialLauncherRenderHook;
 use App\Modules\Shared\Http\Middleware\SetHtmlDirectionMiddleware;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -38,6 +44,9 @@ class AdminPanelProvider extends PanelProvider
 {
     public function boot(): void
     {
+        DatePicker::configureUsing(fn (DatePicker $field) => $field->native(false)->displayFormat('Y-m-d'));
+        \Filament\Tables\Actions\DeleteAction::configureUsing(fn (\Filament\Tables\Actions\DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getModelLabel().' '.($action->getRecord()?->getAttribute('public_id') ?: $action->getRecord()?->getKey())])), isImportant: true);
+        DeleteAction::configureUsing(fn (DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getModelLabel().' '.($action->getRecord()?->getAttribute('public_id') ?: $action->getRecord()?->getKey())])), isImportant: true);
         Table::$defaultDateTimeDisplayFormat = 'j M Y, g:i A';
         Infolist::$defaultDateTimeDisplayFormat = 'j M Y, g:i A';
 
@@ -67,11 +76,13 @@ class AdminPanelProvider extends PanelProvider
                 ->id('admin')
                 ->path('admin')
                 ->brandName('InstaParty')
-                ->login(IsolatedPanelLogin::class)
+                ->login(AdminLogin::class)
+                ->passwordReset(requestAction: PanelRequestPasswordReset::class, resetAction: AdminResetPassword::class)
                 ->authGuard('web')
                 ->profile(AdminEditProfile::class)
                 ->pages([
                     Dashboard::class,
+                    AdminSecurityPage::class,
                 ])
                 ->widgets([
                     'App\\Modules\\Shared\\Filament\\Widgets\\AdminDashboardSectionsWidget',
@@ -104,9 +115,11 @@ class AdminPanelProvider extends PanelProvider
                     DisableBladeIconComponents::class,
                     DispatchServingFilamentEvent::class,
                 ])
+                ->persistentMiddleware([AuthenticateSession::class])
                 ->authMiddleware([
                     Authenticate::class,
-                ]);
+                    EnsureAdminMfa::class,
+                ], isPersistent: true);
         }
 
         return $panel
@@ -114,7 +127,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('InstaParty')
-            ->login(IsolatedPanelLogin::class)
+            ->login(AdminLogin::class)
+            ->passwordReset(requestAction: PanelRequestPasswordReset::class, resetAction: AdminResetPassword::class)
             ->authGuard('web')
             ->profile(AdminEditProfile::class)
             ->colors([
@@ -175,6 +189,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Modules/Subscriptions/Filament/Pages'), for: 'App\\Modules\\Subscriptions\Filament\Pages')
             ->pages([
                 Dashboard::class,
+                AdminSecurityPage::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->discoverWidgets(in: app_path('Modules/Booking/Filament/Widgets'), for: 'App\\Modules\\Booking\Filament\Widgets')
@@ -236,8 +251,10 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->persistentMiddleware([AuthenticateSession::class])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+                EnsureAdminMfa::class,
+            ], isPersistent: true);
     }
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'display_timezone' => ':field (المنطقة الزمنية: :timezone)',
     'sub_status' => 'حالة المورد',
     'vendor_total' => 'إجمالي المورد',
     'nav' => [
@@ -171,6 +172,13 @@ return [
         'transportation_line_added' => 'تمت إضافة بند النقل وإعادة حساب الإجمالي.',
     ],
     'invoice' => [
+        'currency_mismatch' => 'مكونات الفاتورة المسجلة تستخدم عملات مختلفة ولا يمكن جمعها.',
+        'item_subtotal' => 'مجموع البنود',
+        'recorded_subtotal_adjustment' => 'تسوية إجمالي البنود المسجلة (السبب غير محفوظ)',
+        'recorded_delivery_adjustment' => 'تسوية التوصيل المسجلة (السبب غير محفوظ)',
+        'recorded_total_adjustment' => 'تسوية الإجمالي المسجلة (السبب غير محفوظ)',
+        'recorded_vat' => 'ضريبة القيمة المضافة المسجلة',
+        'tax_context' => 'تعرض الضرائب كما سجلت. مستند الحجز لا يحدد نسبة ضريبة ولا يعد اعتمادًا لفاتورة ضريبية.',
         'title' => 'فاتورة الحجز',
         'print' => 'طباعة الفاتورة',
         'customer' => 'العميل',
@@ -179,6 +187,15 @@ return [
         'item' => 'العنصر',
         'amount' => 'المبلغ',
         'vendor_delivery' => 'توصيل الموردين',
+        'discount' => 'خصم الحجز',
+        'loyalty_redemption' => 'استبدال نقاط الولاء',
+        'booking_reference' => 'مرجع الحجز',
+        'document_reference' => 'مرجع المستند (مرجع الحجز)',
+        'vendor' => 'المورد',
+        'invoice_name' => 'اسم مستلم الفاتورة',
+        'invoice_tax_id' => 'الرقم الضريبي',
+        'no_tax_details_recorded' => 'لا توجد بيانات ضريبية مسجلة لهذا الحجز',
+        'payment_status' => 'حالة الدفع',
     ],
 
     'empty_states' => [

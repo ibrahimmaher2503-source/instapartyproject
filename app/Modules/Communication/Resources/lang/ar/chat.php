@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 return [
+    'inbox_title' => 'محادثات العملاء',
+    'inbox_description' => 'تظل محادثات الحجوزات خاضعة لقيود الحجز والمراجعة الحالية.',
+    'booking' => 'الحجز',
+    'status' => 'الحالة',
+    'created_at' => 'تاريخ الإنشاء',
+    'no_threads' => 'لا توجد محادثات حجوزات بعد',
+    'thread_status' => ['open' => 'مفتوحة', 'locked' => 'مقفلة', 'closed' => 'منتهية'],
     'panel_title' => 'المحادثة',
     'state_open' => 'المحادثة مفتوحة',
     'state_frozen' => 'تم تعليق المحادثة بواسطة المشرف',

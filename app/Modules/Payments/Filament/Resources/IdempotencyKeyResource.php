@@ -8,7 +8,10 @@ use App\Modules\Payments\Domain\Models\IdempotencyKey;
 use App\Modules\Payments\Filament\Resources\IdempotencyKeyResource\Pages\ListIdempotencyKeys;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class IdempotencyKeyResource extends Resource
 {
@@ -56,6 +59,7 @@ class IdempotencyKeyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->description(__('shared::operations.idempotency_retention'))
             ->columns([
                 TextColumn::make('key')
                     ->label(__('payments.columns.key'))
@@ -83,6 +87,25 @@ class IdempotencyKeyResource extends Resource
                     ->label(__('admin.common.created_at'))
                     ->dateTime()
                     ->sortable(),
+            ])
+            ->filters([
+                Filter::make('business_operations')
+                    ->label(__('shared::operations.business_operations'))
+                    ->default()
+                    ->query(fn (Builder $query): Builder => $query->whereNot(
+                        fn (Builder $query): Builder => $query->where('scope', 'http')->where(
+                            fn (Builder $query): Builder => $query
+                                ->whereIn('route', ['livewire.update', 'livewire/update'])
+                                ->orWhere('route', 'like', '%.livewire.update'),
+                        ),
+                    )),
+                TernaryFilter::make('expired')
+                    ->label(__('shared::operations.expired'))
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query->where('expires_at', '<=', now()),
+                        false: fn (Builder $query): Builder => $query->where('expires_at', '>', now()),
+                        blank: fn (Builder $query): Builder => $query,
+                    ),
             ])
             ->defaultSort('created_at', 'desc');
     }

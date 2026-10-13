@@ -1,3 +1,5 @@
+import './booking-actions';
+
 const dialog = document.querySelector('[data-storefront-nav-dialog]');
 const openButton = document.querySelector('[data-storefront-nav-open]');
 const closeButton = document.querySelector('[data-storefront-nav-close]');

@@ -18,6 +18,8 @@ use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\CreateRen
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\EditRentalService;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\ListRentalServices;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\PendingRentalServicesPage;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasServicePriceInput;
 use App\Modules\Discovery\Filament\Actions\ReindexServicesAction;
 use App\Modules\Shared\Application\Services\StorefrontText;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
@@ -31,6 +33,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ActionGroup;
@@ -48,6 +51,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RentalServiceResource extends Resource
 {
+    use HasCategorySchemaFields;
+    use HasServicePriceInput;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';
@@ -156,6 +162,8 @@ class RentalServiceResource extends Resource
                         ->rule('required')
                         ->label(__('catalog.vendor')),
                     Select::make('category_id')
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set, Select $component) => static::resetCategorySchemaFields($set, $component))
                         ->relationship('category', 'name')
                         ->getOptionLabelFromRecordUsing(fn ($record): string => $record->getTranslation('name', app()->getLocale(), useFallbackLocale: true))
                         ->searchable(['name->en', 'name->ar'])
@@ -164,13 +172,7 @@ class RentalServiceResource extends Resource
                         ->markAsRequired()
                         ->rule('required')
                         ->label(__('catalog.category')),
-                    TextInput::make('base_price_minor')
-                        ->label(__('catalog.base_price'))
-                        ->helperText(__('catalog.price_helper'))
-                        ->numeric()
-                        ->minValue(0)
-                        ->markAsRequired()
-                        ->rule('required'),
+                    static::servicePriceField(),
                     Select::make('status')
                         ->options(ServiceStatus::class)
                         ->default(ServiceStatus::Draft->value)
@@ -181,6 +183,8 @@ class RentalServiceResource extends Resource
                         ->label(__('catalog.is_featured')),
                 ])
                 ->columns(2),
+
+            static::categorySchemaSection(ProductType::Rental),
 
             Section::make(__('catalog.rental_details'))
                 ->relationship('rentalDetail')

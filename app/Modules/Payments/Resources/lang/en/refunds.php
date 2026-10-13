@@ -3,6 +3,15 @@
 declare(strict_types=1);
 
 return [
+    'actions' => [
+        'initiate' => 'Refund',
+        'confirm' => 'Confirm a partial refund or refund the remaining captured amount. Service refund policies still apply.',
+        'amount' => 'Refund amount',
+        'amount_help' => 'The default is the remaining amount after existing refund requests.',
+        'note_en' => 'Reason note (English)',
+        'note_ar' => 'Reason note (Arabic)',
+        'recorded' => 'Refund request recorded',
+    ],
     'nav' => [
         'refunds' => 'Refunds',
     ],
@@ -48,6 +57,9 @@ return [
     ],
 
     'errors' => [
+        'refund_in_progress' => 'A refund for this payment is awaiting confirmation. Wait for its outcome before starting another refund.',
+        'amount_positive' => 'Enter a refund amount greater than zero.',
         'partial_refund_unsupported' => 'Partial refunds are not supported in phase 1.',
+        'over_refund_attempted' => 'The requested refund exceeds the amount remaining for this payment.',
     ],
 ];

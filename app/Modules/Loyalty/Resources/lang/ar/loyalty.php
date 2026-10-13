@@ -105,6 +105,7 @@ return [
         'booking_not_draft' => 'الحجز لم يعد في حالة المسودة.',
         'cross_customer_forbidden' => 'هذا الحجز لا يخصّك.',
         'discount_zero' => 'قيمة الخصم تساوي صفر.',
+        'currency_mismatch' => 'عملة برنامج الولاء لا تطابق عملة هذا الحجز.',
     ],
     'directions' => [
         'earn' => 'كسب',

@@ -7,6 +7,7 @@ namespace App\Modules\Shared\Filament\RenderHooks;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\View;
 
 class HtmlDirectionRenderHook
 {
@@ -23,7 +24,7 @@ class HtmlDirectionRenderHook
         $locale = App::getLocale();
         $dir = $locale === 'ar' ? 'rtl' : 'ltr';
 
-        return "<script>
+        return View::make('filament.partials.panel-ux')->render()."<script>
             document.documentElement.dir='{$dir}';
             document.documentElement.lang='{$locale}';
             document.addEventListener('DOMContentLoaded', () => {
