@@ -11,7 +11,21 @@
         && ! $booking->payments->contains(fn ($payment) => in_array($payment->status->getValue(), ['pending', 'authorized', 'captured'], true));
 @endphp
 <a class="sf-text-link" href="{{ route('storefront.account.bookings') }}">{{ __('account.back_bookings') }}</a>
+@if (session('booking_submitted') === $booking->public_id)
+<section class="sf-account-panel" data-booking-confirmation role="status"><h2>{{ __('account.booking_submitted') }}</h2><p>{{ __('booking.columns.reference_no') }}: <bdi>{{ $booking->reference_no }}</bdi></p><a class="sf-text-link" href="{{ route('storefront.account.bookings.show', $booking->public_id) }}">{{ __('account.view_details') }}</a></section>
+@endif
 <section class="sf-account-panel"><h2><bdi>{{ $booking->reference_no }}</bdi></h2><span class="sf-account-status">{{ __('booking.lifecycle_status.'.$booking->lifecycle_status->getValue()) }}</span><dl class="sf-account-details"><div><dt>{{ __('booking.display_timezone', ['field' => __('account.date'), 'timezone' => $viewerTimezone]) }}</dt><dd>{{ $booking->event_starts_at?->copy()->timezone($viewerTimezone)->translatedFormat('d F Y، H:i') ?? '—' }}</dd></div><div><dt>{{ __('account.occasion') }}</dt><dd>{{ $booking->occasion?->getTranslation('name', app()->getLocale()) ?? '—' }}</dd></div><div><dt>{{ __('account.total') }}</dt><dd>{{ $booking->total->formatTo(app()->getLocale() === 'ar' ? 'ar_EG' : 'en_GB') }}</dd></div></dl></section>
+<section class="sf-account-panel" data-event-details><h2>{{ __('booking.sections.event') }}</h2><dl class="sf-account-details">
+    <div><dt>{{ __('booking.display_timezone', ['field' => __('booking.columns.event_ends_at'), 'timezone' => $viewerTimezone]) }}</dt><dd>{{ $booking->event_ends_at?->copy()->timezone($viewerTimezone)->translatedFormat('d F Y، H:i') ?? __('account.not_provided') }}</dd></div>
+    <div><dt>{{ __('booking.columns.guest_count') }}</dt><dd>{{ $booking->guest_count ?? __('account.not_provided') }}</dd></div>
+</dl></section>
+<section class="sf-account-panel" data-delivery-details><h2>{{ __('booking.wizard.step_address') }}</h2><dl class="sf-account-details">
+    <div><dt>{{ __('booking.columns.city') }}</dt><dd>{{ $booking->address?->city?->getTranslation('name', app()->getLocale()) ?: __('account.not_provided') }}</dd></div>
+    @foreach (['address_line', 'building', 'floor', 'apartment', 'landmark', 'recipient_name'] as $field)
+        <div><dt>{{ __('booking.columns.'.$field) }}</dt><dd class="whitespace-pre-wrap break-words">{{ filled($booking->address?->{$field}) ? $booking->address->{$field} : __('account.not_provided') }}</dd></div>
+    @endforeach
+    <div><dt>{{ __('booking.columns.recipient_phone') }}</dt><dd><bdi dir="ltr">{{ $booking->address?->recipient_phone_e164 ?: __('account.not_provided') }}</bdi></dd></div>
+</dl></section>
 @if ($booking->customerNotes->isNotEmpty())
 <section class="sf-account-panel" data-event-notes><h2>{{ __('storefront.wizard.step3.notes_label') }}</h2><p class="whitespace-pre-wrap break-words">{{ $booking->customerNotes->first()->body }}</p></section>
 @endif

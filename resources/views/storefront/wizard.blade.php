@@ -244,7 +244,9 @@
                                     </label>
                                     <label class="sf-wizard-field-card">
                                         <span class="sf-wizard-field-label">{{ __('storefront.checkout.event.recipient_phone') }}</span>
-                                        <input type="tel" dir="ltr" inputmode="tel" name="address[recipient_phone_e164]" value="{{ old('address.recipient_phone_e164') }}" placeholder="+201..." class="sf-field sf-wizard-field text-left" required>
+                                        <input type="tel" dir="ltr" inputmode="tel" name="address[recipient_phone_e164]" value="{{ old('address.recipient_phone_e164') }}" placeholder="+201000000000" pattern="[+][1-9][0-9]{7,14}" aria-describedby="planner-recipient-phone-hint planner-recipient-phone-error" aria-invalid="{{ $errors->has('address.recipient_phone_e164') ? 'true' : 'false' }}" class="sf-field sf-wizard-field text-left" data-planner-recipient-phone required>
+                                        <small id="planner-recipient-phone-hint">{{ __('storefront.wizard.step3.recipient_phone_hint') }}</small>
+                                        <small id="planner-recipient-phone-error" @class(['text-red-700', 'hidden' => ! $errors->has('address.recipient_phone_e164')]) role="alert" data-planner-recipient-phone-error>{{ $errors->first('address.recipient_phone_e164') ?: __('storefront.wizard.validation.recipient_phone_invalid') }}</small>
                                     </label>
                                     <label class="sf-wizard-field-card">
                                         <span class="sf-wizard-field-label">{{ __('storefront.checkout.event.building') }}</span>

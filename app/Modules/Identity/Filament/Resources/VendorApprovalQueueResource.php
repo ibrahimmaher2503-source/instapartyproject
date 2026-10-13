@@ -32,6 +32,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 use Spatie\ModelStates\State;
 use Throwable;
 
@@ -98,6 +99,16 @@ class VendorApprovalQueueResource extends Resource
                     ->label(__('identity.columns.docs'))
                     ->counts('documents')
                     ->badge(),
+                TextColumn::make('approval_eligibility')
+                    ->label(__('identity.approval_eligibility.checklist'))
+                    ->getStateUsing(function (VendorProfile $record): string {
+                        $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
+
+                        return $result->eligible
+                            ? __('identity.approval_eligibility.complete')
+                            : implode(' ', $result->errors);
+                    })
+                    ->wrap(),
                 TextColumn::make('created_at')
                     ->label(__('identity.columns.created_at'))
                     ->dateTime()
@@ -122,12 +133,24 @@ class VendorApprovalQueueResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof PendingState
                         && (bool) auth()->user()?->can('approve_vendor_profile'))
-                    ->disabled(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
-                    ->tooltip(fn (VendorProfile $record): ?string => app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible
-                        ? null
-                        : (string) __('identity.approval_eligibility.complete_requirements'))
+                    ->tooltip(function (VendorProfile $record): ?string {
+                        $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
+
+                        return $result->eligible ? null : implode(' ', $result->errors);
+                    })
                     ->action(function (VendorProfile $record): void {
-                        app(ApproveVendorProfileAction::class)->execute($record);
+                        try {
+                            app(ApproveVendorProfileAction::class)->execute($record);
+                        } catch (ValidationException $exception) {
+                            Notification::make()
+                                ->title(__('identity.notifications.vendor_approval_failed'))
+                                ->body(collect($exception->errors())->flatten()->implode(' '))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
                         Notification::make()->title(__('identity.notifications.vendor_approved'))->success()->send();
                     }),
 
@@ -153,7 +176,7 @@ class VendorApprovalQueueResource extends Resource
                             'ar' => $data['rejection_reason_ar'] ?? null,
                         ]);
                         app(RejectVendorProfileAction::class)->execute($record, $reason);
-                        Notification::make()->title(__('identity.notifications.vendor_rejected'))->danger()->send();
+                        Notification::make()->title(__('identity.notifications.vendor_rejected'))->success()->send();
                     }),
             ])
             ->recordUrl(fn (VendorProfile $record): string => static::getUrl('view', ['record' => $record]))
@@ -239,7 +262,13 @@ class VendorApprovalQueueResource extends Resource
                 ]),
 
             InfolistSection::make(__('identity.approval_eligibility.checklist'))
-                ->description(__('identity.approval_eligibility.checklist_description'))
+                ->description(function (VendorProfile $record): string {
+                    $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
+
+                    return $result->eligible
+                        ? __('identity.approval_eligibility.checklist_description')
+                        : implode(' ', $result->errors);
+                })
                 ->schema([
                     RepeatableEntry::make('approval_eligibility_checklist')
                         ->hiddenLabel()

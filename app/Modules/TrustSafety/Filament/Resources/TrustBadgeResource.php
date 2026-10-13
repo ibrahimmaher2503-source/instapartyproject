@@ -22,6 +22,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Livewire\Component;
 
 class TrustBadgeResource extends Resource
 {
@@ -62,6 +63,8 @@ class TrustBadgeResource extends Resource
             Tabs::make(__('trust-safety::trust-safety.badges.translations'))
                 ->tabs([
                     Tab::make(__('trust-safety::trust-safety.badges.tab_english'))
+                        ->badge(fn (Component $livewire): ?string => $livewire->getErrorBag()->hasAny(['data.name.en', 'data.description.en']) ? __('trust-safety::trust-safety.badges.validation_errors') : null)
+                        ->badgeColor('danger')
                         ->schema([
                             TextInput::make('name.en')
                                 ->label(__('trust-safety::trust-safety.badges.name_en'))
@@ -73,6 +76,8 @@ class TrustBadgeResource extends Resource
                                 ->rows(3),
                         ]),
                     Tab::make(__('trust-safety::trust-safety.badges.tab_arabic'))
+                        ->badge(fn (Component $livewire): ?string => $livewire->getErrorBag()->hasAny(['data.name.ar', 'data.description.ar']) ? __('trust-safety::trust-safety.badges.validation_errors') : null)
+                        ->badgeColor('danger')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->label(__('trust-safety::trust-safety.badges.name_ar'))

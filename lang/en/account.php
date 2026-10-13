@@ -21,4 +21,9 @@ return [
     'cancel_preview' => 'Review cancellation policy',
     'cancel_manual_review' => 'Any refund requires review by the payments team.',
     'delivery_total' => 'Delivery and transport',
+    'not_provided' => 'Not provided',
+    'booking_submitted' => 'Your booking was submitted successfully.',
+    'booking_submit_failed' => 'Your booking could not be submitted. Please contact support with your booking reference.',
+    'booking_submit_conflict' => 'This booking has already left the cart. Check its latest status in My bookings.',
+    'booking_submit_empty' => 'Add at least one service to your event before submitting your booking.',
 ];
