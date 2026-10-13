@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Geography\Domain\Models\Governorate;
+use App\Modules\Geography\Domain\Models\Region;
 use App\Modules\Identity\Application\Actions\AutoSuspendForExpiredDocAction;
 use App\Modules\Identity\Application\Actions\UpdateVendorProfileAction;
 use App\Modules\Identity\Application\Services\VendorOnboardingChecklistService;
@@ -17,11 +18,13 @@ use App\Modules\Identity\Filament\Resources\VendorDocumentFilamentResource;
 use App\Modules\Identity\Filament\Resources\VendorDocumentFilamentResource\Pages\ViewVendorDocument;
 use App\Modules\Identity\Filament\Vendor\Pages\RegisterVendorPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorBusinessHoursPage;
+use App\Modules\Identity\Filament\Vendor\Pages\VendorCoverageAreasPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorDocumentsPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorPhoneVerificationPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorProfilePage;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 
@@ -34,6 +37,65 @@ it('collects a localized city during vendor registration and resets it after a g
         ->fillForm(['primary_governorate_id' => $governorate->id, 'primary_city_id' => $city->id]);
     $page->assertFormFieldExists('primary_city_id');
     $page->set('data.primary_governorate_id', $otherGovernorate->id)->assertSet('data.primary_city_id', null);
+});
+
+it('keeps coverage city options beyond the default limit and localized like the vendor profile', function (): void {
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+
+    $governorate = Governorate::factory()->create(['name' => ['en' => 'Giza', 'ar' => 'الجيزة']]);
+    $region = Region::factory()->create(['governorate_id' => $governorate->id]);
+    City::factory()->count(55)->create([
+        'governorate_id' => $governorate->id,
+        'region_id' => $region->id,
+    ]);
+    $dokki = City::factory()->create([
+        'governorate_id' => $governorate->id,
+        'region_id' => $region->id,
+        'name' => ['en' => 'Dokki', 'ar' => 'الدقي'],
+        'sort_order' => 999,
+    ]);
+    $inactiveCity = City::factory()->inactive()->create([
+        'governorate_id' => $governorate->id,
+        'region_id' => $region->id,
+        'name' => ['en' => 'Inactive City', 'ar' => 'مدينة غير نشطة'],
+    ]);
+
+    $vendor = VendorProfile::factory()->create([
+        'primary_governorate_id' => $governorate->id,
+        'primary_city_id' => $dokki->id,
+    ]);
+    $this->actingAs($vendor->user, 'vendor');
+
+    $coveragePage = Livewire::test(VendorCoverageAreasPage::class)->mountAction('addArea');
+    $coverageCitySelect = $coveragePage->instance()->getMountedActionForm()?->getComponent('city_id');
+    expect($coverageCitySelect)->toBeInstanceOf(Select::class);
+    /** @var Select $coverageCitySelect */
+    $activeCityCount = City::query()->active()->count();
+    expect($activeCityCount)->toBeGreaterThan(50)
+        ->and($coverageCitySelect->getOptionsLimit())->toBe($activeCityCount);
+
+    foreach ([
+        'en' => ['profile' => 'Dokki', 'coverage' => 'Giza — Dokki'],
+        'ar' => ['profile' => 'الدقي', 'coverage' => 'الجيزة — الدقي'],
+    ] as $locale => $labels) {
+        app()->setLocale($locale);
+
+        $coverageOptions = $coverageCitySelect->getOptions();
+        $profileCitySelect = Livewire::test(VendorProfilePage::class)
+            ->instance()
+            ->getForm('form')
+            ?->getComponent('primary_city_id');
+
+        expect($coverageOptions[$dokki->id] ?? null)->toBe($labels['coverage'])
+            ->and($coverageOptions)->not->toHaveKey($inactiveCity->id)
+            ->and($profileCitySelect)->toBeInstanceOf(Select::class);
+        /** @var Select $profileCitySelect */
+        expect($profileCitySelect->getOptions()[$dokki->id] ?? null)->toBe($labels['profile']);
+
+        if ($locale === 'en') {
+            expect(array_search($dokki->id, array_keys($coverageOptions), true))->toBeGreaterThan(50);
+        }
+    }
 });
 
 it('does not persist visual bank placeholders through the shared profile action', function (): void {
