@@ -2,6 +2,7 @@
 
 | Method | Endpoint | Module | Phase | Auth | Roles | Request Body | Response | Documented |
 |---|---|---|---|---|---|---|---|---|
+| GET | /api/v1/cms/pages/{slug} | Shared | Existing | Public | Any | Path slug: terms, refund-policy, privacy, about, contact; Accept-Language: en or ar | 200 localized published CmsPageResource; 404 unknown or unpublished slug | Scribe + Bruno |
 | POST | /api/v1/register/vendor | Identity | Phase 1 | Public, throttled | Guest | name, email, phone_e164, password + confirmation, bilingual business_name, business_type, governorate, locale; optional legacy city validated against governorate; optional valid facebook_url, website_url, instagram_url | 201 VendorProfile including optional URLs and nullable primary_city_id; meta registration_successful and verification_pending | Scribe + Bruno |
 | PUT | /api/v1/vendor/profile | Identity | Phase 1 | Sanctum + vendor role | Vendor updating own profile | Profile fields; optional nullable facebook_url, website_url, instagram_url (valid URL or null to clear) | 200 VendorProfile including optional URLs | Scribe + Bruno |
 | GET | /api/v1/admin/vendor-profiles | Identity | Phase 1 | Sanctum | Admin with VendorProfile viewAny policy | Query: status, search, per_page | Paginated VendorProfile collection | Scribe |

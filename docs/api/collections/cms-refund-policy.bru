@@ -1,0 +1,22 @@
+meta {
+  name: Published refund policy CMS page
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/api/v1/cms/pages/refund-policy
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+}
+
+docs {
+  The CMS API also accepts terms, privacy, about, and contact as page slugs.
+  Set Accept-Language to en or ar to select the localized page content.
+  Only published pages are returned; an unpublished or unknown slug returns 404.
+}
