@@ -10,6 +10,7 @@ use App\Modules\Payments\Domain\Events\RefundCompleted;
 use App\Modules\Payments\Domain\Events\RefundFailed;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Payments\Domain\Models\Refund;
+use App\Modules\Payments\Domain\States\PaymentStatus\PartiallyRefundedState;
 use App\Modules\Payments\Domain\States\PaymentStatus\RefundedState;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentRefundRepository;
 use App\Modules\Settlement\Application\DTOs\LedgerEntryInput;
@@ -34,20 +35,49 @@ class ProcessRefundAction
 
     public function execute(int $refundId): void
     {
-        DB::transaction(function () use ($refundId): void {
-            $refund = Refund::query()->lockForUpdate()->findOrFail($refundId);
+        // Resolve the immutable parent FK without locking the refund first; every
+        // refund processor must acquire the payment aggregate lock before its child.
+        $paymentId = (int) Refund::query()->findOrFail($refundId)->payment_id;
+
+        DB::transaction(function () use ($refundId, $paymentId): void {
+            $payment = Payment::query()->lockForUpdate()->findOrFail($paymentId);
+            $refund = Refund::query()
+                ->whereKey($refundId)
+                ->where('payment_id', $payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             if ($refund->status === RefundStatus::Completed) {
                 return;
             }
 
-            $payment = Payment::query()->findOrFail($refund->payment_id);
             $this->refunds->markProcessing($refund);
 
             $result = $this->gateway->refund($payment, Money::ofMinor($refund->amount_minor, $refund->amount_currency));
 
             if ($result->success) {
                 $this->refunds->markCompleted($refund, (string) $result->gatewayRef, now());
-                $payment->update(['status' => RefundedState::class]);
+
+                $completedRefunds = Refund::query()
+                    ->where('payment_id', $payment->id)
+                    ->where('status', RefundStatus::Completed->value)
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get(['amount_minor']);
+
+                $completedRefundTotal = Money::ofMinor(0, (string) $payment->amount_currency);
+                foreach ($completedRefunds as $completedRefund) {
+                    $completedRefundTotal = $completedRefundTotal->plus(
+                        Money::ofMinor((int) $completedRefund->amount_minor, (string) $payment->amount_currency),
+                    );
+                }
+
+                $capturedTotal = Money::ofMinor((int) $payment->amount_minor, (string) $payment->amount_currency);
+                $payment->update([
+                    'status' => $completedRefundTotal->isGreaterThanOrEqualTo($capturedTotal)
+                        ? RefundedState::class
+                        : PartiallyRefundedState::class,
+                ]);
 
                 $correlationId = (string) (Context::get('correlation_id') ?? Str::ulid());
 
