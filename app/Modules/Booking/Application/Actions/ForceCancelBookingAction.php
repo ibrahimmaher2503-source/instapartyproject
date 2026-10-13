@@ -31,7 +31,11 @@ class ForceCancelBookingAction
             $booking = Booking::query()->whereKey($booking->id)->lockForUpdate()->firstOrFail();
 
             if ($booking->lifecycle_status instanceof CompletedState) {
-                throw new DomainException('Cannot force-cancel a completed booking.');
+                throw new DomainException(__('booking::booking.cancellation.blocked.booking_completed'));
+            }
+
+            if ($booking->lifecycle_status instanceof CancelledState) {
+                throw new DomainException(__('booking::booking.cancellation.blocked.already_cancelled'));
             }
 
             $bookingVendors = BookingVendor::query()

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Discovery\Http\Requests;
 
 use App\Modules\Geography\Domain\Contracts\GeographyRepository;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -29,11 +30,12 @@ class StorePlannerContextRequest extends FormRequest
             'occasion' => ['required', 'string', 'exists:occasions,code'],
             'governorate_public_id' => ['required', 'string', 'exists:governorates,public_id'],
             'city_public_id' => ['required', 'string', 'exists:cities,public_id'],
-            'event_starts_at' => ['required', 'date', 'after:now'],
-            'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
+            'event_starts_at' => ['required', 'string', 'date'],
+            'event_ends_at' => ['nullable', 'string', 'date'],
             'guest_count' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'notes' => ['nullable', 'string', 'max:10000'],
             'vendor' => ['nullable', 'string', 'max:26'],
+            'timezone' => ['nullable', 'timezone'],
         ];
     }
 
@@ -52,6 +54,18 @@ class StorePlannerContextRequest extends FormRequest
             if ($validator->errors()->isNotEmpty()) {
                 return;
             }
+
+            $timezone = $this->string('timezone')->toString() ?: (string) config('app.timezone', 'UTC');
+            $startsAt = CarbonImmutable::parse($this->input('event_starts_at'), $timezone)->utc();
+
+            if (! $startsAt->isAfter(CarbonImmutable::now('UTC'))) {
+                $validator->errors()->add('event_starts_at', __('storefront.wizard.validation.times_invalid'));
+            }
+
+            if ($this->filled('event_ends_at') && ! CarbonImmutable::parse($this->input('event_ends_at'), $timezone)->utc()->isAfter($startsAt)) {
+                $validator->errors()->add('event_ends_at', __('storefront.wizard.validation.times_invalid'));
+            }
+
             $geography = app(GeographyRepository::class);
             $governorate = $geography->findGovernorateByPublicId((string) $this->input('governorate_public_id'));
             $city = $geography->findCityByPublicId((string) $this->input('city_public_id'));

@@ -43,7 +43,7 @@ class SearchController
                 'vendor' => ['nullable', 'string', 'max:26'],
                 'governorate_public_id' => [$planner ? 'required' : 'required_with:city_public_id', 'nullable', 'string', 'max:26', 'exists:governorates,public_id'],
                 'city_public_id' => [$planner ? 'required' : 'nullable', 'string', 'max:26', 'exists:cities,public_id'],
-                'event_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
+                'event_date' => ['nullable', 'date_format:Y-m-d', ...($planner ? [] : ['after_or_equal:today'])],
                 'event_starts_at' => [$planner ? 'required' : 'nullable', 'date', 'after:now'],
                 'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
                 'price_min' => ['nullable', 'integer', 'min:0'],

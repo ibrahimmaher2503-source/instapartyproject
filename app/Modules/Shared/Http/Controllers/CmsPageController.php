@@ -20,7 +20,7 @@ class CmsPageController
      * Returns the page content in the locale specified by the Accept-Language header.
      * Only published pages are returned. Unpublished pages return 404.
      *
-     * @urlParam slug string required The page slug. One of: terms, privacy, about, contact. Example: terms
+     * @urlParam slug string required The page slug. One of: terms, refund-policy, privacy, about, contact. Example: refund-policy
      *
      * @response 200 {"data":{"slug":"terms","title":"Terms & Conditions","body":"<p>Terms...</p>","meta_description":"InstaParty Terms","published_at":"2026-05-03T10:00:00.000000Z"},"meta":{},"errors":null}
      * @response 404 {"data":null,"meta":{},"errors":{"message":"No query results for model"}}
