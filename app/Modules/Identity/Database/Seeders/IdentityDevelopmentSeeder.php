@@ -36,6 +36,10 @@ final class IdentityDevelopmentSeeder extends Seeder
 
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
         fake()->seed(2026050302);
 
         $vendors = DB::transaction(function (): array {

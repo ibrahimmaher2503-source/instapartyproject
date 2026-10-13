@@ -9,9 +9,9 @@ use App\Modules\Identity\Application\Support\MaskBankData;
 use App\Modules\Identity\Domain\Enums\BusinessType;
 use App\Modules\Identity\Domain\Enums\DocumentStatus;
 use App\Modules\Identity\Domain\Enums\DocumentType;
+use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Collection;
 
 final class VendorApprovalEligibilityService
 {
@@ -27,6 +27,9 @@ final class VendorApprovalEligibilityService
         $businessType = $vendor->business_type instanceof BusinessType
             ? $vendor->business_type
             : BusinessType::tryFrom((string) $vendor->business_type);
+        $documentIssues = $businessType === null
+            ? null
+            : $this->requiredDocumentIssues($vendor, $businessType, $asOf);
 
         $checks = [
             'identity' => filled($vendor->user?->name),
@@ -44,13 +47,22 @@ final class VendorApprovalEligibilityService
                 && ! MaskBankData::isAbsent($vendor->bank_iban),
             'hours' => $vendor->businessHours()->exists(),
             'coverage' => $vendor->coverageAreas()->exists(),
-            'documents' => $this->hasValidRequiredDocuments($vendor, $businessType, $asOf),
+            'documents' => $documentIssues !== null && $documentIssues === [],
         ];
 
         $errors = [];
         foreach ($checks as $check => $passed) {
             if (! $passed) {
-                $errors[$check] = __("identity::identity.approval_eligibility.{$check}");
+                $errors[$check] = match (true) {
+                    $check === 'documents' && $documentIssues === null => __(
+                        'identity::identity.approval_eligibility.documents_business_type_missing'
+                    ),
+                    $check === 'documents' => __(
+                        'identity::identity.approval_eligibility.documents_need_attention',
+                        ['documents' => implode('; ', $documentIssues ?? [])],
+                    ),
+                    default => __("identity::identity.approval_eligibility.{$check}"),
+                };
             }
         }
 
@@ -80,43 +92,51 @@ final class VendorApprovalEligibilityService
         };
     }
 
-    private function hasValidRequiredDocuments(
+    /** @return array<int, string> */
+    private function requiredDocumentIssues(
         VendorProfile $vendor,
-        ?BusinessType $businessType,
+        BusinessType $businessType,
         CarbonImmutable $asOf,
-    ): bool {
-        if (! $businessType) {
-            return false;
-        }
-
+    ): array {
         $requiredTypes = $this->documentTypesResolver->forBusinessType($businessType->value);
         $latest = $vendor->documents()
             ->whereIn('doc_type', $requiredTypes)
-            ->latest('created_at')
-            ->latest('id')
+            ->latestPerType()
             ->get()
-            ->groupBy(fn ($document): string => $document->doc_type instanceof DocumentType
+            ->keyBy(fn (VendorDocument $document): string => $document->doc_type instanceof DocumentType
                 ? $document->doc_type->value
-                : (string) $document->doc_type)
-            ->map(fn (Collection $documents) => $documents->first());
+                : (string) $document->doc_type);
+        $issues = [];
 
-        return collect($requiredTypes)->every(function (string $type) use ($latest, $asOf): bool {
+        foreach ($requiredTypes as $type) {
             $document = $latest->get($type);
+            $status = null;
 
-            if (! $document || $document->status !== DocumentStatus::Approved) {
-                return false;
+            if ($document === null) {
+                $status = 'missing';
+            } elseif ($document->status !== DocumentStatus::Approved) {
+                $status = $document->status instanceof DocumentStatus
+                    ? $document->status->value
+                    : (string) $document->status;
+            } elseif ($document->expires_at !== null) {
+                $expiresAt = CarbonImmutable::parse(
+                    $document->expires_at->toDateString(),
+                    config('app.timezone', 'UTC'),
+                )->endOfDay();
+
+                if ($expiresAt->lessThan($asOf->setTimezone(config('app.timezone', 'UTC')))) {
+                    $status = 'expired';
+                }
             }
 
-            if ($document->expires_at === null) {
-                return true;
+            if ($status !== null) {
+                $issues[] = __('identity::identity.approval_eligibility.document_issue', [
+                    'document' => __("identity::identity.document_type.{$type}"),
+                    'status' => __("identity::identity.approval_eligibility.document_status.{$status}"),
+                ]);
             }
+        }
 
-            $expiresAt = CarbonImmutable::parse(
-                $document->expires_at->toDateString(),
-                config('app.timezone', 'UTC'),
-            )->endOfDay();
-
-            return $expiresAt->greaterThanOrEqualTo($asOf->setTimezone(config('app.timezone', 'UTC')));
-        });
+        return $issues;
     }
 }

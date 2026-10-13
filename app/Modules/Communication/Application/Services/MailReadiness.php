@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Application\Services;
 
-final class MailReadiness
+use App\Modules\Communication\Domain\Contracts\EmailTransportReadiness;
+
+final class MailReadiness implements EmailTransportReadiness
 {
+    public function isConfigured(): bool
+    {
+        return self::configured();
+    }
+
     public static function configured(): bool
     {
         $sender = config('mail.from.address');

@@ -7,6 +7,9 @@ namespace App\Modules\Identity\Application\Services;
 use App\Modules\Catalog\Domain\Contracts\VendorServicePresenceQuery;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Filament\Vendor\Pages\VendorServicesListPage;
+use App\Modules\Catalog\Filament\Vendor\Resources\VendorDigitalServiceResource;
+use App\Modules\Catalog\Filament\Vendor\Resources\VendorRentalServiceResource;
+use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource;
 use App\Modules\Identity\Application\DTOs\VendorOnboardingChecklistDTO;
 use App\Modules\Identity\Application\DTOs\VendorOnboardingChecklistItemDTO;
 use App\Modules\Identity\Domain\Enums\BusinessType;
@@ -17,6 +20,7 @@ use App\Modules\Identity\Domain\Enums\RejectionState;
 use App\Modules\Identity\Domain\Enums\VendorOnboardingChecklistItemKey;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Identity\Filament\Vendor\Pages\VendorApprovalStatusPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorBusinessHoursPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorCoverageAreasPage;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorDocumentsPage;
@@ -30,13 +34,14 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 class VendorOnboardingChecklistService
 {
-    /** Priority order for nextRecommendedAction (admin-decision rows excluded) */
+    /** Priority order for nextRecommendedAction */
     private const PRIORITY_KEYS = [
         VendorOnboardingChecklistItemKey::Profile,
         VendorOnboardingChecklistItemKey::DocsUploaded,
         VendorOnboardingChecklistItemKey::Banking,
         VendorOnboardingChecklistItemKey::Coverage,
         VendorOnboardingChecklistItemKey::Hours,
+        VendorOnboardingChecklistItemKey::ApprovedTypes,
         VendorOnboardingChecklistItemKey::ServiceDrafted,
         VendorOnboardingChecklistItemKey::ServiceSubmitted,
     ];
@@ -84,10 +89,10 @@ class VendorOnboardingChecklistService
             $this->docsApprovedItem($vendor, $requiredTypes, $latestDocsByType, $approvalEligibility->passes('documents')),
             $this->coverageItem($vendor, $approvalEligibility->passes('coverage')),
             $this->hoursItem($vendor, $approvalEligibility->passes('hours')),
-            $this->serviceDraftedItem($vendor),
-            $this->serviceSubmittedItem($vendor),
+            $this->serviceDraftedItem($vendor, $approvedTypeRows),
+            $this->serviceSubmittedItem($vendor, $approvedTypeRows),
             $this->approvalStatusItem($vendor, $approvalStatusValue),
-            $this->approvedTypesItem($approvedTypeRows),
+            $this->approvedTypesItem($approvedTypeRows, $vendor->approval_status instanceof ApprovedState),
         ];
 
         $completedCount = count(array_filter(
@@ -274,26 +279,55 @@ class VendorOnboardingChecklistService
     }
 
     // T044
-    private function serviceDraftedItem(VendorProfile $vendor): VendorOnboardingChecklistItemDTO
+    private function serviceDraftedItem(VendorProfile $vendor, Collection $approvedTypeRows): VendorOnboardingChecklistItemDTO
     {
         $complete = $this->servicePresenceQuery->hasAnyService($vendor->id);
-        $canManageServices = $vendor->approval_status instanceof ApprovedState;
+        $canManageServices = $vendor->approval_status instanceof ApprovedState && $this->hasEnabledApprovedType($approvedTypeRows);
 
         return new VendorOnboardingChecklistItemDTO(
             key: VendorOnboardingChecklistItemKey::ServiceDrafted,
             status: $complete ? ChecklistItemStatus::Complete : ChecklistItemStatus::Pending,
             label: __('identity::vendor-onboarding.rows.service_drafted.label'),
             subText: null,
-            // The services landing page exposes Rental, Sale, and Digital CTAs.
-            // Linking directly to Rental would incorrectly imply a single-type vendor setup.
-            url: $complete || ! $canManageServices ? null : $this->safeUrl(fn () => VendorServicesListPage::getUrl(panel: 'vendor')),
+            url: $complete || ! $canManageServices ? null : $this->firstApprovedProductTypeCreateUrl($approvedTypeRows),
         );
     }
 
-    private function serviceSubmittedItem(VendorProfile $vendor): VendorOnboardingChecklistItemDTO
+    private function firstApprovedProductTypeCreateUrl(Collection $approvedTypeRows): ?string
+    {
+        $approvedTypes = $approvedTypeRows->map(fn ($row): ProductType => $row->product_type instanceof ProductType
+            ? $row->product_type
+            : ProductType::from((string) $row->product_type));
+
+        foreach ($this->enabledProductTypes() as $type) {
+            if (! $approvedTypes->contains($type)) {
+                continue;
+            }
+
+            $url = match ($type) {
+                ProductType::Rental => VendorRentalServiceResource::canAccess()
+                    ? $this->safeUrl(fn () => VendorRentalServiceResource::getUrl('create', panel: 'vendor'))
+                    : null,
+                ProductType::Sale => VendorSaleServiceResource::canAccess()
+                    ? $this->safeUrl(fn () => VendorSaleServiceResource::getUrl('create', panel: 'vendor'))
+                    : null,
+                ProductType::Digital => VendorDigitalServiceResource::canAccess()
+                    ? $this->safeUrl(fn () => VendorDigitalServiceResource::getUrl('create', panel: 'vendor'))
+                    : null,
+            };
+
+            if ($url !== null) {
+                return $url;
+            }
+        }
+
+        return null;
+    }
+
+    private function serviceSubmittedItem(VendorProfile $vendor, Collection $approvedTypeRows): VendorOnboardingChecklistItemDTO
     {
         $complete = $this->servicePresenceQuery->hasServiceInReviewOrPublished($vendor->id);
-        $canManageServices = $vendor->approval_status instanceof ApprovedState;
+        $canManageServices = $vendor->approval_status instanceof ApprovedState && $this->hasEnabledApprovedType($approvedTypeRows);
 
         return new VendorOnboardingChecklistItemDTO(
             key: VendorOnboardingChecklistItemKey::ServiceSubmitted,
@@ -327,34 +361,51 @@ class VendorOnboardingChecklistService
     }
 
     // T046
-    private function approvedTypesItem(Collection $approvedTypeRows): VendorOnboardingChecklistItemDTO
+    private function approvedTypesItem(Collection $approvedTypeRows, bool $accountApproved): VendorOnboardingChecklistItemDTO
     {
-        $complete = $approvedTypeRows->isNotEmpty();
-
-        $subText = null;
-        if ($complete) {
-            $typeLabels = $approvedTypeRows->map(function ($row) {
-                $type = $row->product_type instanceof ProductType
-                    ? $row->product_type
-                    : ProductType::from((string) $row->product_type);
-
-                return match ($type) {
-                    ProductType::Rental => __('identity::vendor-onboarding.approved_types.rental'),
-                    ProductType::Sale => __('identity::vendor-onboarding.approved_types.sale'),
-                    ProductType::Digital => __('identity::vendor-onboarding.approved_types.digital'),
-                };
-            })->implode(', ');
-
-            $subText = __('identity::vendor-onboarding.approved_types.sub_text', ['types' => $typeLabels]);
+        $approvedTypes = $approvedTypeRows->map(fn ($row): ProductType => $row->product_type instanceof ProductType
+            ? $row->product_type
+            : ProductType::from((string) $row->product_type));
+        $approvedTypeValues = $approvedTypes->map(fn (ProductType $type): string => $type->value)->unique()->values();
+        $enabledTypes = $this->enabledProductTypes();
+        $complete = $enabledTypes->contains(fn (ProductType $type): bool => $approvedTypeValues->contains($type->value));
+        $typeStatuses = $enabledTypes->map(fn (ProductType $type): string => __('identity::vendor-onboarding.approved_types.status_line', [
+            'type' => $type->label(),
+            'status' => __('identity::vendor-onboarding.approved_types.'.($approvedTypeValues->contains($type->value) ? 'approved' : 'pending')),
+        ]))->implode(' · ');
+        $subText = __('identity::vendor-onboarding.approved_types.status_summary', ['statuses' => $typeStatuses])
+            .' '.__('identity::vendor-onboarding.approved_types.creation_guidance');
+        if (! (bool) config('catalog.digital_services_enabled', true)) {
+            $subText .= ' '.__('identity::vendor-onboarding.approved_types.digital_unavailable');
         }
+        $hasPendingTypes = $enabledTypes->contains(fn (ProductType $type): bool => ! $approvedTypeValues->contains($type->value));
 
         return new VendorOnboardingChecklistItemDTO(
             key: VendorOnboardingChecklistItemKey::ApprovedTypes,
             status: $complete ? ChecklistItemStatus::Complete : ChecklistItemStatus::Pending,
             label: __('identity::vendor-onboarding.rows.approved_types.label'),
             subText: $subText,
-            url: null,
+            url: $accountApproved && $hasPendingTypes
+                ? $this->safeUrl(fn () => VendorApprovalStatusPage::getUrl(panel: 'vendor'))
+                : null,
         );
+    }
+
+    /** @return Collection<int, ProductType> */
+    private function enabledProductTypes(): Collection
+    {
+        return collect(ProductType::cases())
+            ->filter(fn (ProductType $type): bool => $type !== ProductType::Digital || (bool) config('catalog.digital_services_enabled', true))
+            ->values();
+    }
+
+    private function hasEnabledApprovedType(Collection $approvedTypeRows): bool
+    {
+        $approvedTypeValues = $approvedTypeRows->map(fn ($row): string => $row->product_type instanceof ProductType
+            ? $row->product_type->value
+            : (string) $row->product_type);
+
+        return $this->enabledProductTypes()->contains(fn (ProductType $type): bool => $approvedTypeValues->contains($type->value));
     }
 
     // T054 (US2) — rejection banner fields
