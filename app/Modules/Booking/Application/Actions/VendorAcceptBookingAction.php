@@ -29,9 +29,24 @@ class VendorAcceptBookingAction
             }
         }
 
-        return DB::transaction(function () use ($dto): BookingVendor {
+        // Resolve the parent without locking the allocation, then constrain the locked
+        // re-read so a changed relationship cannot target a different allocation.
+        $bookingId = BookingVendor::query()->whereKey($dto->bookingVendorId)->value('booking_id');
+        abort_if($bookingId === null, Response::HTTP_NOT_FOUND);
+
+        return DB::transaction(function () use ($dto, $bookingId): BookingVendor {
+            /** @var Booking $booking */
+            $booking = Booking::query()
+                ->whereKey((int) $bookingId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             /** @var BookingVendor $bookingVendor */
-            $bookingVendor = BookingVendor::query()->where('id', $dto->bookingVendorId)->lockForUpdate()->firstOrFail();
+            $bookingVendor = BookingVendor::query()
+                ->whereKey($dto->bookingVendorId)
+                ->where('booking_id', $booking->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             abort_if(
                 $bookingVendor->vendor_profile_id !== $dto->vendorProfileId,
@@ -48,12 +63,6 @@ class VendorAcceptBookingAction
                 && $bookingVendor->response_deadline->isPast()) {
                 throw new ResponseDeadlineExpiredException($bookingVendor->id);
             }
-
-            /** @var Booking $booking */
-            $booking = Booking::query()
-                ->whereKey($bookingVendor->booking_id)
-                ->lockForUpdate()
-                ->firstOrFail();
 
             abort_if(
                 $booking->lifecycle_status instanceof CancelledState,
