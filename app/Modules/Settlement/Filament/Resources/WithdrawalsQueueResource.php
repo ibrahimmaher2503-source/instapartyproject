@@ -348,7 +348,7 @@ class WithdrawalsQueueResource extends Resource
                                 ->send();
                         })
                         ->visible(fn (Withdrawal $record): bool => $record->getRawOriginal('status') === WithdrawalStatus::Pending->value
-                            && auth()->user()?->can('reject_withdrawal')
+                            && auth()->user()?->can('settlement.reject_withdrawal')
                         ),
                 ])
                     ->tooltip(__('admin.actions.more')),

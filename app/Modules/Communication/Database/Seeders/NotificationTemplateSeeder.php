@@ -54,6 +54,17 @@ final class NotificationTemplateSeeder extends Seeder
         return [
             [
                 'event_key' => 'booking.submitted',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Customer,
+                'subject' => ['en' => 'Booking received', 'ar' => 'تم استلام الحجز'],
+                'body' => [
+                    'en' => 'Your booking #{{booking_id}} has been received. Vendors will confirm within 24 hours.',
+                    'ar' => 'تم استلام حجزك رقم #{{booking_id}}. سيقوم الموردون بالتأكيد خلال 24 ساعة.',
+                ],
+                'variables' => ['booking_id'],
+            ],
+            [
+                'event_key' => 'booking.submitted',
                 'channel' => NotificationChannel::Push,
                 'audience' => NotificationAudience::Customer,
                 'subject' => ['en' => null, 'ar' => null],
@@ -216,6 +227,17 @@ final class NotificationTemplateSeeder extends Seeder
                     'ar' => "لم يتمكن {{vendor_name}} من قبول حجزك رقم #{{booking_id}}.\n\nالسبب: {{rejection_reason}}\n\nتصفح موردين مشابهين في التطبيق لإبقاء فعاليتك على المسار.",
                 ],
                 'variables' => ['booking_id', 'vendor_name', 'rejection_reason'],
+            ],
+            [
+                'event_key' => 'booking.cancelled',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Customer,
+                'subject' => ['en' => 'Booking cancelled', 'ar' => 'تم إلغاء الحجز'],
+                'body' => [
+                    'en' => 'Your booking #{{booking_id}} has been cancelled.',
+                    'ar' => 'تم إلغاء حجزك رقم #{{booking_id}}.',
+                ],
+                'variables' => ['booking_id'],
             ],
             [
                 'event_key' => 'booking.cancelled',

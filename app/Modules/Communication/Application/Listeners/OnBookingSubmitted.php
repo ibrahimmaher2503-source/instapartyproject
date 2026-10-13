@@ -40,9 +40,9 @@ class OnBookingSubmitted implements ShouldQueue
             'event_date' => $booking->event_starts_at?->format('Y-m-d') ?? '',
         ];
 
-        // Customer: push + email
+        // Customer: in-app + push + email
         if ($booking->customer_id !== null) {
-            foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
                 $this->dispatcher->execute(new DispatchNotificationDTO(
                     eventKey: 'booking.submitted',
                     channel: $channel,

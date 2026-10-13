@@ -276,6 +276,14 @@ final class GapNotificationTemplateSeeder extends Seeder
             ],
             [
                 'event_key' => 'booking.force_cancelled',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Customer,
+                'subject' => ['en' => 'Booking cancelled', 'ar' => 'تم إلغاء الحجز'],
+                'body' => ['en' => 'Booking #{{booking_number}} has been cancelled by our team. A refund will be processed in {{refund_days}} business days.', 'ar' => 'تم إلغاء الحجز رقم #{{booking_number}} من قِبل فريقنا. سيتم معالجة الاسترداد خلال {{refund_days}} أيام عمل.'],
+                'variables' => ['booking_number', 'refund_days'],
+            ],
+            [
+                'event_key' => 'booking.force_cancelled',
                 'channel' => NotificationChannel::Email,
                 'audience' => NotificationAudience::Customer,
                 'subject' => ['en' => 'Your booking #{{booking_number}} has been cancelled', 'ar' => 'تم إلغاء حجزك رقم #{{booking_number}}'],
