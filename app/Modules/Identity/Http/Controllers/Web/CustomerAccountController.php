@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Http\Controllers\Web;
 
+use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
@@ -13,7 +14,9 @@ use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Http\Requests\UpdateCustomerProfileRequest;
 use App\Modules\Payments\Domain\Contracts\RefundTimelineReader;
 use App\Modules\Payments\Domain\Models\Payment;
+use App\Modules\Reviews\Domain\Contracts\BookingItemReviewabilityReader;
 use App\Modules\Reviews\Domain\Contracts\CustomerReviewReader;
+use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,12 +45,22 @@ final class CustomerAccountController
         return view('storefront.account.bookings', compact('bookings'));
     }
 
-    public function booking(Request $request, string $publicId, RefundTimelineReader $refundReader): View
+    public function booking(Request $request, string $publicId, RefundTimelineReader $refundReader, CatalogServiceReader $catalogReader, BookingItemReviewabilityReader $reviewability, ServiceReviewRepository $reviews): View
     {
         $booking = Booking::query()->where('customer_id', $this->user($request)->id)->where('public_id', $publicId)->with(['vendors.vendor', 'vendors.items.service', 'occasion', 'address', 'payments', 'customerNotes'])->firstOrFail();
         $refunds = $refundReader->findByBookingId($booking->id);
+        $availableServices = [];
+        $reviewableItems = [];
 
-        return view('storefront.account.booking', compact('booking', 'refunds'));
+        foreach ($booking->vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $availableServices[$item->public_id] = $item->service_id === null ? null : $catalogReader->findPublishedById((int) $item->service_id);
+                $reviewableItems[$item->public_id] = $reviewability->isReviewable($item->public_id, $booking->customer_id)
+                    && $reviews->findByBookingItemId($item->id) === null;
+            }
+        }
+
+        return view('storefront.account.booking', compact('booking', 'refunds', 'availableServices', 'reviewableItems'));
     }
 
     public function payments(Request $request, RefundTimelineReader $refundReader): View

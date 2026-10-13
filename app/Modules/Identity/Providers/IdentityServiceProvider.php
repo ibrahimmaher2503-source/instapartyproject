@@ -14,6 +14,7 @@ use App\Modules\Identity\Application\Listeners\UpdateLastLoginAtListener;
 use App\Modules\Identity\Application\Timeline\VendorProfileTimelineDescriptors;
 use App\Modules\Identity\Console\Commands\CheckDocumentExpiryCommand;
 use App\Modules\Identity\Domain\Contracts\DeviceTokenRepository;
+use App\Modules\Identity\Domain\Contracts\EmailRecipientReader;
 use App\Modules\Identity\Domain\Contracts\OtpGatewayInterface;
 use App\Modules\Identity\Domain\Events\PasswordResetRequested;
 use App\Modules\Identity\Domain\Events\VendorAutoSuspended;
@@ -33,6 +34,7 @@ use App\Modules\Identity\Infrastructure\Gateways\StubOtpGateway;
 use App\Modules\Identity\Infrastructure\Loyalty\EloquentVendorLookup;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentCoverageAreaResolver;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentDeviceTokenRepository;
+use App\Modules\Identity\Infrastructure\Repositories\EloquentEmailRecipientReader;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentVendorRatingWriter;
 use App\Modules\Loyalty\Domain\Contracts\VendorLookup;
 use App\Modules\Reviews\Domain\Contracts\VendorRatingWriter;
@@ -57,6 +59,7 @@ class IdentityServiceProvider extends ServiceProvider
             $app->environment(['local', 'testing']) ? StubOtpGateway::class : SmsOtpGateway::class,
         ));
         $this->app->singleton(DeviceTokenRepository::class, EloquentDeviceTokenRepository::class);
+        $this->app->bind(EmailRecipientReader::class, EloquentEmailRecipientReader::class);
         $this->app->singleton(VendorRatingWriter::class, EloquentVendorRatingWriter::class);
         $this->app->singleton(VendorLookup::class, EloquentVendorLookup::class);
         $this->app->bind(CoverageAreaResolver::class, EloquentCoverageAreaResolver::class);
@@ -66,6 +69,7 @@ class IdentityServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'identity');
+        $this->loadViewsFrom(__DIR__.'/../Resources/views', 'identity');
 
         $this->commands([
             CheckDocumentExpiryCommand::class,

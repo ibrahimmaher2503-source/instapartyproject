@@ -12,5 +12,6 @@ class RefundResultDto extends Data
         public bool $success,
         public ?string $gatewayRef,
         public ?string $failureMessage,
+        public bool $pendingConfirmation = false,
     ) {}
 }

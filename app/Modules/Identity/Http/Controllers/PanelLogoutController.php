@@ -16,6 +16,9 @@ final class PanelLogoutController
             app(EndImpersonationAction::class)->execute('logout');
         }
         Filament::auth()->logout();
+        if (Filament::getCurrentPanel()?->getId() === 'admin') {
+            request()->session()->forget(['admin_mfa_verified', 'admin_mfa_pending', 'admin_mfa_recovery_codes']);
+        }
 
         // Keep other panel guards in the shared session while rotating its ID and CSRF token.
         request()->session()->regenerate(true);

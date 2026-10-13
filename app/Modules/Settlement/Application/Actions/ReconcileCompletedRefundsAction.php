@@ -54,6 +54,10 @@ class ReconcileCompletedRefundsAction
 
             return;
         }
+        // Every capture for one booking shares this budget, even across payment rows.
+        if (! $this->bookingReader->lockForRefundReconciliation($payment->bookingId)) {
+            return;
+        }
 
         $items = $this->bookingReader->itemsForPayment($payment->bookingId);
 
@@ -67,9 +71,21 @@ class ReconcileCompletedRefundsAction
         $commissionByItem = [];
         $remainingByItem = [];
         $refundedByItem = [];
+        $deliveryByBookingVendor = [];
         $remainingServiceGross = Money::ofMinor(0, $currency);
+        $actualServiceCashReversed = Money::ofMinor(0, $currency);
+        $bookingServiceCash = null;
 
         foreach ($items as $item) {
+            if ($item->bookingServiceCashMinor !== null) {
+                if ($item->bookingServiceCashMinor < 0 || $item->bookingServiceCashCurrency !== $currency
+                    || ($bookingServiceCash !== null && $bookingServiceCash->getMinorAmount()->toInt() !== $item->bookingServiceCashMinor)) {
+                    Log::error('Settlement: inconsistent net service cash snapshots while reconciling refunds', ['payment_id' => $paymentId]);
+
+                    return;
+                }
+                $bookingServiceCash = Money::ofMinor($item->bookingServiceCashMinor, $currency);
+            }
             if ($item->totalCurrency !== $currency || $currency !== $payment->currency) {
                 Log::error('Settlement: booking item currency does not match payment while reconciling refunds', [
                     'payment_id' => $paymentId,
@@ -81,23 +97,99 @@ class ReconcileCompletedRefundsAction
                 return;
             }
 
+            if ($item->deliveryFeeMinor < 0 || ($item->deliveryFeeMinor > 0 && (
+                $item->bookingVendorId === null
+                || $item->deliveryFeeCurrency !== $currency
+            ))) {
+                Log::error('Settlement: invalid vendor delivery snapshot while reconciling refunds', [
+                    'payment_id' => $paymentId,
+                    'booking_item_id' => $item->id,
+                    'booking_vendor_id' => $item->bookingVendorId,
+                    'delivery_fee_minor' => $item->deliveryFeeMinor,
+                    'delivery_fee_currency' => $item->deliveryFeeCurrency,
+                    'payment_currency' => $currency,
+                ]);
+
+                return;
+            }
+
+            if ($item->bookingVendorId !== null) {
+                $bookingVendorId = $item->bookingVendorId;
+                if (array_key_exists($bookingVendorId, $deliveryByBookingVendor)
+                    && $deliveryByBookingVendor[$bookingVendorId] !== $item->deliveryFeeMinor) {
+                    Log::error('Settlement: inconsistent vendor delivery snapshots while reconciling refunds', [
+                        'payment_id' => $paymentId,
+                        'booking_item_id' => $item->id,
+                        'booking_vendor_id' => $bookingVendorId,
+                    ]);
+
+                    return;
+                }
+
+                $deliveryByBookingVendor[$bookingVendorId] = $item->deliveryFeeMinor;
+            }
+
             $itemGross = Money::ofMinor($item->totalMinor, $currency);
             $commission = $this->commissionRepo->findByBookingItemId($item->id);
             $commissionByItem[$item->id] = $commission;
-            $actualReversed = $commission === null
+            $actualReversedForItem = $commission === null
                 ? Money::ofMinor(0, $currency)
                 : Money::ofMinor($this->actualReversedForCommission($commission->id, $currency), $currency);
-            $actualReversed = Money::min($itemGross, $actualReversed);
+            $actualServiceCashReversed = $actualServiceCashReversed->plus($actualReversedForItem);
+            $actualReversed = Money::min($itemGross, $actualReversedForItem);
             $remainingByItem[$item->id] = $itemGross->minus($actualReversed)->getMinorAmount()->toInt();
             $refundedByItem[$item->id] = $actualReversed->getMinorAmount()->toInt();
             $remainingServiceGross = $remainingServiceGross->plus($itemGross->minus($actualReversed));
         }
 
-        if ($remainingServiceGross->isZero()) {
+        $vendorDeliveryGross = $this->sumMinorAmounts($deliveryByBookingVendor, $currency);
+        $paymentCash = Money::ofMinor($payment->amountMinor, $currency);
+
+        if ($paymentCash->isLessThan($vendorDeliveryGross)) {
+            Log::error('Settlement: vendor delivery exceeds captured payment while reconciling refunds', [
+                'payment_id' => $paymentId,
+                'payment_minor' => $payment->amountMinor,
+                'vendor_delivery_minor' => $vendorDeliveryGross->getMinorAmount()->toInt(),
+                'currency' => $currency,
+            ]);
+
             return;
         }
 
-        foreach ($this->paymentReader->completedRefundsForPayment($paymentId) as $refund) {
+        $paymentServiceCashBudget = $paymentCash->minus($vendorDeliveryGross);
+        $completedRefunds = $this->paymentReader->completedRefundsForPayment($paymentId);
+        $paymentServiceCashReversed = Money::ofMinor(0, $currency);
+        foreach ($completedRefunds as $refund) {
+            if ($refund->currency === $currency) {
+                $paymentServiceCashReversed = $paymentServiceCashReversed->plus(
+                    $this->sumMinorAmounts($this->actualReversalsForRefund($refund->id, $currency), $currency),
+                );
+            }
+        }
+        $remainingPaymentServiceCash = $paymentServiceCashBudget->isGreaterThan($paymentServiceCashReversed)
+            ? $paymentServiceCashBudget->minus($paymentServiceCashReversed)
+            : Money::ofMinor(0, $currency);
+        // Transport and recorded tax never increase the service reversal budget.
+        $serviceCashBudget = $bookingServiceCash ?? $paymentServiceCashBudget;
+        $remainingBookingServiceCash = $serviceCashBudget->isGreaterThan($actualServiceCashReversed)
+            ? $serviceCashBudget->minus($actualServiceCashReversed)
+            : Money::ofMinor(0, $currency);
+        $remainingServiceCash = Money::min($remainingBookingServiceCash, $remainingPaymentServiceCash);
+
+        if ($actualServiceCashReversed->isGreaterThan($serviceCashBudget)) {
+            Log::warning('Settlement: existing commission reversals exceed service cash budget; preserving ledger history', [
+                'payment_id' => $paymentId,
+                'service_cash_budget_minor' => $serviceCashBudget->getMinorAmount()->toInt(),
+                'actual_reversed_minor' => $actualServiceCashReversed->getMinorAmount()->toInt(),
+                'currency' => $currency,
+            ]);
+        }
+
+        if ($remainingServiceGross->isZero() || $remainingServiceCash->isZero()) {
+            return;
+        }
+
+        foreach ($completedRefunds as $refund) {
             if ($refund->currency !== $currency) {
                 Log::error('Settlement: refund currency does not match booking while reconciling commissions', [
                     'payment_id' => $paymentId,
@@ -115,10 +207,12 @@ class ReconcileCompletedRefundsAction
             $remainingRefundBudget = $refundGross->isGreaterThan($actualRefundGross)
                 ? $refundGross->minus($actualRefundGross)
                 : Money::ofMinor(0, $currency);
+            $remainingRefundBudget = Money::min($remainingRefundBudget, $remainingServiceCash);
             $remainingRefundBudgetMinor = $remainingRefundBudget->getMinorAmount()->toInt();
             $allocations = $refund->bookingItemId === null
                 ? $this->allocateAcrossRemainingItems($remainingRefundBudgetMinor, $remainingByItem, $currency)
                 : $this->allocateToItem($refund->bookingItemId, $remainingRefundBudgetMinor, $remainingByItem, $currency);
+            $remainingServiceCash = $remainingServiceCash->minus($this->sumMinorAmounts($allocations, $currency));
 
             foreach ($allocations as $bookingItemId => $allocatedMinor) {
                 $allocatedMoney = Money::ofMinor($allocatedMinor, $currency);
@@ -220,7 +314,7 @@ class ReconcileCompletedRefundsAction
     }
 
     /**
-     * @param array<int, int> $amountsById
+     * @param  array<int, int>  $amountsById
      */
     private function sumMinorAmounts(array $amountsById, string $currency): Money
     {
@@ -234,7 +328,7 @@ class ReconcileCompletedRefundsAction
     }
 
     /**
-     * @param array<int, int> $remainingByItem
+     * @param  array<int, int>  $remainingByItem
      * @return array<int, int>
      */
     private function allocateToItem(int $bookingItemId, int $refundMinor, array $remainingByItem, string $currency): array
@@ -253,7 +347,7 @@ class ReconcileCompletedRefundsAction
     }
 
     /**
-     * @param array<int, int> $remainingByItem
+     * @param  array<int, int>  $remainingByItem
      * @return array<int, int>
      */
     private function allocateAcrossRemainingItems(int $refundMinor, array $remainingByItem, string $currency): array

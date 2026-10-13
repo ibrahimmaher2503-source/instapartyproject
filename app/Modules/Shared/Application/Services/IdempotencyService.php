@@ -85,8 +85,9 @@ class IdempotencyService
 
         $existing = DB::table('idempotency_keys')
             ->where('key', $key)
-            ->where('scope', $scope)
-            ->whereRaw('created_at + INTERVAL ttl_seconds SECOND > NOW()')
+            ->whereIn('scope', ['internal', $scope])
+            ->where('route', $scope.':'.$key)
+            ->where('expires_at', '>', now())
             ->first();
 
         if ($existing !== null) {
@@ -112,7 +113,7 @@ class IdempotencyService
             'response_body' => json_encode($result),
             'expires_at' => now()->addSeconds($ttlSeconds),
             'created_at' => now(),
-            'scope' => $scope,
+            'scope' => 'internal',
             'ttl_seconds' => $ttlSeconds,
             'payload_hash' => $payloadHash,
         ]]);
@@ -127,17 +128,18 @@ class IdempotencyService
     {
         return DB::table('idempotency_keys')
             ->where('key', $key)
-            ->where('scope', $scope)
-            ->whereRaw('created_at + INTERVAL ttl_seconds SECOND > NOW()')
+            ->whereIn('scope', ['internal', $scope])
+            ->where('route', $scope.':'.$key)
+            ->where('expires_at', '>', now())
             ->exists();
     }
 
     private function ttlForScope(string $scope): int
     {
         return match ($scope) {
-            'internal_webhook' => (int) config('idempotency.internal_webhook', 2592000),
-            'internal_action' => (int) config('idempotency.internal_action', 86400),
-            default => (int) config('idempotency.http', 86400),
+            'internal_webhook' => (int) config('idempotency.ttl.internal_webhook', 2592000),
+            'internal_action' => (int) config('idempotency.ttl.internal_action', 86400),
+            default => (int) config('idempotency.ttl.http', 86400),
         };
     }
 }

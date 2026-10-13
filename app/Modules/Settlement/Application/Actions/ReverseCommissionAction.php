@@ -20,9 +20,10 @@ use App\Modules\Settlement\Domain\States\CommissionStatus\ReversedState;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
-use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class ReverseCommissionAction
 {
@@ -70,8 +71,30 @@ class ReverseCommissionAction
 
             $vendorTotal = Money::ofMinor($commission->vendor_share_minor, $currency);
             $storedVendorReversedMinor = max(0, (int) $commission->reversed_amount_minor);
+            $vendorLedgerReversedMinor = (int) DB::table('wallet_ledger')
+                ->join('wallets', 'wallets.id', '=', 'wallet_ledger.wallet_id')
+                ->whereIn('wallets.owner_type', [self::VENDOR_OWNER_TYPE, 'vendor', 'vendor_profile'])
+                ->where('wallets.owner_id', $commission->vendor_profile_id)
+                ->where('wallet_ledger.direction', LedgerDirection::Debit->value)
+                ->where('wallet_ledger.entry_type', LedgerEntryType::CommissionReversal->value)
+                ->where('wallet_ledger.currency', $currency)
+                ->whereIn('wallet_ledger.transaction_group_id', DB::table('wallet_ledger')
+                    ->where('direction', LedgerDirection::Credit->value)
+                    ->where('entry_type', LedgerEntryType::CommissionReversal->value)
+                    ->where('related_entity_type', 'commission')
+                    ->where('related_entity_id', $commission->id)
+                    ->where('currency', $currency)
+                    ->select('transaction_group_id'))
+                ->sum('wallet_ledger.amount_minor');
+            if ($storedVendorReversedMinor > $vendorLedgerReversedMinor) {
+                Log::warning('Settlement: vendor reversal projection exceeds traced ledger; preserving history without a new reversal', [
+                    'commission_id' => $commission->id,
+                ]);
+
+                return $commission;
+            }
             $vendorAlreadyReversed = Money::ofMinor(
-                min($storedVendorReversedMinor, $vendorTotal->getMinorAmount()->toInt()),
+                min($vendorLedgerReversedMinor, $vendorTotal->getMinorAmount()->toInt()),
                 $currency,
             );
 

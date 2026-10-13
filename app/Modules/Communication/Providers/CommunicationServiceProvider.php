@@ -91,7 +91,7 @@ use App\Modules\Communication\Infrastructure\Gateways\FcmPushAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\FirebaseChatTokenMinter;
 use App\Modules\Communication\Infrastructure\Gateways\FirebaseFirestoreChatGateway;
 use App\Modules\Communication\Infrastructure\Gateways\FirestoreChatGatewayStub;
-use App\Modules\Communication\Infrastructure\Gateways\MailchimpEmailAdapter;
+use App\Modules\Communication\Infrastructure\Gateways\LaravelMailEmailAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\NullProviderAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\SmsMisrAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\SmsMisrProvider;
@@ -132,7 +132,7 @@ class CommunicationServiceProvider extends ServiceProvider
             $this->app->bind(NotificationChannel::Push->value.'_adapter', FcmPushAdapter::class);
             $this->app->bind(NotificationChannel::Sms->value.'_adapter', SmsMisrAdapter::class);
             $this->app->bind(NotificationChannel::Whatsapp->value.'_adapter', WhatsAppStubAdapter::class);
-            $this->app->bind(NotificationChannel::Email->value.'_adapter', MailchimpEmailAdapter::class);
+            $this->app->bind(NotificationChannel::Email->value.'_adapter', LaravelMailEmailAdapter::class);
         }
     }
 

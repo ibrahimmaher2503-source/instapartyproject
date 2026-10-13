@@ -44,6 +44,10 @@ class ApplyRedemptionToBookingAction
             throw new DomainException('loyalty.program_inactive');
         }
 
+        if ((string) $program->points_value_currency !== $draft->currency) {
+            throw new DomainException('loyalty.currency_mismatch');
+        }
+
         if ($pointsToRedeem < (int) $program->min_points_to_redeem) {
             throw new DomainException('loyalty.below_min_threshold');
         }

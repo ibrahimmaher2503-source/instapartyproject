@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Http\Middleware;
 
 use App\Modules\Identity\Application\Actions\EndImpersonationAction;
+use App\Modules\Identity\Application\Services\AdminMfaSession;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
@@ -40,6 +41,7 @@ class ValidateVendorImpersonationSession
         $adminIsAuthorized = $admin !== null
             && (int) Auth::guard('web')->id() === (int) $adminId
             && $admin->status === 'active'
+            && AdminMfaSession::hasProof($admin)
             && $admin->canAccessPanel(filament()->getPanel('admin'))
             && $admin->hasPermissionTo('impersonate_vendor', 'web');
 

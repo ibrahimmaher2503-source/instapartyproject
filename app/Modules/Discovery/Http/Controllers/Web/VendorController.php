@@ -8,10 +8,10 @@ use App\Modules\Discovery\Infrastructure\Repositories\VendorBrowsingRepository;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
+use App\Modules\Shared\Application\Services\PublicMediaUrl;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class VendorController
 {
@@ -69,6 +69,7 @@ class VendorController
 
         $services = $repository->servicesFor($vendor->id, null, 12);
         $reviewSummary = $reviews->publicSummariesForVendors([$vendor->id])[$vendor->id];
+        $mediaUrls = app(PublicMediaUrl::class);
 
         return view('storefront.vendors.show', [
             'vendor' => $vendor,
@@ -76,11 +77,11 @@ class VendorController
             'services' => $services,
             'serviceTypeCounts' => $repository->serviceTypeCountsFor($vendor->id),
             'galleryItems' => $vendor->getMedia('portfolio')->map(fn ($media): array => [
-                'url' => $media->getAvailableUrl(['large']),
-                'thumb' => $media->getAvailableUrl(['thumb']),
-            ]),
-            'coverImageUrl' => $vendor->cover_path ? Storage::disk('public')->url($vendor->cover_path) : null,
-            'logoUrl' => $vendor->logo_path ? Storage::disk('public')->url($vendor->logo_path) : null,
+                'url' => $mediaUrls->for($media, 'large'),
+                'thumb' => $mediaUrls->for($media, 'thumb'),
+            ])->filter(fn (array $item): bool => $item['url'] !== null && $item['thumb'] !== null)->values(),
+            'coverImageUrl' => $mediaUrls->publicPath($vendor->cover_path),
+            'logoUrl' => $mediaUrls->publicPath($vendor->logo_path),
         ]);
     }
 }

@@ -8,6 +8,8 @@ use App\Modules\Settlement\Application\DTOs\BookingItemSnapshotDto;
 
 interface SettlementBookingReader
 {
+    public function lockForRefundReconciliation(int $bookingId): bool;
+
     public function findItemById(int $id): ?BookingItemSnapshotDto;
 
     /**

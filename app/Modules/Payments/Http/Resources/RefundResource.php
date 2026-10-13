@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @response 200 {
- *  "data": {"public_id":"01J9X7K3M2WZE0X8H4Q9N5T7V2","payment_public_id":"01J9X7K3M2WZE0X8H4Q9N5T9","booking_public_id":"01J9X7K3M2WZE0X8H4Q9N5T7V3","reason_notes":{"en":"Customer request","ar":"طلب العميل"}},
+ *  "data": {"public_id":"01J9X7K3M2WZE0X8H4Q9N5T7V2","payment_public_id":"01J9X7K3M2WZE0X8H4Q9N5T7V4","booking_public_id":"01J9X7K3M2WZE0X8H4Q9N5T7V3","amount_minor":25000,"amount_currency":"EGP","status":"processing","reason_code":"customer_request","reason_notes":{"en":"Customer request","ar":"طلب العميل"}},
  *  "meta":{"locale":"en","direction":"ltr"},
  *  "errors":[]
  * }

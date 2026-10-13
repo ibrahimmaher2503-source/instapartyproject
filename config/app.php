@@ -99,6 +99,10 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'admin_password' => env('ADMIN_INITIAL_PASSWORD'),
+
+    'admin_mfa_required' => (bool) env('ADMIN_MFA_REQUIRED', false),
+
     'minimal_filament_panels' => (bool) env('MINIMAL_FILAMENT_PANELS', false),
 
     'previous_keys' => [

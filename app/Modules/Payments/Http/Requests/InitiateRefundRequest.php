@@ -18,7 +18,7 @@ class InitiateRefundRequest extends FormRequest
     /**
      * @bodyParam reason_code string required Refund reason. Example: customer_request
      * @bodyParam reason_notes object required Translatable reason notes. Example: {"en":"Customer request","ar":"طلب العميل"}
-     * @bodyParam amount_minor integer Optional explicit refund amount in piastres; must equal the captured payment amount (Phase 1 full-only). Example: 50000
+     * @bodyParam amount_minor integer Optional partial refund in piastres, capped by remaining captured payment cash and the shared booking subtotal minus discount and loyalty less all non-failed reservations. Delivery is retained; recorded VAT is not adjusted separately. Omit to refund the remaining eligible service cash. Example: 50000
      */
     public function rules(): array
     {

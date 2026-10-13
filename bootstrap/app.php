@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
         $middleware->prepend(SetRequestTraceIdMiddleware::class);
         $middleware->append(AddSecurityHeaders::class);
 

@@ -35,7 +35,7 @@ class VendorDashboardSummaryService
             "vendor_dashboard_summary_api_{$vendorId}",
             self::CACHE_TTL_SECONDS,
             function () use ($vendorId): array {
-                $now = now();
+                $now = now('UTC');
                 $som = $now->copy()->startOfMonth();
 
                 $wallet = Wallet::query()
@@ -88,6 +88,7 @@ class VendorDashboardSummaryService
                             ->where('vendor_profile_id', $vendorId)
                             ->whereIn('sub_status', [VendorSubStatus::Accepted->value, VendorSubStatus::InProgress->value, VendorSubStatus::Completed->value])
                             ->whereBetween('created_at', [$som, $now])
+                            ->where('vendor_payout_currency', 'EGP')
                             ->sum('vendor_payout_minor'),
                         'currency' => 'EGP',
                     ],

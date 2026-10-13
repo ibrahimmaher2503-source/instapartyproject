@@ -7,14 +7,22 @@ namespace App\Modules\Booking\Infrastructure\Repositories;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Settlement\Application\DTOs\BookingItemSnapshotDto;
 use App\Modules\Settlement\Domain\Contracts\SettlementBookingReader;
+use Brick\Money\Money;
+use DomainException;
 use Illuminate\Support\Facades\DB;
 
 class EloquentSettlementBookingReader implements SettlementBookingReader
 {
+    public function lockForRefundReconciliation(int $bookingId): bool
+    {
+        return DB::table('bookings')->where('id', $bookingId)->lockForUpdate()->first() !== null;
+    }
+
     public function findItemById(int $id): ?BookingItemSnapshotDto
     {
         $row = DB::table('booking_items')
             ->join('booking_vendors', 'booking_vendors.id', '=', 'booking_items.booking_vendor_id')
+            ->join('bookings', 'bookings.id', '=', 'booking_vendors.booking_id')
             ->where('booking_items.id', $id)
             ->select([
                 'booking_items.id',
@@ -28,6 +36,12 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
                 'booking_items.line_total_minor',
                 'booking_items.line_total_currency',
                 'booking_items.commission_bps',
+                'bookings.subtotal_minor as booking_subtotal_minor',
+                'bookings.subtotal_currency as booking_subtotal_currency',
+                'bookings.discount_total_minor',
+                'bookings.discount_total_currency',
+                'bookings.loyalty_redeemed_minor',
+                'bookings.loyalty_redeemed_currency',
             ])
             ->first();
 
@@ -45,6 +59,7 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
     {
         $rows = DB::table('booking_items')
             ->join('booking_vendors', 'booking_vendors.id', '=', 'booking_items.booking_vendor_id')
+            ->join('bookings', 'bookings.id', '=', 'booking_vendors.booking_id')
             ->where('booking_vendors.booking_id', $bookingId)
             ->select([
                 'booking_items.id',
@@ -58,6 +73,12 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
                 'booking_items.line_total_minor',
                 'booking_items.line_total_currency',
                 'booking_items.commission_bps',
+                'bookings.subtotal_minor as booking_subtotal_minor',
+                'bookings.subtotal_currency as booking_subtotal_currency',
+                'bookings.discount_total_minor',
+                'bookings.discount_total_currency',
+                'bookings.loyalty_redeemed_minor',
+                'bookings.loyalty_redeemed_currency',
             ])
             ->get();
 
@@ -66,6 +87,16 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
 
     private function rowToDto(object $row): BookingItemSnapshotDto
     {
+        $currency = (string) $row->booking_subtotal_currency;
+        foreach ([['discount_total_minor', 'discount_total_currency'], ['loyalty_redeemed_minor', 'loyalty_redeemed_currency']] as [$amount, $moneyCurrency]) {
+            if ((int) $row->{$amount} > 0 && (string) $row->{$moneyCurrency} !== $currency) {
+                throw new DomainException('booking.currency_mismatch');
+            }
+        }
+        $serviceCash = Money::ofMinor((int) $row->booking_subtotal_minor, $currency)
+            ->minus(Money::ofMinor((int) $row->discount_total_minor, $currency))
+            ->minus(Money::ofMinor((int) $row->loyalty_redeemed_minor, $currency));
+
         return new BookingItemSnapshotDto(
             id: (int) $row->id,
             publicId: (string) $row->public_id,
@@ -79,6 +110,8 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
             bookingVendorId: (int) $row->booking_vendor_id,
             deliveryFeeMinor: (int) $row->delivery_fee_minor,
             deliveryFeeCurrency: (string) $row->delivery_fee_currency,
+            bookingServiceCashMinor: Money::max(Money::ofMinor(0, $currency), $serviceCash)->getMinorAmount()->toInt(),
+            bookingServiceCashCurrency: $currency,
         );
     }
 }

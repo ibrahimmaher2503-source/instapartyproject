@@ -23,16 +23,21 @@ class UpdateDigitalServiceAction
         }
 
         $isMaterialEdit = $service->status instanceof PublishedState
-            && count(array_intersect(array_keys($data), self::MATERIAL_FIELDS)) > 0;
+            && collect(self::MATERIAL_FIELDS)->contains(fn (string $field): bool => array_key_exists($field, $data)
+                && ($field === 'category_field_values'
+                    ? array_filter($data[$field] ?? [], fn ($value): bool => ! blank($value)) != array_filter($service->category_field_values ?? [], fn ($value): bool => ! blank($value))
+                    : $data[$field] != $service->{$field}));
 
         return DB::transaction(function () use ($service, $data, $isMaterialEdit): Service {
             if (array_key_exists('category_field_values', $data)) {
                 $data['category_field_values'] = app(CategoryFieldValidationService::class)->validateValues(
-                    (int) ($data['category_id'] ?? $service->category_id), $service->product_type, $data['category_field_values'], 'category_field_values.',
+                    (int) ($data['category_id'] ?? $service->category_id), $service->product_type, $data['category_field_values'], 'category_field_values.', $service,
                 );
             } elseif (isset($data['category_id']) && (int) $data['category_id'] !== $service->category_id) {
-                // A legacy caller changing category must not carry stale custom values.
-                $data['category_field_values'] = null;
+                // New categories must satisfy their current schema, including legacy API callers.
+                $data['category_field_values'] = app(CategoryFieldValidationService::class)->validateValues(
+                    (int) $data['category_id'], $service->product_type, [], 'category_field_values.',
+                );
             }
             $serviceData = array_intersect_key($data, array_flip([
                 'category_id', 'name', 'short_description', 'long_description', 'base_price_minor',
