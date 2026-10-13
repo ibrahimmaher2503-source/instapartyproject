@@ -35,6 +35,7 @@ use App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -304,6 +305,21 @@ class BookingResource extends Resource
                             ->icon('heroicon-m-key')
                             ->fontFamily(FontFamily::Mono)
                             ->copyable(),
+                    ]),
+
+                Section::make(__('booking.sections.customer_notes'))
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->columnSpan(12)
+                    ->visible(fn (Booking $record): bool => $record->customerNotes->isNotEmpty())
+                    ->schema([
+                        RepeatableEntry::make('customerNotes')
+                            ->label('')
+                            ->contained(false)
+                            ->schema([
+                                TextEntry::make('body')
+                                    ->label('')
+                                    ->columnSpanFull(),
+                            ]),
                     ]),
 
                 // ── Event (right half) ───────────────────────────────────

@@ -1,4 +1,5 @@
 @extends('storefront.layouts.app')
+@section('title')@yield('account-title') · {{ __('storefront.common.site_name') }}@endsection
 @php
     $sections = ['dashboard', 'bookings', 'payments', 'favorites', 'notifications', 'reviews', 'profile', 'security'];
 @endphp

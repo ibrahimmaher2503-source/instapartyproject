@@ -11,6 +11,10 @@
     $isRtl = app()->getLocale() === 'ar';
     $nextIcon = $isRtl ? '←' : '→';
     $backIcon = $isRtl ? '→' : '←';
+    $firstWizardError = array_key_first($errors->getBag('default')->getMessages());
+    $initialPlannerStep = in_array($firstWizardError, ['occasion', 'event_starts_at', 'event_ends_at', 'timezone'], true)
+        ? 0
+        : (in_array($firstWizardError, ['city_public_id', 'governorate_public_id'], true) ? 1 : ($errors->any() ? 2 : 0));
 @endphp
 
 @section('title', __('storefront.wizard.title').' · '.__('storefront.common.site_name'))
@@ -21,7 +25,7 @@
             class="sf-wizard-container"
             data-storefront-planner
             data-booking-mode="{{ $bookingMode ? 'true' : 'false' }}"
-            data-initial-step="{{ $errors->has('city_public_id') || $errors->has('governorate_public_id') ? 1 : ($errors->any() ? 2 : 0) }}"
+            data-initial-step="{{ $initialPlannerStep }}"
             data-initial-governorate="{{ old('governorate_public_id', request('governorate_public_id')) }}"
             data-initial-city="{{ old('city_public_id', request('city_public_id')) }}"
             data-error-occasion="{{ __('storefront.wizard.validation.occasion_required') }}"
@@ -61,9 +65,9 @@
                     data-planner-form
                 >
                     @csrf
+                    <input type="hidden" name="timezone" value="{{ old('timezone') }}" data-browser-timezone>
                     @if ($bookingMode)
                         <input type="hidden" name="service_id" value="{{ request('service') }}">
-                        <input type="hidden" name="timezone" value="Africa/Cairo" data-browser-timezone>
                     @endif
                     <input type="hidden" name="occasion" value="{{ old('occasion', request('occasion')) }}" data-planner-occasion>
                     <input type="hidden" name="city_public_id" value="{{ old('city_public_id', request('city_public_id')) }}" data-planner-city>
@@ -125,6 +129,7 @@
                                             lang="{{ app()->getLocale() }}"
                                             name="event_starts_at"
                                             value="{{ old('event_starts_at', request('event_starts_at')) }}"
+                                            data-initial-date="{{ old('event_starts_at', request('event_starts_at')) }}"
                                             class="sf-field sf-wizard-field"
                                             data-localized-date-input
                                             required
@@ -140,6 +145,7 @@
                                             lang="{{ app()->getLocale() }}"
                                             name="event_ends_at"
                                             value="{{ old('event_ends_at', request('event_ends_at')) }}"
+                                            data-initial-date="{{ old('event_ends_at', request('event_ends_at')) }}"
                                             class="sf-field sf-wizard-field"
                                             data-localized-date-input
                                         >
