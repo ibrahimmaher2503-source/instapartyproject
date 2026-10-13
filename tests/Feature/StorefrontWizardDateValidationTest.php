@@ -66,6 +66,7 @@ it('restores booking wizard UTC old input in the submitted timezone', function (
     $customer = User::factory()->asCustomer()->create();
     $service = Service::factory()->sale()->published()->create();
     $occasion = Occasion::factory()->active()->create();
+    $service->category->occasions()->attach($occasion->id);
     $city = City::factory()->create(['is_active' => true]);
     $startsAt = CarbonImmutable::now($timezone)->subHours(2)->format('Y-m-d\\TH:i');
     $utcStartsAt = CarbonImmutable::parse($startsAt, $timezone)->utc()->toIso8601String();

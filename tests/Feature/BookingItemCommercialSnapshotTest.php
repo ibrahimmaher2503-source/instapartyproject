@@ -17,6 +17,7 @@ it('snapshots the resolved commission and allows unlimited sale stock', function
         'base_price_minor' => 10_000,
         'base_price_currency' => 'EGP',
     ]);
+    $service->category->occasions()->attach($booking->occasion_id);
 
     ServiceSaleDetailFactory::new()->create([
         'service_id' => $service->id,

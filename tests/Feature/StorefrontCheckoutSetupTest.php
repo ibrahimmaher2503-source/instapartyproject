@@ -40,6 +40,7 @@ it('persists one complete draft when save and continue succeeds', function (): v
     $service = Service::factory()->sale()->published()->create();
     ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'stock_quantity' => 5]);
     $occasion = Occasion::factory()->create(['is_active' => true]);
+    $service->category->occasions()->attach($occasion->id);
     $city = City::factory()->create(['is_active' => true]);
 
     $this->actingAs($customer)
@@ -57,6 +58,7 @@ it('rolls back the draft when adding the requested service fails', function (): 
     $service = Service::factory()->sale()->published()->create();
     ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'stock_quantity' => 0]);
     $occasion = Occasion::factory()->create(['is_active' => true]);
+    $service->category->occasions()->attach($occasion->id);
     $city = City::factory()->create(['is_active' => true]);
 
     $this->actingAs($customer)

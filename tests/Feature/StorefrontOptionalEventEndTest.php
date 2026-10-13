@@ -37,6 +37,7 @@ function optionalEndFixture(string $type): array
         ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'stock_quantity' => 5]);
     }
     $occasion = Occasion::factory()->active()->create();
+    $service->category->occasions()->attach($occasion->id);
     $city = City::factory()->create(['is_active' => true]);
 
     return [$service, $occasion, $city, [

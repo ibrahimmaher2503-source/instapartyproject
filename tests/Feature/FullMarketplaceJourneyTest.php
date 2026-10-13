@@ -232,6 +232,7 @@ it('completes registration, approval, sale publication, booking, and payment for
     $this->actingAs($customer, 'web');
 
     $occasion = Occasion::factory()->create(['code' => 'market-'.Str::lower(Str::random(8)), 'is_active' => true]);
+    $category->occasions()->attach($occasion->id);
     $startsAt = now()->addDays(2)->startOfHour();
     $endsAt = $startsAt->copy()->addHours(2);
     $this->get('/en/services/'.$service->public_id)->assertOk()->assertSeeText('Marketplace Sale Service');

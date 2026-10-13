@@ -16,6 +16,7 @@ it('explains invalid recipient phones and preserves the wizard fields without cr
     $customer = User::factory()->asCustomer()->create();
     $service = Service::factory()->sale()->published()->create();
     $occasion = Occasion::factory()->active()->create();
+    $service->category->occasions()->attach($occasion->id);
     $city = City::factory()->create(['is_active' => true]);
     $wizardUrl = "/{$locale}/wizard?service={$service->public_id}";
     $payload = [

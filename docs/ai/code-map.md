@@ -66,3 +66,5 @@ There are no standalone Negotiation or Reporting module directories here. Negoti
 6. [BookingResource](../../app/Modules/Booking/Http/Resources/BookingResource.php): response representation.
 
 This trace locates code; it does not certify policy compliance. Before editing, search `SubmitBookingAction` across app/tests, then inspect relevant event consumers.
+
+[CreateBookingDraftAction](../../app/Modules/Booking/Application/Actions/CreateBookingDraftAction.php) persists the initial draft transition inside its transaction. `BookingDraftCreated` remains an after-commit event for the initial snapshot; subsequent lifecycle transitions are written by their actions. The admin [CreateBooking page](../../app/Modules/Booking/Filament/Resources/BookingResource/Pages/CreateBooking.php) wraps draft creation, item addition and submission in one transaction.
