@@ -690,7 +690,11 @@ return [
         'sort_price_asc' => 'Lowest price',
         'sort_price_desc' => 'Highest price',
         'sort_rating' => 'Top rated',
-        'results_count' => ':count services found',
+        'results_count' => '{0} No services found|{1} 1 service found|[2,*] :count services found',
+        'validation' => [
+            'invalid_filters' => 'Some search filters are invalid. Please review them and try again.',
+            'price_range' => 'Maximum price must be greater than or equal to minimum price.',
+        ],
         'empty_title' => 'No services found',
         'empty_body' => 'Try a different search term or adjust your filters.',
         'empty_action' => 'Clear filters',

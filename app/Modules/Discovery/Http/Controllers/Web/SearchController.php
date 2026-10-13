@@ -15,6 +15,7 @@ use App\Modules\Geography\Domain\Contracts\GeographyRepository;
 use Brick\Money\Money;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -29,27 +30,63 @@ class SearchController
         VendorBrowsingRepository $vendors,
         GeographyRepository $geography,
         PackageRecommendationReader $packages,
-    ): View {
+    ): View|RedirectResponse {
         $planner = $request->boolean('planner');
-        $filters = $request->validate([
-            'planner' => ['nullable', 'boolean'],
-            'q' => ['nullable', 'string', 'max:255'],
-            'product_type' => ['nullable', Rule::enum(ProductType::class)],
-            'category_slug' => ['nullable', 'string', 'max:120'],
-            'occasion' => [$planner ? 'required' : 'nullable', 'string', 'max:120'],
-            'package' => ['nullable', 'string', 'max:26'],
-            'vendor' => ['nullable', 'string', 'max:26'],
-            'governorate_public_id' => [$planner ? 'required' : 'required_with:city_public_id', 'nullable', 'string', 'max:26', 'exists:governorates,public_id'],
-            'city_public_id' => [$planner ? 'required' : 'nullable', 'string', 'max:26', 'exists:cities,public_id'],
-            'event_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'event_starts_at' => [$planner ? 'required' : 'nullable', 'date', 'after:now'],
-            'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
-            'price_min' => ['nullable', 'integer', 'min:0'],
-            'price_max' => ['nullable', 'integer', 'min:0', 'gte:price_min'],
-            'min_rating' => ['nullable', 'numeric', 'min:1', 'max:5'],
-            'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'rating_desc', 'newest'])],
-            'page' => ['nullable', 'integer', 'min:1'],
-        ]);
+        try {
+            $filters = $request->validate([
+                'planner' => ['nullable', 'boolean'],
+                'q' => ['nullable', 'string', 'max:255'],
+                'product_type' => ['nullable', Rule::enum(ProductType::class)],
+                'category_slug' => ['nullable', 'string', 'max:120'],
+                'occasion' => [$planner ? 'required' : 'nullable', 'string', 'max:120'],
+                'package' => ['nullable', 'string', 'max:26'],
+                'vendor' => ['nullable', 'string', 'max:26'],
+                'governorate_public_id' => [$planner ? 'required' : 'required_with:city_public_id', 'nullable', 'string', 'max:26', 'exists:governorates,public_id'],
+                'city_public_id' => [$planner ? 'required' : 'nullable', 'string', 'max:26', 'exists:cities,public_id'],
+                'event_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
+                'event_starts_at' => [$planner ? 'required' : 'nullable', 'date', 'after:now'],
+                'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
+                'price_min' => ['nullable', 'integer', 'min:0'],
+                'price_max' => ['nullable', 'integer', 'min:0', 'gte:price_min'],
+                'guest_count' => ['nullable', 'integer', 'min:1'],
+                'min_rating' => ['nullable', 'numeric', 'min:1', 'max:5'],
+                'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'rating_desc', 'newest'])],
+                'page' => ['nullable', 'integer', 'min:1'],
+            ]);
+        } catch (ValidationException $exception) {
+            $query = $request->query();
+            $errorKeys = array_keys($exception->errors());
+
+            foreach ($errorKeys as $errorKey) {
+                unset($query[$errorKey]);
+            }
+
+            if (array_intersect($errorKeys, ['price_min', 'price_max']) !== []) {
+                unset($query['price_min'], $query['price_max']);
+            }
+
+            if ($planner && array_intersect($errorKeys, ['occasion', 'governorate_public_id', 'city_public_id', 'event_starts_at']) !== []) {
+                unset($query['planner']);
+            }
+
+            unset($query['page']);
+
+            $priceMin = $request->query('price_min');
+            $priceMax = $request->query('price_max');
+            $hasInvertedPriceRange = is_scalar($priceMin)
+                && is_scalar($priceMax)
+                && filter_var($priceMin, FILTER_VALIDATE_INT) !== false
+                && filter_var($priceMax, FILTER_VALIDATE_INT) !== false
+                && (int) $priceMin > (int) $priceMax;
+
+            return redirect()->route('storefront.search', $query)
+                ->withErrors([
+                    'search' => $hasInvertedPriceRange
+                        ? __('storefront.search.validation.price_range')
+                        : __('storefront.search.validation.invalid_filters'),
+                ])
+                ->withInput($request->query());
+        }
 
         $selectedGovernorate = null;
         if (isset($filters['city_public_id'])) {
@@ -57,9 +94,15 @@ class SearchController
             $selectedGovernorate = $geography->findGovernorateByPublicId((string) $filters['governorate_public_id']);
 
             if ($city === null || $selectedGovernorate === null || $city->governorate_id !== $selectedGovernorate->id) {
-                throw ValidationException::withMessages([
-                    'city_public_id' => __('storefront.wizard.validation.city_mismatch'),
-                ]);
+                $query = $request->query();
+                unset($query['city_public_id'], $query['page']);
+                if ($planner) {
+                    unset($query['planner']);
+                }
+
+                return redirect()->route('storefront.search', $query)
+                    ->withErrors(['search' => __('storefront.wizard.validation.city_mismatch')])
+                    ->withInput($request->query());
             }
         } elseif (isset($filters['governorate_public_id'])) {
             $selectedGovernorate = $geography->findGovernorateByPublicId((string) $filters['governorate_public_id']);
@@ -151,6 +194,13 @@ class SearchController
                 : null,
         );
         $results = $search->execute($searchDto);
+
+        if ($searchDto->page > max(1, $results->lastPage())) {
+            $query = $request->query();
+            unset($query['page']);
+
+            return redirect()->route('storefront.search', $query);
+        }
 
         $results->withQueryString();
 

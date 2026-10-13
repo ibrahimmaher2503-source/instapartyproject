@@ -6,6 +6,7 @@ use App\Modules\Booking\Domain\Exceptions\LaneNotSupportedForTypeException;
 use App\Modules\Booking\Domain\Exceptions\PaymentNotCapturedException;
 use App\Modules\Booking\Domain\Exceptions\RefundInProgressException;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
+use App\Modules\Shared\Http\Middleware\AddSecurityHeaders;
 use App\Modules\Shared\Http\Middleware\SetRequestTraceIdMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(SetRequestTraceIdMiddleware::class);
+        $middleware->append(AddSecurityHeaders::class);
 
         // Resolve locale from Accept-Language header (or ?lang= param) on all API routes.
         $middleware->appendToGroup('api', SetLocaleMiddleware::class);

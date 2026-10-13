@@ -156,9 +156,10 @@ class RentalServiceResource extends Resource
                         ->rule('required')
                         ->label(__('catalog.vendor')),
                     Select::make('category_id')
-                        ->relationship('category', 'id')
+                        ->relationship('category', 'name')
                         ->getOptionLabelFromRecordUsing(fn ($record): string => $record->getTranslation('name', app()->getLocale(), useFallbackLocale: true))
-                        ->searchable()
+                        ->searchable(['name->en', 'name->ar'])
+                        ->preload()
                         ->optionsLimit(50)
                         ->markAsRequired()
                         ->rule('required')

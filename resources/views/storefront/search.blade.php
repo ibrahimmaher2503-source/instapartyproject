@@ -16,8 +16,10 @@
     $categoryContext = $categoryContext ?? null;
     $occasionContext = $occasionContext ?? null;
     $storefrontText = app(App\Modules\Shared\Application\Services\StorefrontText::class);
-    $priceMin = $filters['price_min'] ?? null;
-    $priceMax = $filters['price_max'] ?? null;
+    $priceMin = old('price_min', $filters['price_min'] ?? null);
+    $priceMax = old('price_max', $filters['price_max'] ?? null);
+    $priceMin = is_scalar($priceMin) ? $priceMin : null;
+    $priceMax = is_scalar($priceMax) ? $priceMax : null;
     $selectedRating = $filters['min_rating'] ?? null;
     $context = $categoryContext ?: $occasionContext;
     $categoryName = $context ? $storefrontText->translation($context, 'name') : '';
@@ -92,6 +94,14 @@
 
             </div>
         </section>
+
+        @if ($errors->has('search'))
+            <div class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
+                <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200" role="alert">
+                    {{ $errors->first('search') }}
+                </div>
+            </div>
+        @endif
 
         <div class="sf-marketplace-shell mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-10">
             <aside id="search-filters" class="sf-search-filters" popover="auto" aria-label="{{ __('storefront.search.filters_sidebar_heading') }}">
