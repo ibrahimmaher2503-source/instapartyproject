@@ -24,7 +24,13 @@ use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        // Cached or misconfigured debug flags must never expose production failures.
+        if ($this->app->environment('production')) {
+            $this->app->make('config')->set('app.debug', false);
+        }
+    }
 
     public function boot(): void
     {
