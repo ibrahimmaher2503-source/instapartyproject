@@ -415,14 +415,6 @@
 }
 
 @layer components {
-    .fi-sidebar-item:has(.ip-navigation-favorite) { position: relative; padding-inline-end: 2rem; }
-    .ip-navigation-favorite { position: absolute; inset-inline-end: 0; top: 0; min-height: 2.75rem; width: 2rem; color: var(--ip-muted); }
-    .ip-navigation-favorite[aria-pressed='true'] { color: rgb(var(--warning-600)); }
-    .ip-navigation-shortcuts { padding-block-end: 1rem; border-block-end: 1px solid var(--ip-border); }
-    .ip-navigation-shortcuts h2 { font-size: .75rem; font-weight: 700; margin-block: .75rem .25rem; color: var(--ip-muted); }
-    .ip-navigation-shortcut { display: flex; gap: .5rem; align-items: center; padding: .5rem; font-size: .875rem; border-radius: .5rem; }
-    .ip-navigation-shortcut:hover { background: var(--ip-admin-subtle); }
-    .ip-navigation-shortcut svg { width: 1.25rem; height: 1.25rem; }
     [dir='rtl'] :where(input[type='tel'], a[href^='tel:'], .fi-ta-col-phone, .fi-in-entry-wrp:has(a[href^='tel:'])) { direction: ltr; unicode-bidi: isolate; }
 }
 

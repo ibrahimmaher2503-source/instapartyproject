@@ -127,6 +127,8 @@ it('renders navigation shortcuts and saved-view storage scoped to the signed-in 
 
     $response
         ->assertSee('instaparty.admin.nav.'.$admin->id.'.v1')
+        ->assertSee('data-admin-nav-shortcuts', false)
+        ->assertDontSee('ip-navigation-favorite')
         ->assertSee('instaparty.admin.bookings-monitor.views.'.$admin->id.'.v1')
         ->assertSee($heading)
         ->assertSee(__('booking.filters.saved_views', [], $locale));
