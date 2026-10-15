@@ -233,3 +233,25 @@ The historical source-report totals remain 73 records: 27 newly closed, 18 confi
 - Focused Pest: **PASS — 5 tests, 17 assertions**. Targeted Pint: **PASS**. Targeted PHPStan: **PASS**. Full Pest: **PASS — 177 tests, 1,701 assertions**.
 - Full Playwright remains **PARTIAL**: 1 setup passed and the journey failed during the second vendor-document approval. The ancestor `[role=dialog]` selector found no node, though the visible `.fi-modal-window` contained the expected prompt and Confirm control; `mountTableAction` returned HTTP 200 without errors. The diagnosis indicates a selector/modal mismatch, not proven action failure. No full rerun followed; do not claim full Browser acceptance.
 - The custom purchase-chain evidence above is unchanged. Capture/webhook/paid, Edit 403, settlement/withdrawal/reconciliation remain open.
+
+## GitHub closure continuation — 2026-10-15
+
+Verification started from published `main` commit `5f4a4be` (PR #196), with 39 open issues. Local tests used disposable SQLite databases and synthetic actors; production data and real providers were untouched.
+
+Closed with issue-specific evidence: #62, #63, #64, #68, #69, #73, #76, #79, #85, #134, #154, #157, #158, #159, #160, #172 and #178. Each GitHub closure comment records its scope and evidence limits. The package, occasion and review checks use actual HTTP/Livewire entry points and persistence assertions, not a page-open-only result. Browser evidence already collected covers the support bulk operation, saved contact history/tags, package navigation and eligible vendor category choices. No precise selector timing was collected for #187.
+
+The navigation follow-up removes a second favorites/recent implementation from the shared panel hook and its unused CSS. The dedicated permission-aware admin shortcuts remain, including their existing per-user storage. Mobile table labels, RTL phone isolation and keyboard behavior remain in the shared hook. The regression checks rendered EN/AR responses for the dedicated shortcuts and absence of the duplicate implementation.
+
+Fresh checks for this follow-up:
+
+| Check | Result |
+|---|---|
+| `QaVerifyAdminUxTest`, `QaVerifyAdminQueueSlaTest` | PASS: 15 tests, 124 assertions |
+| `VendorSuspendConfirmationTest`, `BookingAdminForceCancelAndCustomerNotesTest` | PASS: 10 tests, 104 assertions |
+| Targeted Pint | PASS |
+| Configured PHPStan, `--memory-limit=2G` | PASS; initial default 128M invocation exhausted memory |
+| Vite production build | PASS; existing unresolved public image/font references remain warnings |
+
+Full Pest was not rerun at the user's instruction. Browser automation later became unavailable due to a tool access restriction; no workaround or fresh visual-acceptance claim followed. Main publication does not establish production deployment.
+
+Remaining acceptance is explicit: #187 needs measured selector timing; #169/#151 need the remaining same-record cross-portal financial/decision flow assertions; #149/#150/#156/#161 retain their deeper lifecycle/replay/import/moderation cases; #71/#72/#74/#75/#32 retain layout/filter/readability/payload acceptance. #1/#3/#30/#108/#130/#148/#152/#153/#168 depend on privileged live state, provider/sandbox configuration, or reported-data verification. No invented financial backfill, owner assignment, credential rotation or real delivery is included.
