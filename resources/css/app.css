@@ -107,6 +107,7 @@
    (e.g. action links don't get the inline style). Set `--c-N` per semantic
    color so the chain works whether the inline style is present or not. */
 .fi-color-primary { --c-50: var(--primary-50); --c-100: var(--primary-100); --c-200: var(--primary-200); --c-300: var(--primary-300); --c-400: var(--primary-400); --c-500: var(--primary-500); --c-600: var(--primary-600); --c-700: var(--primary-700); --c-800: var(--primary-800); --c-900: var(--primary-900); --c-950: var(--primary-950); }
+.dark .fi-badge.fi-color-primary { color: rgb(var(--primary-200)); }
 .fi-color-danger  { --c-50: var(--danger-50);  --c-100: var(--danger-100);  --c-200: var(--danger-200);  --c-300: var(--danger-300);  --c-400: var(--danger-400);  --c-500: var(--danger-500);  --c-600: var(--danger-600);  --c-700: var(--danger-700);  --c-800: var(--danger-800);  --c-900: var(--danger-900);  --c-950: var(--danger-950);  }
 .fi-color-success { --c-50: var(--success-50); --c-100: var(--success-100); --c-200: var(--success-200); --c-300: var(--success-300); --c-400: var(--success-400); --c-500: var(--success-500); --c-600: var(--success-600); --c-700: var(--success-700); --c-800: var(--success-800); --c-900: var(--success-900); --c-950: var(--success-950); }
 .fi-color-warning { --c-50: var(--warning-50); --c-100: var(--warning-100); --c-200: var(--warning-200); --c-300: var(--warning-300); --c-400: var(--warning-400); --c-500: var(--warning-500); --c-600: var(--warning-600); --c-700: var(--warning-700); --c-800: var(--warning-800); --c-900: var(--warning-900); --c-950: var(--warning-950); }
@@ -172,7 +173,7 @@
     .fi-main { padding-block: 1.5rem; }
     .fi-header-heading { font-size: 1.75rem; line-height: 1.25; font-weight: 700; }
     .fi-section, .fi-ta-ctn { border-color: var(--ip-border); box-shadow: 0 1px 2px rgb(15 23 42 / 0.05); }
-    .fi-ta-header { position: sticky; top: 0; z-index: 10; background: var(--ip-surface); }
+    .fi-ta-header { background: var(--ip-surface); }
     .fi-ta-text-item-label, .fi-fo-field-wrp-label { font-size: 0.875rem; font-weight: 600; }
     .fi-ta-cell { vertical-align: middle; }
     .fi-btn, .fi-icon-btn, .fi-input-wrp { min-height: 2.75rem; }
@@ -332,9 +333,6 @@
     }
 
     .fi-panel-admin .fi-ta-header {
-        position: sticky;
-        top: 3.75rem;
-        z-index: 10;
         padding: 0.75rem 1rem;
         border-block-end: 1px solid var(--ip-admin-border);
         background: var(--ip-admin-surface);
