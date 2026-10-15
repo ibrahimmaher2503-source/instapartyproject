@@ -2,7 +2,7 @@
     class="ip-booking-saved-views"
     data-booking-monitor-saved-views
     data-user-id="{{ $userId }}"
-    data-storage-key="instaparty.admin.bookings-monitor.views.{{ $userId }}.v1"
+    data-storage-key="instaparty.admin.{{ $pageSlug }}.views.{{ $userId }}.v1"
     data-label-saved="{{ __('booking.filters.view_saved') }}"
     data-label-applied="{{ __('booking.filters.view_applied') }}"
     data-label-deleted="{{ __('booking.filters.view_deleted') }}"

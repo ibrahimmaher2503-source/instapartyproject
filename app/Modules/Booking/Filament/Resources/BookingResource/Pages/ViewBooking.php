@@ -18,6 +18,7 @@ use Brick\Money\Money;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -213,6 +214,8 @@ class ViewBooking extends ViewRecord
                 ->button()
                 ->color('warning')
                 ->form([
+                    Hidden::make('submission_reference')
+                        ->default(fn (): string => (string) Str::ulid()),
                     TextInput::make('amount')
                         ->label(__('booking.columns.transportation_adjustment').' (EGP)')
                         ->numeric()
@@ -237,13 +240,17 @@ class ViewBooking extends ViewRecord
                 ->visible(fn (): bool => auth()->user()?->hasAnyRole(['admin', 'booking_manager', 'super_admin']) === true)
                 ->action(function (Booking $record, array $data): void {
                     $minor = Money::of((string) $data['amount'], 'EGP')->getMinorAmount()->toInt();
+                    $sourceReference = trim((string) ($data['source_reference'] ?? ''));
+                    if ($sourceReference === '') {
+                        $sourceReference = (string) ($data['submission_reference'] ?? Str::ulid());
+                    }
 
                     app(AddTransportationAdjustmentAction::class)->execute(
                         $record,
                         (int) auth()->id(),
                         $minor,
                         $data['source'],
-                        $data['source_reference'] ?? null,
+                        $sourceReference,
                     );
 
                     Notification::make()

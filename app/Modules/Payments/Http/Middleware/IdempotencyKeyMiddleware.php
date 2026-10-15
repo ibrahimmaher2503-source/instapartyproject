@@ -9,20 +9,33 @@ use App\Modules\Shared\Http\ApiResponse;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class IdempotencyKeyMiddleware
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string $mode = 'required'): Response
     {
         $key = (string) $request->header('Idempotency-Key', '');
         if ($key === '') {
+            if ($mode === 'optional') {
+                return $next($request);
+            }
+
             return response()->json(['data' => null, 'meta' => (object) [], 'errors' => ['Idempotency-Key header is required']], 422);
         }
 
         $rawBody = (string) $request->getContent();
+        if ($mode === 'optional' && ($file = $request->file('file')) instanceof UploadedFile && $file->isValid()) {
+            $rawBody = json_encode([
+                'inputs' => Arr::sortRecursive($request->except('file')),
+                'filename' => $file->getClientOriginalName(),
+                'file_sha256' => hash_file('sha256', $file->getPathname()),
+            ], JSON_THROW_ON_ERROR);
+        }
         $route = $request->route()?->getName() ?? $request->path();
         $userId = optional($request->user())->id;
         $ttlSeconds = (int) config('idempotency.ttl.http', 86400);

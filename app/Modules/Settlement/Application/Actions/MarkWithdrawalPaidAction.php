@@ -10,6 +10,7 @@ use App\Modules\Settlement\Application\DTOs\MarkWithdrawalPaidInput;
 use App\Modules\Settlement\Application\DTOs\PostLedgerTransactionInput;
 use App\Modules\Settlement\Domain\Contracts\LedgerWriter;
 use App\Modules\Settlement\Domain\Contracts\WalletLocker;
+use App\Modules\Settlement\Domain\Contracts\WalletProjector;
 use App\Modules\Settlement\Domain\Enums\LedgerDirection;
 use App\Modules\Settlement\Domain\Enums\LedgerEntryType;
 use App\Modules\Settlement\Domain\Enums\SuspenseAccount;
@@ -33,6 +34,7 @@ class MarkWithdrawalPaidAction
         private readonly EloquentWalletRepository $walletRepo,
         private readonly LedgerWriter $ledgerWriter,
         private readonly WalletLocker $walletLocker,
+        private readonly WalletProjector $walletProjector,
     ) {}
 
     public function execute(Withdrawal $withdrawal, MarkWithdrawalPaidInput $input, User $admin): Withdrawal
@@ -145,6 +147,7 @@ class MarkWithdrawalPaidAction
                         ->value('id');
 
                     $withdrawal->update(['settled_ledger_entry_id' => $settleEntryId]);
+                    $this->walletProjector->project($wallet->id);
                 }
 
                 DB::table('audit_logs')->insert([

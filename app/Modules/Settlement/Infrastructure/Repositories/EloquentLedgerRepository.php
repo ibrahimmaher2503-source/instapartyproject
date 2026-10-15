@@ -28,13 +28,17 @@ class EloquentLedgerRepository
     public function projectionFromLedger(int $walletId): WalletProjectionResult
     {
         $row = DB::table('wallet_ledger')
-            ->where('wallet_id', $walletId)
+            ->leftJoin('withdrawals', function ($join): void {
+                $join->on('wallet_ledger.related_entity_id', '=', 'withdrawals.id')
+                    ->where('wallet_ledger.related_entity_type', '=', 'withdrawal');
+            })
+            ->where('wallet_ledger.wallet_id', $walletId)
             ->selectRaw('
-                SUM(CASE WHEN direction = \'credit\' THEN amount_minor ELSE 0 END) -
-                SUM(CASE WHEN direction = \'debit\'  THEN amount_minor ELSE 0 END) AS balance_minor,
-                SUM(CASE WHEN entry_type = \'withdrawal_reserve\' THEN amount_minor ELSE 0 END) -
-                SUM(CASE WHEN entry_type IN (\'withdrawal_settle\', \'withdrawal_reject_release\') THEN amount_minor ELSE 0 END) AS pending_withdrawal_minor,
-                MAX(id) AS last_ledger_entry_id
+                SUM(CASE WHEN wallet_ledger.direction = \'credit\' THEN wallet_ledger.amount_minor ELSE 0 END) -
+                SUM(CASE WHEN wallet_ledger.direction = \'debit\'  THEN wallet_ledger.amount_minor ELSE 0 END) AS balance_minor,
+                SUM(CASE WHEN wallet_ledger.entry_type = \'withdrawal_reserve\' AND wallet_ledger.direction = \'debit\' AND (withdrawals.id IS NULL OR withdrawals.status IN (\'pending\', \'approved\')) THEN wallet_ledger.amount_minor ELSE 0 END) -
+                SUM(CASE WHEN withdrawals.id IS NULL AND wallet_ledger.entry_type IN (\'withdrawal_settle\', \'withdrawal_reject_release\') THEN wallet_ledger.amount_minor ELSE 0 END) AS pending_withdrawal_minor,
+                MAX(wallet_ledger.id) AS last_ledger_entry_id
             ')
             ->first();
 

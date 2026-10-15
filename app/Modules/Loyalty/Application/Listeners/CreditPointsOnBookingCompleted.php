@@ -36,7 +36,7 @@ class CreditPointsOnBookingCompleted implements ShouldQueue
 
             // Iterate items if available; otherwise no-op (nothing to credit per-item).
             $items = method_exists($booking, 'items')
-                ? $booking->items()->get(['id'])
+                ? $booking->items()->get(['booking_items.id'])
                 : (property_exists($booking, 'items') ? $booking->items : collect());
 
             foreach ($items as $item) {

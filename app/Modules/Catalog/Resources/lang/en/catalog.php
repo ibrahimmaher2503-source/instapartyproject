@@ -286,6 +286,7 @@ return [
     'import_success' => ':count service(s) imported successfully.',
     'import_failed' => 'Import failed. Please review the errors below.',
     'import_processing_failed' => 'The file could not be processed. Upload a corrected file and try again.',
+    'duplicate_import_row' => 'This row exactly duplicates an earlier row in the same workbook.',
     'imported_rows' => ':count row(s) imported successfully.',
     'import_failed_rows' => 'Import failed with :count error(s).',
     'import_empty_heading' => 'No imports yet',

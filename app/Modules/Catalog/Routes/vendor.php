@@ -21,6 +21,7 @@ use App\Modules\Catalog\Http\Controllers\Vendor\VendorServiceListController;
 use App\Modules\Catalog\Http\Controllers\Vendor\VendorServiceMediaController;
 use App\Modules\Catalog\Http\Controllers\Vendor\VendorServiceShowController;
 use App\Modules\Catalog\Http\Controllers\Vendor\VendorServiceStatsController;
+use App\Modules\Payments\Http\Middleware\IdempotencyKeyMiddleware;
 use Illuminate\Support\Facades\Route;
 
 // Template downloads are static files, but they live on the vendor surface —
@@ -63,9 +64,9 @@ Route::middleware(['api', 'auth:sanctum', 'role:vendor', 'vendor.not_suspended',
     Route::delete('services/digital/{publicId}', [VendorArchiveServiceController::class, '__invoke'])->defaults('type', 'digital');
 
     // Excel imports
-    Route::post('services/rental/import', [ImportRentalServicesController::class, 'store'])->name('vendor.services.rental.import');
-    Route::post('services/sale/import', [ImportSaleServicesController::class, 'store'])->name('vendor.services.sale.import');
-    Route::post('services/digital/import', [ImportDigitalServicesController::class, 'store'])->name('vendor.services.digital.import');
+    Route::post('services/rental/import', [ImportRentalServicesController::class, 'store'])->name('vendor.services.rental.import')->middleware(IdempotencyKeyMiddleware::class.':optional');
+    Route::post('services/sale/import', [ImportSaleServicesController::class, 'store'])->name('vendor.services.sale.import')->middleware(IdempotencyKeyMiddleware::class.':optional');
+    Route::post('services/digital/import', [ImportDigitalServicesController::class, 'store'])->name('vendor.services.digital.import')->middleware(IdempotencyKeyMiddleware::class.':optional');
 
     // Service change request resubmission
     Route::post('services/{service:public_id}/resubmit', [ServiceResubmitController::class, 'store'])->name('vendor.services.resubmit');

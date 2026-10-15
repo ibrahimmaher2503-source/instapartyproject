@@ -132,14 +132,16 @@ class ServicePolicy
     {
         $type = $service->product_type->value;
 
-        return $user->can("publish_{$type}_service");
+        return $user->can("publish_{$type}_service")
+            && $user->can('reject_service');
     }
 
     public function requestChanges(User $user, Service $service): bool
     {
         $type = $service->product_type->value;
 
-        return $user->can("publish_{$type}_service");
+        return $user->can("publish_{$type}_service")
+            && $user->can('request_service_edits');
     }
 
     private function canForService(User $user, Service $service, string $action): bool

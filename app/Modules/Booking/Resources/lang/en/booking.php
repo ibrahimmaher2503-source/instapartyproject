@@ -488,6 +488,7 @@ return [
     'validation' => [
         'guest_count_range' => 'Enter a whole number from 1 to 10,000.',
         'transport_price_invalid' => 'Enter a non-negative EGP amount with no more than two decimal places.',
+        'transport_reference_conflict' => 'This reference already belongs to a different transportation adjustment.',
         'lane_required' => 'The fulfillment step is required.',
         'lane_invalid' => 'The fulfillment step must be preparing, ready, in_progress, or completed.',
     ],

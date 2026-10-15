@@ -135,6 +135,7 @@ class ImportDigitalServicesFromExcelAction
     private function validateAllRows(Collection $rows): Collection
     {
         $errors = collect();
+        $seenRows = [];
         $baseRules = [
             'name_en' => ['required', 'string', 'max:255'],
             'name_ar' => ['required', 'string', 'max:255'],
@@ -152,6 +153,22 @@ class ImportDigitalServicesFromExcelAction
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2;
             $rowArray = $row->toArray();
+            $canonicalRow = $rowArray;
+            ksort($canonicalRow);
+            $rowHash = hash('sha256', serialize($canonicalRow));
+            if (isset($seenRows[$rowHash])) {
+                $errors->push([
+                    'row' => $rowNumber,
+                    'field' => 'duplicate_row',
+                    'row_data' => $rowArray,
+                    'message' => [
+                        'en' => __('catalog.duplicate_import_row', [], 'en'),
+                        'ar' => __('catalog.duplicate_import_row', [], 'ar'),
+                    ],
+                ]);
+            } else {
+                $seenRows[$rowHash] = true;
+            }
 
             // Merge category-specific field rules
             $categoryId = (int) ($rowArray['category_id'] ?? 0);

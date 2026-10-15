@@ -9,7 +9,6 @@ use App\Modules\Payments\Application\Actions\MarkPaymentAbandonedAction;
 use App\Modules\Payments\Application\Actions\OpenChargebackAction;
 use App\Modules\Payments\Application\Actions\ReplayWebhookAction;
 use App\Modules\Payments\Application\Actions\ResolveChargebackAction;
-use App\Modules\Payments\Application\Actions\RetryFailedPaymentAction;
 use App\Modules\Payments\Application\Actions\VoidStuckAuthorizationAction;
 use App\Modules\Payments\Application\DTOs\OpenChargebackDto;
 use App\Modules\Payments\Application\DTOs\ResolveChargebackDto;
@@ -111,11 +110,8 @@ class PaymentsOpsConsole extends Page implements HasTable
                     ->label(__('payments.ops.actions.retry'))
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
-                    ->requiresConfirmation()
-                    ->action(function (Payment $record): void {
-                        app(RetryFailedPaymentAction::class)->execute($record->id, auth()->id());
-                        Notification::make()->title(__('payments.ops.retry_queued'))->success()->send();
-                    }),
+                    ->disabled()
+                    ->tooltip(__('payments::payments.ops.retry_unsupported')),
 
                 TableAction::make('abandon')
                     ->label(__('payments.ops.actions.abandon'))

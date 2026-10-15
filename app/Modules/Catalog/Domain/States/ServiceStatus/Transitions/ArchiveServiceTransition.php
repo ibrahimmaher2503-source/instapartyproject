@@ -23,7 +23,8 @@ final class ArchiveServiceTransition extends Transition
     {
         $user = auth()->user();
         $isOwner = $user?->vendorProfile?->id === $this->model->vendor_profile_id;
-        $isAdmin = $user?->hasRole('admin');
+        $type = $this->model->product_type->value;
+        $isAdmin = $user?->can("publish_{$type}_service") || $user?->can('archive_service');
 
         abort_unless(
             $isOwner || $isAdmin,
