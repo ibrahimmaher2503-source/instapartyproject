@@ -10,6 +10,8 @@ use Filament\Pages\Auth\Login;
 
 class IsolatedPanelLogin extends Login
 {
+    protected static string $view = 'vendor-portal.auth.login';
+
     public function mount(): void
     {
         $guard = Filament::auth();

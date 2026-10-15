@@ -134,6 +134,8 @@ return [
         'changes_requested' => 'Changes requested',
         'title' => 'My Services',
         'product_type_separator' => ', ',
+        'pending_product_types' => 'Service creation is available only for approved product types. These types are pending admin approval: :types.',
+        'product_type_pending' => ':type services are unavailable until an administrator approves this product type.',
         'digital_services_disabled' => 'Digital services are currently unavailable on the platform.',
         'check_product_type_status' => 'View product-type status',
         'rental_services' => 'Rental Services',

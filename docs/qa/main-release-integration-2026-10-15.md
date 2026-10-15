@@ -34,6 +34,8 @@ Apply the narrowly scoped permission/template seeders required by the new admin 
 
 ## Publication validation checkpoint
 
+Production must use `APP_DEBUG=false`. The application also disables debug during provider registration in production, including when stale cached configuration enables it. After deploying, rebuild the configuration cache and verify generic 405/500 responses without exception traces. This guard does not replace deployment or the live retest for #199.
+
 - Configured PHPStan: passed with no errors. Full Pint: passed. Vite production build: passed. Composer validation/platform checks: passed; locked dependency audit reported no advisories.
 - Last completed full Pest run: 1,537 passed and 14 failed (13,028 assertions). The affected cases were then corrected and passed in focused reruns: Booking 62/424, Identity 139/1,112 plus product-type guidance 10/174, payment integrity 18/118, and public media fallback 3/41 (tests/assertions).
 - The subsequent full `--bail` run was stopped before completion at the user's explicit request to publish immediately. It is not recorded as a passing full-suite gate. This user instruction overrides the repository's usual pre-commit full-suite completion requirement for this publication.

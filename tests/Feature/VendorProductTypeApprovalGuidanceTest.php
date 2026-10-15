@@ -22,6 +22,7 @@ use App\Modules\Identity\Filament\Resources\VendorApprovedProductTypeResource\Pa
 use App\Modules\Identity\Filament\Resources\VendorProfileResource;
 use App\Modules\Identity\Filament\Vendor\Pages\VendorApprovalStatusPage;
 use Filament\Facades\Filament;
+use Illuminate\Support\Js;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
@@ -235,4 +236,28 @@ it('keeps a disabled Digital-only legacy approval unavailable and points vendors
     $this->get(VendorApprovalStatusPage::getUrl(panel: 'vendor'))
         ->assertOk()
         ->assertSee(__('vendor-portal.approval.unavailable'));
+})->with(['en', 'ar']);
+
+it('renders vendor service approval guidance and pending tooltips in both locales', function (string $locale): void {
+    app()->setLocale($locale);
+    config(['catalog.digital_services_enabled' => false]);
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+    $vendor = productTypeApprovalChecklistVendor();
+    $this->actingAs($vendor->user, 'vendor');
+
+    $pending = __('vendor-portal.services.pending_product_types', [
+        'types' => implode(__('vendor-portal.services.product_type_separator'), array_map(
+            fn (ProductType $type): string => $type->label(),
+            [ProductType::Rental, ProductType::Sale],
+        )),
+    ]);
+    $tooltip = __('vendor-portal.services.product_type_pending', ['type' => ProductType::Rental->label()]);
+
+    expect($pending)->not->toBe('vendor-portal.services.pending_product_types')
+        ->and($tooltip)->not->toBe('vendor-portal.services.product_type_pending');
+
+    Livewire::test(VendorServicesListPage::class)
+        ->assertSeeInOrder([$pending, __('vendor-portal.services.digital_services_disabled')])
+        ->assertSee((string) Js::from($tooltip), false)
+        ->assertDontSee('vendor-portal.services.pending_product_types');
 })->with(['en', 'ar']);

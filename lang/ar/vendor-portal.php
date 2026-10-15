@@ -139,6 +139,8 @@ return [
         'changes_requested' => 'مطلوب تعديلات',
         'title' => 'خدماتي',
         'product_type_separator' => '، ',
+        'pending_product_types' => 'يمكن إنشاء الخدمات للأنواع المعتمدة فقط. الأنواع التي تنتظر اعتماد الإدارة: :types.',
+        'product_type_pending' => 'خدمات :type غير متاحة حتى تعتمد الإدارة نوع المنتج هذا.',
         'digital_services_disabled' => 'الخدمات الرقمية غير متاحة حالياً على المنصة.',
         'check_product_type_status' => 'عرض حالة اعتماد أنواع المنتجات',
         'rental_services' => 'خدمات التأجير',
