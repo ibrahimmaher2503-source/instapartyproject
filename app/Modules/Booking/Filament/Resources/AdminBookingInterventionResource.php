@@ -53,7 +53,7 @@ class AdminBookingInterventionResource extends Resource
 
     protected static ?string $slug = 'admin-booking-intervention';
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -192,7 +192,11 @@ class AdminBookingInterventionResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('event_starts_at')
-                    ->label(__('booking.columns.event_starts_at'))
+                    ->label(fn (): string => __('booking.display_timezone', [
+                        'field' => __('booking.columns.event_starts_at'),
+                        'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                    ]))
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->dateTime()
                     ->sortable(),
             ])
@@ -402,9 +406,23 @@ class AdminBookingInterventionResource extends Resource
                     ->form([
                         Hidden::make('idempotency_key')
                             ->default(fn (): string => (string) Str::uuid()),
-                        Select::make('vendor_profile_ids')
+                        Select::make('booking_vendor_public_id')
+                            ->label(__('booking.intervention.fields.source_vendor'))
+                            ->options(fn (Booking $record): array => $record->vendors()
+                                ->with('vendor')
+                                ->where('sub_status', 'pending')
+                                ->whereNotNull('response_deadline')
+                                ->where('response_deadline', '>', now('UTC'))
+                                ->get()
+                                ->mapWithKeys(fn ($allocation): array => [
+                                    $allocation->public_id => (string) ($allocation->vendor?->getTranslation('business_name', app()->getLocale(), true)
+                                        ?: $allocation->public_id),
+                                ])
+                                ->all())
+                            ->required(),
+                        Select::make('vendor_profile_id')
                             ->label(__('booking.intervention.fields.suggest_vendors'))
-                            ->multiple()
+                            ->searchable()
                             ->helperText(__('booking.intervention.fields.suggest_vendors_help'))
                             ->options(function (Booking $record): array {
                                 try {
@@ -419,13 +437,12 @@ class AdminBookingInterventionResource extends Resource
                                     return [];
                                 }
                             })
-                            ->required()
-                            ->maxItems(config('booking.intervention.suggest_max_candidates', 5)),
+                            ->required(),
                         Placeholder::make('suggestion_review')
                             ->label(__('booking.intervention.fields.review_summary'))
                             ->content(fn (Get $get): string => trans_choice(
                                 'booking.intervention.fields.review_summary_body',
-                                count((array) $get('vendor_profile_ids')),
+                                filled($get('vendor_profile_id')) ? 1 : 0,
                             )),
                         Textarea::make('reason')
                             ->label(__('booking.intervention.fields.reason'))
@@ -439,7 +456,8 @@ class AdminBookingInterventionResource extends Resource
                                 ->execute($record, new SuggestedAlternativeVendorsDTO(
                                     bookingId: $record->id,
                                     adminId: auth()->id(),
-                                    vendorProfileIds: $data['vendor_profile_ids'],
+                                    bookingVendorPublicId: $data['booking_vendor_public_id'],
+                                    vendorProfileId: (int) $data['vendor_profile_id'],
                                     reason: $data['reason'],
                                     idempotencyKey: $data['idempotency_key'] ?? null,
                                 ));

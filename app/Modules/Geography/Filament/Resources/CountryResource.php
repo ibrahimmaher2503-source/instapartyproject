@@ -28,7 +28,7 @@ class CountryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {

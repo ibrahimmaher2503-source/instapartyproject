@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Domain\Models\ServicePackage;
+use App\Modules\Catalog\Domain\Policies\ServicePackagePolicy;
 use App\Modules\Catalog\Domain\Policies\ServicePolicy;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Shared\Filament\Livewire\PanelLanguageSwitch;
 use App\Policies\ActivityPolicy;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,8 +28,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Livewire::component('filament-language-switch', PanelLanguageSwitch::class);
         Gate::policy(Activity::class, ActivityPolicy::class);
         Gate::policy(Service::class, ServicePolicy::class);
+        Gate::policy(ServicePackage::class, ServicePackagePolicy::class);
 
         Relation::morphMap([
             'service' => Service::class,

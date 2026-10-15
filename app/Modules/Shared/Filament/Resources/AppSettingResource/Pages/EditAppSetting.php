@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Shared\Filament\Resources\AppSettingResource\Pages;
 
+use App\Modules\Shared\Application\Actions\UpdateAppSettingAction;
+use App\Modules\Shared\Domain\Enums\AdminQueue;
 use App\Modules\Shared\Filament\Resources\AppSettingResource;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 
 class EditAppSetting extends EditRecord
@@ -36,6 +39,10 @@ class EditAppSetting extends EditRecord
                 is_float($originalValue) => ['required', 'numeric'],
                 default => ['string'],
             };
+            if (in_array($this->record->key, array_map(fn (AdminQueue $queue): string => $queue->settingKey(), AdminQueue::cases()), true)) {
+                $rules = ['required', 'integer', 'between:1,720'];
+            }
+
             Validator::make(
                 ['data' => ['value_text' => $validatedText]],
                 ['data.value_text' => $rules],
@@ -51,5 +58,10 @@ class EditAppSetting extends EditRecord
         unset($data['_is_scalar'], $data['value_text']);
 
         return $data;
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        return app(UpdateAppSettingAction::class)->execute($record, $data);
     }
 }

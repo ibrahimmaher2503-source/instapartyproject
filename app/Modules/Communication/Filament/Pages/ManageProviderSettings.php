@@ -29,7 +29,7 @@ final class ManageProviderSettings extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static ?int $navigationSort = 35;
+    protected static ?int $navigationSort = 20;
 
     protected static string $view = 'communication::filament.pages.manage-provider-settings';
 
@@ -47,7 +47,7 @@ final class ManageProviderSettings extends Page implements HasForms
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settings');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getNavigationLabel(): string

@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Http\Controllers\Web;
 
+use App\Modules\Catalog\Application\Actions\ListPublicOccasionsAction;
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Occasion;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class TaxonomyController
 {
+    public function occasions(ListPublicOccasionsAction $action): View
+    {
+        return view('storefront.occasions.index', ['occasions' => $action->execute()]);
+    }
+
     public function category(string $identifier): RedirectResponse
     {
         $category = Category::query()

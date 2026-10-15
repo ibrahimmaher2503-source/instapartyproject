@@ -15,6 +15,7 @@ use App\Modules\Catalog\Filament\Actions\BulkArchiveServicesAction;
 use App\Modules\Catalog\Filament\Actions\BulkRejectServicesAction;
 use App\Modules\Catalog\Filament\Actions\RejectServiceAction;
 use App\Modules\Catalog\Filament\Actions\RequestServiceEditsAction;
+use App\Modules\Catalog\Filament\Concerns\HasServiceThemes;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\CreateDigitalService;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\EditDigitalService;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\ListDigitalServices;
@@ -25,6 +26,7 @@ use App\Modules\Discovery\Filament\Actions\ReindexServicesAction;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Application\Services\StorefrontText;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -60,6 +62,7 @@ class DigitalServiceResource extends Resource
 {
     use HasCategorySchemaFields;
     use HasServicePriceInput;
+    use HasServiceThemes;
 
     protected static ?string $model = Service::class;
 
@@ -117,9 +120,9 @@ class DigitalServiceResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make(__('catalog.translations'))
+            BilingualTabErrorFeedback::tabs(Tabs::make(__('catalog.translations')))
                 ->tabs([
-                    Tab::make(__('catalog.language_english'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->markAsRequired()
@@ -137,7 +140,7 @@ class DigitalServiceResource extends Resource
                                 ->rows(5)
                                 ->label(__('catalog.long_description')),
                         ]),
-                    Tab::make(__('catalog.language_arabic'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->markAsRequired()
@@ -187,6 +190,7 @@ class DigitalServiceResource extends Resource
                         ->label(__('catalog.status_label')),
                     Toggle::make('is_featured')
                         ->label(__('catalog.is_featured')),
+                    static::serviceThemesField(),
                 ])
                 ->columns(2),
 

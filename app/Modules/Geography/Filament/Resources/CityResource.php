@@ -16,6 +16,7 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
@@ -31,7 +32,7 @@ class CityResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationGroup(): ?string
     {
@@ -65,7 +66,7 @@ class CityResource extends Resource
                         ->preload()
                         ->required()
                         ->live()
-                        ->afterStateUpdated(function (\Filament\Forms\Components\Utilities\Set $set, ?string $state): void {
+                        ->afterStateUpdated(function (Set $set, ?string $state): void {
                             if ($state === null) {
                                 return;
                             }

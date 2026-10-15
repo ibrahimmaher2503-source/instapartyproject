@@ -24,6 +24,7 @@ use App\Modules\Catalog\Filament\Vendor\Resources\VendorRentalServiceResource\Pa
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorRentalServiceResource\Pages\ListVendorRentalServices;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Application\Services\VendorOperationalAccess;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -90,9 +91,9 @@ class VendorRentalServiceResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make(__('catalog.translations'))
+            BilingualTabErrorFeedback::tabs(Tabs::make(__('catalog.translations')))
                 ->tabs([
-                    Tab::make(__('catalog.language_english'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->label(__('catalog.name_en'))
@@ -108,7 +109,7 @@ class VendorRentalServiceResource extends Resource
                                 ->maxLength(5000)
                                 ->requiredWith('long_description.ar'),
                         ]),
-                    Tab::make(__('catalog.language_arabic'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->label(__('catalog.name_ar'))

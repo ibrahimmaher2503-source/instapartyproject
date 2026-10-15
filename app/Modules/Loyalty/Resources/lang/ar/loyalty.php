@@ -3,6 +3,21 @@
 declare(strict_types=1);
 
 return [
+    'account' => [
+        'available_points' => 'النقاط المتاحة من برنامج مقدم الخدمة',
+        'points' => 'نقطة',
+        'history' => 'سجل النقاط',
+        'direction' => [
+            'earn' => 'مكتسبة',
+            'redeem' => 'مستبدلة',
+            'expire' => 'منتهية الصلاحية',
+            'adjust' => 'معدّلة',
+        ],
+        'balance_after' => 'الرصيد المسجل بعد هذه الحركة',
+        'expires' => 'تنتهي في',
+        'no_balances' => 'لا توجد أرصدة ولاء حالية متاحة.',
+        'no_history' => 'لا يوجد سجل نقاط بعد.',
+    ],
     'fields' => [
         'name' => 'اسم البرنامج',
         'terms' => 'الشروط',

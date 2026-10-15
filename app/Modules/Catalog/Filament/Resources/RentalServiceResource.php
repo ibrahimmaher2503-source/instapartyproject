@@ -14,6 +14,7 @@ use App\Modules\Catalog\Filament\Actions\BulkArchiveServicesAction;
 use App\Modules\Catalog\Filament\Actions\BulkRejectServicesAction;
 use App\Modules\Catalog\Filament\Actions\RejectServiceAction;
 use App\Modules\Catalog\Filament\Actions\RequestServiceEditsAction;
+use App\Modules\Catalog\Filament\Concerns\HasServiceThemes;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\CreateRentalService;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\EditRentalService;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\ListRentalServices;
@@ -23,6 +24,7 @@ use App\Modules\Catalog\Filament\Vendor\Concerns\HasServicePriceInput;
 use App\Modules\Discovery\Filament\Actions\ReindexServicesAction;
 use App\Modules\Shared\Application\Services\StorefrontText;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -54,6 +56,7 @@ class RentalServiceResource extends Resource
 {
     use HasCategorySchemaFields;
     use HasServicePriceInput;
+    use HasServiceThemes;
 
     protected static ?string $model = Service::class;
 
@@ -111,9 +114,9 @@ class RentalServiceResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make(__('catalog.translations'))
+            BilingualTabErrorFeedback::tabs(Tabs::make(__('catalog.translations')))
                 ->tabs([
-                    Tab::make(__('catalog.language_english'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->markAsRequired()
@@ -131,7 +134,7 @@ class RentalServiceResource extends Resource
                                 ->rows(5)
                                 ->label(__('catalog.long_description')),
                         ]),
-                    Tab::make(__('catalog.language_arabic'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->markAsRequired()
@@ -168,7 +171,6 @@ class RentalServiceResource extends Resource
                         ->relationship('category', 'name')
                         ->getOptionLabelFromRecordUsing(fn ($record): string => $record->getTranslation('name', app()->getLocale(), useFallbackLocale: true))
                         ->searchable(['name->en', 'name->ar'])
-                        ->preload()
                         ->optionsLimit(50)
                         ->markAsRequired()
                         ->rule('required')
@@ -182,6 +184,7 @@ class RentalServiceResource extends Resource
                         ->label(__('catalog.status_label')),
                     Toggle::make('is_featured')
                         ->label(__('catalog.is_featured')),
+                    static::serviceThemesField(),
                 ])
                 ->columns(2),
 
@@ -203,16 +206,22 @@ class RentalServiceResource extends Resource
                     TextInput::make('setup_time_minutes')
                         ->numeric()
                         ->minValue(0)
+                        ->default(0)
+                        ->dehydrateStateUsing(fn (mixed $state): int => filled($state) ? (int) $state : 0)
                         ->label(__('catalog.setup_time_minutes')),
                     TextInput::make('teardown_time_minutes')
                         ->numeric()
                         ->minValue(0)
+                        ->default(0)
+                        ->dehydrateStateUsing(fn (mixed $state): int => filled($state) ? (int) $state : 0)
                         ->label(__('catalog.teardown_time_minutes')),
                     TextInput::make('security_deposit_minor')
                         ->label(__('catalog.security_deposit'))
                         ->helperText(__('catalog.price_helper'))
                         ->numeric()
-                        ->minValue(0),
+                        ->minValue(0)
+                        ->default(0)
+                        ->dehydrateStateUsing(fn (mixed $state): int => filled($state) ? (int) $state : 0),
                     TextInput::make('minimum_space_sqm')
                         ->numeric()
                         ->minValue(1)

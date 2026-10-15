@@ -8,6 +8,7 @@ use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Filament\Vendor\Pages\VendorBookingDetailPage;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use Brick\Money\Money;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -71,7 +72,7 @@ class VendorRecentBookingsWidget extends TableWidget
                     ->formatStateUsing(fn (VendorSubStatus $state): string => __('booking.vendor_status.'.$state->value)),
                 TextColumn::make('subtotal_minor')
                     ->label(__('vendor-portal.dashboard.recent_bookings.total'))
-                    ->money('EGP', divideBy: 100),
+                    ->formatStateUsing(fn (int $state, BookingVendor $record): string => Money::ofMinor($state, $record->subtotal_currency)->formatTo(app()->getLocale())),
                 TextColumn::make('created_at')
                     ->label(__('vendor-portal.dashboard.recent_bookings.created_at'))
                     ->since(),

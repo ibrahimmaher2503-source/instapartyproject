@@ -39,7 +39,7 @@ class CommissionRulesResource extends Resource
 
     protected static ?string $slug = 'settlement-commission-rules';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 70;
 
     public static function getNavigationLabel(): string
     {

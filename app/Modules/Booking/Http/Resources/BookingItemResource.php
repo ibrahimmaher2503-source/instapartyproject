@@ -49,6 +49,7 @@ class BookingItemResource extends JsonResource
             'effective_ends_at' => $this->effective_ends_at?->setTimezone($tz)->toIso8601String(),
             'is_modified' => count($changeBadges) > 0,
             'change_badges' => $changeBadges,
+            'service_package' => data_get($this->type_snapshot, 'service_package'),
         ];
     }
 

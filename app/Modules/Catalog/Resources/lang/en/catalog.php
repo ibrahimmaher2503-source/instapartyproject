@@ -12,14 +12,18 @@ return [
     // Navigation groups
     'nav_group_services' => 'Services',
     'nav_group_catalog' => 'Catalog',
+    'service_themes' => 'Service Themes',
+    'inactive' => 'Inactive',
+    'deleted_at' => 'Deleted At',
 
     'nav' => [
         'categories' => 'Categories',
-        'occasions' => 'Occasions',
+        'occasions' => 'Manage Occasions',
         'rental_services' => 'Rental Services',
         'sale_services' => 'Sale Services',
         'digital_services' => 'Digital Services',
         'service_themes' => 'Service Themes',
+        'service_packages' => 'Service Packages',
         'pending_service_edits' => 'Pending Service Edits',
         'category_field_schemas' => 'Category Field Schemas',
         'excel_imports' => 'Excel Imports',
@@ -53,6 +57,10 @@ return [
         'service_theme' => [
             'singular' => 'Service Theme',
             'plural' => 'Service Themes',
+        ],
+        'service_package' => [
+            'singular' => 'Service Package',
+            'plural' => 'Service Packages',
         ],
         'category_field_schema' => [
             'singular' => 'Category Field Schema',
@@ -170,6 +178,14 @@ return [
     'gallery' => 'Gallery',
     'cover_image' => 'Cover Image',
     'service' => 'Service',
+    'service_package_details' => 'Package Details',
+    'package_price_minor' => 'Price (minor units)',
+    'package_components' => 'Package Components',
+    'package_gallery' => 'Package Gallery',
+    'package_service_ineligible' => 'Choose a published service for a vendor approved for that product type.',
+    'currency' => 'Currency',
+    'description_en' => 'Description in English',
+    'description_ar' => 'Description in Arabic',
     'customer' => 'Customer',
     'user_id' => 'User',
     'quantity' => 'Quantity',
@@ -209,6 +225,8 @@ return [
     'occasion_category_existing' => 'existing link',
     'category_details' => 'Category Details',
     'service_theme_details' => 'Service Theme Details',
+    'service_themes_association_helper' => 'Choose the active themes shown on this service. Existing inactive themes can be removed.',
+    'service_themes_invalid' => 'Choose only active service themes available to this service.',
     'shared' => 'General Information',
 
     // Rental detail form

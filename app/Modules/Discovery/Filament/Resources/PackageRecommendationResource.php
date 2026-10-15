@@ -36,11 +36,11 @@ class PackageRecommendationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-gift';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.appearance');
+        return __('admin.nav.groups.packages_occasions');
     }
 
     public static function getNavigationLabel(): string
@@ -79,7 +79,7 @@ class PackageRecommendationResource extends Resource
                     TextInput::make('slug')->required()->unique(ignoreRecord: true)->maxLength(120),
                     Select::make('occasion_id')
                         ->label(__('discovery::discovery.package_recommendations.occasion'))
-                        ->options(fn (): array => DB::table('occasions')->where('is_active', true)->orderBy('sort_order')->pluck('name', 'id')->map(fn (string $name): string => (string) data_get(json_decode($name, true), app()->getLocale(), data_get(json_decode($name, true), 'en')))->all())
+                        ->options(fn (): array => DB::table('occasions')->where('is_active', true)->whereNull('deleted_at')->orderBy('sort_order')->pluck('name', 'id')->map(fn (string $name): string => (string) data_get(json_decode($name, true), app()->getLocale(), data_get(json_decode($name, true), 'en')))->all())
                         ->searchable()
                         ->preload(),
                 ])->columns(2),

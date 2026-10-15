@@ -26,7 +26,7 @@ class CommunicationProviderHealthPage extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-signal';
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 10;
 
     protected static string $view = 'communication::filament.pages.provider-health';
 
@@ -37,7 +37,7 @@ class CommunicationProviderHealthPage extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.operations');
+        return __('admin.nav.groups.technical');
     }
 
     public static function canAccess(): bool
@@ -117,14 +117,15 @@ class CommunicationProviderHealthPage extends Page
         $statusBadge = match (true) {
             ! $configured => 'not_configured',
             $failedCount > $sentCount => 'degraded',
-            default => 'unknown',
+            $lastSuccess === null => 'unknown',
+            default => 'healthy',
         };
 
         return [
             'channel' => $channel,
             'channelLabel' => __('communication.provider_health.channels.'.$channel->value),
             'configured' => $configured,
-            'isReachable' => false,
+            'isReachable' => $configured && $lastSuccess !== null,
             'latencyMs' => null,
             'note' => $lastFailure !== null
                 ? __('communication.provider_health.card.failure_recorded')

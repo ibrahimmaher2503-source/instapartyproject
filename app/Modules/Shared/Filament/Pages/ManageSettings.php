@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Shared\Filament\Pages;
 
+use App\Modules\Shared\Application\Actions\UpdateAppSettingAction;
+use App\Modules\Shared\Domain\Enums\AdminQueue;
 use App\Modules\Shared\Domain\Models\AppSetting;
 use App\Modules\Shared\Domain\Models\FeatureFlag;
 use Filament\Forms\Components\Section;
@@ -19,7 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ManageSettings extends Page implements HasForms, HasTable
 {
@@ -38,7 +40,7 @@ class ManageSettings extends Page implements HasForms, HasTable
         return __('shared.settings.nav_label');
     }
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 10;
 
     protected static string $view = 'filament.pages.manage-settings';
 
@@ -52,9 +54,24 @@ class ManageSettings extends Page implements HasForms, HasTable
     public function form(Form $schema): Form
     {
         $fields = AppSetting::all()->map(function (AppSetting $setting): TextInput {
-            return TextInput::make("settings.{$setting->key}")
+            $field = TextInput::make($setting->key)
                 ->label($setting->description ?? $setting->key)
                 ->default($setting->value);
+
+            foreach (AdminQueue::cases() as $queue) {
+                if ($setting->key === $queue->settingKey()) {
+                    return $field
+                        ->label(__('shared::shared.admin_queue_sla.'.$queue->value))
+                        ->helperText(__('shared::shared.admin_queue_sla.hours_helper'))
+                        ->numeric()
+                        ->required()
+                        ->minValue(1)
+                        ->maxValue(720)
+                        ->rules(['integer', 'between:1,720']);
+                }
+            }
+
+            return $field;
         })->all();
 
         return $schema->components([
@@ -68,12 +85,19 @@ class ManageSettings extends Page implements HasForms, HasTable
     {
         $data = $this->form->getState();
 
-        foreach ($data as $key => $value) {
-            AppSetting::where('key', $key)->update([
-                'value' => $value,
-                'updated_by' => Auth::id(),
-            ]);
-        }
+        DB::transaction(function () use ($data): void {
+            $action = app(UpdateAppSettingAction::class);
+            $queueKeys = array_map(fn (AdminQueue $queue): string => $queue->settingKey(), AdminQueue::cases());
+
+            foreach ($data as $key => $value) {
+                if (in_array($key, $queueKeys, true)) {
+                    $value = (int) $value;
+                }
+
+                $setting = AppSetting::query()->where('key', $key)->firstOrFail();
+                $action->execute($setting, ['value' => $value]);
+            }
+        });
 
         Notification::make()
             ->title(__('shared.settings.saved'))

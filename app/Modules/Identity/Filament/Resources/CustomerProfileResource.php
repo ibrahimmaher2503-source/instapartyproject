@@ -19,7 +19,7 @@ class CustomerProfileResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.vendor_management');
+        return __('admin.nav.groups.customers');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-identification';

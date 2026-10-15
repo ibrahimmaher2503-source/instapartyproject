@@ -19,12 +19,12 @@ class IdempotencyKeyResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.payments');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-finger-print';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 80;
 
     public static function getNavigationLabel(): string
     {

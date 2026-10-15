@@ -12,6 +12,7 @@ use App\Modules\Discovery\Application\DTOs\SearchServicesDTO;
 use App\Modules\Discovery\Domain\Contracts\PackageRecommendationReader;
 use App\Modules\Discovery\Infrastructure\Repositories\VendorBrowsingRepository;
 use App\Modules\Geography\Domain\Contracts\GeographyRepository;
+use App\Modules\Shared\Application\Services\StorefrontText;
 use Brick\Money\Money;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -38,6 +39,7 @@ class SearchController
                 'q' => ['nullable', 'string', 'max:255'],
                 'product_type' => ['nullable', Rule::enum(ProductType::class)],
                 'category_slug' => ['nullable', 'string', 'max:120'],
+                'subcategory' => ['nullable', 'string', 'max:120'],
                 'occasion' => [$planner ? 'required' : 'nullable', 'string', 'max:120'],
                 'package' => ['nullable', 'string', 'max:26'],
                 'vendor' => ['nullable', 'string', 'max:26'],
@@ -121,6 +123,27 @@ class SearchController
             $type = null;
         }
         $categoryList = $categories->execute();
+        $selectedCategory = $categoryList->firstWhere('code', $filters['category_slug'] ?? null);
+        if ($selectedCategory?->parent_id !== null && empty($filters['subcategory'])) {
+            $parent = $categoryList->firstWhere('id', $selectedCategory->parent_id);
+            if ($parent !== null) {
+                $filters['subcategory'] = $selectedCategory->code;
+                $filters['category_slug'] = $parent->code;
+                $selectedCategory = $parent;
+            }
+        }
+        if (filled($filters['subcategory'] ?? null)) {
+            $child = $categoryList->firstWhere('code', $filters['subcategory']);
+            if ($selectedCategory === null || $child === null || $child->parent_id !== $selectedCategory->id) {
+                $query = $request->query();
+                unset($query['subcategory'], $query['page']);
+
+                return redirect()->route('storefront.search', $query)
+                    ->withErrors(['search' => __('storefront.search.subcategory_mismatch')])
+                    ->withInput($request->query());
+            }
+        }
+        $effectiveCategory = $filters['subcategory'] ?? $filters['category_slug'] ?? null;
         $categoryContext = isset($filters['category_slug'])
             ? $categoryList->firstWhere('code', $filters['category_slug'])
             : null;
@@ -141,7 +164,7 @@ class SearchController
             unset($filters['package']);
         }
         $vendorList = $vendors->approvedForFilter(
-            $filters['category_slug'] ?? null,
+            $effectiveCategory,
             $filters['occasion'] ?? null,
         );
         if (isset($filters['vendor']) && ! $vendorList->contains('public_id', $filters['vendor'])) {
@@ -151,7 +174,7 @@ class SearchController
             ->map(fn ($vendor): array => [
                 'public_id' => $vendor->public_id,
                 'label' => trim($vendor->getTranslation('business_name', app()->getLocale(), useFallbackLocale: true)
-                    .($vendor->primaryCity === null ? '' : ' · '.$vendor->primaryCity->getTranslation('name', app()->getLocale(), useFallbackLocale: true))),
+                    .' · '.app(StorefrontText::class)->vendorGovernorates($vendor)->pluck('name')->join(' · ')),
                 'combinations' => $vendor->services
                     ->filter(fn ($service): bool => $service->category !== null)
                     ->map(fn ($service): array => [
@@ -169,7 +192,7 @@ class SearchController
         $searchDto = new SearchServicesDTO(
             query: $filters['q'] ?? null,
             type: $type,
-            categorySlug: $filters['category_slug'] ?? null,
+            categorySlug: $effectiveCategory,
             occasionCode: $filters['occasion'] ?? null,
             vendorPublicId: $filters['vendor'] ?? null,
             governoratePublicId: $filters['governorate_public_id'] ?? null,
@@ -222,6 +245,13 @@ class SearchController
         return view('storefront.search', [
             'services' => $results,
             'categories' => $categoryList,
+            'subcategories' => $selectedCategory === null ? collect() : $categoryList->where('parent_id', $selectedCategory->id)->values(),
+            'subcategoryOptions' => $categoryList->filter(fn ($category): bool => $category->parent_id !== null)
+                ->map(fn ($category): array => [
+                    'code' => $category->code,
+                    'parent' => $categoryList->firstWhere('id', $category->parent_id)?->code,
+                    'name' => app(StorefrontText::class)->translation($category, 'name'),
+                ])->values()->all(),
             'categoryContext' => $categoryContext,
             'occasions' => $occasionList,
             'occasionContext' => $occasionContext,

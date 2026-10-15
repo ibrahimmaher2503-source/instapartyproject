@@ -25,11 +25,11 @@ class FeatureFlagResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 90;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settings');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getModelLabel(): string

@@ -7,6 +7,7 @@ namespace App\Modules\Booking\Filament\Resources\BookingResource\Pages;
 use App\Modules\Booking\Application\Actions\AddTransportationAdjustmentAction;
 use App\Modules\Booking\Application\Actions\ForceCancelBookingAction;
 use App\Modules\Booking\Application\DTOs\AdminInterventionDTO;
+use App\Modules\Booking\Application\DTOs\CreateBookingDraftDTO;
 use App\Modules\Booking\Domain\Enums\InterventionType;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
@@ -26,6 +27,33 @@ use Illuminate\Support\Str;
 class ViewBooking extends ViewRecord
 {
     protected static string $resource = BookingResource::class;
+
+    public function callMountedAction(array $arguments = []): mixed
+    {
+        $terminalReason = null;
+        if (end($this->mountedActions) === 'forceCancel') {
+            abort_unless(auth()->user()?->hasAnyRole(['admin', 'booking_manager', 'super_admin']) === true, 403);
+            $state = $this->getRecord()->fresh()?->lifecycle_status;
+            $terminalReason = match (true) {
+                $state instanceof CancelledState => __('booking::booking.cancellation.blocked.already_cancelled'),
+                $state instanceof CompletedState => __('booking::booking.cancellation.blocked.booking_completed'),
+                default => null,
+            };
+        }
+
+        if ($terminalReason !== null) {
+            Notification::make()
+                ->title($terminalReason)
+                ->body(__('shared::admin-feedback.force_cancel_failed', ['reference' => $this->getRecord()->public_id]))
+                ->danger()
+                ->send();
+            $this->unmountAction();
+
+            return null;
+        }
+
+        return parent::callMountedAction($arguments);
+    }
 
     public function mount(int|string $record): void
     {
@@ -59,7 +87,16 @@ class ViewBooking extends ViewRecord
                     TextInput::make('guest_count')
                         ->label(__('booking.columns.guest_count'))
                         ->numeric()
+                        ->rules(['integer'])
                         ->minValue(1)
+                        ->maxValue(CreateBookingDraftDTO::MAX_GUEST_COUNT)
+                        ->step(1)
+                        ->validationMessages([
+                            'integer' => __('booking.validation.guest_count_range'),
+                            'min' => __('booking.validation.guest_count_range'),
+                            'max' => __('booking.validation.guest_count_range'),
+                        ])
+                        ->helperText(__('booking.validation.guest_count_range'))
                         ->default(fn (): ?int => $this->record->guest_count)
                         ->required(),
                     DateTimePicker::make('event_starts_at')
@@ -93,7 +130,7 @@ class ViewBooking extends ViewRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading(__('booking.modals.force_cancel_title'))
-                ->modalDescription(__('booking.modals.force_cancel_description'))
+                ->modalDescription(fn (Booking $record): string => BookingResource::forceCancelImpactSummary($record))
                 ->form([
                     Textarea::make('reason')
                         ->label(__('booking.modals.force_cancel_reason'))
@@ -120,6 +157,7 @@ class ViewBooking extends ViewRecord
                     } catch (DomainException $exception) {
                         Notification::make()
                             ->title($exception->getMessage())
+                            ->body(__('shared::admin-feedback.force_cancel_failed', ['reference' => $record->public_id]))
                             ->danger()
                             ->send();
 

@@ -21,7 +21,7 @@ class VendorProfileIndexController
     {
         $perPage = min((int) $request->query('per_page', 6), 24);
 
-        $vendors = VendorProfile::with(['primaryCity', 'approvedTypes', 'user'])
+        $vendors = VendorProfile::with(['primaryCity.governorate', 'primaryGovernorate', 'coverageAreas.city.governorate', 'approvedTypes', 'user'])
             // Count only what a customer can actually see — must stay in lockstep
             // with the published-only listings (VendorBrowsingRepository::servicesFor,
             // statsFor, and the /customer/services vendor filter).

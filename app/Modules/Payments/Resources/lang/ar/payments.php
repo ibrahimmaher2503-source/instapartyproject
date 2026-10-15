@@ -154,6 +154,7 @@ return [
             'open_chargeback' => 'فتح نزاع استرداد',
             'resolve' => 'حل النزاع',
         ],
+        'capture_modal_description' => 'سيسجل هذا تحصيلاً يدوياً بمبلغ :amount لعملية الدفع :reference، للعميل :customer والموردين :vendors. لا يتصل الإجراء ببوابة الدفع؛ وتتبع حالة الحجز حدث التحصيل المسجل.',
 
         'forms' => [
             'reason_manual_capture' => 'سبب التحصيل اليدوي',

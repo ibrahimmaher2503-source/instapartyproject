@@ -27,11 +27,11 @@ class ReconciliationRunResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';
 
-    protected static ?int $navigationSort = 90;
+    protected static ?int $navigationSort = 170;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settlement');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getNavigationLabel(): string

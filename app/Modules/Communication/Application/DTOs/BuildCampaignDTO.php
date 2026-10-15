@@ -24,5 +24,6 @@ final class BuildCampaignDTO
         public readonly array $subject,
         public readonly int $createdBy,
         public readonly ?array $productTypeSegment = null,
+        public readonly ?string $scheduledAt = null,
     ) {}
 }

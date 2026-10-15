@@ -27,7 +27,7 @@ class ExcelImportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
 
-    protected static ?int $navigationSort = 80;
+    protected static ?int $navigationSort = 120;
 
     public static function getNavigationLabel(): string
     {

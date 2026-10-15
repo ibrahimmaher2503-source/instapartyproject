@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Domain\Models;
 
+use App\Modules\Shared\Domain\Concerns\HasInternalRecordNotes;
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -20,6 +21,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Tags\HasTags;
 
 /**
  * @property int $id
@@ -44,7 +46,29 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasPublicId, HasRoles, MustVerifyEmailTrait, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, HasInternalRecordNotes, HasPublicId, HasRoles, HasTags, Notifiable, SoftDeletes;
+
+    use MustVerifyEmailTrait {
+        hasVerifiedEmail as private hasVerifiedEmailWithoutDebug;
+        sendEmailVerificationNotification as private sendEmailVerificationNotificationWithoutDebug;
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return config('app.debug') || $this->hasVerifiedEmailWithoutDebug();
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return config('app.debug') || $this->phone_verified_at !== null;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        if (! config('app.debug')) {
+            $this->sendEmailVerificationNotificationWithoutDebug();
+        }
+    }
 
     protected $fillable = [
         'public_id',

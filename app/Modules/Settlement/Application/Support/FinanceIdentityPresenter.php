@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Settlement\Application\Support;
 
+use App\Modules\Settlement\Domain\Enums\SuspenseAccount;
 use App\Modules\Settlement\Domain\Models\LedgerTransactionGroup;
 use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Domain\Models\WalletLedgerEntry;
@@ -19,6 +20,12 @@ final class FinanceIdentityPresenter
 {
     public static function reference(?string $type, int|string|null $id, ?Model $resolved = null): string
     {
+        if ($type === 'platform_account' && is_numeric($id)) {
+            $account = SuspenseAccount::tryFrom((int) $id);
+            if ($account !== null) {
+                return __('settlement::settlement.identity.platform_accounts.'.$account->value);
+            }
+        }
         $identity = self::data($type, $id, $resolved);
 
         if ($identity === null) {
@@ -68,6 +75,9 @@ final class FinanceIdentityPresenter
 
     public static function typeLabel(?string $type): string
     {
+        if ($type === 'platform_account') {
+            return __('settlement::settlement.identity.types.platform_account');
+        }
         $key = self::key($type);
 
         return $key === null ? self::legacy() : self::label($key);

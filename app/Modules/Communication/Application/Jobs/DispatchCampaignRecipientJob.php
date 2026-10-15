@@ -81,6 +81,18 @@ class DispatchCampaignRecipientJob implements ShouldQueue
             return;
         }
 
+        $preference = NotificationPreference::query()
+            ->where('user_id', $user->id)
+            ->where('channel', $channel->value)
+            ->where('event_category', EventCategory::Marketing->value)
+            ->first();
+        if ($this->isDuringQuietHours($preference, $user->timezone)) {
+            $recipient->update(['status' => CampaignRecipientStatus::Skipped->value]);
+            CompleteCampaignRunAction::checkAndComplete($run);
+
+            return;
+        }
+
         $locale = $user->preferred_locale ?? 'en';
         $body = $campaign->getTranslation('body', $locale, false)
             ?: $campaign->getTranslation('body', 'en', false);
@@ -125,5 +137,40 @@ class DispatchCampaignRecipientJob implements ShouldQueue
         }
 
         CompleteCampaignRunAction::checkAndComplete($run);
+    }
+
+    private function isDuringQuietHours(?NotificationPreference $preference, ?string $fallbackTimezone): bool
+    {
+        $start = $preference?->quiet_hours_start;
+        $end = $preference?->quiet_hours_end;
+
+        if (! is_string($start) || ! is_string($end)
+            || preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $start) !== 1
+            || preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $end) !== 1) {
+            return false;
+        }
+
+        $start = substr($start, 0, 5);
+        $end = substr($end, 0, 5);
+
+        if ($start === $end) {
+            return false;
+        }
+
+        $timezone = $preference->timezone ?: $fallbackTimezone ?: 'UTC';
+
+        try {
+            $localNow = now($timezone);
+        } catch (Throwable) {
+            $localNow = now('UTC');
+        }
+
+        $localTime = $localNow->format('H:i');
+        $crossesMidnight = $start > $end;
+        $isQuiet = $crossesMidnight
+            ? $localTime >= $start || $localTime < $end
+            : $localTime >= $start && $localTime < $end;
+
+        return $isQuiet;
     }
 }

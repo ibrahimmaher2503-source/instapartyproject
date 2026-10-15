@@ -118,10 +118,11 @@ class CancelBookingByCustomerAction
                 $cacheFailure = null;
 
                 foreach ($vendors as $vendor) {
-                    foreach ([
-                        "vendor_dashboard_stats_{$vendor->vendor_profile_id}",
-                        "vendor_dashboard_summary_api_{$vendor->vendor_profile_id}",
-                    ] as $cacheKey) {
+                    $cacheKeys = ["vendor_dashboard_summary_api_{$vendor->vendor_profile_id}"];
+                    foreach (array_unique([app()->getLocale(), 'en', 'ar']) as $locale) {
+                        $cacheKeys[] = "vendor_dashboard_stats_{$vendor->vendor_profile_id}_{$locale}";
+                    }
+                    foreach ($cacheKeys as $cacheKey) {
                         try {
                             Cache::forget($cacheKey);
                         } catch (Throwable $exception) {

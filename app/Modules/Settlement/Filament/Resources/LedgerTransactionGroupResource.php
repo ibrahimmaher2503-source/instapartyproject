@@ -28,11 +28,11 @@ class LedgerTransactionGroupResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 160;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settlement');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getNavigationLabel(): string

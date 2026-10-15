@@ -46,8 +46,8 @@ class SearchServicesAction
         $builder->query(fn (Builder $query) => $query->with([
             'media',
             'category',
-            'vendor.primaryCity',
-            'vendor.primaryGovernorate',
+            'vendor.primaryCity.governorate',
+            'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate',
             'rentalDetail',
             'saleDetail',
             'digitalDetail',
@@ -130,7 +130,7 @@ class SearchServicesAction
     private function executeDatabaseFallback(SearchServicesDTO $dto): LengthAwarePaginator
     {
         $builder = $this->databaseQuery($dto)
-            ->with(['media', 'category.occasions', 'vendor.primaryCity', 'vendor.primaryGovernorate', 'rentalDetail', 'saleDetail', 'digitalDetail']);
+            ->with(['media', 'category.occasions', 'vendor.primaryCity.governorate', 'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate', 'rentalDetail', 'saleDetail', 'digitalDetail']);
 
         match ($dto->sort) {
             'price_asc' => $builder->orderBy('base_price_minor'),

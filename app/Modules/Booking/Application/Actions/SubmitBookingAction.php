@@ -137,6 +137,8 @@ class SubmitBookingAction
     {
         $row = DB::table('idempotency_keys')
             ->where('key', $dto->idempotencyKey)
+            ->where('scope', 'http')
+            ->where('scope_key', 'http')
             ->where('expires_at', '>', now())
             ->first();
 
@@ -159,6 +161,8 @@ class SubmitBookingAction
     {
         DB::table('idempotency_keys')->insertOrIgnore([
             'key' => $dto->idempotencyKey,
+            'scope' => 'http',
+            'scope_key' => 'http',
             'user_id' => $dto->customerId,
             'route' => 'bookings.submit',
             'request_hash' => $this->requestHash($dto),

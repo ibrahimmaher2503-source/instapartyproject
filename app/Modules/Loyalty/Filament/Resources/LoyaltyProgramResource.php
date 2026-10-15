@@ -8,6 +8,7 @@ use App\Modules\Loyalty\Domain\Models\LoyaltyProgram;
 use App\Modules\Loyalty\Filament\Resources\LoyaltyProgramResource\Pages\CreateLoyaltyProgram;
 use App\Modules\Loyalty\Filament\Resources\LoyaltyProgramResource\Pages\EditLoyaltyProgram;
 use App\Modules\Loyalty\Filament\Resources\LoyaltyProgramResource\Pages\ListLoyaltyPrograms;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -33,7 +34,7 @@ class LoyaltyProgramResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationGroup(): ?string
     {
@@ -163,10 +164,9 @@ class LoyaltyProgramResource extends Resource
                 TextColumn::make('vendor.business_name')
                     ->label(__('loyalty.columns.vendor'))
                     ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—'))
-                    ->searchable(query: fn (Builder $query, string $search) => $query->whereHas(
-                        'vendor',
-                        fn ($q) => $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(business_name, '$.en')) LIKE ?", ["%{$search}%"])
-                    )),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'vendor' => ['business_name->en', 'business_name->ar'],
+                    ])),
                 TextColumn::make('name')
                     ->label(__('loyalty.columns.name'))
                     ->searchable()

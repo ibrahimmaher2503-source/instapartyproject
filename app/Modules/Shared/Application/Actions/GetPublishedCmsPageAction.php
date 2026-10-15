@@ -10,6 +10,9 @@ class GetPublishedCmsPageAction
 {
     public function execute(string $slug): ?CmsPage
     {
-        return CmsPage::query()->published()->where('slug', $slug)->first();
+        return CmsPage::query()
+            ->published()
+            ->where(fn ($query) => $query->where('public_slug', $slug)->orWhere('slug', $slug))
+            ->first();
     }
 }

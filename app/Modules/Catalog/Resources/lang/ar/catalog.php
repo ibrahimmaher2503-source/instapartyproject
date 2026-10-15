@@ -12,15 +12,19 @@ return [
     // Navigation groups
     'nav_group_services' => 'الخدمات',
     'nav_group_catalog' => 'الكتالوج',
+    'service_themes' => 'ثيمات الخدمات',
+    'inactive' => 'غير نشط',
+    'deleted_at' => 'تاريخ الحذف',
 
     'nav' => [
         'categories' => 'التصنيفات',
-        'occasions' => 'المناسبات',
+        'occasions' => 'إدارة المناسبات',
         'rental_services' => 'خدمات التأجير',
         'sale_services' => 'خدمات البيع',
         'digital_services' => 'الخدمات الرقمية',
         'pending_service_edits' => 'تعديلات الخدمات المعلقة',
         'service_themes' => 'ثيمات الخدمات',
+        'service_packages' => 'باقات الخدمات',
         'category_field_schemas' => 'مخططات حقول التصنيفات',
         'excel_imports' => 'عمليات استيراد إكسل',
         'inventory_reservations' => 'حجوزات المخزون',
@@ -53,6 +57,10 @@ return [
         'service_theme' => [
             'singular' => 'ثيم خدمة',
             'plural' => 'ثيمات الخدمات',
+        ],
+        'service_package' => [
+            'singular' => 'باقة خدمة',
+            'plural' => 'باقات الخدمات',
         ],
         'category_field_schema' => [
             'singular' => 'مخطط حقول التصنيف',
@@ -170,6 +178,14 @@ return [
     'gallery' => 'المعرض',
     'cover_image' => 'صورة الغلاف',
     'service' => 'الخدمة',
+    'service_package_details' => 'تفاصيل الباقة',
+    'package_price_minor' => 'السعر بأصغر وحدة نقدية',
+    'package_components' => 'مكونات الباقة',
+    'package_gallery' => 'صور الباقة',
+    'package_service_ineligible' => 'اختر خدمة منشورة لبائع معتمد لنوع الخدمة هذا.',
+    'currency' => 'العملة',
+    'description_en' => 'الوصف بالإنجليزية',
+    'description_ar' => 'الوصف بالعربية',
     'customer' => 'العميل',
     'user_id' => 'المستخدم',
     'quantity' => 'الكمية',
@@ -206,6 +222,8 @@ return [
     'occasion_category_existing' => 'رابط حالي',
     'category_details' => 'تفاصيل التصنيف',
     'service_theme_details' => 'تفاصيل ثيم الخدمة',
+    'service_themes_association_helper' => 'اختر الثيمات النشطة التي تظهر مع هذه الخدمة. يمكنك إزالة الثيمات الحالية غير النشطة.',
+    'service_themes_invalid' => 'اختر ثيمات الخدمة النشطة والمتاحة فقط.',
     'shared' => 'المعلومات العامة',
 
     // Rental detail form

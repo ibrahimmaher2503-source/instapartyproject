@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Booking\Infrastructure\Loyalty;
 
+use App\Modules\Booking\Application\Actions\RecalculateBookingTotalsAction;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Loyalty\Domain\Contracts\BookingDiscountWriter;
 use Brick\Money\Money;
@@ -13,6 +14,8 @@ use RuntimeException;
 
 final class EloquentBookingDiscountWriter implements BookingDiscountWriter
 {
+    public function __construct(private readonly RecalculateBookingTotalsAction $recalculateTotals) {}
+
     /**
      * Apply a loyalty discount to a booking by writing
      * `loyalty_redeemed_minor` + `loyalty_redemption_public_id` and recomputing
@@ -111,17 +114,14 @@ final class EloquentBookingDiscountWriter implements BookingDiscountWriter
                     throw new DomainException('loyalty.currency_mismatch');
                 }
             }
-            $newTotal = Money::ofMinor((int) $booking->subtotal_minor, $currency)
-                ->plus(Money::ofMinor((int) $booking->delivery_total_minor, $currency))
-                ->minus(Money::ofMinor((int) $booking->discount_total_minor, $currency));
 
             $booking->forceFill([
                 'loyalty_redeemed_minor' => 0,
                 'loyalty_redeemed_currency' => $currency,
                 'loyalty_redemption_public_id' => null,
-                'total_minor' => Money::max(Money::ofMinor(0, $currency), $newTotal)->getMinorAmount()->toInt(),
-                'total_currency' => $currency,
-            ])->save();
+            ]);
+
+            $this->recalculateTotals->execute($booking);
         });
     }
 }

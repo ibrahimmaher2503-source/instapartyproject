@@ -16,7 +16,8 @@ class IdempotencyKey extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'key', 'user_id', 'route', 'request_hash', 'response_status', 'response_body', 'expires_at', 'created_at',
+        'key', 'scope', 'scope_key', 'ttl_seconds', 'user_id', 'route', 'request_hash', 'payload_hash',
+        'response_status', 'response_body', 'expires_at', 'created_at',
     ];
 
     protected $casts = [

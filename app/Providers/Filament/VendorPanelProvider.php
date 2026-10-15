@@ -12,7 +12,6 @@ use App\Modules\Identity\Http\Middleware\CheckVendorSuspension;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
 use App\Modules\Identity\Http\Middleware\ValidateVendorImpersonationSession;
-use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
 use App\Modules\Shared\Filament\RenderHooks\NotificationHeadingA11yRenderHook;
 use App\Modules\Shared\Filament\Vendor\Pages\VendorDashboardPage;
 use App\Modules\Shared\Http\Middleware\SetHtmlDirectionMiddleware;
@@ -51,7 +50,6 @@ class VendorPanelProvider extends PanelProvider
                 ->visible(insidePanels: true);
         });
 
-        HtmlDirectionRenderHook::register();
         NotificationHeadingA11yRenderHook::register();
     }
 

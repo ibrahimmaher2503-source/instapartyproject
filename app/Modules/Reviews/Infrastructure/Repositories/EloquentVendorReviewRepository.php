@@ -46,7 +46,7 @@ class EloquentVendorReviewRepository implements VendorReviewRepository
         $limit = $options['limit'] ?? 15;
         $cursor = $options['cursor'] ?? null;
 
-        $query = VendorReview::with('reviewer')
+        $query = VendorReview::with(['reviewer', 'vendorResponse'])
             ->where('vendor_profile_id', $vendorProfileId)
             ->where('moderation_status', ModerationStatus::Approved->value)
             ->orderByDesc('created_at')

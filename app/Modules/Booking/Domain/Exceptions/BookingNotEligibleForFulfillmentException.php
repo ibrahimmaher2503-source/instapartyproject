@@ -12,7 +12,7 @@ class BookingNotEligibleForFulfillmentException extends RuntimeException
 
     public const CODE_REFUNDED = 'fulfillment.booking_refunded';
 
-    public const CODE_NOT_ACCEPTED = 'fulfillment.booking_not_accepted';
+    public const CODE_ALLOCATION_NOT_ELIGIBLE = 'fulfillment.allocation_not_eligible';
 
     public function __construct(
         public readonly string $errorCode,
@@ -31,8 +31,8 @@ class BookingNotEligibleForFulfillmentException extends RuntimeException
         return new self(self::CODE_REFUNDED, 'Booking has been refunded.');
     }
 
-    public static function notAccepted(): self
+    public static function allocationNotEligible(): self
     {
-        return new self(self::CODE_NOT_ACCEPTED, __('booking::booking.errors.vendor_not_accepted'));
+        return new self(self::CODE_ALLOCATION_NOT_ELIGIBLE, __('booking::booking.allocation_not_eligible'));
     }
 }

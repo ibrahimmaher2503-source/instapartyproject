@@ -16,6 +16,7 @@ use App\Modules\Booking\Domain\Exceptions\DeliveryCityRequiredException;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\DraftState;
 use App\Modules\Booking\Http\Requests\StorefrontBookingRequest;
+use App\Modules\Shared\Application\Actions\GetPublishedCmsPageAction;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CartController
 {
-    public function __invoke(): View
+    public function __invoke(GetPublishedCmsPageAction $cmsPages): View
     {
         $booking = auth()->check()
             ? Booking::query()
@@ -35,14 +36,17 @@ class CartController
                 ->first()
             : null;
 
-        return view('storefront.cart', ['booking' => $booking]);
+        return view('storefront.cart', [
+            'booking' => $booking,
+            'refundPolicy' => $cmsPages->execute('refund-policy'),
+        ]);
     }
 
     public function setup(StorefrontBookingRequest $request, AddServiceToEventAction $action): RedirectResponse
     {
         $user = $request->user();
         abort_unless($user !== null, 401);
-        $action->execute((int) $user->id, $request->toDraftDTO(), $request->servicePublicId(), $request->quantity());
+        $action->execute((int) $user->id, $request->toDraftDTO(), $request->servicePublicId(), $request->quantity(), $request->packagePublicId());
         $request->session()->forget('storefront.planner_notes');
 
         return redirect()->route('storefront.cart')->with('booking_added', true);

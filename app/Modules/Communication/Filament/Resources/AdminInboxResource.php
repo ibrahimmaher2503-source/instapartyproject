@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Filament\Resources;
 
 use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
+use App\Modules\Booking\Filament\Resources\BookingResource;
 use App\Modules\Communication\Application\Actions\AcknowledgeInboxItemAction;
 use App\Modules\Communication\Application\Actions\BatchResolveInboxItemsAction;
 use App\Modules\Communication\Application\Actions\ReassignInboxItemAction;
@@ -52,7 +53,7 @@ class AdminInboxResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.operations');
+        return __('admin.nav.groups.support');
     }
 
     public static function getNavigationBadge(): ?string
@@ -146,6 +147,22 @@ class AdminInboxResource extends Resource
             ->emptyStateHeading(__('communication.inbox.empty_heading'))
             ->emptyStateDescription(__('communication.inbox.empty_description'))
             ->actions([
+                Action::make('review_booking')
+                    ->label(__('communication.inbox.actions.review_booking'))
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(function (AdminInboxItem $record): ?string {
+                        if ($record->source_type !== 'booking') {
+                            return null;
+                        }
+
+                        $publicId = app(BookingReferenceReader::class)->publicIdFor((int) $record->source_id);
+
+                        return $publicId === null ? null : BookingResource::getUrl('view', ['record' => $publicId]);
+                    })
+                    ->visible(fn (AdminInboxItem $record): bool => $record->source_type === 'booking'
+                        && BookingResource::canViewAny()
+                        && app(BookingReferenceReader::class)->publicIdFor((int) $record->source_id) !== null),
+
                 Action::make('read')
                     ->label(__('communication.inbox.actions.mark_read'))
                     ->icon('heroicon-o-eye')

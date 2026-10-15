@@ -24,7 +24,7 @@ class VendorApprovedProductTypeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 70;
 
     public static function getNavigationLabel(): string
     {
@@ -64,7 +64,6 @@ class VendorApprovedProductTypeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('vendorProfile.public_id')->label(__('identity.columns.vendor_reference'))->searchable()->copyable(),
             TextColumn::make('vendorProfile.business_name')->label(__('identity.columns.vendor'))
                 ->getStateUsing(fn (VendorApprovedProductType $record): string => $record->vendorProfile === null
                     ? '-'

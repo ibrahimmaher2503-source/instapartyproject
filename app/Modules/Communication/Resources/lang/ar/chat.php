@@ -3,6 +3,17 @@
 declare(strict_types=1);
 
 return [
+    'account' => [
+        'inquiries_heading' => 'محادثات الخدمات',
+        'inquiries_description' => 'اقرأ رسائلك مع مقدمي الخدمات قبل الحجز ورد عليها.',
+        'all_inquiries' => 'عرض جميع محادثات الخدمات',
+        'open_inquiry' => 'فتح المحادثة',
+        'booking_chats_heading' => 'محادثات الحجوزات',
+        'booking_chats_description' => 'حالة المحادثة لحجوزاتك المؤكدة. افتح الحجز لعرض تفاصيله.',
+        'booking_chat_unavailable' => 'محادثة الحجز غير متصلة بهذا الموقع حالياً. ما زالت محادثات الخدمات أعلاه متاحة.',
+        'booking_reference' => 'رقم الحجز',
+        'vendor_unavailable' => 'مقدم الخدمة غير متاح',
+    ],
     'inbox_title' => 'محادثات العملاء',
     'inbox_description' => 'تظل محادثات الحجوزات خاضعة لقيود الحجز والمراجعة الحالية.',
     'booking' => 'الحجز',

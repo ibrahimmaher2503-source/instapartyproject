@@ -23,7 +23,7 @@ class VendorCoverageAreaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationLabel(): string
     {
@@ -63,7 +63,6 @@ class VendorCoverageAreaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('vendorProfile.public_id')->label(__('identity.columns.vendor_reference'))->searchable()->copyable(),
             TextColumn::make('vendorProfile.business_name')->label(__('identity.columns.vendor'))
                 ->getStateUsing(fn (VendorCoverageArea $record): string => $record->vendorProfile === null
                     ? '-'

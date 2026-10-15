@@ -21,21 +21,3 @@ final class BelowCoverageMinimumException extends RuntimeException
         return $this->failures;
     }
 }
-
-final class DeliveryCityRequiredException extends RuntimeException
-{
-    public function __construct()
-    {
-        parent::__construct('Delivery city is required to submit this booking.');
-    }
-}
-
-final class CurrencyMismatchException extends RuntimeException
-{
-    public function __construct(string $bookingCurrency, string $coverageCurrency)
-    {
-        parent::__construct(
-            "Coverage area currency ({$coverageCurrency}) does not match booking currency ({$bookingCurrency})."
-        );
-    }
-}

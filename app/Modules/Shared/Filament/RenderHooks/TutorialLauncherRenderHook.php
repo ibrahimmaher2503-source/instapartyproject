@@ -27,6 +27,13 @@ final class TutorialLauncherRenderHook
         );
 
         $manifest = $service->loadForViewer(auth()->user());
+        if ($manifest['flows'] === []) {
+            return '';
+        }
+
+        if ($manifest['flows'] === []) {
+            return '';
+        }
 
         return Blade::render(
             '<x-shared.tutorial-launcher :flows="$flows" :manifest-exists="$manifestExists" />',

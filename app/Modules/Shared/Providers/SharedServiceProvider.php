@@ -13,6 +13,7 @@ use App\Modules\Shared\Domain\Contracts\StateTransitionLogger;
 use App\Modules\Shared\Domain\Contracts\SvgSanitizer;
 use App\Modules\Shared\Domain\Contracts\VendorProfileChangeRequestReader;
 use App\Modules\Shared\Domain\Events\PublicThemeChanged;
+use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
 use App\Modules\Shared\Infrastructure\Queries\EloquentVendorProfileChangeRequestReader;
 use App\Modules\Shared\Infrastructure\Services\EnshrinedSvgSanitizer;
 use App\Modules\Shared\Infrastructure\Services\NullCdnCacheBuster;
@@ -55,6 +56,7 @@ class SharedServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'shared');
+        HtmlDirectionRenderHook::register();
         $this->registerRoutes();
 
         $this->commands([

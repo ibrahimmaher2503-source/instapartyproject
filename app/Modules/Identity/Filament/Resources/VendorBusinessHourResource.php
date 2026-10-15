@@ -24,7 +24,7 @@ class VendorBusinessHourResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationLabel(): string
     {
@@ -64,7 +64,6 @@ class VendorBusinessHourResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('vendorProfile.public_id')->label(__('identity.columns.vendor_reference'))->searchable()->copyable(),
             TextColumn::make('vendorProfile.business_name')->label(__('identity.columns.vendor'))
                 ->getStateUsing(fn (VendorBusinessHour $record): string => $record->vendorProfile === null
                     ? '-'

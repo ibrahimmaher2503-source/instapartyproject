@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\TrustSafety\Filament\Resources;
 
+use App\Modules\Shared\Application\Services\AdminQueueSlaSettings;
+use App\Modules\Shared\Domain\Enums\AdminQueue;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
+use App\Modules\Shared\Filament\Tables\ScopedBulkAction;
 use App\Modules\TrustSafety\Application\Actions\DismissReportAction;
 use App\Modules\TrustSafety\Application\Actions\MarkReportUnderReviewAction;
 use App\Modules\TrustSafety\Application\Actions\ResolveReportAction;
@@ -18,15 +24,19 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
+
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -36,6 +46,7 @@ class ReportResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'status', 'reason', 'created_at'])])
             ->columns([
                 TextColumn::make('reporter.name')
                     ->label('Reporter')
@@ -82,8 +93,38 @@ class ReportResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->label('Submitted'),
+                TextColumn::make('queue_age')
+                    ->label(__('shared::shared.admin_queue_sla.queue_age'))
+                    ->getStateUsing(fn (Report $record): ?string => self::isInReviewQueue($record)
+                        ? Carbon::parse($record->created_at, 'UTC')->diffForHumans(now('UTC'))
+                        : null)
+                    ->placeholder(__('shared::shared.admin_queue_sla.not_active')),
+                TextColumn::make('sla_deadline')
+                    ->label(__('shared::shared.admin_queue_sla.deadline'))
+                    ->dateTime('d M Y H:i')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->getStateUsing(fn (Report $record) => self::isInReviewQueue($record)
+                        ? app(AdminQueueSlaSettings::class)->deadlineFor(AdminQueue::Report, $record->created_at)
+                        : null)
+                    ->suffix(fn (Report $record): ?string => self::isInReviewQueue($record)
+                        ? ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')
+                        : null)
+                    ->placeholder(__('shared::shared.admin_queue_sla.not_active')),
+                TextColumn::make('sla_status')
+                    ->label(__('shared::shared.admin_queue_sla.status'))
+                    ->badge()
+                    ->getStateUsing(fn (Report $record): string => self::slaStatus($record))
+                    ->color(fn (Report $record): string => self::isInReviewQueue($record)
+                        ? (app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Report, $record->created_at) ? 'danger' : 'success')
+                        : 'gray'),
             ])
             ->filters([
+                OperationalDateFilter::make('created_at'),
+                Filter::make('overdue')
+                    ->label(__('shared::shared.admin_queue_sla.overdue'))
+                    ->query(fn (Builder $query): Builder => $query
+                        ->whereIn('status', [ReportStatus::Open->value, ReportStatus::UnderReview->value])
+                        ->where('created_at', '<=', now('UTC')->subHours(app(AdminQueueSlaSettings::class)->hours(AdminQueue::Report)))),
                 SelectFilter::make('status')
                     ->options(collect(ReportStatus::cases())->mapWithKeys(
                         fn (ReportStatus $s) => [$s->value => $s->label()]
@@ -132,7 +173,21 @@ class ReportResource extends Resource
                         Notification::make()->title('Report dismissed')->warning()->send();
                     }),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->bulkActions([
+                ScopedBulkAction::make(
+                    'markSelectedUnderReview',
+                    'Mark Under Review',
+                    'update_report',
+                    static::class,
+                    fn (Report $record) => app(MarkReportUnderReviewAction::class)->execute($record),
+                ),
+            ])
+            ->defaultSort(fn (Builder $query): Builder => $query
+                ->orderByRaw('CASE WHEN status IN (?, ?) THEN 0 ELSE 1 END', [
+                    ReportStatus::Open->value,
+                    ReportStatus::UnderReview->value,
+                ])
+                ->orderBy('created_at', 'asc'));
     }
 
     public static function getPages(): array
@@ -146,5 +201,26 @@ class ReportResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function getRelations(): array
+    {
+        return [InternalRecordNotesRelationManager::class];
+    }
+
+    private static function isInReviewQueue(Report $record): bool
+    {
+        return in_array($record->status, [ReportStatus::Open, ReportStatus::UnderReview], true);
+    }
+
+    private static function slaStatus(Report $record): string
+    {
+        if (! self::isInReviewQueue($record)) {
+            return __('shared::shared.admin_queue_sla.not_active');
+        }
+
+        return app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Report, $record->created_at)
+            ? __('shared::shared.admin_queue_sla.overdue')
+            : __('shared::shared.admin_queue_sla.within_sla');
     }
 }

@@ -84,6 +84,7 @@ class ViewCustomer extends ViewRecord
                         ->label(__('identity.columns.phone'))
                         ->icon('heroicon-m-phone')
                         ->placeholder('—')
+                        ->extraAttributes(['dir' => 'ltr'])
                         ->copyable(),
                     TextEntry::make('status')
                         ->label(__('identity.columns.status'))
@@ -520,6 +521,7 @@ class ViewCustomer extends ViewRecord
                     ->default(fn () => $this->record->phone_e164)
                     ->nullable()
                     ->tel()
+                    ->extraInputAttributes(['dir' => 'ltr'])
                     ->helperText('E.164 format: +201001234567'),
             ])
             ->action(function (array $data): void {

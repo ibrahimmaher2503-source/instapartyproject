@@ -133,7 +133,7 @@ return [
         'approve_vendor_heading' => 'اعتماد هذا المورد؟',
         'approve_vendor_description' => 'سيمنح هذا الإجراء المورد حالة الاعتماد. يمكنك منح صلاحيات لأنواع المنتجات بعد ذلك.',
         'suspend_vendor_heading' => 'هل تريد إيقاف هذا المورد؟',
-        'suspend_vendor_description' => 'سيُمنع المورد فورًا من استخدام ميزات بوابة المورد، وسيُسجّل السبب في سجل التدقيق.',
+        'suspend_vendor_description' => 'المورد: :vendor (المرجع :reference). الحالة الحالية: :status. سيحظر الإيقاف الوصول إلى بوابة المورد وعملياتها ويسحب صلاحيات أنواع الخدمات المعتمدة (:types)، مع إبقاء الحجوزات الحالية لمتابعة الفريق حتى إعادة التفعيل. سيُسجّل السبب الإلزامي في سجل التدقيق.',
     ],
 
     // Page titles
@@ -266,6 +266,7 @@ return [
         'delete' => 'حذف',
         'upload' => 'رفع',
         'approve_profile' => 'اعتماد الملف',
+        'approve_selected_profiles' => 'اعتماد ملفات الموردين المحددة',
     ],
 
     // Form field labels
@@ -297,6 +298,12 @@ return [
         'profile_updated_by_admin' => 'تم تحديث ملف العميل',
         'vendor_approved' => 'تمت الموافقة على الملف التجاري',
         'vendor_approval_failed' => 'تعذر إكمال اعتماد المورد',
+        'vendor_bulk_approval_result' => 'نتائج اعتماد الموردين المحددين',
+        'vendor_bulk_approval_summary' => 'تم اعتماد :approved وتعذر اعتماد :failed.',
+        'vendor_bulk_approval_approved' => ':id — تمت الموافقة.',
+        'vendor_bulk_approval_ineligible' => ':id — غير مستوفٍ للشروط: :reason',
+        'vendor_bulk_approval_stale' => ':id — لم يعد بانتظار الاعتماد: :reason',
+        'vendor_bulk_approval_failed' => ':id — تعذر الاعتماد؛ راجع الملف يدويًا.',
         'vendor_rejected' => 'تم رفض الملف التجاري',
         'vendor_suspended' => 'تم إيقاف المورد',
         'vendor_unsuspended' => 'تم إعادة تفعيل المورد',
@@ -324,6 +331,7 @@ return [
     // Confirmation dialog content
     'confirmations' => [
         'impersonate_warning' => 'أنت على وشك انتحال صفة هذا المورد. سيتم تسجيل هذا الإجراء في سجل التدقيق. ينتهي الرمز خلال 30 دقيقة.',
+        'approve_selected_profiles' => 'سيتم التحقق من كل ملف وفق شروط الاعتماد الحالية. ستتم الموافقة على الملفات المستوفية، وستظهر نتيجة كل ملف تم تخطيه أو تعذر اعتماده.',
     ],
 
     // Placeholder strings
@@ -477,12 +485,16 @@ return [
     'invalid_credentials' => 'بيانات الاعتماد المدخلة غير صحيحة.',
     'user_not_found' => 'لم يتم العثور على حساب بهذا الرقم.',
     'invalid_otp' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.',
+    'customer_phone_verification_required' => 'يرجى توثيق هاتفك قبل تسجيل الدخول. عُد إلى صفحة التحقق لطلب رمز جديد.',
 
     'registration' => [
         'phone_hint' => 'أدخل كود الدولة، مثال: +201001234567.',
     ],
 
     'approval_eligibility' => [
+        'blocked_title' => 'الموافقة متوقفة',
+        'blocked_summary' => 'الموافقة متوقفة. المتطلبات الناقصة: :requirements.',
+        'blocked_description' => 'زر الموافقة متوقف حتى يستكمل المورد المتطلبات التالية ويعتمد الأدمن المستندات المطلوبة. تُستكمل البيانات من بوابة المورد، ثم يعود الأدمن لهذه الشاشة للمراجعة والموافقة.',
         'requirements' => [
             'identity' => 'هوية المورد',
             'contact' => 'البريد الإلكتروني الموثق ورقم التواصل',
@@ -608,6 +620,29 @@ return [
         'impersonation_banner' => 'جلسة دعم الإدارة',
         'impersonation_description' => 'يتصرف فريق الدعم باسم :admin. بدأت في :time. تنتهي هذه الجلسة في :expires.',
         'impersonation_end' => 'إنهاء الجلسة',
+    ],
+    'account' => [
+        'add_address' => 'إضافة عنوان',
+        'edit_address' => 'تعديل العنوان',
+        'delete_address' => 'حذف العنوان',
+        'default_address' => 'العنوان الافتراضي',
+        'make_default' => 'تعيين كافتراضي',
+        'set_as_default' => 'تعيين كعنواني الافتراضي',
+        'select_city' => 'اختر مدينة',
+        'label' => 'اسم العنوان',
+        'city' => 'المدينة',
+        'address_line' => 'عنوان الشارع',
+        'building' => 'المبنى',
+        'floor' => 'الطابق',
+        'apartment' => 'الشقة',
+        'landmark' => 'علامة مميزة',
+        'recipient_name' => 'اسم المستلم',
+        'recipient_phone' => 'هاتف المستلم (بالصيغة الدولية)',
+        'no_addresses' => 'لم تحفظ أي عناوين بعد.',
+        'address_saved' => 'تمت إضافة العنوان.',
+        'address_updated' => 'تم تحديث العنوان.',
+        'address_deleted' => 'تم حذف العنوان.',
+        'address_default_updated' => 'تم تحديث العنوان الافتراضي.',
     ],
 
     'errors' => [

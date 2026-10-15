@@ -6,6 +6,7 @@ namespace App\Modules\Discovery\Http\Resources;
 
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Shared\Application\Services\StorefrontText;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -26,6 +27,7 @@ class VendorProfileResource extends JsonResource
                 ? ($this->getTranslation('bio', $locale, false) ?? $this->getTranslation('bio', 'en', false))
                 : null,
             'is_verified' => $this->approval_status instanceof ApprovedState,
+            'governorates' => app(StorefrontText::class)->vendorGovernorates($this->resource, $locale)->all(),
             'city' => $this->primaryCity
                 ? ['name' => $this->primaryCity->getTranslation('name', $locale, false)
                     ?? $this->primaryCity->getTranslation('name', 'en', false)

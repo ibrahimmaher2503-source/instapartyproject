@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Http\Requests;
 
-use App\Modules\Identity\Domain\Enums\DocumentType;
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * doc_type: An active vendor document type key (legacy code or admin-assigned key).
+ * file: PDF, JPEG or PNG document; maximum 10 MB.
+ */
 class UploadVendorDocumentRequest extends FormRequest
 {
     public function authorize(): bool
@@ -18,7 +22,7 @@ class UploadVendorDocumentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'doc_type' => ['required', 'string', Rule::in(array_column(DocumentType::cases(), 'value'))],
+            'doc_type' => ['required', 'string', Rule::in(array_keys(app(RequiredVendorDocumentTypesResolver::class)->options()))],
             'file' => [
                 'required',
                 'file',

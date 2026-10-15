@@ -25,8 +25,11 @@ class ImportSaleServicesPage extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return (auth()->user()?->can('view_any_vendor::profile', 'web') ?? false)
-            && (auth()->user()?->can('create_sale::service', 'web') ?? false);
+        $user = auth()->user();
+
+        return $user !== null
+            && $user->can('view_any_vendor::profile', 'web')
+            && $user->can('create_sale::service', 'web');
     }
 
     public static function getNavigationGroup(): ?string
@@ -36,7 +39,7 @@ class ImportSaleServicesPage extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 100;
 
     protected static string $view = 'catalog::filament.pages.import-rental-services';
 

@@ -40,6 +40,8 @@ class ServiceResubmitAfterChangesAction
             DB::table('idempotency_keys')
                 ->where('user_id', $vendor->id)
                 ->where('route', $routeName)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
                 ->where('key', $idempotencyKey)
                 ->exists(),
             409,
@@ -88,6 +90,8 @@ class ServiceResubmitAfterChangesAction
 
             DB::table('idempotency_keys')->insert([
                 'user_id' => $vendor->id,
+                'scope' => 'http',
+                'scope_key' => 'http',
                 'route' => $routeName,
                 'key' => $idempotencyKey,
                 'request_hash' => hash('sha256', request()->getContent() ?: ''),

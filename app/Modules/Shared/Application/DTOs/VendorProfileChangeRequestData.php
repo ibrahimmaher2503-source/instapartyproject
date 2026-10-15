@@ -7,7 +7,7 @@ namespace App\Modules\Shared\Application\DTOs;
 final readonly class VendorProfileChangeRequestData
 {
     /**
-     * @param list<VendorProfileChangeRequestItemData> $items
+     * @param  list<VendorProfileChangeRequestItemData>  $items
      */
     public function __construct(
         public int $cycleNumber,

@@ -85,10 +85,9 @@ class LoyaltyRedemptionResource extends Resource
                 TextColumn::make('vendorProfile.business_name')
                     ->label(__('loyalty.columns.vendor'))
                     ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—'))
-                    ->searchable(query: fn (Builder $query, string $search) => $query->whereHas(
-                        'vendorProfile',
-                        fn ($q) => $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(business_name, '$.en')) LIKE ?", ["%{$search}%"])
-                    )),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'vendorProfile' => ['business_name->en', 'business_name->ar'],
+                    ])),
                 TextColumn::make('booking.public_id')
                     ->label(__('loyalty.columns.booking'))
                     ->copyable()

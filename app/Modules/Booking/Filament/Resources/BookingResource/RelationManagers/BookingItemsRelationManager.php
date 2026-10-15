@@ -49,6 +49,17 @@ class BookingItemsRelationManager extends RelationManager
                 TextColumn::make('quantity')
                     ->label(__('booking.columns.quantity'))
                     ->sortable(),
+                TextColumn::make('type_snapshot.service_package.name')
+                    ->label(__('booking.package_snapshot'))
+                    ->getStateUsing(fn (BookingItem $record): string => data_get($record->type_snapshot, 'service_package.name.'.app()->getLocale())
+                        ?? data_get($record->type_snapshot, 'service_package.name.en')
+                        ?? '—')
+                    ->description(fn (BookingItem $record): string => collect(data_get($record->type_snapshot, 'service_package.components', []))
+                        ->map(fn (array $component): string => ($component['name'][app()->getLocale()] ?? $component['name']['en'] ?? '')
+                            .' × '.($component['quantity'] ?? 0))
+                        ->implode(' · ')
+                        ?: (string) data_get($record->type_snapshot, 'service_package.description.'.app()->getLocale(), ''))
+                    ->wrap(),
                 TextColumn::make('line_total_minor')
                     ->label(__('booking.columns.line_total'))
                     ->money('EGP', divideBy: 100)

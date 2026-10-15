@@ -9,6 +9,7 @@ use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use App\Modules\Identity\Domain\Events\VendorAutoSuspended;
 use App\Modules\Identity\Domain\Events\VendorDocumentExpired;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,7 +29,7 @@ final class SendDocExpiredNotificationListener implements ShouldQueue
             eventCategory: EventCategory::System,
             userId: $event->vendorProfile->user_id,
             context: [
-                'doc_type' => __('identity::identity.document_type.'.$event->document->doc_type->value),
+                'doc_type' => app(RequiredVendorDocumentTypesResolver::class)->label($event->document->doc_type_key),
                 'expiry_date' => $event->document->expires_at->format('Y-m-d'),
                 'vendor_name' => $event->vendorProfile->getTranslation('business_name', 'en'),
             ],

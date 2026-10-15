@@ -17,6 +17,7 @@ return [
         'active' => 'مفعّلة',
         'icon' => 'أيقونة الشارة',
         'created_at' => 'تاريخ الإنشاء',
+        'submission_conflict' => 'حُفظ هذا الطلب بقيم مختلفة. افتح نموذج إنشاء جديداً لحفظ شارة أخرى.',
     ],
     'reasons' => [
         'inappropriate_content' => 'محتوى غير لائق',

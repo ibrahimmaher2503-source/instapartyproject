@@ -20,12 +20,19 @@ class VerifyPhoneAction
 
     public function execute(string $phoneE164, string $code): User
     {
-        $this->rateLimiter->assertNotLockedOut($phoneE164);
+        if (! config('app.debug')) {
+            $this->rateLimiter->assertNotLockedOut($phoneE164);
+        }
 
         $user = User::where('phone_e164', $phoneE164)->first();
 
         if ($user === null || $user->hasAnyRole(['admin', 'super_admin', 'booking_manager', 'panel_user'])) {
             throw ValidationException::withMessages(['phone_e164' => __('identity.user_not_found')]);
+        }
+
+        // Debug access must not leave verification that survives disabling debug.
+        if (config('app.debug')) {
+            return $user;
         }
 
         if (! $this->gateway->verify($phoneE164, $code)) {

@@ -19,6 +19,7 @@ use App\Modules\Catalog\Domain\Enums\HoldType;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ReservationStatus;
 use App\Modules\Settlement\Domain\Contracts\CommissionRateResolver;
+use Brick\Money\Money;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,7 @@ class AddItemToBookingAction
 
     public function execute(AddBookingItemDTO $dto): BookingItem
     {
+        // MariaDB ER_CHECKREAD needs the entire transaction restarted with a fresh snapshot.
         return DB::transaction(function () use ($dto): BookingItem {
             $booking = Booking::query()->whereKey($dto->bookingId)->lockForUpdate()->first();
 
@@ -54,6 +56,17 @@ class AddItemToBookingAction
                 $this->abortWith(Response::HTTP_NOT_FOUND, 'Service not found or unavailable');
             }
 
+            $package = $dto->packagePublicId === null
+                ? null
+                : $this->catalogReader->findActivePackageForService($service->publicId, $dto->packagePublicId, lockForUpdate: true);
+            if ($dto->packagePublicId !== null && $package === null) {
+                $this->abortWith(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.package_invalid'));
+            }
+
+            if ($service->productType === ProductType::Rental && $dto->quantity !== 1) {
+                $this->abortWith(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.rental_quantity_must_be_one'));
+            }
+
             if (! $this->catalogReader->isServiceEligibleForOccasion($service->id, (int) $booking->occasion_id)) {
                 $this->abortWith(
                     Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -67,10 +80,12 @@ class AddItemToBookingAction
             // match the booking's currency, otherwise mismatched minor units
             // would be summed as if they were the same money. The app surfaces
             // this 422 through its addToCartErrorKey path.
-            if ($service->basePriceCurrency !== $booking->total_currency) {
+            $unitPriceMinor = $package?->priceMinor ?? $service->basePriceMinor;
+            $unitPriceCurrency = $package?->currency ?? $service->basePriceCurrency;
+            if ($unitPriceCurrency !== $booking->total_currency) {
                 $this->abortWith(
                     Response::HTTP_UNPROCESSABLE_ENTITY,
-                    "Service currency {$service->basePriceCurrency} does not match the booking currency {$booking->total_currency}",
+                    "Service currency {$unitPriceCurrency} does not match the booking currency {$booking->total_currency}",
                 );
             }
 
@@ -86,6 +101,9 @@ class AddItemToBookingAction
                 }
                 if ($effectiveEnd->lessThanOrEqualTo($effectiveStart)) {
                     $this->abortWith(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.times_invalid'));
+                }
+                if ($this->catalogReader->hasRentalAvailabilityBlock($service->id, $effectiveStart, $effectiveEnd)) {
+                    $this->abortWith(Response::HTTP_CONFLICT, 'Service is unavailable for the requested dates');
                 }
                 $reservationId = $this->reserveRental($service, $dto, $effectiveStart, $effectiveEnd);
             } else {
@@ -135,24 +153,37 @@ class AddItemToBookingAction
                 }
             }
 
-            $lineTotal = $service->basePriceMinor * $dto->quantity;
+            $lineTotal = Money::ofMinor($unitPriceMinor, $unitPriceCurrency)
+                ->multipliedBy($dto->quantity)
+                ->getMinorAmount()
+                ->toInt();
             $commissionBps = $this->commissionRateResolver->resolve($service->categoryId, $service->productType) ?? 0;
+
+            $typeSnapshot = $package === null ? null : [
+                'service_id' => $service->id,
+                'service_public_id' => $service->publicId,
+                'product_type' => $service->productType->value,
+                'unit_price_minor' => $unitPriceMinor,
+                'unit_price_currency' => $unitPriceCurrency,
+                'service_package' => $package->snapshot(),
+            ];
 
             $item = BookingItem::create([
                 'public_id' => (string) Str::ulid(),
                 'booking_vendor_id' => $vendor->id,
                 'service_id' => $service->id,
                 'product_type' => $service->productType->value,
-                'name_snapshot' => ['en' => $service->nameEn, 'ar' => $service->nameAr],
-                'unit_price_minor' => $service->basePriceMinor,
-                'unit_price_currency' => $service->basePriceCurrency,
+                'name_snapshot' => $package?->name ?? ['en' => $service->nameEn, 'ar' => $service->nameAr],
+                'unit_price_minor' => $unitPriceMinor,
+                'unit_price_currency' => $unitPriceCurrency,
                 'line_total_minor' => $lineTotal,
-                'line_total_currency' => $service->basePriceCurrency,
-                'commission_currency' => $service->basePriceCurrency,
+                'line_total_currency' => $unitPriceCurrency,
+                'commission_currency' => $unitPriceCurrency,
                 'quantity' => $dto->quantity,
                 'effective_starts_at' => $effectiveStart,
                 'effective_ends_at' => $effectiveEnd,
                 'customization_data' => $dto->customizationData,
+                'type_snapshot' => $typeSnapshot,
                 'item_status' => $initialStatus,
                 'commission_bps' => $commissionBps,
             ]);
@@ -167,7 +198,7 @@ class AddItemToBookingAction
             DB::afterCommit(fn () => event(new BookingItemAdded($item)));
 
             return $item;
-        });
+        }, 3);
     }
 
     private function reserveRental(
@@ -187,9 +218,10 @@ class AddItemToBookingAction
                     ->where('expires_at', '>', now())))
             ->where('reserved_starts_at', '<', $end)
             ->where('reserved_ends_at', '>', $start)
-            ->count();
+            ->lockForUpdate()
+            ->first();
 
-        if ($overlapping > 0) {
+        if ($overlapping !== null) {
             $this->abortWith(Response::HTTP_CONFLICT, 'Service is unavailable for the requested dates');
         }
 
@@ -212,18 +244,28 @@ class AddItemToBookingAction
     private function reserveSale(ServiceReadDTO $service, AddBookingItemDTO $dto): int
     {
         DB::table('services')->where('id', $service->id)->lockForUpdate()->first();
-
-        $heldCount = (int) DB::table('service_inventory_reservations')
+        $stockQuantity = DB::table('service_sale_details')
             ->where('service_id', $service->id)
-            ->where(fn ($query) => $query
-                ->where('status', ReservationStatus::Confirmed->value)
-                ->orWhere(fn ($held) => $held
-                    ->where('status', ReservationStatus::Held->value)
-                    ->where('expires_at', '>', now())))
-            ->sum('quantity');
+            ->lockForUpdate()
+            ->value('stock_quantity');
 
-        if ($service->stockQuantity !== null) {
-            $available = $service->stockQuantity - $heldCount;
+        if ($stockQuantity !== null) {
+            $heldReservations = DB::table('service_inventory_reservations')
+                ->where('service_id', $service->id)
+                ->where(fn ($query) => $query
+                    ->where('status', ReservationStatus::Confirmed->value)
+                    ->orWhere(fn ($held) => $held
+                        ->where('status', ReservationStatus::Held->value)
+                        ->where('expires_at', '>', now())))
+                ->select('quantity')
+                ->lockForUpdate()
+                ->get();
+            $heldCount = 0;
+            foreach ($heldReservations as $reservation) {
+                $heldCount += (int) $reservation->quantity;
+            }
+
+            $available = (int) $stockQuantity - $heldCount;
 
             if ($available < $dto->quantity) {
                 $this->abortWith(Response::HTTP_CONFLICT, 'Insufficient stock');

@@ -105,7 +105,9 @@ class BookingItemController
             };
         } catch (LaneNotSupportedForTypeException|CouldNotPerformTransition $e) {
             return ApiResponse::error(__('booking::booking.errors.invalid_transition'), 422);
-        } catch (PaymentNotCapturedException|BookingNotEligibleForFulfillmentException|RefundInProgressException $e) {
+        } catch (BookingNotEligibleForFulfillmentException $e) {
+            return ApiResponse::error([['code' => $e->errorCode, 'message' => $e->getMessage()]], 409);
+        } catch (PaymentNotCapturedException|RefundInProgressException $e) {
             return ApiResponse::error($e->getMessage(), 409);
         }
 

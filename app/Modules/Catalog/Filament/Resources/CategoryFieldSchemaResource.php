@@ -10,6 +10,7 @@ use App\Modules\Catalog\Domain\Models\CategoryFieldSchema;
 use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\CreateCategoryFieldSchema;
 use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\EditCategoryFieldSchema;
 use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\ListCategoryFieldSchemas;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -35,12 +36,12 @@ class CategoryFieldSchemaResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.catalog');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 110;
 
     public static function getNavigationLabel(): string
     {
@@ -103,15 +104,15 @@ class CategoryFieldSchemaResource extends Resource
                         ->label(__('catalog.is_filterable')),
                 ])
                 ->columns(4),
-            Tabs::make(__('catalog.field_label'))
+            BilingualTabErrorFeedback::tabs(Tabs::make(__('catalog.field_label')))
                 ->tabs([
-                    Tab::make(__('catalog.language_english'))->schema([
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')->schema([
                         TextInput::make('field_label.en')
                             ->label(__('catalog.field_label_en'))
                             ->required()
                             ->maxLength(255),
                     ]),
-                    Tab::make(__('catalog.language_arabic'))->schema([
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')->schema([
                         TextInput::make('field_label.ar')
                             ->label(__('catalog.field_label_ar'))
                             ->required()

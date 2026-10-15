@@ -6,10 +6,10 @@ namespace App\Modules\Booking\Filament\Resources\BookingResource\RelationManager
 
 use App\Modules\Payments\Application\Actions\ManualCapturePaymentAction;
 use App\Modules\Payments\Application\Actions\VoidStuckAuthorizationAction;
-use App\Modules\Payments\Domain\Enums\PaymentStatus;
 use App\Modules\Payments\Domain\Exceptions\PartialRefundUnsupportedException;
 use App\Modules\Payments\Domain\Exceptions\RefundPolicyViolationException;
 use App\Modules\Payments\Domain\Models\Payment;
+use App\Modules\Payments\Domain\States\PaymentStatus\AuthorizedState;
 use App\Modules\Payments\Filament\Actions\RefundPaymentAction;
 use App\Modules\Payments\Filament\Resources\PaymentResource;
 use App\Modules\Settlement\Domain\Exceptions\OverRefundAttemptedException;
@@ -73,11 +73,27 @@ class PaymentsRelationManager extends RelationManager
             ->headerActions([])
             ->actions([
                 Action::make('capture')
-                    ->label('Capture')
+                    ->label(__('payments::payments.ops.actions.capture'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (Payment $record): bool => $record->status === PaymentStatus::Authorized)
+                    ->visible(fn (Payment $record): bool => $record->status instanceof AuthorizedState)
                     ->requiresConfirmation()
+                    ->modalDescription(function (Payment $record): string {
+                        $record->loadMissing(['booking.customer', 'booking.vendors.vendor']);
+                        $booking = $record->booking;
+                        $vendors = $booking?->vendors
+                            ->map(fn ($allocation): ?string => $allocation->vendor?->getTranslation('business_name', app()->getLocale()))
+                            ->filter()
+                            ->unique()
+                            ->implode(', ') ?: '—';
+
+                        return __('payments::payments.ops.capture_modal_description', [
+                            'amount' => $record->amount->formatTo(app()->getLocale()),
+                            'reference' => $record->gateway_ref ?: $record->public_id,
+                            'customer' => $booking?->customer?->name ?? '—',
+                            'vendors' => $vendors,
+                        ]);
+                    })
                     ->form([
                         TextInput::make('reason')
                             ->label('Reason')
@@ -97,7 +113,7 @@ class PaymentsRelationManager extends RelationManager
                     ->label('Void')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (Payment $record): bool => $record->status === PaymentStatus::Authorized)
+                    ->visible(fn (Payment $record): bool => $record->status instanceof AuthorizedState)
                     ->requiresConfirmation()
                     ->form([
                         TextInput::make('reason')

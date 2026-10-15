@@ -20,10 +20,10 @@ class SubscriptionAuditEntryResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.subscriptions');
+        return __('admin.nav.groups.technical');
     }
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 150;
 
     public static function getNavigationLabel(): string
     {

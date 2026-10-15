@@ -18,7 +18,7 @@ class UserDeviceResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.vendor_management');
+        return __('admin.nav.groups.security');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-device-phone-mobile';

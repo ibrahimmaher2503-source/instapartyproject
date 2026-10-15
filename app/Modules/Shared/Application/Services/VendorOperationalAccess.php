@@ -16,6 +16,6 @@ final class VendorOperationalAccess
         return $profile !== null
             && $profile->approval_status instanceof ApprovedState
             && $user->hasVerifiedEmail()
-            && $user->phone_verified_at !== null;
+            && $user->hasVerifiedPhone();
     }
 }

@@ -31,7 +31,7 @@ class RegionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationGroup(): ?string
     {

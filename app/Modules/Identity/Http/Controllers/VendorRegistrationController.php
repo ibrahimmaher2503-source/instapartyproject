@@ -22,7 +22,7 @@ class VendorRegistrationController extends Controller
 
         return ApiResponse::success(
             new VendorProfileResource($vendorProfile),
-            ['registration_successful' => true, 'verification_pending' => true],
+            ['registration_successful' => true, 'verification_pending' => ! config('app.debug')],
             201,
         );
     }

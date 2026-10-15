@@ -15,7 +15,7 @@ class ReconciliationDashboard extends Page
 
     protected static string $view = 'settlement::filament.pages.reconciliation-dashboard';
 
-    protected static ?int $navigationSort = 110;
+    protected static ?int $navigationSort = 95;
 
     public static function getNavigationGroup(): ?string
     {

@@ -3,6 +3,21 @@
 declare(strict_types=1);
 
 return [
+    'account' => [
+        'available_points' => 'Available points from this vendor program',
+        'points' => 'points',
+        'history' => 'Points history',
+        'direction' => [
+            'earn' => 'Earned',
+            'redeem' => 'Redeemed',
+            'expire' => 'Expired',
+            'adjust' => 'Adjusted',
+        ],
+        'balance_after' => 'Recorded balance after this entry',
+        'expires' => 'Expires',
+        'no_balances' => 'No current loyalty balances are available.',
+        'no_history' => 'No loyalty history is available yet.',
+    ],
     'fields' => [
         'name' => 'Program name',
         'terms' => 'Terms',

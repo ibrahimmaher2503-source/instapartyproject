@@ -9,6 +9,7 @@ use App\Modules\Catalog\Domain\Models\ServiceTheme;
 use App\Modules\Catalog\Filament\Resources\ServiceThemeResource\Pages\CreateServiceTheme;
 use App\Modules\Catalog\Filament\Resources\ServiceThemeResource\Pages\EditServiceTheme;
 use App\Modules\Catalog\Filament\Resources\ServiceThemeResource\Pages\ListServiceThemes;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
@@ -36,7 +37,7 @@ class ServiceThemeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-swatch';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 70;
 
     public static function getNavigationLabel(): string
     {
@@ -76,15 +77,15 @@ class ServiceThemeResource extends Resource
                         ->default(true),
                 ])
                 ->columns(3),
-            Tabs::make(__('catalog.name'))
+            BilingualTabErrorFeedback::tabs(Tabs::make(__('catalog.name')))
                 ->tabs([
-                    Tab::make('English')->schema([
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')->schema([
                         TextInput::make('name.en')
                             ->label(__('catalog.name_en'))
                             ->required()
                             ->maxLength(255),
                     ]),
-                    Tab::make('Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©')->schema([
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')->schema([
                         TextInput::make('name.ar')
                             ->label(__('catalog.name_ar'))
                             ->required()

@@ -13,6 +13,7 @@ use App\Modules\Catalog\Domain\Models\Occasion;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Shared\Domain\Casts\MoneyCast;
+use App\Modules\Shared\Domain\Concerns\HasInternalRecordNotes;
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
 use App\Modules\Shared\Domain\Models\StateTransition;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\ModelStates\HasStates;
+use Spatie\Tags\HasTags;
 
 /**
  * @property string $reference_no
@@ -53,8 +55,10 @@ use Spatie\ModelStates\HasStates;
 class Booking extends Model
 {
     use HasFactory;
+    use HasInternalRecordNotes;
     use HasPublicId;
     use HasStates;
+    use HasTags;
     use SoftDeletes;
 
     protected $fillable = [

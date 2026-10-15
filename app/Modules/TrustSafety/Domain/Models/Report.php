@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\TrustSafety\Domain\Models;
 
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Shared\Domain\Concerns\HasInternalRecordNotes;
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
 use App\Modules\TrustSafety\Domain\Enums\ReportReason;
 use App\Modules\TrustSafety\Domain\Enums\ReportStatus;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Spatie\Tags\HasTags;
 
 /**
  * @property string $public_id
@@ -27,7 +29,9 @@ use Illuminate\Support\Carbon;
  */
 class Report extends Model
 {
+    use HasInternalRecordNotes;
     use HasPublicId;
+    use HasTags;
 
     protected $fillable = [
         'public_id', 'reporter_id', 'reportable_type', 'reportable_id',

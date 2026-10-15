@@ -32,6 +32,8 @@ class TrustBadgeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
+    protected static ?int $navigationSort = 100;
+
     public static function getNavigationGroup(): ?string
     {
         return __('admin.nav.groups.trust_safety');

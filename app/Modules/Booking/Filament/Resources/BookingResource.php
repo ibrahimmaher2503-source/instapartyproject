@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Booking\Filament\Resources;
 
 use App\Modules\Booking\Domain\Enums\FulfillmentStatus;
+use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\ActiveState;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\BookingLifecycleState;
@@ -34,7 +35,11 @@ use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\Paym
 use App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
+use Brick\Money\Money;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -44,6 +49,7 @@ use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -60,7 +66,7 @@ class BookingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationLabel(): string
     {
@@ -112,6 +118,7 @@ class BookingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'reference_no', 'lifecycle_status', 'payment_status', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('booking.columns.public_id'))
@@ -137,7 +144,19 @@ class BookingResource extends Resource
                 TextColumn::make('occasion_id')
                     ->label(__('booking.columns.occasion_id'))
                     ->sortable()
-                    ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name') ?? '#'.$record->occasion_id),
+                    ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name')
+                        ?? __('shared::admin-feedback.unavailable_reference')),
+                TextColumn::make('vendors.business_names')
+                    ->label(__('booking.columns.vendor_id'))
+                    ->getStateUsing(fn (Booking $record): string => $record->vendors
+                        ->map(fn ($allocation): ?string => $allocation->vendor?->getTranslation('business_name', app()->getLocale()))
+                        ->filter()->unique()->implode('، '))
+                    ->wrap(),
+                TextColumn::make('event_starts_at')
+                    ->label(__('booking.columns.event_starts_at'))
+                    ->dateTime()
+                    ->timezone(fn (): string => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->sortable(),
                 TextColumn::make('lifecycle_status')
                     ->label(__('booking.columns.lifecycle_status'))
                     ->badge()
@@ -182,6 +201,12 @@ class BookingResource extends Resource
             ->recordUrl(fn (Booking $record): string => static::getUrl('view', ['record' => $record]))
             ->actions([
                 ViewAction::make(),
+            ])
+            ->filters([
+                OperationalDateFilter::make(),
+                SelectFilter::make('lifecycle_status')
+                    ->label(__('booking.columns.status'))
+                    ->options(collect(LifecycleStatus::cases())->mapWithKeys(fn ($status): array => [$status->value => __('booking.lifecycle_status.'.$status->value)])->all()),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -335,7 +360,8 @@ class BookingResource extends Resource
                             ->size('lg')
                             ->weight(FontWeight::SemiBold)
                             ->columnSpanFull()
-                            ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name') ?? '#'.$record->occasion_id),
+                            ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name')
+                                ?? __('shared::admin-feedback.unavailable_reference')),
                         TextEntry::make('event_starts_at')
                             ->label(fn (): string => __('booking.display_timezone', [
                                 'field' => __('booking.columns.event_starts_at'),
@@ -343,7 +369,7 @@ class BookingResource extends Resource
                             ]))
                             ->icon('heroicon-m-calendar')
                             ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
-                            ->dateTime(),
+                            ->dateTime('d F Y, g:i A'),
                         TextEntry::make('event_ends_at')
                             ->label(fn (): string => __('booking.display_timezone', [
                                 'field' => __('booking.columns.event_ends_at'),
@@ -351,7 +377,7 @@ class BookingResource extends Resource
                             ]))
                             ->icon('heroicon-m-calendar-days')
                             ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
-                            ->dateTime(),
+                            ->dateTime('d F Y, g:i A'),
                         TextEntry::make('submitted_at')
                             ->label(__('booking.columns.submitted_at'))
                             ->icon('heroicon-m-paper-airplane')
@@ -398,6 +424,7 @@ class BookingResource extends Resource
     public static function getRelations(): array
     {
         return [
+            InternalRecordNotesRelationManager::class,
             BookingVendorsRelationManager::class,
             BookingItemsRelationManager::class,
             BookingAddressesRelationManager::class,
@@ -416,9 +443,30 @@ class BookingResource extends Resource
         ];
     }
 
+    public static function forceCancelImpactSummary(Booking $record): string
+    {
+        $record->loadMissing(['customer', 'vendors.vendor']);
+        $currency = (string) $record->total_currency;
+        $payments = app(BookingPaymentTotalsReader::class)->forBooking($record->id, $currency);
+        $vendors = $record->vendors
+            ->map(fn ($bookingVendor): ?string => $bookingVendor->vendor?->business_name)
+            ->filter(fn (?string $name): bool => filled($name))
+            ->unique()
+            ->join(', ');
+
+        return __('shared::admin-feedback.force_cancel_impact', [
+            'reference' => $record->reference_no ?: $record->public_id,
+            'status' => __('booking.lifecycle_status.'.$record->lifecycle_status->getValue()),
+            'customer' => self::resolveCustomerName($record),
+            'vendors' => $vendors !== '' ? $vendors : __('shared::admin-feedback.unavailable_reference'),
+            'total' => Money::ofMinor((int) $record->total_minor, $currency)->formatTo(app()->getLocale()),
+            'net_paid' => Money::ofMinor((int) $payments['net_paid_minor'], $currency)->formatTo(app()->getLocale()),
+        ]);
+    }
+
     private static function resolveCustomerName(Booking $record): string
     {
-        return $record->customer?->name ?? '#'.$record->customer_id;
+        return $record->customer?->name ?: __('shared::admin-feedback.unknown_customer');
     }
 
     private static function resolveCustomerPhone(Booking $record): ?string

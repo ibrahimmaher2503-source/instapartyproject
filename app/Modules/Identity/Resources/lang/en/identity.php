@@ -133,7 +133,7 @@ return [
         'approve_vendor_heading' => 'Approve this vendor?',
         'approve_vendor_description' => 'This grants the vendor the approved status. You can grant per-product-type permissions afterwards.',
         'suspend_vendor_heading' => 'Suspend this vendor?',
-        'suspend_vendor_description' => 'The vendor will immediately lose access to vendor features. The reason will be recorded in the audit log.',
+        'suspend_vendor_description' => 'Vendor: :vendor (reference :reference). Current status: :status. Suspending blocks vendor portal access and operations, revokes approved service types (:types), and leaves existing bookings for staff follow-up until reinstated. The required reason is recorded in the audit log.',
     ],
 
     // Page titles
@@ -266,6 +266,7 @@ return [
         'delete' => 'Delete',
         'upload' => 'Upload',
         'approve_profile' => 'Approve Profile',
+        'approve_selected_profiles' => 'Approve selected vendor profiles',
     ],
 
     // Form field labels
@@ -297,6 +298,12 @@ return [
         'profile_updated_by_admin' => 'Customer profile updated',
         'vendor_approved' => 'Vendor profile approved',
         'vendor_approval_failed' => 'Vendor approval could not be completed',
+        'vendor_bulk_approval_result' => 'Selected vendor approval results',
+        'vendor_bulk_approval_summary' => ':approved approved; :failed failed.',
+        'vendor_bulk_approval_approved' => ':id — Approved.',
+        'vendor_bulk_approval_ineligible' => ':id — Ineligible: :reason',
+        'vendor_bulk_approval_stale' => ':id — No longer pending approval: :reason',
+        'vendor_bulk_approval_failed' => ':id — Approval failed; review this profile manually.',
         'vendor_rejected' => 'Vendor profile rejected',
         'vendor_suspended' => 'Vendor suspended',
         'vendor_unsuspended' => 'Vendor reactivated',
@@ -324,6 +331,7 @@ return [
     // Confirmation dialog content
     'confirmations' => [
         'impersonate_warning' => 'You are about to impersonate this vendor. This action will be logged in the audit trail. The token expires in 30 minutes.',
+        'approve_selected_profiles' => 'Each selected profile will be checked against the existing eligibility rules. Eligible profiles will be approved; every skipped or failed profile will be listed in the result.',
     ],
 
     // Placeholder strings
@@ -477,12 +485,16 @@ return [
     'invalid_credentials' => 'The provided credentials are incorrect.',
     'user_not_found' => 'No account was found with the given phone number.',
     'invalid_otp' => 'The verification code is incorrect or has expired.',
+    'customer_phone_verification_required' => 'Please verify your phone before signing in. Return to the verification page to request a new code.',
 
     'registration' => [
         'phone_hint' => 'Include the country code, for example +201001234567.',
     ],
 
     'approval_eligibility' => [
+        'blocked_title' => 'Approval is unavailable',
+        'blocked_summary' => 'Approval is unavailable. Missing: :requirements.',
+        'blocked_description' => 'The approval button stays disabled until the vendor completes the items below and an admin approves the required documents. Complete requirements in the vendor portal, then return here to review and approve.',
         'requirements' => [
             'identity' => 'Vendor identity',
             'contact' => 'Verified email and contact phone',
@@ -608,6 +620,29 @@ return [
         'impersonation_banner' => 'Admin support session',
         'impersonation_description' => 'Support is acting as :admin. Started :time. This session expires at :expires.',
         'impersonation_end' => 'End Session',
+    ],
+    'account' => [
+        'add_address' => 'Add address',
+        'edit_address' => 'Edit address',
+        'delete_address' => 'Delete address',
+        'default_address' => 'Default address',
+        'make_default' => 'Make default',
+        'set_as_default' => 'Set as my default address',
+        'select_city' => 'Choose a city',
+        'label' => 'Address label',
+        'city' => 'City',
+        'address_line' => 'Street address',
+        'building' => 'Building',
+        'floor' => 'Floor',
+        'apartment' => 'Apartment',
+        'landmark' => 'Landmark',
+        'recipient_name' => 'Recipient name',
+        'recipient_phone' => 'Recipient phone (international format)',
+        'no_addresses' => 'You have no saved addresses yet.',
+        'address_saved' => 'Address added.',
+        'address_updated' => 'Address updated.',
+        'address_deleted' => 'Address deleted.',
+        'address_default_updated' => 'Default address updated.',
     ],
 
     'errors' => [

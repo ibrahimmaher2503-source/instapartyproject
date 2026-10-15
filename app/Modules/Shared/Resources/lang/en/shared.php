@@ -5,6 +5,13 @@ declare(strict_types=1);
 return [
     'created_at' => 'Created at',
     'updated_at' => 'Updated at',
+    'errors' => [
+        'unexpected_failure' => 'We could not complete your request. Please try again or contact support.',
+        'action_failed' => 'The action could not be completed.',
+        'validation_failed' => 'Please review the highlighted fields, including payment details, and try again.',
+        'not_found' => 'The requested resource could not be found.',
+        'reference_id' => 'Reference ID: :id',
+    ],
     'dashboard' => [
         'title' => 'Dashboard', 'console_label' => 'Operations console',
         'choose_area' => 'Choose an area to focus on the work that needs attention.',
@@ -55,6 +62,11 @@ return [
     'cms' => [
         'page_info' => 'Page Info',
         'slug' => 'Slug',
+        'public_slug' => 'Public URL slug',
+        'public_slug_help' => 'Optional page address. The original canonical page address will keep working.',
+        'invalid_public_slug' => 'Use lowercase letters and numbers separated by single hyphens.',
+        'duplicate_public_slug' => 'This address is already used by another CMS page.',
+        'reserved_public_slug' => 'This address is reserved for a canonical CMS page or built-in help page.',
         'title' => 'Title',
         'body' => 'Body',
         'published' => 'Published',
@@ -88,6 +100,19 @@ return [
         'app_setting_plural' => 'App Settings',
         'setting_section' => 'Setting',
         'property' => 'Property',
+    ],
+    'admin_queue_sla' => [
+        'vendor_approval' => 'Vendor approval queue SLA (hours)',
+        'withdrawal' => 'Withdrawal queue SLA (hours)',
+        'report' => 'Report queue SLA (hours)',
+        'support' => 'Support queue SLA (hours)',
+        'hours_helper' => 'Hours from the original request time. Enter a whole number from 1 to 720.',
+        'queue_age' => 'Queue age',
+        'deadline' => 'SLA deadline',
+        'status' => 'SLA status',
+        'overdue' => 'Overdue',
+        'within_sla' => 'Within SLA',
+        'not_active' => 'Not in an active queue state',
     ],
 
     'action' => [
@@ -208,6 +233,7 @@ return [
         'section_items' => 'Items',
         'items_count' => 'Items',
         'icon_name' => 'Heroicon name',
+        'invalid_destination' => 'The destination must be a valid HTTP or HTTPS URL.',
     ],
 
     'navigation_slots' => [
@@ -225,6 +251,7 @@ return [
         'section_payload' => 'Payload',
         'image_side_left' => 'Left',
         'image_side_right' => 'Right',
+        'invalid_destination' => 'Use a safe site path or a valid HTTP or HTTPS destination.',
     ],
 
     'homepage' => [

@@ -31,7 +31,7 @@ class OnVendorProfileAutoSuspended implements ShouldQueue
 
         $context = [
             'vendor_name' => $vendorProfile->getTranslation('business_name', 'en'),
-            'doc_type' => $event->document->doc_type->value,
+            'doc_type' => $event->document->doc_type_key,
             'expiry_date' => $event->document->expires_at?->format('Y-m-d') ?? '',
         ];
 

@@ -25,6 +25,7 @@ class ApproveWithdrawalAction
         $alreadyDone = DB::table('idempotency_keys')
             ->where('key', $idempotencyKey)
             ->where('scope', 'internal')
+            ->where('scope_key', 'internal_action')
             ->where('expires_at', '>', now())
             ->exists();
 
@@ -98,6 +99,7 @@ class ApproveWithdrawalAction
                 'expires_at' => now()->addHours(24),
                 'created_at' => now(),
                 'scope' => 'internal',
+                'scope_key' => 'internal_action',
                 'ttl_seconds' => 86400,
                 'payload_hash' => hash('sha256', (string) $withdrawal->id),
             ]]);

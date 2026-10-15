@@ -9,6 +9,8 @@ use App\Modules\Communication\Domain\Enums\DispatchStatus;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Filament\Resources\NotificationDispatchResource\Pages\ListNotificationDispatches;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -26,12 +28,12 @@ class NotificationDispatchResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.communication');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationLabel(): string
     {
@@ -71,6 +73,7 @@ class NotificationDispatchResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'status', 'channel', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('communication.columns.public_id'))
@@ -119,6 +122,7 @@ class NotificationDispatchResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                OperationalDateFilter::make('created_at'),
                 SelectFilter::make('status')
                     ->label(__('communication.columns.status'))
                     ->options(

@@ -17,6 +17,7 @@ class InboxRoutingRuleDevelopmentSeeder extends Seeder
     {
         $superAdminRole = Role::query()->where('name', 'super_admin')->first();
         $adminRole = Role::query()->where('name', 'admin')->first();
+        $bookingManagerRole = Role::query()->where('name', 'booking_manager')->first();
         $admin = User::query()->where('email', 'admin@instaparty.local')->first();
 
         if (! AdminInboxRoutingRule::query()->where('event_key', 'support.ticket.created')->exists()) {
@@ -26,6 +27,20 @@ class InboxRoutingRuleDevelopmentSeeder extends Seeder
                         'public_id' => (string) Str::ulid(),
                         'event_key' => 'support.ticket.created',
                         'severity' => AdminInboxSeverity::Info,
+                        'route_to_role_id' => $role->id,
+                        'is_active' => true,
+                    ]);
+                }
+            }
+        }
+
+        if (! AdminInboxRoutingRule::query()->where('event_key', 'booking.vendor_request.pending')->exists()) {
+            foreach ([$adminRole, $bookingManagerRole, $superAdminRole] as $role) {
+                if ($role !== null) {
+                    AdminInboxRoutingRule::query()->create([
+                        'public_id' => (string) Str::ulid(),
+                        'event_key' => 'booking.vendor_request.pending',
+                        'severity' => AdminInboxSeverity::Warning,
                         'route_to_role_id' => $role->id,
                         'is_active' => true,
                     ]);

@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Application\Actions;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -24,7 +25,7 @@ class DownloadTemplateAction
     }
 }
 
-class RentalTemplateExport implements FromArray, WithHeadings
+class RentalTemplateExport implements FromArray, WithHeadings, WithStrictNullComparison
 {
     public function headings(): array
     {
@@ -43,7 +44,7 @@ class RentalTemplateExport implements FromArray, WithHeadings
     }
 }
 
-class SaleTemplateExport implements FromArray, WithHeadings
+class SaleTemplateExport implements FromArray, WithHeadings, WithStrictNullComparison
 {
     public function headings(): array
     {
@@ -60,19 +61,19 @@ class SaleTemplateExport implements FromArray, WithHeadings
     }
 }
 
-class DigitalTemplateExport implements FromArray, WithHeadings
+class DigitalTemplateExport implements FromArray, WithHeadings, WithStrictNullComparison
 {
     public function headings(): array
     {
         return [
             'name_en', 'name_ar', 'short_description_en', 'short_description_ar',
             'category_id', 'base_price_minor', 'delivery_method',
-            'is_refundable_after_delivery',
+            'has_expiry', 'expiry_days_after_purchase', 'is_refundable_after_delivery',
         ];
     }
 
     public function array(): array
     {
-        return [['My Digital Service', 'خدمة رقمية', 'Short description', 'وصف قصير', 1, 5000, 'email', 1]];
+        return [['My Digital Service', 'خدمة رقمية', 'Short description', 'وصف قصير', 1, 5000, 'email', 0, null, 1]];
     }
 }

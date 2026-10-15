@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Http\Controllers\Web;
 
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
+use App\Modules\Booking\Domain\Enums\CustomerConsentStatus;
 use App\Modules\Booking\Domain\Enums\InterventionType;
 use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Discovery\Domain\Models\Wishlist;
@@ -114,7 +116,17 @@ final class CustomerAccountController
             }
         }
 
-        return view('storefront.account.booking', compact('booking', 'refunds', 'availableServices', 'reviewableItems', 'cancellation'));
+        $pendingVendorProposals = BookingAdminIntervention::query()
+            ->where('booking_id', $booking->getKey())
+            ->where('intervention_type', InterventionType::VendorProposal->value)
+            ->where('customer_consent_status', CustomerConsentStatus::Pending->value)
+            ->where(function ($query): void {
+                $query->whereNull('consent_expires_at')->orWhere('consent_expires_at', '>', now('UTC'));
+            })
+            ->latest('id')
+            ->get();
+
+        return view('storefront.account.booking', compact('booking', 'refunds', 'availableServices', 'reviewableItems', 'cancellation', 'pendingVendorProposals'));
     }
 
     public function payments(Request $request, RefundTimelineReader $refundReader): View

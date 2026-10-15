@@ -36,11 +36,11 @@ class ChatMessageLogResource extends Resource
         return __('communication.chat.message_log_label');
     }
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 40;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.communication');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getNavigationLabel(): string

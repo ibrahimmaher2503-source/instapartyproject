@@ -48,7 +48,7 @@ class NotificationTemplateResource extends Resource
         return __('admin.nav.groups.communication');
     }
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {
@@ -146,14 +146,22 @@ class NotificationTemplateResource extends Resource
      */
     public static function validateFormData(array $data): array
     {
-        if (empty(trim((string) ($data['body']['ar'] ?? '')))) {
+        if (is_array($data['body'] ?? null) && empty(trim((string) ($data['body']['ar'] ?? '')))) {
             throw ValidationException::withMessages(['body' => [__('communication.validation.body_ar_required')]]);
         }
 
-        $templates = array_merge(array_values((array) ($data['body'] ?? [])), array_values((array) ($data['subject'] ?? [])));
-        $used = ResolvedTemplate::variableNames(...array_map('strval', $templates));
-        $declared = array_keys((array) ($data['variables'] ?? []));
-        $missing = array_values(array_diff($used, $declared));
+        $missing = [];
+        if (array_key_exists('variables', $data)) {
+            $body = $data['body'] ?? [];
+            $subject = $data['subject'] ?? [];
+            $templates = array_merge(
+                is_array($body) ? array_values($body) : [$body],
+                is_array($subject) ? array_values($subject) : [$subject],
+            );
+            $used = ResolvedTemplate::variableNames(...array_map('strval', $templates));
+            $declared = array_keys((array) $data['variables']);
+            $missing = array_values(array_diff($used, $declared));
+        }
 
         if ($missing !== []) {
             throw ValidationException::withMessages([

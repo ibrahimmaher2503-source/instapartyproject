@@ -18,12 +18,12 @@ class ReviewModerationLogResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.moderation');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 140;
 
     public static function getNavigationLabel(): string
     {

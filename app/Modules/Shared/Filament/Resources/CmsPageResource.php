@@ -6,6 +6,7 @@ namespace App\Modules\Shared\Filament\Resources;
 
 use App\Modules\Shared\Application\Actions\PublishCmsPageAction;
 use App\Modules\Shared\Application\Actions\UnpublishCmsPageAction;
+use App\Modules\Shared\Domain\Enums\CmsSlug;
 use App\Modules\Shared\Domain\Models\CmsPage;
 use App\Modules\Shared\Filament\Resources\CmsPageResource\Pages\EditCmsPage;
 use App\Modules\Shared\Filament\Resources\CmsPageResource\Pages\ListCmsPages;
@@ -36,7 +37,7 @@ class CmsPageResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settings');
+        return __('admin.nav.groups.content');
     }
 
     public static function getNavigationLabel(): string
@@ -54,7 +55,7 @@ class CmsPageResource extends Resource
         return __('shared::shared.cms.model_plural');
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 50;
 
     public static function form(Form $schema): Form
     {
@@ -98,6 +99,33 @@ class CmsPageResource extends Resource
                         ->label(__('shared::shared.cms.slug'))
                         ->disabled()
                         ->dehydrated(false),
+                    TextInput::make('public_slug')
+                        ->label(__('shared::shared.cms.public_slug'))
+                        ->helperText(__('shared::shared.cms.public_slug_help'))
+                        ->maxLength(120)
+                        ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D')
+                        ->unique(ignoreRecord: true)
+                        ->rule(static function (?CmsPage $record): \Closure {
+                            return static function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                                if (! is_string($value) || trim($value) === '') {
+                                    return;
+                                }
+
+                                $publicSlug = strtolower(trim($value));
+                                $reserved = in_array($publicSlug, ['faq', 'trust'], true)
+                                    || (in_array($publicSlug, array_column(CmsSlug::cases(), 'value'), true)
+                                        && $publicSlug !== $record?->slug->value);
+                                $canonicalCollision = CmsPage::query()
+                                    ->where('slug', $publicSlug)
+                                    ->when($record !== null, fn ($query) => $query->where('id', '!=', $record->getKey()))
+                                    ->exists();
+
+                                if ($reserved || $canonicalCollision) {
+                                    $fail(__('shared::shared.cms.reserved_public_slug'));
+                                }
+                            };
+                        })
+                        ->nullable(),
                 ])
                 ->columns(2),
 
@@ -145,7 +173,9 @@ class CmsPageResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('slug')
+                TextColumn::make('public_slug')
+                    ->label(__('shared::shared.cms.public_slug'))
+                    ->formatStateUsing(fn (CmsPage $record): string => $record->public_slug ?: $record->slug->value)
                     ->badge()
                     ->color('info')
                     ->searchable()

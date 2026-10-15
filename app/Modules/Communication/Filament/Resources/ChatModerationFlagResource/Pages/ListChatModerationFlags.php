@@ -73,6 +73,15 @@ class ListChatModerationFlags extends ListRecords
                     ]))
                     ->label(__('chat_moderation.columns.thread'))
                     ->limit(14)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'messageLog.thread' => ['public_id'],
+                        'messageLog.thread.booking' => ['public_id'],
+                        'messageLog.thread.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'messageLog.thread.vendorProfile' => ['public_id'],
+                        'messageLog.thread.vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'messageLog.sender' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->copyable()
                     ->tooltip(fn (ChatModerationFlag $record): ?string => $record->messageLog?->thread?->public_id)
                     ->url(fn (ChatModerationFlag $record): ?string => $record->messageLog?->thread

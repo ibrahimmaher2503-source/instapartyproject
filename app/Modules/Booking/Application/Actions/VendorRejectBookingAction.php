@@ -143,6 +143,8 @@ class VendorRejectBookingAction
     {
         $row = DB::table('idempotency_keys')
             ->where('key', $dto->idempotencyKey)
+            ->where('scope', 'http')
+            ->where('scope_key', 'http')
             ->where('user_id', $dto->proposedByUserId)
             ->where('expires_at', '>', now())
             ->first();
@@ -165,6 +167,8 @@ class VendorRejectBookingAction
     {
         DB::table('idempotency_keys')->insertOrIgnore([
             'key' => $dto->idempotencyKey,
+            'scope' => 'http',
+            'scope_key' => 'http',
             'user_id' => $dto->proposedByUserId,
             'route' => 'vendor.reject',
             'request_hash' => $this->requestHash($dto),

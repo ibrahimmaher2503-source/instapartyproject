@@ -59,6 +59,7 @@ final class BuildBookingInvoiceDataAction
             ->minus(Money::ofMinor((int) $booking->loyalty_redeemed_minor, $currency));
         $paymentTotals = $this->payments->forBooking($booking->id, (string) $booking->total_currency);
         $paymentStatus = match (true) {
+            $paymentTotals['has_pending_refund'] => 'refund_pending',
             $paymentTotals['refunded_minor'] > 0 && $paymentTotals['net_paid_minor'] === 0 => 'refunded',
             $booking->payment_status->getValue() === 'refund_pending' => 'refund_pending',
             $paymentTotals['refunded_minor'] > 0 => 'partially_refunded',

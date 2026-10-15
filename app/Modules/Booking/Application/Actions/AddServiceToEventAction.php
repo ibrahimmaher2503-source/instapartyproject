@@ -26,8 +26,10 @@ class AddServiceToEventAction
         CreateBookingDraftDTO $draft,
         string $servicePublicId,
         int $quantity,
+        ?string $packagePublicId = null,
     ): Booking {
-        return DB::transaction(function () use ($customerId, $draft, $servicePublicId, $quantity): Booking {
+        // Retry the outer unit so nested item-inventory checks receive a fresh transaction snapshot.
+        return DB::transaction(function () use ($customerId, $draft, $servicePublicId, $quantity, $packagePublicId): Booking {
             $serviceId = $this->catalogReader->resolvePublicId($servicePublicId);
             if ($serviceId === null || $this->catalogReader->findPublishedById($serviceId) === null) {
                 throw ValidationException::withMessages(['service_id' => __('storefront.service.add_error')]);
@@ -37,6 +39,21 @@ class AddServiceToEventAction
                 throw ValidationException::withMessages([
                     'service_id' => __('storefront.wizard.validation.service_occasion_mismatch'),
                 ]);
+            }
+
+            $themeSnapshot = null;
+            $selectedThemePublicId = data_get($draft->theme, 'public_id');
+            if ($selectedThemePublicId !== null) {
+                $selectedTheme = is_string($selectedThemePublicId)
+                    ? $this->catalogReader->findActiveThemeForService($servicePublicId, $selectedThemePublicId)
+                    : null;
+                if ($selectedTheme === null || $selectedTheme->snapshot() !== $draft->theme) {
+                    throw ValidationException::withMessages([
+                        'theme_public_id' => __('storefront.wizard.validation.theme_invalid'),
+                    ]);
+                }
+
+                $themeSnapshot = $selectedTheme->snapshot();
             }
 
             $booking = Booking::query()
@@ -58,6 +75,8 @@ class AddServiceToEventAction
 
             if ($booking === null) {
                 $booking = $this->createDraft->execute($draft);
+            } elseif ($themeSnapshot !== null) {
+                $booking->update(['theme' => $themeSnapshot]);
             }
 
             try {
@@ -69,6 +88,7 @@ class AddServiceToEventAction
                     effectiveStartsAt: null,
                     effectiveEndsAt: null,
                     customizationData: null,
+                    packagePublicId: $packagePublicId,
                 ));
             } catch (HttpResponseException $exception) {
                 /** @var array<string, mixed> $payload */
@@ -83,6 +103,6 @@ class AddServiceToEventAction
             app(AppendCustomerBookingNoteAction::class)->execute($booking, $customerId, $draft->notes, $draft->notesLocale);
 
             return $booking->load(['vendors.items', 'vendors.vendor', 'address', 'customerNotes']);
-        });
+        }, 3);
     }
 }

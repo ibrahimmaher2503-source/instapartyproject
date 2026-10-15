@@ -31,6 +31,14 @@ return [
         'saved' => 'Search saved successfully.',
         'deleted' => 'Saved search deleted successfully.',
     ],
+    'account' => [
+        'save_search' => 'Save this search',
+        'search_label' => 'Name this search',
+        'run_search' => 'Run search',
+        'delete_search' => 'Delete',
+        'saved_on' => 'Saved :date',
+        'no_saved_searches' => 'You have no saved searches yet.',
+    ],
 
     'reindex_services' => 'Reindex Services',
     'reindex_success' => 'Service reindexing has been queued successfully.',
@@ -82,7 +90,7 @@ return [
         'singular' => 'Homepage Package',
         'plural' => 'Homepage Packages',
         'content' => 'Package content',
-        'content_help' => 'Curate a homepage recommendation that sends customers to matching marketplace services.',
+        'content_help' => 'Manage homepage recommendations linked to an occasion and suggested budget. This does not create or manage bundled vendor services; that workflow is not available here.',
         'occasion' => 'Matching occasion',
         'presentation' => 'Homepage presentation',
         'hero' => 'Package image',

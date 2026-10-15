@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Discovery\Http\Controllers\Web;
 
 use App\Modules\Catalog\Application\Actions\ListPublicOccasionsAction;
+use App\Modules\Catalog\Application\Actions\ListPublicServicePackagesAction;
+use App\Modules\Catalog\Application\Actions\ListPublicServiceThemesAction;
 use App\Modules\Discovery\Application\Actions\StorePlannerContextAction;
 use App\Modules\Discovery\Http\Requests\StorePlannerContextRequest;
 use Illuminate\Contracts\View\View;
@@ -18,8 +20,12 @@ class PlannerController
         return redirect()->to($action->execute($request->validated()));
     }
 
-    public function __invoke(Request $request, ListPublicOccasionsAction $occasions): View|RedirectResponse
-    {
+    public function __invoke(
+        Request $request,
+        ListPublicOccasionsAction $occasions,
+        ListPublicServiceThemesAction $themes,
+        ListPublicServicePackagesAction $packages,
+    ): View|RedirectResponse {
         $requestedService = $request->query('service');
         $servicePublicId = is_string($requestedService) && $requestedService !== ''
             ? $requestedService
@@ -33,6 +39,8 @@ class PlannerController
             'bookingMode' => $servicePublicId !== null,
             'occasions' => $occasions->execute($servicePublicId),
             'servicePublicId' => $servicePublicId,
+            'themes' => $servicePublicId === null ? collect() : $themes->execute($servicePublicId),
+            'packages' => $servicePublicId === null ? collect() : $packages->execute($servicePublicId),
         ]);
     }
 }

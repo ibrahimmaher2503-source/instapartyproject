@@ -11,11 +11,13 @@ use App\Modules\Identity\Application\Listeners\SendPasswordResetNotification;
 use App\Modules\Identity\Application\Listeners\SendVendorRegistrationEmailVerification;
 use App\Modules\Identity\Application\Listeners\SendVendorRegistrationVerification;
 use App\Modules\Identity\Application\Listeners\UpdateLastLoginAtListener;
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use App\Modules\Identity\Application\Timeline\VendorProfileTimelineDescriptors;
 use App\Modules\Identity\Console\Commands\CheckDocumentExpiryCommand;
 use App\Modules\Identity\Domain\Contracts\DeviceTokenRepository;
 use App\Modules\Identity\Domain\Contracts\EmailRecipientReader;
 use App\Modules\Identity\Domain\Contracts\OtpGatewayInterface;
+use App\Modules\Identity\Domain\Contracts\PublicVendorPortfolioReader;
 use App\Modules\Identity\Domain\Events\PasswordResetRequested;
 use App\Modules\Identity\Domain\Events\VendorAutoSuspended;
 use App\Modules\Identity\Domain\Events\VendorDocumentExpired;
@@ -35,6 +37,7 @@ use App\Modules\Identity\Infrastructure\Loyalty\EloquentVendorLookup;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentCoverageAreaResolver;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentDeviceTokenRepository;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentEmailRecipientReader;
+use App\Modules\Identity\Infrastructure\Repositories\EloquentPublicVendorPortfolioReader;
 use App\Modules\Identity\Infrastructure\Repositories\EloquentVendorRatingWriter;
 use App\Modules\Loyalty\Domain\Contracts\VendorLookup;
 use App\Modules\Reviews\Domain\Contracts\VendorRatingWriter;
@@ -52,6 +55,7 @@ class IdentityServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(RequiredVendorDocumentTypesResolver::class);
         $this->app->bind(LogoutController::class, PanelLogoutController::class);
         $this->app->bind(LoginResponse::class, PanelLoginResponse::class);
         $this->app->bind(RegistrationResponse::class, VendorRegistrationResponse::class);
@@ -60,6 +64,7 @@ class IdentityServiceProvider extends ServiceProvider
         ));
         $this->app->singleton(DeviceTokenRepository::class, EloquentDeviceTokenRepository::class);
         $this->app->bind(EmailRecipientReader::class, EloquentEmailRecipientReader::class);
+        $this->app->bind(PublicVendorPortfolioReader::class, EloquentPublicVendorPortfolioReader::class);
         $this->app->singleton(VendorRatingWriter::class, EloquentVendorRatingWriter::class);
         $this->app->singleton(VendorLookup::class, EloquentVendorLookup::class);
         $this->app->bind(CoverageAreaResolver::class, EloquentCoverageAreaResolver::class);

@@ -38,7 +38,7 @@ class HomeBlockResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -274,6 +274,10 @@ class HomeBlockResource extends Resource
 
     public static function persistViaAction(array $data, ?HomeBlock $record = null): HomeBlock
     {
+        if ($record !== null) {
+            $data['block_type'] = $record->block_type->value;
+        }
+
         try {
             return app(SaveHomeBlockAction::class)->execute($record, $data);
         } catch (ValidationException $exception) {

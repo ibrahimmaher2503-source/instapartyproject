@@ -26,7 +26,7 @@ class LoyaltyLedgerResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationGroup(): ?string
     {
@@ -133,7 +133,7 @@ class LoyaltyLedgerResource extends Resource
                 TextColumn::make('expires_at')
                     ->label(__('loyalty.columns.expires_at'))
                     ->dateTime()
-                    ->default(__('loyalty.no_expiry'))
+                    ->placeholder(__('loyalty.no_expiry'))
                     ->toggleable(),
                 TextColumn::make('created_at')
                     ->label(__('admin.common.created_at'))

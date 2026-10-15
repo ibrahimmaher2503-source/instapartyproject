@@ -16,6 +16,7 @@ use App\Modules\Identity\Domain\States\VendorApprovalStatus\VendorApprovalState;
 use App\Modules\Reviews\Domain\Models\VendorReview;
 use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
+use App\Modules\Shared\Domain\Concerns\HasInternalRecordNotes;
 use App\Modules\Shared\Domain\Concerns\HasPublicGallery;
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
 use App\Modules\Shared\Domain\Contracts\ChangeRequestSubject;
@@ -34,6 +35,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\ModelStates\HasStates;
+use Spatie\Tags\HasTags;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -85,7 +87,9 @@ class VendorProfile extends Model implements ChangeRequestSubject, HasMedia
     /** @use HasFactory<VendorProfileFactory> */
     use HasFactory, HasPublicId, HasStates, HasTranslations, SoftDeletes;
 
+    use HasInternalRecordNotes;
     use HasPublicGallery;
+    use HasTags;
     use InteractsWithMedia;
 
     /**

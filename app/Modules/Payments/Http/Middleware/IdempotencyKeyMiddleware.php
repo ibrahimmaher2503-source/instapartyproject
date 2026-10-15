@@ -37,12 +37,15 @@ class IdempotencyKeyMiddleware
 
         DB::table('idempotency_keys')
             ->where('key', $key)
+            ->where('scope', 'http')
+            ->where('scope_key', 'http')
             ->where('expires_at', '<=', now())
             ->delete();
 
         $existing = IdempotencyKey::query()
             ->where('key', $key)
             ->where('scope', 'http')
+            ->where('scope_key', 'http')
             ->where('expires_at', '>', now())
             ->first();
 
@@ -62,6 +65,7 @@ class IdempotencyKeyMiddleware
         $claimed = DB::table('idempotency_keys')->insertOrIgnore([
             'key' => $key,
             'scope' => 'http',
+            'scope_key' => 'http',
             'ttl_seconds' => $ttlSeconds,
             'user_id' => $userId,
             'route' => $route,
@@ -74,7 +78,11 @@ class IdempotencyKeyMiddleware
         ]);
 
         if ($claimed === 0) {
-            $existing = IdempotencyKey::query()->where('key', $key)->first();
+            $existing = IdempotencyKey::query()
+                ->where('key', $key)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
+                ->first();
             if ($existing === null || $existing->scope !== 'http' || (int) $existing->user_id !== (int) $userId || $existing->route !== $route || ! hash_equals($existing->request_hash, $hash)) {
                 return ApiResponse::error('Idempotency key conflict', 409);
             }
@@ -85,7 +93,11 @@ class IdempotencyKeyMiddleware
             return response()->json($existing->response_body ?? ['data' => null, 'meta' => (object) [], 'errors' => []], (int) $existing->response_status);
         }
 
-        $claimedRow = IdempotencyKey::query()->where('key', $key)->firstOrFail();
+        $claimedRow = IdempotencyKey::query()
+            ->where('key', $key)
+            ->where('scope', 'http')
+            ->where('scope_key', 'http')
+            ->firstOrFail();
         try {
             $response = $next($request);
         } catch (Throwable $exception) {

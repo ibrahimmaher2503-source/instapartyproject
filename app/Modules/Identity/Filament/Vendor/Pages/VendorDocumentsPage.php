@@ -10,7 +10,6 @@ use App\Modules\Identity\Application\Actions\ReuploadVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\UploadVendorDocumentAction;
 use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use App\Modules\Identity\Domain\Enums\DocumentStatus;
-use App\Modules\Identity\Domain\Enums\DocumentType;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Filament\Actions\Action;
@@ -65,18 +64,29 @@ class VendorDocumentsPage extends Page implements HasTable
     protected function getViewData(): array
     {
         $profile = $this->getVendorProfile();
-        $requiredTypes = app(RequiredVendorDocumentTypesResolver::class)->forBusinessType($profile->business_type);
+        $resolver = app(RequiredVendorDocumentTypesResolver::class);
+        $requiredTypes = $resolver->forBusinessType($profile->business_type);
         $latest = $profile->documents()->whereIn('doc_type', $requiredTypes)->latest('created_at')->latest('id')->get()
-            ->groupBy(fn (VendorDocument $document): string => $document->doc_type->value)
+            ->groupBy(fn (VendorDocument $document): string => $document->doc_type_key)
             ->map(fn ($documents) => $documents->first());
 
         return ['requiredDocuments' => collect($requiredTypes)->map(fn (string $type): array => [
-            'type' => __('identity.document_type.'.$type),
+            'type' => $resolver->label($type),
             'status' => $latest->has($type)
                 ? __('identity.document_status.'.$latest->get($type)->status->value)
                 : __('identity.compliance.required_missing'),
             'expires_at' => $latest->get($type)?->expires_at?->format('Y-m-d'),
         ])];
+    }
+
+    public function getSubheading(): ?string
+    {
+        $resolver = app(RequiredVendorDocumentTypesResolver::class);
+        $required = $resolver->forBusinessType($this->getVendorProfile()->business_type);
+
+        return $required === []
+            ? __('identity::document_types.none_required')
+            : __('identity::document_types.requirements', ['names' => implode('، ', array_map(fn (string $key): string => $resolver->label($key), $required))]);
     }
 
     public function table(Table $table): Table
@@ -91,7 +101,7 @@ class VendorDocumentsPage extends Page implements HasTable
                 TextColumn::make('doc_type')
                     ->label(__('vendor-portal.documents.type'))
                     ->badge()
-                    ->formatStateUsing(fn (DocumentType $state) => __('identity.document_type.'.$state->value)),
+                    ->formatStateUsing(fn (VendorDocument $record): string => app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key)),
                 TextColumn::make('status')
                     ->label(__('vendor-portal.documents.status'))
                     ->badge()
@@ -156,7 +166,8 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->label(__('identity.actions.re_upload_document'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('warning')
-                    ->visible(fn (VendorDocument $record): bool => $record->status === DocumentStatus::Rejected)
+                    ->visible(fn (VendorDocument $record): bool => $record->status === DocumentStatus::Rejected
+                        && array_key_exists($record->doc_type_key, app(RequiredVendorDocumentTypesResolver::class)->options()))
                     ->form([
                         FileUpload::make('file')
                             ->label(__('identity.fields.document_file'))
@@ -179,7 +190,7 @@ class VendorDocumentsPage extends Page implements HasTable
                         try {
                             app(ReuploadVendorDocumentAction::class)->execute($record, $uploadedFile, auth()->user());
                         } catch (ValidationException $exception) {
-                            Notification::make()->title($exception->errors()['file'][0] ?? $exception->getMessage())->danger()->send();
+                            Notification::make()->title($exception->errors()['file'][0] ?? $exception->errors()['doc_type'][0] ?? $exception->getMessage())->danger()->send();
                             $action->halt();
 
                             return;
@@ -211,17 +222,12 @@ class VendorDocumentsPage extends Page implements HasTable
         return [
             Action::make('upload')
                 ->label(__('vendor-portal.documents.upload'))
+                ->visible(fn (): bool => app(RequiredVendorDocumentTypesResolver::class)->options() !== [])
                 ->icon('heroicon-o-arrow-up-tray')
                 ->form([
                     Select::make('doc_type')
                         ->label(__('vendor-portal.documents.type'))
-                        ->options([
-                            DocumentType::Cr->value => __('identity.document_type.cr'),
-                            DocumentType::TaxCard->value => __('identity.document_type.tax_card'),
-                            DocumentType::NationalId->value => __('identity.document_type.national_id'),
-                            DocumentType::IbanProof->value => __('identity.document_type.iban_proof'),
-                            DocumentType::Other->value => __('identity.document_type.other'),
-                        ])
+                        ->options(fn (): array => app(RequiredVendorDocumentTypesResolver::class)->options())
                         ->required(),
                     FileUpload::make('file')
                         ->label(__('identity.fields.document_file'))
@@ -278,10 +284,10 @@ class VendorDocumentsPage extends Page implements HasTable
                         app(UploadVendorDocumentAction::class)->execute(
                             $profile,
                             $uploadedFile,
-                            DocumentType::from($data['doc_type']),
+                            $data['doc_type'],
                         );
                     } catch (ValidationException $exception) {
-                        Notification::make()->title($exception->errors()['file'][0] ?? $exception->getMessage())->danger()->send();
+                        Notification::make()->title($exception->errors()['file'][0] ?? $exception->errors()['doc_type'][0] ?? $exception->getMessage())->danger()->send();
                         $action->halt();
 
                         return;

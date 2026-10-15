@@ -55,7 +55,11 @@ final class RequestVendorChangesAction
 
         return DB::transaction(function () use ($profile, $items, $admin, $idempotencyKey, $payloadHash): ChangeRequest {
             $lockedProfile = VendorProfile::query()->lockForUpdate()->findOrFail($profile->getKey());
-            $existingKey = DB::table('idempotency_keys')->where('key', $idempotencyKey)->first();
+            $existingKey = DB::table('idempotency_keys')
+                ->where('key', $idempotencyKey)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
+                ->first();
 
             if ($existingKey !== null && now()->greaterThanOrEqualTo($existingKey->expires_at)) {
                 DB::table('idempotency_keys')->where('id', $existingKey->id)->delete();
@@ -137,6 +141,7 @@ final class RequestVendorChangesAction
                 'expires_at' => now()->addDay(),
                 'created_at' => now(),
                 'scope' => 'http',
+                'scope_key' => 'http',
                 'ttl_seconds' => 86400,
                 'payload_hash' => $payloadHash,
             ]);
