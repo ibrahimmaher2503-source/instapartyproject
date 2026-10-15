@@ -50,3 +50,20 @@ it('starts a new submission after a successful create-and-create-another action'
     }
     expect(TrustBadge::query()->count())->toBe(2);
 });
+
+it('throttles the create-another action without a second click handler', function (): void {
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $admin = User::factory()->superAdmin()->create();
+    foreach (['create_trust::badge', 'view_any_trust::badge'] as $permission) {
+        $admin->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+    }
+
+    $this->actingAs($admin);
+    $html = Livewire::test(CreateTrustBadge::class)->html();
+    expect(preg_match('/<button\b(?=[^>]*wire:target="createAnother")[^>]*>/s', $html, $button))->toBe(1)
+        ->and($button[0])->toContain('wire:target="createAnother"')
+        ->and($button[0])->toContain('wire:loading.attr="disabled"')
+        ->and($button[0])->toContain('wire:click.throttle.500ms="createAnother"')
+        ->and($button[0])->not->toContain('wire:click="createAnother"')
+        ->and($button[0])->not->toContain('x-on:click=');
+});
