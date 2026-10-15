@@ -46,13 +46,14 @@ it('filters expired business keys at the exact expiry boundary', function (): vo
     $page = IdempotencyKeyResource::getPages()['index']->getPage();
 
     Livewire::test($page)
-        ->filterTable('expired', true)
+        ->filterTable('expired', '1')
         ->assertCanSeeTableRecords([$expired])
         ->assertCanNotSeeTableRecords([$live, $noise])
-        ->filterTable('expired', false)
+        ->filterTable('expired', '0')
         ->assertCanSeeTableRecords([$live])
         ->assertCanNotSeeTableRecords([$expired, $noise])
         ->removeTableFilter('expired')
+        ->assertSet('tableFilters.expired.value', null)
         ->assertCanSeeTableRecords([$expired, $live]);
 });
 
@@ -60,6 +61,12 @@ it('purges only expired keys at the scheduler retention boundary', function (): 
     $this->freezeTime();
     $expired = IdempotencyKey::factory()->create(['expires_at' => now()->subSecond()]);
     $boundary = IdempotencyKey::factory()->create(['expires_at' => now()]);
+    $expiredInternal = IdempotencyKey::factory()->create([
+        'scope' => 'internal',
+        'scope_key' => 'internal_action',
+        'route' => 'internal_action:expired-retention',
+        'expires_at' => now()->subSecond(),
+    ]);
     $live = IdempotencyKey::factory()->create(['expires_at' => now()->addDay()]);
     $webhook = IdempotencyKey::factory()->create([
         'scope' => 'internal',
@@ -68,9 +75,10 @@ it('purges only expired keys at the scheduler retention boundary', function (): 
         'created_at' => now()->subDays(2),
         'expires_at' => now()->addDays(28),
     ]);
-    expect(app(EloquentIdempotencyKeyRepository::class)->purgeExpired())->toBe(2);
+    expect(app(EloquentIdempotencyKeyRepository::class)->purgeExpired())->toBe(3);
     expect(IdempotencyKey::find($expired->id))->toBeNull()
         ->and(IdempotencyKey::find($boundary->id))->toBeNull()
+        ->and(IdempotencyKey::find($expiredInternal->id))->toBeNull()
         ->and(IdempotencyKey::find($live->id))->not->toBeNull()
         ->and(IdempotencyKey::find($webhook->id))->not->toBeNull();
 });

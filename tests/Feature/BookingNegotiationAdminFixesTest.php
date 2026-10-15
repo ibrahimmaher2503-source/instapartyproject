@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\Booking\Application\Actions\BuildAlternativeVendorOfferAction;
 use App\Modules\Booking\Application\Actions\GetNegotiationMonitorQueryAction;
 use App\Modules\Booking\Application\Actions\SuggestAlternativeVendorsAction;
 use App\Modules\Booking\Application\DTOs\SuggestedAlternativeVendorsDTO;
@@ -14,7 +15,6 @@ use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CustomerReviewState
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Booking\Filament\Resources\AdminBookingInterventionResource;
 use App\Modules\Booking\Filament\Widgets\LateVendorResponsesWidget;
-use App\Modules\Discovery\Domain\Contracts\AlternativeVendorFinder;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Shared\Domain\Models\StateTransition;
 use Carbon\CarbonImmutable;
@@ -117,15 +117,31 @@ it('rejects no-op state transitions and assigns a correlation id', function (): 
 
 it('does not duplicate a confirmed alternative suggestion', function (): void {
     $booking = monitorBooking(VendorReviewState::class);
-    $admin = User::factory()->create();
-    $finder = Mockery::mock(AlternativeVendorFinder::class);
-    $finder->shouldReceive('validateCandidates')->twice();
-    app()->instance(AlternativeVendorFinder::class, $finder);
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo(Permission::findOrCreate('booking.intervene.suggest_alternative_vendors', 'web'));
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    $sourceAllocation = monitorVendor($booking, VendorSubStatus::Pending->value, CarbonImmutable::now('UTC')->addHour());
+    $offerBuilder = Mockery::mock(BuildAlternativeVendorOfferAction::class);
+    $offerBuilder->shouldReceive('execute')->once()->andReturn([
+        'candidate_vendor' => ['public_id' => '01JQAVQ71JH8X8SS0KJ6A4F1YQ'],
+        'response_deadline' => $sourceAllocation->response_deadline->utc()->toIso8601String(),
+        'subtotal_minor' => 0,
+        'delivery_fee_minor' => 0,
+        'currency' => 'EGP',
+        'total_minor' => 0,
+        'items' => [],
+        'offer_hash' => hash('sha256', 'offer'),
+    ]);
+    $offerBuilder->shouldReceive('sourceSnapshot')->once()->andReturn([
+        'booking_vendor_public_id' => $sourceAllocation->public_id,
+    ]);
+    app()->instance(BuildAlternativeVendorOfferAction::class, $offerBuilder);
 
     $dto = new SuggestedAlternativeVendorsDTO(
         bookingId: $booking->id,
         adminId: $admin->id,
-        vendorProfileIds: [123],
+        bookingVendorPublicId: $sourceAllocation->public_id,
+        vendorProfileId: 123,
         reason: 'Offer another vendor to the customer.',
         idempotencyKey: 'suggest-alternatives-once',
     );

@@ -33,13 +33,14 @@ it('labels the vendor event in their configured zone without changing UTC persis
     expect(DB::table('bookings')->where('id', $booking->id)->value('event_starts_at'))->toBe('2026-12-01 13:00:00');
 });
 
-it('labels the admin event in their configured zone without changing UTC persistence', function (): void {
+it('labels the admin event in their configured zone without changing UTC persistence', function (string $locale, string $displayTime): void {
+    app()->setLocale($locale);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     $admin = User::factory()->phoneVerified()->asAdmin()->create(['timezone' => 'Asia/Dubai']);
     $admin->givePermissionTo(Permission::findOrCreate('view_bookings::monitor', 'web'));
     $booking = Booking::factory()->create(['event_starts_at' => '2026-12-01 13:00:00']);
     $this->actingAs($admin);
-    Livewire::test(ViewBooking::class, ['record' => $booking->id])
-        ->assertSuccessful()->assertSee('Asia/Dubai')->assertSee('17:00');
+    Livewire::test(ViewBooking::class, ['record' => $booking->public_id])
+        ->assertSuccessful()->assertSee('Asia/Dubai')->assertSee($displayTime);
     expect(DB::table('bookings')->where('id', $booking->id)->value('event_starts_at'))->toBe('2026-12-01 13:00:00');
-});
+})->with([['en', '5:00 PM'], ['ar', '5:00 م']]);

@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
+use Tests\Support\VendorDocumentTestFiles;
 
 beforeEach(function (): void {
     Mail::fake();
@@ -131,12 +132,12 @@ it('completes one vendor onboarding journey through the existing gates', functio
     $documentAction = app(UploadVendorDocumentAction::class);
     $nationalId = $documentAction->execute(
         $profile,
-        UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('national-id.pdf', VendorDocumentTestFiles::minimalPdf()),
         DocumentType::NationalId,
     );
     $ibanProof = $documentAction->execute(
         $profile,
-        UploadedFile::fake()->create('iban-proof.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('iban-proof.pdf', VendorDocumentTestFiles::minimalPdf()),
         DocumentType::IbanProof,
     );
 

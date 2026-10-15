@@ -114,7 +114,7 @@ it('does not start a run or release another owners scope lock', function (): voi
 });
 
 it('counts one shared unbalanced group once across wallets and repeated runs', function (): void {
-    $group = LedgerTransactionGroup::create(['public_id' => (string) Str::ulid(), 'kind' => 'payment_capture', 'currency' => 'EGP', 'posted_at' => now(), 'created_at' => now()]);
+    $group = LedgerTransactionGroup::create(['public_id' => (string) Str::ulid(), 'kind' => 'payment_capture', 'currency' => 'EGP', 'correlation_id' => (string) Str::ulid(), 'posted_at' => now(), 'created_at' => now()]);
     foreach ([Wallet::factory()->withBalance(100)->create(), Wallet::factory()->withBalance(100)->create()] as $wallet) {
         WalletLedgerEntry::factory()->commissionCredit()->create(['wallet_id' => $wallet->id, 'amount_minor' => 100, 'transaction_group_id' => $group->id]);
     }

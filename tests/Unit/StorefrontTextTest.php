@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Modules\Shared\Application\Services\StorefrontText;
+use Illuminate\Foundation\Testing\TestCase;
+
+uses(TestCase::class);
 
 final class StorefrontTextFixture
 {

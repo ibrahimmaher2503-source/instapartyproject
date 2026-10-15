@@ -25,7 +25,7 @@ it('counts only the vendors displayable service types across all pages and remov
         ? ['digital' => 1, 'rental' => 13, 'sale' => 1]
         : ['rental' => 13, 'sale' => 1]);
     expect($response->viewData('vendor')->services_count)->toBe($digitalEnabled ? 15 : 14)
-        ->and($response->viewData('services')->count())->toBe(12);
+        ->and($response->viewData('services')->count())->toBe($digitalEnabled ? 15 : 14);
     $response->assertSee('data-vendor-service-type="rental"', false)
         ->assertSee('data-vendor-service-type="sale"', false);
     if (! $digitalEnabled) {

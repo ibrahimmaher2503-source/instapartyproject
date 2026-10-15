@@ -351,7 +351,7 @@ it('defers an unconfirmed refund callback without caching acceptance or dispatch
         ->and(DB::table('idempotency_keys')->where('key', "paymob_refund:{$transactionId}")->exists())->toBeFalse();
 });
 
-it('rejects a Paymob webhook key held by another scope before financial effects', function (): void {
+it('stores independent Paymob webhook claims when a key is used by an internal action', function (): void {
     $transactionId = 'paymob-collision-transaction';
     $orderId = 'paymob-collision-order';
     $payment = Payment::factory()->create([
@@ -362,7 +362,8 @@ it('rejects a Paymob webhook key held by another scope before financial effects'
     $key = "paymob:PURCHASE:{$orderId}:{$transactionId}:true";
     DB::table('idempotency_keys')->insert([
         'key' => $key,
-        'scope' => 'internal_action',
+        'scope' => 'internal',
+        'scope_key' => 'internal_action',
         'user_id' => null,
         'route' => 'internal_action:'.$key,
         'request_hash' => hash('sha256', 'other-action-payload'),
@@ -388,7 +389,6 @@ it('rejects a Paymob webhook key held by another scope before financial effects'
     $this->app->instance(PaymentGateway::class, $gateway);
     Event::fake([PaymentCaptured::class]);
 
-    $bookingBefore = DB::table('bookings')->where('id', $payment->booking_id)->first();
     $ledgerCountBefore = DB::table('wallet_ledger')->count();
     $response = $this->postJson('/api/v1/webhooks/paymob', [
         'type' => 'transaction_processed',
@@ -402,27 +402,70 @@ it('rejects a Paymob webhook key held by another scope before financial effects'
     ], ['HMAC' => 'test-signature']);
 
     $payment->refresh();
-    $bookingAfter = DB::table('bookings')->where('id', $payment->booking_id)->first();
+    expect($payment->status->getValue())->toBe('captured')
+        ->and($payment->captured_at)->not->toBeNull()
+        ->and($payment->capture_ledger_group_id)->not->toBeNull()
+        ->and((int) DB::table('wallet_ledger')->count())->toBe($ledgerCountBefore + 2)
+        ->and($response->getStatusCode())->toBe(200)
+        ->and(DB::table('idempotency_keys')->where('key', $key)->where('route', 'internal_action:'.$key)->exists())->toBeTrue()
+        ->and(DB::table('idempotency_keys')->where('key', $key)->where('route', 'internal_webhook:'.$key)->exists())->toBeTrue()
+        ->and(app(IdempotencyService::class)->hasBeenUsed('internal_action', $key))->toBeTrue()
+        ->and(app(IdempotencyService::class)->hasBeenUsed('internal_webhook', $key))->toBeTrue()
+        ->and(GatewayWebhookLog::query()->latest('id')->value('processed_at'))->not->toBeNull()
+        ->and(GatewayWebhookLog::query()->latest('id')->value('processing_error'))->toBeNull();
+    Event::assertDispatched(PaymentCaptured::class);
+});
 
-    expect([
-        $payment->status->getValue(),
-        $payment->captured_at,
-        $payment->capture_ledger_group_id,
-        (int) DB::table('wallet_ledger')->count(),
-        $bookingAfter->payment_status,
-        (int) $bookingAfter->amount_paid_minor,
-    ])->toEqual([
-        'pending',
-        null,
-        null,
-        (int) $ledgerCountBefore,
-        $bookingBefore->payment_status,
-        (int) $bookingBefore->amount_paid_minor,
+it('replays a successful Paymob webhook without duplicating capture or ledger entries', function (): void {
+    $transactionId = 'paymob-sequential-replay-transaction';
+    $orderId = 'paymob-sequential-replay-order';
+    $payment = Payment::factory()->create([
+        'gateway_ref' => $transactionId,
+        'amount_minor' => 10000,
+        'amount_currency' => 'EGP',
     ]);
-    expect($response->getStatusCode())->toBe(409);
-    expect(DB::table('idempotency_keys')->where('key', $key)->value('scope'))->toBe('internal_action');
-    expect(GatewayWebhookLog::query()->latest('id')->value('processing_error'))->toBe('duplicate_idempotent_replay');
-    Event::assertNotDispatched(PaymentCaptured::class);
+    $payload = [
+        'type' => 'transaction_processed',
+        'obj' => [
+            'id' => $transactionId,
+            'order' => ['id' => $orderId],
+            'success' => true,
+            'amount_cents' => 10000,
+            'currency' => 'EGP',
+        ],
+    ];
+    $gateway = Mockery::mock(PaymentGateway::class);
+    $gateway->shouldReceive('verifyWebhookSignature')->twice()->andReturnTrue();
+    $gateway->shouldReceive('parseWebhook')->twice()->andReturn(new PaymobWebhookDto(
+        gatewayRef: $transactionId,
+        success: true,
+        failureCode: null,
+        capturedAmount: Money::ofMinor(10000, 'EGP'),
+        rawPayload: [],
+        transactionType: 'PURCHASE',
+        orderId: $orderId,
+    ));
+    $this->app->instance(PaymentGateway::class, $gateway);
+    Event::fake([PaymentCaptured::class]);
+    $ledgerCountBefore = DB::table('wallet_ledger')->count();
+
+    $first = $this->postJson('/api/v1/webhooks/paymob', $payload, ['HMAC' => 'test-signature']);
+    $captureGroup = $payment->fresh()->capture_ledger_group_id;
+    $second = $this->postJson('/api/v1/webhooks/paymob', $payload, ['HMAC' => 'test-signature']);
+
+    $payment->refresh();
+    $logs = GatewayWebhookLog::query()->orderBy('id')->get();
+    $key = "paymob:PURCHASE:{$orderId}:{$transactionId}:true";
+
+    expect($first->getStatusCode())->toBe(200)
+        ->and($second->getStatusCode())->toBe(200)
+        ->and($payment->status->getValue())->toBe('captured')
+        ->and($payment->capture_ledger_group_id)->toBe($captureGroup)
+        ->and((int) DB::table('wallet_ledger')->count())->toBe($ledgerCountBefore + 2)
+        ->and(DB::table('idempotency_keys')->where('key', $key)->where('route', 'internal_webhook:'.$key)->value('response_status'))->toBe(200)
+        ->and($logs[0]->processed_at)->not->toBeNull()
+        ->and($logs[1]->processing_error)->toBe('duplicate_idempotent_replay');
+    Event::assertDispatchedTimes(PaymentCaptured::class, 1);
 });
 
 it('rolls back capture when webhook claim completion fails and allows a later retry', function (): void {
@@ -455,7 +498,7 @@ it('rolls back capture when webhook claim completion fails and allows a later re
     DB::listen(function (QueryExecuted $query) use (&$failCompletionWrite): void {
         $sql = strtolower(ltrim($query->sql));
         if ($failCompletionWrite
-            && str_starts_with($sql, 'update')
+            && str_starts_with($sql, 'insert')
             && str_contains($sql, 'idempotency_keys')
             && str_contains($sql, 'response_status')) {
             $failCompletionWrite = false;

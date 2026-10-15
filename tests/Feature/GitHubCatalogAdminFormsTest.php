@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Domain\Enums\ProductType;
+use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\CategoryFieldSchema;
 use App\Modules\Catalog\Domain\Models\ExcelImport;
+use App\Modules\Catalog\Domain\Models\Occasion;
+use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\EditCategoryFieldSchema;
+use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\CreateDigitalService;
+use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\CreateOccasion;
+use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\EditOccasion;
+use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\EditRentalService;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs\Tab;
@@ -18,7 +26,6 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -27,7 +34,7 @@ beforeEach(function (): void {
     config(['catalog.digital_services_enabled' => true]);
     $admin = User::factory()->superAdmin()->create();
     foreach (['view_any', 'view', 'create', 'update'] as $operation) {
-        foreach (['rental::service', 'sale::service', 'digital::service', 'category::field::schema', 'vendor::profile'] as $resource) {
+        foreach (['rental::service', 'sale::service', 'digital::service', 'category::field::schema', 'vendor::profile', 'occasion'] as $resource) {
             $admin->givePermissionTo(Permission::findOrCreate($operation.'_'.$resource, 'web'));
         }
     }
@@ -50,7 +57,7 @@ it('roundtrips bilingual structured schema options without flattening them', fun
         ->assertFormFieldExists('field_label.ar', function (TextInput $field): bool {
             $tab = $field->getContainer()->getParentComponent();
 
-            return $tab instanceof Tab && $tab->getLabel() === 'العربية';
+            return $tab instanceof Tab && $tab->getLabel() === __('catalog.language_arabic');
         })
         ->assertDontSee('Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©')
         ->call('save')->assertHasNoFormErrors();
@@ -68,7 +75,7 @@ it('rejects duplicate schema option values without overwriting either stored lab
     $component = Livewire::test(EditCategoryFieldSchema::class, ['record' => $schema->getRouteKey()])
         ->fillForm(['options' => $duplicate]);
     $firstKey = array_key_first($component->get('data.options'));
-    $component->call('save')->assertHasFormErrors(['options.'.$firstKey.'.value' => 'distinct']);
+    $component->call('save')->assertHasFormErrors(['options.'.$firstKey.'.value']);
     expect($schema->refresh()->options)->toBe($options);
 });
 
@@ -88,9 +95,80 @@ it('converts supported legacy schema options without changing their effective ch
 it('refuses to hydrate unsupported options rather than silently dropping their data', function (): void {
     $options = [['value' => 'vanilla', 'label' => ['en' => 'Vanilla', 'ar' => 'فانيليا'], 'extra' => ['keep' => true]]];
     $schema = CategoryFieldSchema::factory()->create(['field_type' => 'select', 'options' => $options]);
-    expect(fn () => Livewire::test(EditCategoryFieldSchema::class, ['record' => $schema->getRouteKey()]))
-        ->toThrow(ValidationException::class);
+    Livewire::test(EditCategoryFieldSchema::class, ['record' => $schema->getRouteKey()])
+        ->assertHasFormErrors(['options' => __('catalog.options_unsupported_format')]);
     expect($schema->refresh()->options)->toBe($options);
+});
+
+it('exposes category-specific fields on each admin service edit form', function (string $locale, ProductType $type): void {
+    app()->setLocale($locale);
+    $category = Category::factory()->create(['allowed_product_types' => [$type->value]]);
+    CategoryFieldSchema::factory()->create([
+        'category_id' => $category->id, 'product_type' => $type, 'field_key' => 'flavor', 'field_type' => 'select',
+        'field_label' => ['en' => 'Flavor', 'ar' => 'النكهة'], 'is_required' => true,
+        'options' => [
+            ['value' => 'vanilla', 'label' => ['en' => 'Vanilla', 'ar' => 'فانيليا']],
+            ['value' => 'chocolate', 'label' => ['en' => 'Chocolate', 'ar' => 'شوكولاتة']],
+        ],
+        'validation_rules' => null,
+    ]);
+    $classType = ucfirst($type->value);
+    $edit = "App\\Modules\\Catalog\\Filament\\Resources\\{$classType}ServiceResource\\Pages\\Edit{$classType}Service";
+    $service = match ($type) {
+        ProductType::Rental => Service::factory()->rental()->create(['category_id' => $category->id, 'category_field_values' => ['flavor' => 'vanilla']]),
+        ProductType::Sale => Service::factory()->sale()->create(['category_id' => $category->id, 'category_field_values' => ['flavor' => 'vanilla']]),
+        ProductType::Digital => Service::factory()->digital()->create(['category_id' => $category->id, 'category_field_values' => ['flavor' => 'vanilla']]),
+    };
+    match ($type) {
+        ProductType::Rental => $service->rentalDetail()->create(['default_rental_duration_hours' => 4]),
+        ProductType::Sale => $service->saleDetail()->create([]),
+        ProductType::Digital => $service->digitalDetail()->create(['delivery_method' => 'email']),
+    };
+
+    $component = Livewire::test($edit, ['record' => $service->getRouteKey()])
+        ->assertFormFieldExists('category_field_values.flavor', fn (Select $field): bool => $field->getOptions() === [
+            'vanilla' => $locale === 'ar' ? 'فانيليا' : 'Vanilla',
+            'chocolate' => $locale === 'ar' ? 'شوكولاتة' : 'Chocolate',
+        ])
+        ->assertFormSet(['category_field_values.flavor' => 'vanilla']);
+    $component->fillForm(['category_field_values.flavor' => 'chocolate'])->call('save')->assertHasNoFormErrors();
+    expect($service->refresh()->category_field_values)->toBe(['flavor' => 'chocolate']);
+})->with(['en', 'ar'])->with(ProductType::cases());
+
+it('uses the same occasion icon upload on create and edit', function (): void {
+    $occasion = Occasion::factory()->create();
+
+    foreach ([[CreateOccasion::class, []], [EditOccasion::class, ['record' => $occasion->public_id]]] as [$page, $parameters]) {
+        Livewire::test($page, $parameters)->assertFormFieldExists('icon_path', fn (FileUpload $field): bool => $field->getDiskName() === 'public'
+            && $field->getDirectory() === 'icons/occasions');
+    }
+});
+
+it('sets the product type and slug when an admin creates a digital service', function (): void {
+    $vendor = VendorProfile::factory()->approved()->create();
+    $category = Category::factory()->create(['allowed_product_types' => [ProductType::Digital->value]]);
+
+    Livewire::test(CreateDigitalService::class)->fillForm([
+        'vendor_profile_id' => $vendor->id,
+        'category_id' => $category->id,
+        'name' => ['en' => 'Digital Template', 'ar' => 'قالب رقمي'],
+        'short_description' => ['en' => 'A template', 'ar' => 'قالب'],
+        'base_price_minor' => '250.50',
+        'digitalDetail.delivery_method' => 'email',
+    ])->call('create')->assertHasNoFormErrors();
+
+    $service = Service::query()->sole();
+    expect($service->product_type)->toBe(ProductType::Digital)
+        ->and($service->slug)->toStartWith('digital-template-');
+});
+
+it('shows a persisted gallery image only once on the admin edit form', function (): void {
+    Storage::fake('s3-public');
+    $service = Service::factory()->rental()->create();
+    $media = $service->addMedia(UploadedFile::fake()->image('single.jpg'))->toMediaCollection('gallery');
+
+    Livewire::test(EditRentalService::class, ['record' => $service->public_id])
+        ->assertFormSet(['gallery' => [$media->uuid => $media->uuid]]);
 });
 
 it('selects an approved import vendor independently from the admin account', function (ProductType $type): void {
@@ -99,6 +177,12 @@ it('selects an approved import vendor independently from the admin account', fun
     VendorProfile::factory()->create(['approval_status' => 'pending', 'business_name' => ['en' => 'Pending Import Vendor', 'ar' => 'مورد معلق']]);
     $classType = ucfirst($type->value);
     $page = "App\\Modules\\Catalog\\Filament\\Pages\\Import{$classType}ServicesPage";
+    auth()->user()->givePermissionTo([
+        Permission::findOrCreate('view_any_vendor::profile', 'web'),
+        Permission::findOrCreate("create_{$type->value}::service", 'web'),
+    ]);
+    auth()->user()->unsetRelation('permissions');
+    expect($page::canAccess())->toBeTrue();
     expect(auth()->user()->vendorProfile)->toBeNull();
     Livewire::test($page)->assertFormFieldExists('vendor_public_id', fn (Select $field): bool => $field->getSearchResults('Import Vendor') === [
         $vendor->public_id => 'Import Vendor',

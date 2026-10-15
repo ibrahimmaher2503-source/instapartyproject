@@ -120,8 +120,8 @@ it('preserves dirty request history and reserves approved funds once while displ
     $this->actingAs($vendorUser, 'vendor');
 
     $vendorRows = Livewire::test(VendorWithdrawalsPage::class);
-    $vendorRows->assertSeeText(Carbon::parse($requestTime)->setTimezone($timezone)->translatedFormat('d M Y H:i e'))
-        ->assertSeeText(Carbon::parse($withdrawal->approved_at)->setTimezone($timezone)->translatedFormat('d M Y H:i e'))
+    $vendorRows->assertSeeText(Carbon::parse($requestTime)->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone)
+        ->assertSeeText(Carbon::parse($withdrawal->approved_at)->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone)
         ->assertSeeText($localTime.' '.$timezone)
         ->assertDontSeeText('16:49')
         ->callAction('requestWithdrawal', data: ['amount' => '600'])

@@ -23,10 +23,10 @@ use LogicException;
  */
 final class SuccessfulPaymentGateway implements PaymentGateway
 {
-    public function initiate(InitiatePaymentDto $dto): PaymentIntentDto
+    public function initiate(InitiatePaymentDto $dto, ?string $merchantOrderId = null): PaymentIntentDto
     {
         return new PaymentIntentDto(
-            gatewayRef: 'test-'.$dto->bookingPublicId,
+            gatewayRef: $merchantOrderId ?? 'test-'.$dto->bookingPublicId,
             redirectUrl: 'https://testing.invalid/payments/'.$dto->bookingPublicId,
             rawResponse: [
                 'gateway' => 'testing',
@@ -47,6 +47,11 @@ final class SuccessfulPaymentGateway implements PaymentGateway
     public function parseWebhook(array $payload): PaymobWebhookDto
     {
         throw new LogicException('Webhook operations are disabled in the testing gateway.');
+    }
+
+    public function resolveMerchantOrderReference(string $providerOrderId): ?string
+    {
+        return null;
     }
 
     public function refund(Payment $payment, Money $amount): RefundResultDto

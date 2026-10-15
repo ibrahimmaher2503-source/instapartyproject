@@ -124,7 +124,8 @@ it('keeps rental quantity fixed while preserving its existing value', function (
     $booking->update(['subtotal_minor' => 270000, 'total_minor' => 270000]);
     $url = "/en/cart/{$booking->public_id}/items/{$item->public_id}";
 
-    $this->actingAs($customer)->get('/en/cart')->assertOk()->assertDontSee($url, false)
+    $this->actingAs($customer)->get('/en/cart')->assertOk()
+        ->assertDontSee('name="quantity"', false)
         ->assertSee(__('storefront.service.quantity').': 3');
     $this->from('/en/cart')->put($url, ['quantity' => 2])->assertRedirect('/en/cart')->assertSessionHasErrors('quantity');
     $this->put($url, ['quantity' => 3])->assertRedirect('/en/cart');

@@ -255,6 +255,7 @@ it('completes the approved sale service purchase chain with idempotent payment',
         ->and($payment->status->getValue())->toBe(PendingState::$name)
         ->and($payment->amount_minor)->toBe($priceMinor)
         ->and($payment->amount_currency)->toBe('EGP')
-        ->and($payment->gateway_ref)->toBe('test-'.$booking->public_id)
+        ->and(Str::isUlid($payment->gateway_ref))->toBeTrue()
+        ->and($payment->attempts()->sole()->request_payload['merchant_order_id'])->toBe($payment->gateway_ref)
         ->and($booking->payment_status)->toBeInstanceOf(UnpaidState::class);
 });

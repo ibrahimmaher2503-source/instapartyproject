@@ -1,0 +1,16 @@
+meta {
+  name: Public vendor governorates
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{base_url}}/api/v1/customer/vendors/{{vendor_public_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: ar
+}

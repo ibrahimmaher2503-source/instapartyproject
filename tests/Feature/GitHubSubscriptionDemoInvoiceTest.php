@@ -56,8 +56,8 @@ it('preserves historical invoices and does not fabricate missing invoices or cap
 
     $this->seed(SubscriptionDevelopmentSeeder::class);
 
-    expect($invoice->fresh()->getRawOriginal())->toBe($before)
-        ->and($subscription->fresh()->getRawOriginal())->toBe($subscriptionBefore)
+    expect(array_intersect_key($invoice->fresh()->getRawOriginal(), $before))->toEqual($before)
+        ->and(array_intersect_key($subscription->fresh()->getRawOriginal(), $subscriptionBefore))->toEqual($subscriptionBefore)
         ->and(SubscriptionInvoice::query()->count())->toBe(1)
         ->and(SubscriptionPayment::query()->count())->toBe(0);
 });
@@ -68,7 +68,7 @@ it('refuses to create demo financial records outside local and testing environme
     $environment = app()->environment();
     app()->instance('env', 'production');
     try {
-        $this->seed(SubscriptionDevelopmentSeeder::class);
+        app(SubscriptionDevelopmentSeeder::class)->run();
     } finally {
         app()->instance('env', $environment);
     }

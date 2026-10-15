@@ -10,10 +10,13 @@ use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
 use App\Modules\Booking\Domain\Models\BookingCustomerNote;
+use App\Modules\Booking\Domain\Models\BookingItem;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Booking\Filament\Resources\BookingResource\Pages\ViewBooking;
 use App\Modules\Booking\Filament\Resources\BookingsMonitorResource\Pages\ListBookingsMonitor;
+use App\Modules\Catalog\Domain\Enums\ReservationStatus;
+use App\Modules\Catalog\Domain\Models\ServiceInventoryReservation;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Shared\Domain\Models\StateTransition;
 use Filament\Facades\Filament;
@@ -30,17 +33,17 @@ it('hides force cancel for terminal bookings and displays escaped customer notes
     $this->actingAs(User::factory()->superAdmin()->create());
 
     $eligibleBooking = Booking::factory()->submitted()->create();
-    Livewire::test(ViewBooking::class, ['record' => $eligibleBooking->id])
+    Livewire::test(ViewBooking::class, ['record' => $eligibleBooking->public_id])
         ->assertSuccessful()
         ->assertActionVisible('forceCancel');
 
     $cancelledBooking = Booking::factory()->cancelled()->create();
-    Livewire::test(ViewBooking::class, ['record' => $cancelledBooking->id])
+    Livewire::test(ViewBooking::class, ['record' => $cancelledBooking->public_id])
         ->assertSuccessful()
         ->assertActionHidden('forceCancel');
 
     $completedBooking = Booking::factory()->completed()->create();
-    Livewire::test(ViewBooking::class, ['record' => $completedBooking->id])
+    Livewire::test(ViewBooking::class, ['record' => $completedBooking->public_id])
         ->assertSuccessful()
         ->assertActionHidden('forceCancel');
 
@@ -53,7 +56,7 @@ it('hides force cancel for terminal bookings and displays escaped customer notes
         'detected_locale' => $locale,
     ]);
 
-    Livewire::test(ViewBooking::class, ['record' => $booking->id])
+    Livewire::test(ViewBooking::class, ['record' => $booking->public_id])
         ->assertSuccessful()
         ->assertSee($notesLabel)
         ->assertSee($note)
@@ -70,10 +73,11 @@ it('reports a mounted stale force cancel without adding duplicate audit effects'
     $this->actingAs($admin);
 
     $booking = Booking::factory()->submitted()->create();
-    $component = Livewire::test(ViewBooking::class, ['record' => $booking->id])
+    $component = Livewire::test(ViewBooking::class, ['record' => $booking->public_id])
         ->assertActionVisible('forceCancel')
         ->mountAction('forceCancel')
-        ->fillForm(['reason' => 'Prevent duplicate cancellation effects.']);
+        ->assertSet('mountedActions', ['forceCancel'])
+        ->setActionData(['reason' => 'Prevent duplicate cancellation effects.']);
     $dto = new AdminInterventionDTO(
         bookingId: $booking->id,
         adminId: $admin->id,
@@ -82,7 +86,19 @@ it('reports a mounted stale force cancel without adding duplicate audit effects'
     );
     $action = app(ForceCancelBookingAction::class);
 
+    $vendor = BookingVendor::factory()->create(['booking_id' => $booking->id]);
+    $item = BookingItem::factory()->rental()->create(['booking_vendor_id' => $vendor->id]);
+    $reservation = ServiceInventoryReservation::factory()->create([
+        'service_id' => $item->service_id,
+        'booking_item_id' => $item->id,
+        'status' => ReservationStatus::Held,
+    ]);
+    $unrelatedReservation = ServiceInventoryReservation::factory()->create(['status' => ReservationStatus::Held]);
+
     $action->execute($booking, $dto);
+    expect($reservation->fresh()->status)->toBe(ReservationStatus::Released)
+        ->and($unrelatedReservation->fresh()->status)->toBe(ReservationStatus::Held)
+        ->and($booking->snapshots()->where('trigger_kind', 'booking_cancelled')->count())->toBe(1);
     $interventionCount = BookingAdminIntervention::query()
         ->where('booking_id', $booking->id)
         ->where('intervention_type', InterventionType::ForceCancel->value)
@@ -97,9 +113,10 @@ it('reports a mounted stale force cancel without adding duplicate audit effects'
         ->where('action', 'force_cancel_booking')
         ->count();
 
-    $component->callMountedAction()
+    $component->call('callMountedAction')
         ->assertNotified(Notification::make()
             ->title(__('booking::booking.cancellation.blocked.already_cancelled'))
+            ->body(__('shared::admin-feedback.force_cancel_failed', ['reference' => $booking->public_id]))
             ->danger());
 
     expect(BookingAdminIntervention::query()
@@ -116,6 +133,22 @@ it('reports a mounted stale force cancel without adding duplicate audit effects'
             ->where('action', 'force_cancel_booking')
             ->count())->toBe($auditCount);
 })->with(['en', 'ar']);
+
+it('rechecks admin access before processing a mounted cancellation', function (): void {
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $admin = User::factory()->superAdmin()->create();
+    $this->actingAs($admin);
+    $booking = Booking::factory()->submitted()->create();
+    $component = Livewire::test(ViewBooking::class, ['record' => $booking->public_id])
+        ->mountAction('forceCancel')
+        ->assertSet('mountedActions', ['forceCancel'])
+        ->setActionData(['reason' => 'Cancellation opened before admin access was revoked.']);
+    $admin->syncRoles([]);
+
+    $component->call('callMountedAction')->assertForbidden();
+    expect($booking->fresh()->lifecycle_status->getValue())->toBe(LifecycleStatus::Submitted->value)
+        ->and(BookingAdminIntervention::query()->where('booking_id', $booking->id)->count())->toBe(0);
+});
 
 it('rejects a forged monitor force cancel from a monitor viewer without cancellation permission', function (): void {
     Role::findOrCreate('panel_user', 'web');
@@ -141,10 +174,12 @@ it('rejects a forged monitor force cancel from a monitor viewer without cancella
     $component = Livewire::test(ListBookingsMonitor::class)
         ->assertSuccessful()
         ->assertCanSeeTableRecords([$booking])
+        ->assertTableActionHidden('forceCancel', $booking)
         ->call('mountTableAction', 'forceCancel', (string) $booking->getKey())
+        ->assertSet('mountedTableActions', [])
         ->set('mountedTableActionsData.0.reason', 'Unauthorized cancellation attempt.');
 
-    $component->call('callMountedTableAction')->assertForbidden();
+    $component->call('callMountedTableAction')->assertSuccessful();
 
     expect($booking->fresh()->lifecycle_status)->toBeInstanceOf(VendorReviewState::class)
         ->and(BookingAdminIntervention::query()
@@ -157,3 +192,24 @@ it('rejects a forged monitor force cancel from a monitor viewer without cancella
             ->where('action', 'force_cancel_booking')
             ->count())->toBe(0);
 });
+
+it('closes a cancellation modal when the booking completes before confirmation', function (string $locale): void {
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $this->actingAs(User::factory()->superAdmin()->create());
+    $booking = Booking::factory()->submitted()->create();
+    $component = Livewire::test(ViewBooking::class, ['record' => $booking->public_id])
+        ->mountAction('forceCancel')
+        ->assertSet('mountedActions', ['forceCancel'])
+        ->setActionData(['reason' => 'Cancellation requested before the booking completed.']);
+    $booking->forceFill(['lifecycle_status' => LifecycleStatus::Completed->value])->saveQuietly();
+
+    $component->call('callMountedAction')
+        ->assertSet('mountedActions', [])
+        ->assertNotified(Notification::make()
+            ->title(__('booking::booking.cancellation.blocked.booking_completed'))
+            ->body(__('shared::admin-feedback.force_cancel_failed', ['reference' => $booking->public_id]))
+            ->danger());
+    expect($booking->fresh()->lifecycle_status->getValue())->toBe(LifecycleStatus::Completed->value)
+        ->and(BookingAdminIntervention::query()->where('booking_id', $booking->id)->count())->toBe(0);
+})->with(['en', 'ar']);

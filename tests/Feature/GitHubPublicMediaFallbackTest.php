@@ -42,11 +42,11 @@ it('renders homepage and listing fallbacks instead of missing service images and
         'logo_path' => 'vendor-logos/missing.png',
         'cover_path' => 'vendor-covers/missing.png',
     ]);
-    $service = Service::factory()->published()->create(['vendor_profile_id' => $vendor->id]);
+    $service = Service::factory()->published()->create();
     $media = $service->media()->create([
         'collection_name' => 'gallery', 'name' => 'missing-service-image',
         'file_name' => 'missing-service-image.png', 'mime_type' => 'image/png',
-        'disk' => 'public', 'size' => 100, 'manipulations' => [],
+        'disk' => 'public', 'conversions_disk' => 'public', 'size' => 100, 'manipulations' => [],
         'custom_properties' => [], 'generated_conversions' => [], 'responsive_images' => [],
     ]);
     $block = ['public_id' => 'github-media-regression', 'payload' => []];
@@ -74,7 +74,7 @@ it('renders homepage and listing fallbacks instead of missing service images and
     $portfolio = $vendor->media()->create([
         'collection_name' => 'portfolio', 'name' => 'missing-portfolio-image',
         'file_name' => 'missing-portfolio-image.png', 'mime_type' => 'image/png',
-        'disk' => 'public', 'size' => 100, 'manipulations' => [],
+        'disk' => 'public', 'conversions_disk' => 'public', 'size' => 100, 'manipulations' => [],
         'custom_properties' => [], 'generated_conversions' => [], 'responsive_images' => [],
     ]);
     $this->get("/{$locale}/vendors/{$vendor->slug}")->assertOk()
@@ -83,7 +83,11 @@ it('renders homepage and listing fallbacks instead of missing service images and
     Storage::disk('public')->put($portfolio->getPathRelativeToRoot(), 'portfolio original fixture');
     $this->get("/{$locale}/vendors/{$vendor->slug}")->assertOk()
         ->assertViewHas('galleryItems', fn ($gallery): bool => $gallery->count() === 1
-            && $gallery->first() === ['url' => $portfolio->getUrl(), 'thumb' => $portfolio->getUrl()]);
+            && $gallery->first() === [
+                'url' => $portfolio->getUrl(),
+                'thumb' => $portfolio->getUrl(),
+                'service_public_id' => null,
+            ]);
     Storage::disk('public')->put($vendor->logo_path, 'logo fixture');
     expect(app(PublicMediaUrl::class)->publicPath($vendor->logo_path))->toBe(Storage::disk('public')->url($vendor->logo_path));
     $this->get("/{$locale}/vendors/{$vendor->slug}")->assertOk()

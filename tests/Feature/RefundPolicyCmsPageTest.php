@@ -13,6 +13,7 @@ use Database\Seeders\RefundPolicyCmsPageSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Permission;
 
 it('renders the editable refund policy in both storefront locales', function (): void {
     $this->seed(RefundPolicyCmsPageSeeder::class);
@@ -33,6 +34,11 @@ it('lets an admin edit the policy through the existing CMS resource', function (
     $this->seed(RefundPolicyCmsPageSeeder::class);
     $page = CmsPage::query()->where('slug', 'refund-policy')->sole();
     $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo(
+        Permission::findOrCreate('view_any_cms::page', 'web'),
+        Permission::findOrCreate('view_cms::page', 'web'),
+        Permission::findOrCreate('update_cms::page', 'web'),
+    );
 
     $this->actingAs($admin);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
@@ -108,7 +114,7 @@ it('appends the footer link without replacing existing legal links', function ()
 
     expect($terms->refresh()->target_value)->toBe('terms')
         ->and($policyLink->target_type)->toBe(NavigationTargetType::CmsPage)
-        ->and($policyLink->label)->toBe(['en' => 'Refunds and cancellations', 'ar' => 'الاسترداد والإلغاء'])
+        ->and($policyLink->getTranslations('label'))->toBe(['en' => 'Refunds and cancellations', 'ar' => 'الاسترداد والإلغاء'])
         ->and($policyLink->position)->toBe(2)
         ->and(NavigationMenuItem::query()->where('target_value', 'refund-policy')->count())->toBe(1);
 });

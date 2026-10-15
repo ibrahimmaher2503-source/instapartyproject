@@ -53,6 +53,7 @@ use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Fakes\SuccessfulPaymentGateway;
+use Tests\Support\VendorDocumentTestFiles;
 
 it('completes registration, approval, sale publication, booking, and payment for one marketplace pair', function (): void {
     Mail::fake();
@@ -144,8 +145,8 @@ it('completes registration, approval, sale publication, booking, and payment for
 
     Livewire::test(VendorDocumentsPage::class)->assertActionExists('upload');
     $upload = app(UploadVendorDocumentAction::class);
-    $nationalId = $upload->execute($vendor, UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'), DocumentType::NationalId);
-    $ibanProof = $upload->execute($vendor, UploadedFile::fake()->create('iban-proof.pdf', 40, 'application/pdf'), DocumentType::IbanProof);
+    $nationalId = $upload->execute($vendor, UploadedFile::fake()->createWithContent('national-id.pdf', VendorDocumentTestFiles::minimalPdf()), DocumentType::NationalId);
+    $ibanProof = $upload->execute($vendor, UploadedFile::fake()->createWithContent('iban-proof.pdf', VendorDocumentTestFiles::minimalPdf()), DocumentType::IbanProof);
     expect($nationalId->public_id)->not->toBeEmpty()
         ->and($ibanProof->public_id)->not->toBeEmpty()
         ->and($nationalId->status)->toBe(DocumentStatus::Pending)
@@ -297,6 +298,7 @@ it('completes registration, approval, sale publication, booking, and payment for
         ->and($payment->status->getValue())->toBe(PendingState::$name)
         ->and($payment->amount_minor)->toBe($priceMinor)
         ->and($payment->amount_currency)->toBe('EGP')
-        ->and($payment->gateway_ref)->toBe('test-'.$booking->public_id)
+        ->and(Str::isUlid($payment->gateway_ref))->toBeTrue()
+        ->and($payment->attempts()->sole()->request_payload['merchant_order_id'])->toBe($payment->gateway_ref)
         ->and($booking->refresh()->payment_status)->toBeInstanceOf(UnpaidState::class);
 });

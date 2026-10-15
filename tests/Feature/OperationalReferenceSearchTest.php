@@ -13,6 +13,7 @@ use App\Modules\Communication\Filament\Resources\AdminInboxResource;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Loyalty\Domain\Models\LoyaltyLedgerEntry;
+use App\Modules\Loyalty\Domain\Models\LoyaltyProgram;
 use App\Modules\Loyalty\Domain\Models\LoyaltyRedemption;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Payments\Domain\Models\PaymentAttempt;
@@ -41,6 +42,7 @@ dataset('operational reference lists', [
     ['Communication', 'NotificationPreferenceResource', 'preference'],
     ['Communication', 'NotificationDispatchResource', 'dispatch'],
     ['Loyalty', 'LoyaltyLedgerResource', 'loyalty'],
+    ['Loyalty', 'LoyaltyProgramResource', 'program'],
     ['Loyalty', 'LoyaltyRedemptionResource', 'redemption'],
     ['Support', 'SupportTicketResource', 'ticket'],
     ['TrustSafety', 'ReportResource', 'report'],
@@ -87,6 +89,7 @@ function operationalSearchRecords(string $suffix): array
         'withdrawal' => Withdrawal::factory()->create(['vendor_profile_id' => $vendor->id, 'requested_by_user_id' => $vendorUser->id]),
         'commission' => Commission::factory()->create(['booking_item_id' => $item->id, 'payment_id' => $payment->id, 'vendor_profile_id' => $vendor->id, 'status' => 'calculated']),
         'loyalty' => LoyaltyLedgerEntry::factory()->create(['user_id' => $customer->id, 'vendor_profile_id' => $vendor->id]),
+        'program' => LoyaltyProgram::factory()->create(['vendor_profile_id' => $vendor->id]),
         'redemption' => LoyaltyRedemption::factory()->create(['user_id' => $customer->id, 'vendor_profile_id' => $vendor->id, 'booking_id' => $booking->id]),
         'ticket' => SupportTicket::create(['user_id' => $customer->id, 'email' => $customer->email, 'booking_id' => $booking->id, 'subject' => 'Help '.$suffix, 'body' => 'Need help']),
         'report' => Report::create(['reporter_id' => $customer->id, 'reportable_type' => VendorProfile::class, 'reportable_id' => $vendor->id, 'reason' => 'other', 'status' => 'open']),
@@ -98,7 +101,7 @@ function operationalSearchRecords(string $suffix): array
 
 it('searches populated operational lists by contacts and public references without widening results', function (string $module, string $resourceName, string $recordKey): void {
     $admin = User::factory()->superAdmin()->create();
-    foreach (['view_any_bookings::monitor', 'view_any_booking::modification', 'view_any_withdrawals::queue', 'view_any_wallet::ledger::viewer', 'view_any_notification::preference', 'view_any_notification::dispatch', 'booking.intervene.access', 'view_any_refund', 'view_any_payment::attempt', 'view_any_support::ticket', 'view_any_report', 'view_any_loyalty::ledger', 'view_any_loyalty::redemption', 'view_any_wallet', 'view_any_commission', 'view_any_withdrawal'] as $name) {
+    foreach (['view_any_bookings::monitor', 'view_any_booking::modification', 'view_any_withdrawals::queue', 'view_any_wallet::ledger::viewer', 'view_any_notification::preference', 'view_any_notification::dispatch', 'booking.intervene.access', 'view_any_refund', 'view_any_payment::attempt', 'view_any_support::ticket', 'view_any_report', 'view_any_loyalty::ledger', 'view_any_loyalty::program', 'view_any_loyalty::redemption', 'view_any_wallet', 'view_any_commission', 'view_any_withdrawal'] as $name) {
         $admin->givePermissionTo(Permission::findOrCreate($name, 'web'));
     }
     $this->actingAs($admin);
@@ -108,9 +111,11 @@ it('searches populated operational lists by contacts and public references witho
     $outsideReview = Booking::factory()->create(['customer_id' => $matched['customer']->id, 'lifecycle_status' => 'completed']);
     $resource = 'App\\Modules\\'.$module.'\\Filament\\Resources\\'.$resourceName;
     $page = $resource::getPages()['index']->getPage();
-    $queries = in_array($recordKey, ['withdrawal', 'wallet'], true)
+    $queries = $recordKey === 'program'
+        ? ['فانوس', 'Lantern match']
+        : (in_array($recordKey, ['withdrawal', 'wallet'], true)
         ? [$matched['vendorUser']->email, $matched['vendorUser']->phone_e164, $matched['vendor']->public_id, 'فانوس']
-        : [$matched['customer']->email, $matched['customer']->phone_e164, $matched['customer']->public_id];
+        : [$matched['customer']->email, $matched['customer']->phone_e164, $matched['customer']->public_id]);
     if (in_array($recordKey, ['booking', 'payment', 'refund', 'attempt', 'modification', 'commission', 'redemption', 'ticket', 'dispatch'], true)) {
         $queries[] = $matched['booking']->reference_no;
         $queries[] = $matched['booking']->public_id;

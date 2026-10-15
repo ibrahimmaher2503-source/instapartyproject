@@ -39,6 +39,7 @@ use App\Modules\Settlement\Filament\Vendor\Pages\VendorStatementPage;
 use App\Modules\Settlement\Filament\Vendor\Pages\VendorWalletPage;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 
@@ -149,7 +150,8 @@ it('keeps approved withdrawal funds excluded once by the ledger balance and allo
 
     expect($wallet->balance_minor)->toBe(63800)
         ->and($wallet->pending_withdrawal_minor)->toBe(100000)
-        ->and(app(WalletQueryService::class)->balance($vendor->id)['available_minor'])->toBe(63800);
+        ->and(app(WalletQueryService::class)->balance($vendor->id)['available_minor'])->toBe(63800)
+        ->and(DB::table('idempotency_keys')->where('key', 'wd_approve:'.$withdrawal->id)->where('scope_key', 'internal_action')->exists())->toBeTrue();
 
     $this->actingAs($vendor->user, 'vendor');
 

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { expect, test as setup } from '@playwright/test';
 
 const email = 'uat-admin@example.test';
-const password = 'UatTest123!';
+const password = 'UatAdminTest123!';
 const authFile = path.resolve('tests/e2e/auth/.auth-state.json');
 const environment = {
     ...process.env,

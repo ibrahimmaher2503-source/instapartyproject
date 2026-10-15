@@ -37,11 +37,17 @@ body:json {
 }
 
 tests {
-  test("registration stays successful while verification is pending", function() {
+  test("registration succeeds with environment-specific verification status", function() {
     expect(res.getStatus()).to.equal(201);
     expect(res.getBody().meta.registration_successful).to.equal(true);
-    expect(res.getBody().meta.verification_pending).to.equal(true);
+    expect(res.getBody().meta.verification_pending).to.equal(bru.getEnvVar("appDebug") !== "true");
     expect(res.getBody().data.website_url).to.equal("https://qa-events.example");
     expect(res.getBody().data.primary_city_id).to.equal(null);
   });
+}
+
+docs {
+  Set the Bruno environment variable appDebug=true only when the target application
+  has APP_DEBUG=true. Verification is then bypassed and verification_pending is false.
+  With appDebug omitted or false, verification_pending must be true.
 }

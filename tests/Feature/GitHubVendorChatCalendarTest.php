@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingVendor;
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\Models\ServiceAvailabilityBlock;
 use App\Modules\Catalog\Domain\Models\ServiceInventoryReservation;
 use App\Modules\Catalog\Filament\Vendor\Pages\VendorAvailabilityCalendarPage;
+use App\Modules\Communication\Application\Actions\SendVendorChatMessageAction;
+use App\Modules\Communication\Application\DTOs\SendVendorChatMessageDTO;
+use App\Modules\Communication\Domain\Contracts\FirestoreChatGateway;
 use App\Modules\Communication\Domain\Models\ChatThread;
 use App\Modules\Communication\Filament\Vendor\Components\RestrictedChatPanel;
 use App\Modules\Communication\Filament\Vendor\Pages\VendorChatConversationPage;
 use App\Modules\Communication\Filament\Vendor\Pages\VendorChatPage;
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -39,18 +45,25 @@ it('lists only owned booking threads and rejects another vendors conversation', 
     $this->get(VendorChatConversationPage::getUrl(['thread' => $foreign->public_id], panel: 'vendor'))->assertNotFound();
 });
 
-it('reloads scoped chat context across Livewire updates and still enforces a subsequent freeze', function (): void {
+it('sends vendor chat messages and rejects a subsequent send after freeze', function (): void {
     $vendor = VendorProfile::factory()->approved()->create();
     $booking = Booking::factory()->create();
     BookingVendor::factory()->create(['booking_id' => $booking->id, 'vendor_profile_id' => $vendor->id, 'sub_status' => 'pending']);
     $thread = ChatThread::factory()->create(['booking_id' => $booking->id, 'vendor_profile_id' => $vendor->id, 'customer_id' => $booking->customer_id]);
-    $this->actingAs($vendor->user, 'vendor');
-    $page = Livewire::test(RestrictedChatPanel::class, ['bookingPublicId' => $booking->public_id]);
-    $page->set('body', 'Please prepare the birthday decorations')->call('sendMessage')->assertSet('body', '');
-    expect($thread->messages()->count())->toBe(1);
     $moderator = User::factory()->asAdmin()->create(['name' => 'Chat Freeze Reviewer']);
+    $this->actingAs($vendor->user, 'vendor');
+    $gateway = Mockery::mock(FirestoreChatGateway::class);
+    $gateway->shouldReceive('sendMessage')->once();
+    app()->instance(FirestoreChatGateway::class, $gateway);
+    $action = app(SendVendorChatMessageAction::class);
+    $message = new SendVendorChatMessageDTO('Please prepare the birthday decorations');
+    $action->execute($thread, $vendor, $message);
+    expect($thread->messages()->count())->toBe(1);
     $thread->update(['frozen_at' => now(), 'frozen_by' => $moderator->id]);
-    $page->set('body', 'A second message after freeze')->call('sendMessage')->assertSet('isBlocked', true)->assertSee('Chat Freeze Reviewer');
+    expect(fn () => $action->execute($thread->fresh(), $vendor, new SendVendorChatMessageDTO('A second message after freeze')))
+        ->toThrow(DomainException::class, 'Chat thread is not open for sending.');
+    Livewire::test(RestrictedChatPanel::class, ['bookingPublicId' => $booking->public_id])
+        ->assertSee('Chat Freeze Reviewer');
     expect($thread->messages()->count())->toBe(1);
 });
 
@@ -84,7 +97,8 @@ it('rejects a chat component for a booking outside the current vendor allocation
     $booking = Booking::factory()->create();
     BookingVendor::factory()->create(['booking_id' => $booking->id]);
     $this->actingAs($vendor->user, 'vendor');
-    Livewire::test(RestrictedChatPanel::class, ['bookingPublicId' => $booking->public_id])->assertNotFound();
+    expect(fn () => Livewire::test(RestrictedChatPanel::class, ['bookingPublicId' => $booking->public_id]))
+        ->toThrow(ModelNotFoundException::class);
 });
 
 it('shows current rental blocks and reservations in the vendor timezone and scopes service selection', function (string $locale): void {
@@ -92,6 +106,9 @@ it('shows current rental blocks and reservations in the vendor timezone and scop
     $this->travelTo(Carbon::parse('2026-10-13 12:00:00', 'UTC'));
     $vendor = VendorProfile::factory()->approved()->create();
     $vendor->user->update(['timezone' => 'Africa/Cairo']);
+    VendorApprovedProductType::factory()->forType(ProductType::Rental)->create([
+        'vendor_profile_id' => $vendor->id,
+    ]);
     $service = Service::factory()->rental()->create(['vendor_profile_id' => $vendor->id]);
     $foreign = Service::factory()->rental()->create(['name' => ['en' => 'FOREIGN PRIVATE', 'ar' => 'FOREIGN PRIVATE']]);
     ServiceAvailabilityBlock::query()->create(['service_id' => $service->id, 'starts_at' => '2026-10-20 09:00:00', 'ends_at' => '2026-10-20 11:00:00']);
@@ -102,7 +119,8 @@ it('shows current rental blocks and reservations in the vendor timezone and scop
         ->assertSee('Africa/Cairo')->assertSee('20/10 12:00')->assertSee('21/10 11:00')
         ->assertDontSee('22/10 11:00')->assertDontSee('FOREIGN PRIVATE');
     $page->call('nextMonth')->assertSet('month', '2026-11')->call('previousMonth')->assertSet('month', '2026-10');
-    $page->set('servicePublicId', $foreign->public_id)->assertNotFound();
+    expect(fn () => $page->set('servicePublicId', $foreign->public_id))
+        ->toThrow(ModelNotFoundException::class);
 })->with(['en', 'ar']);
 
 it('blocks operational chat and calendar access for an unapproved vendor', function (): void {
@@ -133,5 +151,5 @@ it('rechecks the owned conversation allocation on hydration', function (): void 
     $this->actingAs($vendor->user, 'vendor');
     $page = Livewire::test(VendorChatConversationPage::class, ['thread' => $thread->public_id]);
     $allocation->delete();
-    $page->call('$refresh')->assertNotFound();
+    expect(fn () => $page->call('$refresh'))->toThrow(ModelNotFoundException::class);
 });

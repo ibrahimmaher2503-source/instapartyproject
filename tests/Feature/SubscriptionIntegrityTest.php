@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Subscriptions\Application\Actions\AutoEnrolFreeTierAction;
 use App\Modules\Subscriptions\Application\Services\SubscriptionAuditWriter;
 use App\Modules\Subscriptions\Application\Services\SubscriptionLifecycleService;
+use App\Modules\Subscriptions\Database\Seeders\SubscriptionDevelopmentSeeder;
 use App\Modules\Subscriptions\Domain\Enums\InvoiceStatus;
 use App\Modules\Subscriptions\Domain\Enums\SubscriptionStatus;
 use App\Modules\Subscriptions\Domain\Models\SubscriptionInvoice;
@@ -88,4 +90,58 @@ it('keeps a paid invoice explainable through its captured subscription payment',
 
     expect($invoice->fresh()->payments)->toHaveCount(1)
         ->and($invoice->fresh()->payments->first()->gateway_ref)->toBe($invoice->gateway_ref);
+});
+
+it('seeds demo invoices at each new subscription plan price without rewriting existing invoice history', function (): void {
+    $silver = SubscriptionPlan::factory()->create([
+        'plan_code' => 'silver',
+        'monthly_price_minor' => 19_900,
+        'monthly_price_currency' => 'USD',
+    ]);
+    $premium = SubscriptionPlan::factory()->create([
+        'plan_code' => 'premium',
+        'monthly_price_minor' => 99_900,
+    ]);
+    $ordinaryVendor = VendorProfile::factory()->create();
+    $newSilverVendor = VendorProfile::factory()->create();
+    $typeVendor = VendorProfile::factory()->create([
+        'user_id' => User::factory()->asVendor()
+            ->create(['email' => 'vendor.rental@instaparty.local'])->id,
+    ]);
+    $existingSubscription = VendorSubscription::factory()->create([
+        'vendor_profile_id' => $ordinaryVendor->id,
+        'subscription_plan_id' => $silver->id,
+        'current_period_start' => now()->startOfMonth(),
+        'current_period_end' => now()->startOfMonth()->addMonth(),
+    ]);
+    $historicalInvoice = SubscriptionInvoice::factory()->paid()->create([
+        'vendor_subscription_id' => $existingSubscription->id,
+        'period_start' => $existingSubscription->current_period_start,
+        'period_end' => $existingSubscription->current_period_end,
+        'amount_minor' => 9_900,
+        'amount_currency' => 'EGP',
+    ]);
+    $historicalInvoiceBefore = $historicalInvoice->getRawOriginal();
+
+    app(SubscriptionDevelopmentSeeder::class)->run();
+
+    $silverSubscription = VendorSubscription::query()->where('vendor_profile_id', $newSilverVendor->id)->sole();
+    $premiumSubscription = VendorSubscription::query()->where('vendor_profile_id', $typeVendor->id)->sole();
+    $silverInvoice = $silverSubscription->invoices()->sole();
+    $premiumInvoice = $premiumSubscription->invoices()->sole();
+
+    expect($silverSubscription->subscription_plan_id)->toBe($silver->id)
+        ->and($silverInvoice->amount_minor)->toBe(19_900)
+        ->and($silverInvoice->amount_currency)->toBe('USD')
+        ->and($premiumSubscription->subscription_plan_id)->toBe($premium->id)
+        ->and($premiumInvoice->amount_minor)->toBe(99_900)
+        ->and($premiumInvoice->payments)->toHaveCount(1)
+        ->and(array_intersect_key($historicalInvoice->fresh()->getRawOriginal(), $historicalInvoiceBefore))
+        ->toEqual($historicalInvoiceBefore)
+        ->and($historicalInvoice->fresh()->payments)->toHaveCount(0);
+
+    app(SubscriptionDevelopmentSeeder::class)->run();
+
+    expect(array_intersect_key($historicalInvoice->fresh()->getRawOriginal(), $historicalInvoiceBefore))
+        ->toEqual($historicalInvoiceBefore);
 });
