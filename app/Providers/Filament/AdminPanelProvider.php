@@ -6,7 +6,6 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\AdminActivityLogResource;
-use App\Modules\Booking\Filament\Resources\BookingsMonitorResource\Pages\ListBookingsMonitor;
 use App\Modules\Identity\Filament\Auth\AdminEditProfile;
 use App\Modules\Identity\Filament\Auth\AdminLogin;
 use App\Modules\Identity\Filament\Auth\AdminResetPassword;
@@ -30,6 +29,7 @@ use Filament\Infolists\Infolist;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Resources\Pages\ListRecords;
 use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
@@ -88,10 +88,28 @@ class AdminPanelProvider extends PanelProvider
         );
         FilamentView::registerRenderHook(
             PanelsRenderHook::RESOURCE_PAGES_LIST_RECORDS_TABLE_BEFORE,
-            fn (): string => filament()->getCurrentPanel()->getId() === 'admin'
-                ? view('filament.admin.booking-monitor-saved-views', ['userId' => auth()->id()])->render()
-                : '',
-            ListBookingsMonitor::class,
+            function (array $scopes): string {
+                if (filament()->getCurrentPanel()->getId() !== 'admin') {
+                    return '';
+                }
+
+                $page = collect($scopes)->first(fn (mixed $scope): bool => is_string($scope)
+                    && class_exists($scope)
+                    && is_subclass_of($scope, ListRecords::class));
+
+                if (! $page) {
+                    return '';
+                }
+
+                $resource = $page::getResource();
+
+                return $resource::canViewAny()
+                    ? view('filament.admin.booking-monitor-saved-views', [
+                        'pageSlug' => $resource::getSlug(),
+                        'userId' => auth()->id(),
+                    ])->render()
+                    : '';
+            },
         );
     }
 

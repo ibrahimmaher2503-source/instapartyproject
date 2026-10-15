@@ -360,12 +360,12 @@
         font-weight: 650;
     }
 
-    .fi-panel-admin .fi-ta-record .fi-badge.fi-color-custom {
+    .fi-panel-admin :is(.fi-ta-record, .fi-ta-row) .fi-badge:is(.fi-color-custom, .fi-color-gray) {
         background-color: rgb(var(--c-50));
         color: rgb(var(--c-800));
     }
 
-    .dark .fi-panel-admin .fi-ta-record .fi-badge.fi-color-custom {
+    .dark .fi-panel-admin :is(.fi-ta-record, .fi-ta-row) .fi-badge:is(.fi-color-custom, .fi-color-gray) {
         background-color: rgb(var(--c-900) / 0.45);
         color: rgb(var(--c-200));
     }
@@ -400,6 +400,15 @@
         vertical-align: top;
     }
     .ip-import-table th { background: var(--ip-admin-subtle); color: var(--ip-admin-muted); font-weight: 700; }
+}
+
+@media (min-width: 640px) {
+    .fi-panel-admin .fi-ta-actions-cell:last-child {
+        position: sticky;
+        inset-inline-end: 0;
+        z-index: 2;
+        background: var(--ip-admin-surface);
+    }
 }
 
 @media (max-width: 767px) {
