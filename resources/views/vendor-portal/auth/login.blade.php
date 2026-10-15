@@ -16,6 +16,10 @@
             :actions="$this->getCachedFormActions()"
             :full-width="$this->hasFullWidthFormActions()"
         />
+
+        <p wire:loading.delay.longest wire:target="authenticate" role="status" aria-live="polite" class="text-sm text-gray-600 dark:text-gray-400">
+            {{ __('identity::identity.login_in_progress') }}
+        </p>
     </x-filament-panels::form>
 
     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, scopes: $this->getRenderHookScopes()) }}

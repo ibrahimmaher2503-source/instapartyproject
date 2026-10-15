@@ -31,6 +31,21 @@ it('keeps guest entry routes inside their panel in both locales', function (stri
         ->assertRedirect(route('filament.vendor.auth.login'));
 })->with(['en', 'ar']);
 
+it('renders localized feedback while panel login is processing', function (string $path, string $locale, string $message): void {
+    $this->withHeader('Accept-Language', $locale)
+        ->get($path)
+        ->assertOk()
+        ->assertSee('wire:loading.delay.longest', false)
+        ->assertSee('wire:target="authenticate"', false)
+        ->assertSee('aria-live="polite"', false)
+        ->assertSee($message);
+})->with([
+    'vendor English' => ['/vendor-portal/login', 'en', 'Signing in is still in progress. If it keeps taking longer, refresh the page to check your sign-in status.'],
+    'vendor Arabic' => ['/vendor-portal/login', 'ar', 'ما زال تسجيل الدخول جارياً. إذا استغرق وقتاً أطول، حدّث الصفحة للتحقق من حالة تسجيل الدخول.'],
+    'admin English' => ['/admin/login', 'en', 'Signing in is still in progress. If it keeps taking longer, refresh the page to check your sign-in status.'],
+    'admin Arabic' => ['/admin/login', 'ar', 'ما زال تسجيل الدخول جارياً. إذا استغرق وقتاً أطول، حدّث الصفحة للتحقق من حالة تسجيل الدخول.'],
+]);
+
 it('discards an intended URL belonging to the other panel', function (string $loginUrl, string $foreignUrl): void {
     $this->withSession(['url.intended' => $foreignUrl])
         ->get($loginUrl)

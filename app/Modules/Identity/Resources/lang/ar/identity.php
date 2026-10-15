@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'login_in_progress' => 'ما زال تسجيل الدخول جارياً. إذا استغرق وقتاً أطول، حدّث الصفحة للتحقق من حالة تسجيل الدخول.',
+
     // General
     'vendor_profile' => 'ملف مقدم الخدمة',
     'vendor_profiles' => 'ملفات مقدمي الخدمات',
