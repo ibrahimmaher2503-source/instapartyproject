@@ -283,6 +283,7 @@ return [
     'import_success' => 'تم استيراد :count خدمة بنجاح.',
     'import_failed' => 'فشلت عملية الاستيراد. يرجى مراجعة الأخطاء أدناه.',
     'import_processing_failed' => 'تعذر معالجة الملف. ارفع ملفًا مصححًا وحاول مرة أخرى.',
+    'duplicate_import_row' => 'هذا الصف يكرر تمامًا صفًا سابقًا في الملف نفسه.',
     'imported_rows' => 'تم استيراد :count صف بنجاح.',
     'import_failed_rows' => 'فشلت عملية الاستيراد بسبب :count خطأ.',
     'import_empty_heading' => 'لا توجد عمليات استيراد بعد',

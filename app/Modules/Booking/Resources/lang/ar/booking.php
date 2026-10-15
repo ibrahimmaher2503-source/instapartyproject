@@ -474,6 +474,7 @@ return [
     'validation' => [
         'guest_count_range' => 'أدخل عددًا صحيحًا من 1 إلى 10,000.',
         'transport_price_invalid' => 'أدخل مبلغًا بالجنيه المصري لا يقل عن صفر وبمنزلتين عشريتين كحد أقصى.',
+        'transport_reference_conflict' => 'هذا المرجع مستخدم بالفعل لبند نقل مختلف.',
         'lane_required' => 'خطوة التنفيذ مطلوبة.',
         'lane_invalid' => 'يجب أن تكون خطوة التنفيذ preparing أو ready أو in_progress أو completed.',
     ],

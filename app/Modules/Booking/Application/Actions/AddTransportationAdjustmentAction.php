@@ -9,6 +9,7 @@ use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingAdjustment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 final class AddTransportationAdjustmentAction
@@ -29,8 +30,35 @@ final class AddTransportationAdjustmentAction
             throw new InvalidArgumentException('A non-negative amount and auditable source are required.');
         }
 
+        $sourceReference = $sourceReference === null ? null : trim($sourceReference);
+        $sourceReference = $sourceReference === '' ? null : $sourceReference;
+
         return DB::transaction(function () use ($booking, $userId, $amountMinor, $source, $sourceReference): BookingAdjustment {
             $locked = Booking::query()->whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $source = trim($source);
+            $currency = (string) ($locked->total_currency ?: 'EGP');
+
+            if ($sourceReference !== null) {
+                $existing = BookingAdjustment::query()
+                    ->where('booking_id', $locked->id)
+                    ->where('type', 'transportation')
+                    ->where('source_reference', $sourceReference)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existing !== null) {
+                    if ($existing->amount_minor !== $amountMinor
+                        || $existing->currency !== $currency
+                        || $existing->source !== $source) {
+                        throw ValidationException::withMessages([
+                            'source_reference' => __('booking::booking.validation.transport_reference_conflict'),
+                        ]);
+                    }
+
+                    return $existing;
+                }
+            }
+
             $this->transportPricing->snapshotBaseFee($locked);
 
             $adjustment = BookingAdjustment::create([
@@ -39,7 +67,7 @@ final class AddTransportationAdjustmentAction
                 'type' => 'transportation',
                 'amount_minor' => $amountMinor,
                 'currency' => (string) ($locked->total_currency ?: 'EGP'),
-                'source' => trim($source),
+                'source' => $source,
                 'source_reference' => $sourceReference,
                 'created_by_user_id' => $userId,
             ]);

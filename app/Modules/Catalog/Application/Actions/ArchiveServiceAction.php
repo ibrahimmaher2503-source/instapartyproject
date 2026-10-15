@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Application\Actions;
 
-use App\Modules\Catalog\Domain\Enums\ServiceStatus;
-use App\Modules\Catalog\Domain\Events\ServiceArchived;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\Policies\ServicePolicy;
 use App\Modules\Catalog\Domain\States\ServiceStatus\ArchivedState;
+use App\Modules\Catalog\Domain\States\ServiceStatus\Transitions\ArchiveServiceTransition;
 use App\Modules\Identity\Domain\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -18,24 +17,23 @@ class ArchiveServiceAction
 {
     public function execute(Service $service, User $admin): Service
     {
-        $service->refresh();
+        return DB::transaction(function () use ($service, $admin): Service {
+            $lockedService = Service::query()
+                ->whereKey($service->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if (! $service->status->canTransitionTo(ArchivedState::class)) {
-            throw ValidationException::withMessages([
-                'status' => __('catalog.moderation_invalid_transition'),
-            ]);
-        }
+            if (! $lockedService->status->canTransitionTo(ArchivedState::class, $admin->id)) {
+                throw ValidationException::withMessages([
+                    'status' => __('catalog.moderation_invalid_transition'),
+                ]);
+            }
 
-        if (! app(ServicePolicy::class)->archive($admin, $service)) {
-            throw new AuthorizationException(__('catalog.moderation_not_allowed'));
-        }
+            if (! app(ServicePolicy::class)->archive($admin, $lockedService)) {
+                throw new AuthorizationException(__('catalog.moderation_not_allowed'));
+            }
 
-        return DB::transaction(function () use ($service): Service {
-            $service->update(['status' => ServiceStatus::Archived->value]);
-
-            DB::afterCommit(fn () => event(new ServiceArchived($service->refresh())));
-
-            return $service;
+            return $lockedService->status->transition(new ArchiveServiceTransition($lockedService, $admin->id));
         });
     }
 }

@@ -62,6 +62,11 @@ return [
         'response_status' => 'Response Status',
         'expires_at' => 'Expires At',
     ],
+    'filters' => [
+        'amount_min' => 'Minimum amount (EGP)',
+        'amount_max' => 'Maximum amount (EGP)',
+        'vendor' => 'Vendor',
+    ],
 
     'event_types' => [
         'unknown' => 'Unknown event',
@@ -179,7 +184,8 @@ return [
         'reconciliation_diff_none' => 'None ✓',
         'reconciliation_na' => 'N/A',
 
-        'retry_queued' => 'Payment queued for retry.',
+        'retry_unsupported' => 'Provider retry is unavailable. Leave this payment failed and ask the customer to start a fresh checkout.',
+        'retry_failed_only' => 'Only failed payments can be retried.',
         'abandoned' => 'Payment marked as abandoned.',
         'captured' => 'Payment captured manually.',
         'voided' => 'Authorization voided.',

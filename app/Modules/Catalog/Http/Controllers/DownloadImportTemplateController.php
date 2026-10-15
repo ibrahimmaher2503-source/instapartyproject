@@ -17,11 +17,15 @@ class DownloadImportTemplateController
     public function __invoke(Request $request, string $type, DownloadTemplateAction $action): BinaryFileResponse
     {
         abort_unless(collect(ProductType::cases())->map->value->contains($type), 422, 'Invalid product type.');
-        abort_if(
-            $type === ProductType::Digital->value
-                && str_starts_with((string) $request->route()?->getName(), 'vendor.'),
-            404,
-        );
+        if ($type === ProductType::Digital->value && $request->routeIs('vendor.catalog.import.template')) {
+            abort_unless(config('catalog.digital_services_enabled', true), 404);
+            abort_unless(
+                $request->user()?->vendorProfile?->approvedTypes()
+                    ->where('product_type', ProductType::Digital->value)
+                    ->exists(),
+                404,
+            );
+        }
 
         return $action->execute(ProductType::from($type));
     }
