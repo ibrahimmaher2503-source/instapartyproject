@@ -1,4 +1,4 @@
-@props(['block', 'items' => [], 'kind'])
+@props(['block', 'items' => [], 'kind', 'showAll' => false])
 
 @php
     $payload = (array) ($block['payload'] ?? []);
@@ -17,14 +17,16 @@
     $fallbackTitle = $isOccasion ? __('storefront.home.occasions.heading') : __('storefront.home.categories.heading');
     $fallbackSub = $isOccasion ? __('storefront.home.occasions.sub') : __('storefront.home.categories.sub');
     $browseLabel = $isOccasion ? __('storefront.home.occasions.view_all') : __('storefront.home.categories.view_all');
-    $browseUrl = url('/'.app()->getLocale().'/search');
+    $browseUrl = $isOccasion
+        ? route('storefront.occasions.index', ['locale' => app()->getLocale()])
+        : url('/'.app()->getLocale().'/search');
     $storefrontText = app(App\Modules\Shared\Application\Services\StorefrontText::class);
     $fallbacks = collect(config('storefront.service_fallbacks', []));
     $categoryPool = $allItems->filter(
         fn ($category): bool => filled($storefrontText->translation($category, 'description')),
     );
     $visibleItems = $isOccasion
-        ? $items->take(6)
+        ? ($showAll ? $items : $items->take(6))
         : $items
             ->filter(fn ($category): bool => filled($storefrontText->translation($category, 'description')))
             ->concat($categoryPool)
@@ -40,7 +42,7 @@
                 :eyebrow="$eyebrow"
                 :title="$payload['title'] ?? $fallbackTitle"
                 :description="$fallbackSub"
-                :href="$browseUrl"
+                :href="$showAll ? null : $browseUrl"
                 :link-label="$browseLabel"
             />
 
@@ -67,8 +69,8 @@
                                 <img class="sf-taxonomy-photo" src="{{ $image }}" alt="{{ $itemName }}" width="640" height="420" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $fallback }}';">
                                 <span class="sf-taxonomy-shade" aria-hidden="true"></span>
                             @else
-                                <span class="sf-category-utility__icon" aria-hidden="true">
-                                    <img src="{{ $image }}" alt="" width="56" height="56" loading="lazy" onerror="this.hidden=true;">
+                                <span class="sf-category-photo" data-category-code="{{ $item->code }}" @if (blank($iconPath) || str_contains($iconPath, 'picsum.photos/')) data-reference-photo @endif aria-hidden="true">
+                                    <img src="{{ $image }}" alt="" width="640" height="292" loading="lazy" onerror="this.onerror=null;this.src='{{ $fallback }}';">
                                 </span>
                             @endif
                             <span class="sf-taxonomy-name">{{ $itemName }}</span>

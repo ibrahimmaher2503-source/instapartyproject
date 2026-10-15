@@ -3,6 +3,7 @@
 @php
     $selectedType = $filters['product_type'] ?? null;
     $selectedCategory = $filters['category_slug'] ?? null;
+    $selectedSubcategory = $filters['subcategory'] ?? null;
     $selectedOccasion = $filters['occasion'] ?? null;
     $selectedPackageId = $filters['package'] ?? null;
     $selectedVendor = $filters['vendor'] ?? null;
@@ -41,7 +42,8 @@
     $activeFilters = collect([
         'q' => ! empty($filters['q']) ? ['label' => '“'.$filters['q'].'”', 'url' => $clearSearchUrl] : null,
         'product_type' => $selectedType ? ['label' => __('storefront.search.type_'.$selectedType), 'url' => $filterUrl('product_type')] : null,
-        'category_slug' => $selectedCategoryModel ? ['label' => $storefrontText->translation($selectedCategoryModel, 'name'), 'url' => $filterUrl('category_slug')] : null,
+        'category_slug' => $selectedCategoryModel ? ['label' => $storefrontText->translation($selectedCategoryModel, 'name'), 'url' => route('storefront.search', collect($searchState)->except(['category_slug', 'subcategory'])->all())] : null,
+        'subcategory' => $selectedSubcategory ? ['label' => $storefrontText->translation($categories->firstWhere('code', $selectedSubcategory), 'name'), 'url' => $filterUrl('subcategory')] : null,
         'occasion' => $selectedOccasionModel ? ['label' => $storefrontText->translation($selectedOccasionModel, 'name'), 'url' => route('storefront.search', collect($searchState)->except(['occasion', 'package'])->all())] : null,
         'package' => $selectedPackage ? ['label' => $selectedPackage['name'], 'url' => $filterUrl('package')] : null,
         'governorate_public_id' => $selectedGovernorateModel ? ['label' => $storefrontText->translation($selectedGovernorateModel, 'name'), 'url' => route('storefront.search', collect($searchState)->except(['governorate_public_id', 'city_public_id'])->all())] : null,
@@ -137,10 +139,21 @@
                             <label for="category_slug">{{ __('storefront.search.filter_category') }}</label>
                             <select id="category_slug" name="category_slug" class="sf-field" data-search-category>
                                 <option value="">{{ __('storefront.search.filter_all') }}</option>
-                                @foreach ($categories as $category)
+                                @foreach ($categories->whereNull('parent_id') as $category)
                                     <option value="{{ $category->code }}" @selected($selectedCategory === $category->code)>{{ $storefrontText->translation($category, 'name') }}</option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <div class="sf-filter-group">
+                            <label for="subcategory">{{ __('storefront.search.filter_subcategory') }}</label>
+                            <select id="subcategory" name="subcategory" class="sf-field" data-search-subcategory @disabled($subcategories->isEmpty())>
+                                <option value="">{{ __('storefront.search.filter_all') }}</option>
+                                @foreach ($subcategories as $subcategory)
+                                    <option value="{{ $subcategory->code }}" @selected($selectedSubcategory === $subcategory->code)>{{ $storefrontText->translation($subcategory, 'name') }}</option>
+                                @endforeach
+                            </select>
+                            <script type="application/json" data-search-subcategory-options>{!! json_encode($subcategoryOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
                         </div>
 
                         <div class="sf-filter-group">
@@ -297,6 +310,21 @@
                             </a>
                         @endforeach
                     </div>
+                @endif
+
+                @if (auth()->user()?->hasRole('customer') && collect($filters)->except('page')->isNotEmpty())
+                    <form method="POST" action="{{ route('storefront.account.saved-searches.store') }}" class="sf-account-panel sf-account-form mt-5 flex flex-wrap items-end gap-3">
+                        @csrf
+                        <label class="min-w-48 flex-1">{{ __('discovery.account.search_label') }}
+                            <input class="sf-field" name="label" value="{{ old('label') }}" maxlength="120" required>
+                        </label>
+                        @foreach (collect($filters)->except('page') as $name => $value)
+                            @if (is_scalar($value) && $value !== '')
+                                <input type="hidden" name="filters[{{ $name }}]" value="{{ $value }}">
+                            @endif
+                        @endforeach
+                        <button class="sf-button sf-button--secondary" type="submit">{{ __('discovery.account.save_search') }}</button>
+                    </form>
                 @endif
 
                 @if (session('package_error'))

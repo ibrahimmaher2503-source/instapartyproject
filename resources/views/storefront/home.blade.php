@@ -40,8 +40,8 @@
     $categories = app(ListPublicCategoriesAction::class)->execute();
     $occasions = app(ListPublicOccasionsAction::class)->execute();
     $featuredVendors = app(App\Modules\Discovery\Infrastructure\Repositories\VendorBrowsingRepository::class)
-        ->featuredForStorefront(4);
-    $packages = collect($homepage['packages'] ?? [])->take(3);
+        ->featuredForStorefront(8);
+    $packages = collect($homepage['packages'] ?? []);
 @endphp
 
 @section('title', __('storefront.common.site_name').' · '.__('storefront.home.hero.headline'))
@@ -53,14 +53,15 @@
 
     <div class="sf-home-flow sf-home-v2">
         <x-home.taxonomy :block="$occasionBlock" :items="$occasions" kind="occasion" />
+
+        @if ($packages->isNotEmpty())
+            <x-home.custom-packages :packages="$packages" :occasions="$occasions" />
+        @endif
+
         <x-home.taxonomy :block="$categoryBlock" :items="$categories" kind="category" />
 
         @if ($serviceBlock)
             <x-home.featured-services :block="$serviceBlock" :services="$featuredServices" />
-        @endif
-
-        @if ($packages->isNotEmpty())
-            <x-home.custom-packages :packages="$packages" />
         @endif
 
         <x-home.featured-vendors :vendors="$featuredVendors" />

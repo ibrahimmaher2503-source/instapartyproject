@@ -103,6 +103,8 @@ return [
         'title' => 'حالة الاعتماد',
         'overall' => 'الاعتماد الكلي',
         'per_type' => 'الاعتماد لكل نوع منتج',
+        'unavailable' => 'غير متاح',
+        'per_type_guidance' => 'اعتماد الحساب واعتماد نوع المنتج مرحلتان منفصلتان. لا يمكن إنشاء الخدمات إلا للأنواع المعتمدة، وتظل الأنواع قيد الانتظار محظورة حتى يعتمدها المسؤول. لا تتاح الخدمات الرقمية إلا عند تفعيلها على المنصة.',
         'request_approval' => 'طلب اعتماد لـ :type',
         'request_approval_btn' => 'طلب اعتماد',
         'rejection_reason' => 'سبب الرفض',
@@ -136,6 +138,9 @@ return [
     'services' => [
         'changes_requested' => 'مطلوب تعديلات',
         'title' => 'خدماتي',
+        'product_type_separator' => '، ',
+        'digital_services_disabled' => 'الخدمات الرقمية غير متاحة حالياً على المنصة.',
+        'check_product_type_status' => 'عرض حالة اعتماد أنواع المنتجات',
         'rental_services' => 'خدمات التأجير',
         'sale_services' => 'خدمات البيع',
         'digital_services' => 'الخدمات الرقمية',

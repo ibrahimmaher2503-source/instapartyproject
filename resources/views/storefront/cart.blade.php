@@ -6,7 +6,9 @@
 
     $items = $booking?->items ?? collect();
     $locale = app()->getLocale();
+    $viewerTimezone = auth()->user()?->timezone ?? 'Africa/Cairo';
     $storefrontText = app(App\Modules\Shared\Application\Services\StorefrontText::class);
+    $dateTimeFormat = $storefrontText->dateTimeFormat();
     $totalMinor = (int) ($booking?->total_minor ?? $items->sum('line_total_minor'));
     $currency = (string) ($booking?->total_currency ?? 'EGP');
 @endphp
@@ -58,6 +60,7 @@
                                 @foreach ($vendor->items as $item)
                                     @php
                                         $itemName = $item->name_snapshot[$locale] ?? $item->name_snapshot['en'] ?? '';
+                                        $packageSnapshot = data_get($item->type_snapshot, 'service_package');
                                         $quantityEditable = match ($item->product_type) {
                                             ProductType::Rental => false,
                                             ProductType::Sale, ProductType::Digital => true,
@@ -66,6 +69,25 @@
                                     <div class="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
                                         <div class="min-w-0">
                                             <p class="font-bold text-ink-900">{{ $itemName }}</p>
+                                            @if (is_array($packageSnapshot))
+                                                <div class="mt-2 rounded-lg bg-ink-50 p-3 text-sm" data-service-package-snapshot>
+                                                    <p class="font-semibold">{{ $packageSnapshot['description'][$locale] ?? $packageSnapshot['description']['en'] ?? '' }}</p>
+                                                    @foreach ($packageSnapshot['components'] ?? [] as $component)
+                                                        <p class="mt-1 text-ink-600">{{ $component['name'][$locale] ?? $component['name']['en'] ?? '' }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component['quantity']]) }}</p>
+                                                    @endforeach
+                                                    @foreach ($packageSnapshot['media'] ?? [] as $media)
+                                                        <img src="{{ $media['thumb'] }}" alt="{{ $packageSnapshot['name'][$locale] ?? $packageSnapshot['name']['en'] ?? $itemName }}" class="mt-2 inline-block h-12 w-12 rounded object-cover">
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                            @if ($item->product_type === ProductType::Rental && $item->effective_starts_at !== null)
+                                                <dl class="mt-2 space-y-1 text-sm text-ink-600" data-rental-dates>
+                                                    <div><dt class="inline">{{ __('booking.display_timezone', ['field' => __('storefront.checkout.event.starts_at'), 'timezone' => $viewerTimezone]) }}:</dt> <dd class="inline"><time datetime="{{ $item->effective_starts_at->toIso8601String() }}">{{ $item->effective_starts_at->copy()->timezone($viewerTimezone)->translatedFormat($dateTimeFormat) }}</time></dd></div>
+                                                    @if ($item->effective_ends_at !== null)
+                                                        <div><dt class="inline">{{ __('booking.display_timezone', ['field' => __('storefront.checkout.event.ends_at'), 'timezone' => $viewerTimezone]) }}:</dt> <dd class="inline"><time datetime="{{ $item->effective_ends_at->toIso8601String() }}">{{ $item->effective_ends_at->copy()->timezone($viewerTimezone)->translatedFormat($dateTimeFormat) }}</time></dd></div>
+                                                    @endif
+                                                </dl>
+                                            @endif
                                             @if ($quantityEditable)
                                                 <form action="{{ route('storefront.cart.update', [$booking->public_id, $item->public_id]) }}" method="POST" class="mt-2 flex flex-wrap items-center gap-2">
                                                     @csrf
@@ -88,6 +110,13 @@
 
                 <aside class="h-fit rounded-[1.5rem] bg-secondary-900 p-6 text-white shadow-deep lg:sticky lg:top-24">
                     <p class="text-sm font-bold uppercase tracking-[0.16em] text-secondary-200">{{ __('storefront.checkout.steps.summary') }}</p>
+                    @if ($refundPolicy !== null)
+                        <section class="mt-5 rounded-xl border border-white/15 bg-white/10 p-4" data-refund-policy>
+                            <h2 class="text-sm font-extrabold">{{ __('storefront.cart.refund_terms_title') }}</h2>
+                            <p class="mt-2 text-xs leading-5 text-white/75">{{ $refundPolicy->getTranslation('meta_description', $locale, useFallbackLocale: true) }}</p>
+                            <a href="{{ url('/'.$locale.'/p/refund-policy') }}" class="mt-3 inline-flex min-h-10 items-center text-sm font-bold text-white underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{{ __('storefront.cart.refund_terms_link') }}</a>
+                        </section>
+                    @endif
                     <dl class="mt-6 space-y-4 border-b border-white/15 pb-6 text-sm"><div class="flex justify-between gap-4"><dt class="text-white/65">{{ __('storefront.cart.subtotal') }}</dt><dd><bdi dir="ltr">{{ Money::ofMinor((int) $items->sum('line_total_minor'), $currency)->formatTo($locale) }}</bdi></dd></div><div class="flex justify-between gap-4"><dt class="text-white/65">{{ __('storefront.cart.delivery') }}</dt><dd><bdi dir="ltr">{{ Money::ofMinor((int) ($booking->delivery_total_minor ?? 0), $currency)->formatTo($locale) }}</bdi></dd></div></dl>
                     <div class="flex justify-between gap-4 pt-5 text-lg font-extrabold"><span>{{ __('storefront.cart.total') }}</span><span><bdi dir="ltr">{{ Money::ofMinor($totalMinor, $currency)->formatTo($locale) }}</bdi></span></div>
                     <form action="{{ route('storefront.cart.submit', $booking->public_id) }}" method="POST" class="mt-7">@csrf<button type="submit" class="sf-button sf-button--light w-full justify-center">{{ __('storefront.checkout.event.submit') }} <span aria-hidden="true">↗</span></button></form>

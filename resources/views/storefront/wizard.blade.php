@@ -14,6 +14,9 @@
     $initialPlannerStep = in_array($firstWizardError, ['occasion', 'event_starts_at', 'event_ends_at', 'timezone'], true)
         ? 0
         : (in_array($firstWizardError, ['city_public_id', 'governorate_public_id'], true) ? 1 : ($errors->any() ? 2 : 0));
+    $initialQuantity = old('quantity', request('quantity', 1));
+    $requestedTimezone = old('timezone', request('timezone'));
+    $hasExplicitTimezone = is_string($requestedTimezone) && in_array($requestedTimezone, timezone_identifiers_list(), true);
 @endphp
 
 @section('title', __('storefront.wizard.title').' · '.__('storefront.common.site_name'))
@@ -64,9 +67,10 @@
                     data-planner-form
                 >
                     @csrf
-                    <input type="hidden" name="timezone" value="{{ old('timezone') }}" data-browser-timezone>
+                    <input type="hidden" name="timezone" value="{{ $hasExplicitTimezone ? $requestedTimezone : '' }}" data-browser-timezone @if ($hasExplicitTimezone) data-explicit-timezone @endif>
                     @if ($bookingMode)
                         <input type="hidden" name="service_id" value="{{ $servicePublicId }}">
+                        <input type="hidden" name="quantity" value="{{ is_scalar($initialQuantity) ? $initialQuantity : 1 }}">
                     @endif
                     <input type="hidden" name="occasion" value="{{ old('occasion', request('occasion')) }}" data-planner-occasion>
                     <input type="hidden" name="city_public_id" value="{{ old('city_public_id', request('city_public_id')) }}" data-planner-city>
@@ -101,13 +105,16 @@
                                     class="sf-wizard-occasion-card"
                                     data-planner-occasion-option="{{ $occasion->code }}"
                                 >
-                                    <span class="sf-wizard-occasion-card__top">
-                                        <span class="sf-wizard-occasion-card__title">{{ $storefrontText->translation($occasion, 'name') }}</span>
-                                        <span class="sf-wizard-occasion-card__check" aria-hidden="true" data-planner-occasion-check>✓</span>
+                                    <span class="sf-wizard-occasion-card__icon" aria-hidden="true">
+                                        <x-home.occasion-icon :code="$occasion->code" />
                                     </span>
-                                    @if ($storefrontText->translation($occasion, 'description'))
-                                        <span class="sf-wizard-occasion-card__description">{{ $storefrontText->translation($occasion, 'description') }}</span>
-                                    @endif
+                                    <span class="sf-wizard-occasion-card__copy">
+                                        <span class="sf-wizard-occasion-card__title">{{ $storefrontText->translation($occasion, 'name') }}</span>
+                                        @if ($storefrontText->translation($occasion, 'description'))
+                                            <span class="sf-wizard-occasion-card__description">{{ $storefrontText->translation($occasion, 'description') }}</span>
+                                        @endif
+                                    </span>
+                                    <span class="sf-wizard-occasion-card__check" aria-hidden="true" data-planner-occasion-check>✓</span>
                                 </button>
                             @empty
                                 <p class="sf-wizard-empty">{{ $bookingMode ? __('storefront.wizard.step1.no_service_occasions') : __('storefront.wizard.step1.no_occasions') }}</p>
@@ -123,6 +130,7 @@
                                 <label class="sf-wizard-field-card">
                                     <span class="sf-wizard-field-label">{{ __('storefront.checkout.event.starts_at') }}</span>
                                     <span class="sf-localized-date sf-wizard-date-control" data-localized-date>
+                                        <svg class="sf-wizard-date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/></svg>
                                         <input
                                             type="datetime-local"
                                             lang="{{ app()->getLocale() }}"
@@ -139,6 +147,7 @@
                                 <label class="sf-wizard-field-card">
                                     <span class="sf-wizard-field-label">{{ __('storefront.wizard.step1.ends_at_optional') }}</span>
                                     <span class="sf-localized-date sf-wizard-date-control" data-localized-date>
+                                        <svg class="sf-wizard-date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/></svg>
                                         <input
                                             type="datetime-local"
                                             lang="{{ app()->getLocale() }}"
@@ -153,6 +162,49 @@
                                 </label>
                             </div>
                         </div>
+
+                        @if ($bookingMode && $themes->isNotEmpty())
+                            <label class="sf-wizard-field-card">
+                                <span class="sf-wizard-field-label">{{ __('storefront.wizard.step1.theme_label') }}</span>
+                                <select name="theme_public_id" class="sf-field sf-wizard-field">
+                                    <option value="">{{ __('storefront.wizard.step1.theme_none') }}</option>
+                                    @foreach ($themes as $theme)
+                                        <option value="{{ $theme->public_id }}" @selected(old('theme_public_id') === $theme->public_id)>
+                                            {{ $theme->getTranslation('name', app()->getLocale(), useFallbackLocale: true) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('theme_public_id')
+                                    <small class="text-red-700" role="alert">{{ $message }}</small>
+                                @enderror
+                            </label>
+                        @endif
+
+                        @if ($bookingMode && $packages->isNotEmpty())
+                            <fieldset class="sf-wizard-field-card" aria-describedby="package-selection-hint">
+                                <legend class="sf-wizard-field-label">{{ __('storefront.wizard.step1.package_label') }}</legend>
+                                <p id="package-selection-hint" class="text-sm text-ink-500">{{ __('storefront.wizard.step1.package_hint') }}</p>
+                                @foreach ($packages as $package)
+                                    <label class="mt-3 flex cursor-pointer gap-3 rounded-xl border border-ink-200 p-4 has-[:checked]:border-secondary-700 has-[:checked]:bg-secondary-50">
+                                        <input type="radio" name="package_public_id" value="{{ $package->public_id }}" @checked(old('package_public_id', request('package_public_id')) === $package->public_id) class="mt-1 accent-secondary-700">
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block font-bold">{{ $package->getTranslation('name', app()->getLocale(), useFallbackLocale: true) }}</span>
+                                            <span class="mt-1 block text-sm text-ink-600">{{ $package->getTranslation('description', app()->getLocale(), useFallbackLocale: true) }}</span>
+                                            <span class="mt-2 block font-semibold"><bdi dir="ltr">{{ \Brick\Money\Money::ofMinor($package->price_minor, $package->currency)->formatTo(app()->getLocale()) }}</bdi></span>
+                                            @foreach ($package->components as $component)
+                                                <span class="mt-1 block text-xs text-ink-500">{{ $component->getTranslation('name', app()->getLocale(), useFallbackLocale: true) }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component->quantity]) }}</span>
+                                            @endforeach
+                                            @foreach ($package->getMedia('gallery') as $media)
+                                                <img src="{{ $media->getUrl('thumb') }}" alt="{{ $package->getTranslation('name', app()->getLocale(), useFallbackLocale: true) }}" class="mt-2 inline-block h-14 w-14 rounded-lg object-cover">
+                                            @endforeach
+                                        </span>
+                                    </label>
+                                @endforeach
+                                @error('package_public_id')
+                                    <small class="text-red-700" role="alert">{{ $message }}</small>
+                                @enderror
+                            </fieldset>
+                        @endif
 
                         <div class="sf-wizard-actions sf-wizard-actions--end">
                             <button type="button" class="sf-button sf-button--secondary sf-wizard-next" data-planner-next>

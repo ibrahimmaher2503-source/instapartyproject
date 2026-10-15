@@ -30,8 +30,8 @@
             <div class="flex flex-col gap-2 rounded-xl border border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between">
                 <div class="px-2"><p class="text-xs font-bold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">{{ __('shared::dashboard.view_mode') }}</p><p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __('shared::dashboard.choose_area') }}</p></div>
                 <div class="grid w-full gap-1 rounded-lg bg-gray-200/70 p-1 dark:bg-white/10 sm:w-auto sm:min-w-[22rem] sm:grid-cols-2" role="tablist">
-                    <button type="button" role="tab" :aria-selected="mode === 'operations'" @click="setMode('operations')" class="flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :style="mode === 'operations' ? 'background:#6d28d9;color:#fff;box-shadow:0 1px 2px rgba(15,23,42,.12)' : 'color:#374151'" @mouseenter="if (mode !== 'operations') $el.style.backgroundColor = '#fff'" @mouseleave="if (mode !== 'operations') $el.style.backgroundColor = 'transparent'"><x-filament::icon icon="heroicon-o-adjustments-horizontal" class="h-4 w-4" />{{ __('shared::dashboard.focus.operations') }}</button>
-                    <button type="button" role="tab" :aria-selected="mode === 'financials'" @click="setMode('financials')" class="flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :style="mode === 'financials' ? 'background:#6d28d9;color:#fff;box-shadow:0 1px 2px rgba(15,23,42,.12)' : 'color:#374151'" @mouseenter="if (mode !== 'financials') $el.style.backgroundColor = '#fff'" @mouseleave="if (mode !== 'financials') $el.style.backgroundColor = 'transparent'"><x-filament::icon icon="heroicon-o-banknotes" class="h-4 w-4" />{{ __('shared::dashboard.focus.financials') }}</button>
+                    <button type="button" role="tab" :aria-selected="mode === 'operations'" @click="setMode('operations')" class="flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :class="mode === 'operations' ? 'bg-primary-700 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800'"><x-filament::icon icon="heroicon-o-adjustments-horizontal" class="h-4 w-4" />{{ __('shared::dashboard.focus.operations') }}</button>
+                    <button type="button" role="tab" :aria-selected="mode === 'financials'" @click="setMode('financials')" class="flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :class="mode === 'financials' ? 'bg-primary-700 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800'"><x-filament::icon icon="heroicon-o-banknotes" class="h-4 w-4" />{{ __('shared::dashboard.focus.financials') }}</button>
                 </div>
             </div>
         @endif
@@ -76,6 +76,53 @@
                     @include('filament.widgets.partials.dashboard-chart', ['chart' => $operations['chart'], 'panelClass' => 'xl:col-span-12'])
                 </div>
 
+                @if ($operations['booking_funnel'] !== null)
+                    <section class="space-y-4 rounded-xl border border-gray-200/80 bg-white p-4 dark:border-white/10 dark:bg-gray-900" aria-label="{{ __('shared::dashboard.operations.funnel.title') }}">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-950 dark:text-white">{{ __('shared::dashboard.operations.funnel.title') }}</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('shared::dashboard.operations.funnel.caption') }}</p>
+                        </div>
+
+                        @if ($operations['booking_funnel']['tracked_submissions'] > 0)
+                            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                @foreach ($operations['booking_funnel']['stages'] as $stage)
+                                    <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-3 dark:border-white/10 dark:bg-white/[0.03]" aria-label="{{ __('shared::dashboard.operations.funnel.'.$stage['key']) }}">
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ __('shared::dashboard.operations.funnel.'.$stage['key']) }}</p>
+                                        <div class="mt-2 flex items-end justify-between gap-2">
+                                            <p class="text-2xl font-bold leading-none text-gray-950 dark:text-white">{{ number_format($stage['count']) }}</p>
+                                            @if ($stage['conversion_percent'] !== null)
+                                                <span class="text-xs font-semibold text-primary-700 dark:text-primary-300">{{ number_format($stage['conversion_percent'], 1) }}%</span>
+                                            @else
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('shared::dashboard.operations.funnel.no_rate') }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10" aria-hidden="true">
+                                            <div class="h-full rounded-full bg-primary-500" style="width: {{ $stage['bar_percent'] }}%"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @elseif ($operations['booking_funnel']['submitted_records'] > 0)
+                            <p class="rounded-lg bg-warning-50 px-3 py-2.5 text-sm text-warning-800 dark:bg-warning-400/10 dark:text-warning-200">{{ __('shared::dashboard.operations.funnel.untracked_empty') }}</p>
+                        @else
+                            <p class="rounded-lg bg-gray-50 px-3 py-2.5 text-sm text-gray-600 dark:bg-white/[0.03] dark:text-gray-300">{{ __('shared::dashboard.operations.funnel.empty') }}</p>
+                        @endif
+
+                        <div class="space-y-1 border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-white/10 dark:text-gray-400">
+                            <p>{{ __('shared::dashboard.operations.funnel.coverage', [
+                                'tracked' => number_format($operations['booking_funnel']['tracked_submissions']),
+                                'submitted' => number_format($operations['booking_funnel']['submitted_records']),
+                                'percent' => $operations['booking_funnel']['transition_coverage_percent'] === null
+                                    ? '—'
+                                    : number_format($operations['booking_funnel']['transition_coverage_percent'], 1),
+                            ]) }}</p>
+                            @if ($operations['booking_funnel']['coverage_gap'] > 0)
+                                <p>{{ __('shared::dashboard.operations.funnel.coverage_gap', ['count' => number_format($operations['booking_funnel']['coverage_gap'])]) }}</p>
+                            @endif
+                        </div>
+                    </section>
+                @endif
+
                 @if ($upcomingBookingsVisible || $negotiationMonitoringVisible)
                 <div class="grid gap-4 xl:grid-cols-2">
                     @if ($upcomingBookingsVisible)
@@ -84,7 +131,7 @@
                         @if (count($operations['upcoming']) === 0)
                             <div class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-4 dark:bg-white/[0.03]"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 text-primary-700 dark:bg-primary-400/10 dark:text-primary-300"><x-filament::icon icon="heroicon-o-calendar-days" class="h-5 w-5" /></span><div><p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ __('shared::dashboard.empty_upcoming') }}</p><p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __('shared::dashboard.empty_chart_caption') }}</p></div></div>
                         @else
-                            <div class="divide-y divide-gray-100 dark:divide-white/10">@foreach ($operations['upcoming'] as $booking)<a href="{{ \App\Modules\Booking\Filament\Resources\BookingResource::getUrl('index') }}" class="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-primary-50 text-primary-700 dark:bg-primary-400/10 dark:text-primary-300"><x-filament::icon icon="heroicon-o-calendar-days" class="h-4 w-4" /></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $booking['reference'] }}</span><span class="text-xs text-gray-500 dark:text-gray-400">{{ $booking['date'] }} · {{ $booking['services'] }} {{ __('shared::dashboard.operations.services') }} · {{ $booking['vendors'] }} {{ __('shared::dashboard.operations.vendors') }}</span></span><span class="text-xs font-semibold text-success-700 dark:text-success-300">{{ $booking['status'] }}</span></a>@endforeach</div>
+                            <div class="divide-y divide-gray-100 dark:divide-white/10">@foreach ($operations['upcoming'] as $booking)<a href="{{ $booking['url'] }}" class="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-primary-50 text-primary-700 dark:bg-primary-400/10 dark:text-primary-300"><x-filament::icon icon="heroicon-o-calendar-days" class="h-4 w-4" /></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $booking['reference'] }}</span><span class="text-xs text-gray-500 dark:text-gray-400">{{ $booking['date'] }} · {{ $booking['services'] }} {{ __('shared::dashboard.operations.services') }} · {{ $booking['vendors'] }} {{ __('shared::dashboard.operations.vendors') }}</span></span><span class="text-xs font-semibold text-success-700 dark:text-success-300">{{ $booking['status'] }}</span></a>@endforeach</div>
                         @endif
                     </div>
                     @endif

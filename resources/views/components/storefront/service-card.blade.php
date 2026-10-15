@@ -1,4 +1,4 @@
-@props(['service'])
+@props(['service', 'showVendor' => true, 'compact' => false])
 
 @php
     $storefrontText = app(App\Modules\Shared\Application\Services\StorefrontText::class);
@@ -14,9 +14,7 @@
     $mediaImage = $media ? app(App\Modules\Shared\Application\Services\PublicMediaUrl::class)->for($media, 'medium') : null;
     $image = blank($mediaImage) ? $fallbackImage : $mediaImage;
     $vendorName = $service->vendor ? $storefrontText->translation($service->vendor, 'business_name') : '';
-    $locationName = $service->vendor?->primaryCity
-        ? $storefrontText->translation($service->vendor->primaryCity, 'name')
-        : ($service->vendor?->primaryGovernorate ? $storefrontText->translation($service->vendor->primaryGovernorate, 'name') : '');
+    $locationName = $storefrontText->vendorGovernorates($service->vendor)->pluck('name')->join(' · ');
     $shortDescription = $storefrontText->translation($service, 'short_description');
     $ratingCount = (int) ($service->rating_count ?? 0);
     $categoryAttributes = app(App\Modules\Catalog\Application\Services\CategoryFieldPresenter::class)->forService($service);
@@ -40,7 +38,7 @@
             <h3 class="line-clamp-2 text-lg font-bold leading-snug text-ink-900">
                 {{ $serviceName }}
             </h3>
-            @if ($shortDescription)
+            @if ($shortDescription && ! $compact)
                 <p class="line-clamp-2 text-sm leading-6 text-ink-500">{{ $shortDescription }}</p>
             @endif
             @if ($categoryAttributes !== [])
@@ -50,7 +48,7 @@
                     @endforeach
                 </dl>
             @endif
-            @if ($vendorName || $locationName)
+            @if ($showVendor && ($vendorName || $locationName))
                 <div class="sf-catalog-card__meta">
                     @if ($vendorName)
                         <span>{{ $vendorName }}</span>
