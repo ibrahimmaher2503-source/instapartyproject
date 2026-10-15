@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'login_in_progress' => 'Signing in is still in progress. If it keeps taking longer, refresh the page to check your sign-in status.',
+
     // General
     'vendor_profile' => 'Vendor Profile',
     'vendor_profiles' => 'Vendor Profiles',
