@@ -7,6 +7,7 @@ namespace App\Modules\TrustSafety\Filament\Resources\TrustBadgeResource\Pages;
 use App\Modules\Settlement\Domain\Exceptions\DuplicateIdempotencyKeyWithDifferentPayloadException;
 use App\Modules\Shared\Application\Services\IdempotencyService;
 use App\Modules\TrustSafety\Filament\Resources\TrustBadgeResource;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
@@ -40,6 +41,14 @@ class CreateTrustBadge extends CreateRecord
         if ($another) {
             $this->submissionId = (string) Str::uuid();
         }
+    }
+
+    protected function getCreateAnotherFormAction(): Action
+    {
+        return parent::getCreateAnotherFormAction()
+            ->livewireTarget('createAnother')
+            ->livewireClickHandlerEnabled(false)
+            ->extraAttributes(['wire:click.throttle.500ms' => 'createAnother']);
     }
 
     protected function handleRecordCreation(array $data): Model
