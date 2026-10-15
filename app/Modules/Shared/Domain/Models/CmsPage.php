@@ -22,6 +22,7 @@ class CmsPage extends Model
     protected $fillable = [
         'public_id',
         'slug',
+        'public_slug',
         'title',
         'body',
         'meta_description',

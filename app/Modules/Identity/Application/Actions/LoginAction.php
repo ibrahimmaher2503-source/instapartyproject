@@ -33,6 +33,12 @@ class LoginAction
             ]);
         }
 
+        if ($user->hasRole('customer') && $user->phone_verified_at === null) {
+            throw ValidationException::withMessages([
+                'login' => __('identity.customer_phone_verification_required'),
+            ]);
+        }
+
         $user->forceFill([
             'last_login_at' => now(),
             'last_login_ip' => $ip,

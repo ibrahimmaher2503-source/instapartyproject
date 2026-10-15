@@ -58,6 +58,7 @@ class CustomerConfirmModifiedBookingAction
             return $cached;
         }
 
+        // MariaDB ER_CHECKREAD needs the entire transaction restarted with a fresh snapshot.
         return DB::transaction(function () use ($dto): Booking {
             $booking = Booking::query()->where('id', $dto->bookingId)->lockForUpdate()->firstOrFail();
 
@@ -190,7 +191,7 @@ class CustomerConfirmModifiedBookingAction
             });
 
             return $booking;
-        });
+        }, 3);
     }
 
     private function applyModificationItems(BookingModification $modification): void
@@ -231,7 +232,7 @@ class CustomerConfirmModifiedBookingAction
 
         $serviceId = (int) ($safePayload['service_id'] ?? 0);
         $service = Service::query()
-            ->with(['saleDetail', 'rentalDetail'])
+            ->with('rentalDetail')
             ->whereKey($serviceId)
             ->lockForUpdate()
             ->first();
@@ -286,7 +287,7 @@ class CustomerConfirmModifiedBookingAction
             );
             $this->assertRentalInventoryAvailable($service->id, $startsAt, $endsAt);
         } elseif ($service->product_type === ProductType::Sale) {
-            $this->assertSaleInventoryAvailable($service->saleDetail?->stock_quantity, $service->id, $quantity);
+            $this->assertSaleInventoryAvailable($service->id, $quantity);
         }
 
         $unitPrice = (int) $service->base_price_minor;
@@ -312,13 +313,13 @@ class CustomerConfirmModifiedBookingAction
             'effective_starts_at' => $startsAt,
             'effective_ends_at' => $endsAt,
             'customization_data' => $safePayload['customization_data'] ?? null,
-            'type_snapshot' => [
+            'type_snapshot' => array_filter([
                 'service_id' => $service->id,
                 'service_public_id' => $service->public_id,
                 'product_type' => $service->product_type->value,
                 'unit_price_minor' => $unitPrice,
                 'unit_price_currency' => $currency,
-            ],
+            ], static fn (mixed $value): bool => $value !== null),
             'fulfillment_data' => [],
             'item_status' => $itemStatus,
             'commission_bps' => 0,
@@ -342,26 +343,38 @@ class CustomerConfirmModifiedBookingAction
                         ->where('expires_at', '>', now())))
                 ->where('reserved_starts_at', '<', $endsAt)
                 ->where('reserved_ends_at', '>', $startsAt)
-                ->exists(),
+                ->lockForUpdate()
+                ->first() !== null,
             Response::HTTP_CONFLICT,
             'Service is unavailable for the requested dates',
         );
     }
 
-    private function assertSaleInventoryAvailable(?int $stockQuantity, int $serviceId, int $quantity): void
+    private function assertSaleInventoryAvailable(int $serviceId, int $quantity): void
     {
+        $stockQuantity = DB::table('service_sale_details')
+            ->where('service_id', $serviceId)
+            ->lockForUpdate()
+            ->value('stock_quantity');
+
         if ($stockQuantity === null) {
             return;
         }
 
-        $held = (int) DB::table('service_inventory_reservations')
+        $heldReservations = DB::table('service_inventory_reservations')
             ->where('service_id', $serviceId)
             ->where(fn ($query) => $query
                 ->where('status', 'confirmed')
                 ->orWhere(fn ($held) => $held
                     ->where('status', 'held')
                     ->where('expires_at', '>', now())))
-            ->sum('quantity');
+            ->select('quantity')
+            ->lockForUpdate()
+            ->get();
+        $held = 0;
+        foreach ($heldReservations as $reservation) {
+            $held += (int) $reservation->quantity;
+        }
 
         abort_if(
             $stockQuantity - $held < $quantity,
@@ -436,10 +449,22 @@ class CustomerConfirmModifiedBookingAction
     private function getCachedIdempotencyResponse(CustomerModificationDecisionDTO $dto): ?Booking
     {
         $row = DB::table('idempotency_keys')
-            ->where('key', $dto->idempotencyKey)
+            ->where('key', $this->internalIdempotencyKey($dto))
             ->where('user_id', $dto->customerId)
+            ->where('scope', 'internal_action')
             ->where('expires_at', '>', now())
             ->first();
+
+        if ($row === null) {
+            // Keep replay compatibility for action-cache rows written before the key was namespaced.
+            $row = DB::table('idempotency_keys')
+                ->where('key', $dto->idempotencyKey)
+                ->where('user_id', $dto->customerId)
+                ->where('route', 'bookings.modifications.decide')
+                ->whereNotNull('response_status')
+                ->where('expires_at', '>', now())
+                ->first();
+        }
 
         if ($row === null) {
             return null;
@@ -458,14 +483,22 @@ class CustomerConfirmModifiedBookingAction
     private function storeIdempotencyResponse(CustomerModificationDecisionDTO $dto, Booking $booking): void
     {
         DB::table('idempotency_keys')->insertOrIgnore([
-            'key' => $dto->idempotencyKey,
+            'key' => $this->internalIdempotencyKey($dto),
+            'scope' => 'internal_action',
+            'ttl_seconds' => (int) config('idempotency.ttl.internal_action', 86400),
             'user_id' => $dto->customerId,
             'route' => 'bookings.modifications.decide',
             'request_hash' => $this->requestHash($dto),
+            'payload_hash' => $this->requestHash($dto),
             'response_status' => Response::HTTP_OK,
             'response_body' => json_encode(['booking_id' => $booking->id]),
-            'expires_at' => now()->addHours(24),
+            'expires_at' => now()->addSeconds((int) config('idempotency.ttl.internal_action', 86400)),
             'created_at' => now(),
         ]);
+    }
+
+    private function internalIdempotencyKey(CustomerModificationDecisionDTO $dto): string
+    {
+        return hash('sha256', 'bookings.modifications.decide|'.$dto->idempotencyKey);
     }
 }

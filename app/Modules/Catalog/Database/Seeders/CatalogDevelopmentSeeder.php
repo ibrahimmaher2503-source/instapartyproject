@@ -34,6 +34,8 @@ final class CatalogDevelopmentSeeder extends Seeder
     {
         fake()->seed(2026050304);
 
+        app(CatalogServiceThemePermissionsSeeder::class)->run();
+
         $services = DB::transaction(function (): array {
             app(CatalogSeeder::class)->run();
             app(CatalogContentSeeder::class)->run();

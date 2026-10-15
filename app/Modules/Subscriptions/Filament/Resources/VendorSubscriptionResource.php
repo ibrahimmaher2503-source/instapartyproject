@@ -36,7 +36,7 @@ class VendorSubscriptionResource extends Resource
         return __('admin.nav.groups.subscriptions');
     }
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 110;
 
     public static function getNavigationLabel(): string
     {

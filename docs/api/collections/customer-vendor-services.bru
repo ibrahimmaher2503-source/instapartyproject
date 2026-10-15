@@ -1,0 +1,16 @@
+meta {
+  name: Vendor scoped rental services
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{base_url}}/api/v1/customer/vendors/{{vendor_public_id}}/services?type=rental
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+}

@@ -9,15 +9,20 @@ use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
 use App\Modules\Shared\Http\Middleware\AddSecurityHeaders;
 use App\Modules\Shared\Http\Middleware\SetRequestTraceIdMiddleware;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -41,6 +46,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->respond(function (Response $response, Throwable $exception, Request $request): Response {
+            if ($response->getStatusCode() < 500 || $request->expectsJson() || str_starts_with($request->path(), 'api/')) {
+                return $response;
+            }
+
+            $referenceId = (string) (Context::get('trace_id') ?: Str::uuid());
+            Context::add('trace_id', $referenceId);
+
+            return response()->view('errors.500', compact('referenceId'), $response->getStatusCode())
+                ->header('X-Trace-Id', $referenceId);
+        });
+
         // API routes have no login page — always return 401 JSON.
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if (str_starts_with($request->path(), 'api/')) {
@@ -114,19 +131,50 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 409);
         });
 
-        // Catch-all: normalize any unhandled HTTP exception on API routes into the standard envelope.
-        $exceptions->render(function (HttpException $e, Request $request) {
+        $unexpectedApiResponse = static function (Request $request, int $status = 500) {
+            $traceId = (string) (Context::get('trace_id') ?: Str::uuid());
+            Context::add('trace_id', $traceId);
+
+            return response()->json([
+                'data' => null,
+                'meta' => ['reference_id' => $traceId],
+                'errors' => [['code' => 'unexpected_error', 'message' => __('shared::shared.errors.unexpected_failure')]],
+            ], $status)->header('X-Trace-Id', $traceId);
+        };
+
+        // Keep known HTTP messages for client errors; redact server failure details.
+        $exceptions->render(function (HttpException $e, Request $request) use ($unexpectedApiResponse) {
             if (! str_starts_with($request->path(), 'api/')) {
                 return null;
             }
 
             $status = $e->getStatusCode();
-            $message = $e->getMessage() ?: (Response::$statusTexts[$status] ?? 'Error');
+            if ($status >= 500) {
+                return $unexpectedApiResponse($request, $status);
+            }
+
+            $message = $e instanceof NotFoundHttpException && $e->getPrevious() instanceof ModelNotFoundException
+                ? __('shared::shared.errors.not_found')
+                : ($e->getMessage() ?: (Response::$statusTexts[$status] ?? 'Error'));
 
             return response()->json([
                 'data' => null,
                 'meta' => null,
                 'errors' => [['code' => 'http_error', 'message' => $message]],
             ], $status);
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request) use ($unexpectedApiResponse) {
+            if (! str_starts_with($request->path(), 'api/')) {
+                return null;
+            }
+
+            if ($e instanceof ValidationException
+                || $e instanceof AuthenticationException
+                || method_exists($e, 'render')) {
+                return null;
+            }
+
+            return $unexpectedApiResponse($request);
         });
     })->create();

@@ -12,6 +12,8 @@ use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ListPayments;
 use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ViewPayment;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Infolists\Infolist;
@@ -87,6 +89,7 @@ class PaymentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'booking.public_id', 'status', 'amount_minor', 'amount_currency', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('payments.columns.public_id'))
@@ -135,6 +138,7 @@ class PaymentResource extends Resource
                 RefundPaymentAction::make(),
             ])
             ->filters([
+                OperationalDateFilter::make('created_at'),
                 SelectFilter::make('status')
                     ->label(__('payments.columns.status'))
                     ->options([

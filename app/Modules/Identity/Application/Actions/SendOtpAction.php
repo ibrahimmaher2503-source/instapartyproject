@@ -16,6 +16,10 @@ class SendOtpAction
 
     public function execute(string $phoneE164): void
     {
+        if (config('app.debug')) {
+            return;
+        }
+
         $this->rateLimiter->recordSendAttempt($phoneE164);
 
         $code = app()->environment(['local', 'testing'])

@@ -36,7 +36,9 @@ class SaveNavigationMenuAction
             $this->insertItems($menu, $validated, parentId: null);
 
             DB::afterCommit(function () use ($menu): void {
-                Cache::forget('theme:menus:'.$menu->slot->value);
+                foreach (['en', 'ar'] as $locale) {
+                    Cache::forget('theme:menus:'.$menu->slot->value.':'.$locale);
+                }
                 event(new PublicThemeChanged(reason: 'menus.saved', publicId: $menu->public_id));
             });
 
@@ -82,6 +84,8 @@ class SaveNavigationMenuAction
             '*.children.*.target_value' => ['required', 'string', 'max:512'],
         ];
 
+        $this->addExternalUrlRules($items, '', $rules);
+
         $validator = Validator::make($items, $rules);
 
         if ($validator->fails()) {
@@ -89,5 +93,30 @@ class SaveNavigationMenuAction
         }
 
         return $items;
+    }
+
+    /** @param array<string, mixed> $rules */
+    private function addExternalUrlRules(array $items, string $prefix, array &$rules): void
+    {
+        foreach (array_values($items) as $index => $item) {
+            $path = $prefix.$index.'.';
+
+            if (($item['target_type'] ?? null) === NavigationTargetType::ExternalUrl->value) {
+                $rules[$path.'target_value'][] = static function (string $attribute, mixed $value, \Closure $fail): void {
+                    $scheme = is_string($value) ? parse_url($value, PHP_URL_SCHEME) : null;
+
+                    if (! is_string($value)
+                        || filter_var($value, FILTER_VALIDATE_URL) === false
+                        || ! in_array(strtolower((string) $scheme), ['http', 'https'], true)
+                    ) {
+                        $fail(__('shared::shared.nav_menu.invalid_destination'));
+                    }
+                };
+            }
+
+            if (is_array($item['children'] ?? null)) {
+                $this->addExternalUrlRules($item['children'], $path.'children.', $rules);
+            }
+        }
     }
 }

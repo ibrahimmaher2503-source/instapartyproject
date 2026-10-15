@@ -32,9 +32,9 @@ final class PaymobGateway implements PaymentGateway, RefundConfirmationGateway
         'source_data.pan', 'source_data.sub_type', 'source_data.type', 'success',
     ];
 
-    public function initiate(InitiatePaymentDto $dto): PaymentIntentDto
+    public function initiate(InitiatePaymentDto $dto, ?string $merchantOrderId = null): PaymentIntentDto
     {
-        $merchantOrderId = (string) Str::ulid();
+        $merchantOrderId ??= (string) Str::ulid();
         $amountCents = $dto->amount->getMinorAmount()->toInt();
         $client = $this->client();
 
@@ -125,6 +125,38 @@ final class PaymobGateway implements PaymentGateway, RefundConfirmationGateway
                 ? 'REFUND' : (! empty($obj['is_voided']) ? 'VOID' : 'PURCHASE'),
             orderId: isset($obj['order']['id']) ? (string) $obj['order']['id'] : null,
         );
+    }
+
+    public function resolveMerchantOrderReference(string $providerOrderId): ?string
+    {
+        if (! ctype_digit($providerOrderId)) {
+            return null;
+        }
+
+        try {
+            $response = $this->client()->post('ecommerce/orders/transaction_inquiry', [
+                'auth_token' => $this->authenticate(),
+                'order_id' => $providerOrderId,
+            ]);
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $order = $response->json('order');
+            if (! is_array($order) || (string) ($order['id'] ?? '') !== $providerOrderId) {
+                return null;
+            }
+
+            $merchantOrderId = $order['merchant_order_id'] ?? null;
+
+            return is_string($merchantOrderId) && trim($merchantOrderId) !== ''
+                ? $merchantOrderId
+                : null;
+        } catch (Throwable) {
+            // Inquiry is a correlation aid. A failed/mismatched inquiry must leave
+            // the verified callback unresolved instead of trusting unsigned fields.
+            return null;
+        }
     }
 
     public function refund(Payment $payment, Money $amount): RefundResultDto

@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Support\Filament\Resources;
 
+use App\Modules\Shared\Application\Services\AdminQueueSlaSettings;
+use App\Modules\Shared\Domain\Enums\AdminQueue;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
+use App\Modules\Shared\Filament\Tables\ScopedBulkAction;
 use App\Modules\Support\Application\Actions\TransitionSupportTicketStatusAction;
 use App\Modules\Support\Domain\Enums\SupportTicketStatus;
 use App\Modules\Support\Domain\Models\SupportTicket;
@@ -19,10 +25,12 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class SupportTicketResource extends Resource
 {
@@ -30,7 +38,7 @@ class SupportTicketResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationGroup(): ?string
     {
@@ -85,6 +93,7 @@ class SupportTicketResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'status', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('support::support.columns.reference'))
@@ -121,9 +130,44 @@ class SupportTicketResource extends Resource
                     ->label(__('support::support.columns.updated_at'))
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('queue_age')
+                    ->label(__('shared::shared.admin_queue_sla.queue_age'))
+                    ->getStateUsing(fn (SupportTicket $record): ?string => self::isInSupportQueue($record)
+                        ? Carbon::parse($record->created_at, 'UTC')->diffForHumans(now('UTC'))
+                        : null)
+                    ->placeholder(__('shared::shared.admin_queue_sla.not_active')),
+                TextColumn::make('sla_deadline')
+                    ->label(__('shared::shared.admin_queue_sla.deadline'))
+                    ->dateTime('d M Y H:i')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->getStateUsing(fn (SupportTicket $record) => self::isInSupportQueue($record)
+                        ? app(AdminQueueSlaSettings::class)->deadlineFor(AdminQueue::Support, $record->created_at)
+                        : null)
+                    ->suffix(fn (SupportTicket $record): ?string => self::isInSupportQueue($record)
+                        ? ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')
+                        : null)
+                    ->placeholder(__('shared::shared.admin_queue_sla.not_active')),
+                TextColumn::make('sla_status')
+                    ->label(__('shared::shared.admin_queue_sla.status'))
+                    ->badge()
+                    ->getStateUsing(fn (SupportTicket $record): string => self::slaStatus($record))
+                    ->color(fn (SupportTicket $record): string => self::isInSupportQueue($record)
+                        ? (app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Support, $record->created_at) ? 'danger' : 'success')
+                        : 'gray'),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort(fn (Builder $query): Builder => $query
+                ->orderByRaw('CASE WHEN status IN (?, ?) THEN 0 ELSE 1 END', [
+                    SupportTicketStatus::Open->value,
+                    SupportTicketStatus::InProgress->value,
+                ])
+                ->orderBy('created_at', 'asc'))
             ->filters([
+                OperationalDateFilter::make('created_at'),
+                Filter::make('overdue')
+                    ->label(__('shared::shared.admin_queue_sla.overdue'))
+                    ->query(fn (Builder $query): Builder => $query
+                        ->whereIn('status', [SupportTicketStatus::Open->value, SupportTicketStatus::InProgress->value])
+                        ->where('created_at', '<=', now('UTC')->subHours(app(AdminQueueSlaSettings::class)->hours(AdminQueue::Support)))),
                 SelectFilter::make('status')
                     ->options(SupportTicketStatus::class),
             ])
@@ -165,6 +209,23 @@ class SupportTicketResource extends Resource
                         Notification::make()->title(__('support::support.notifications.resolved'))->success()->send();
                     }),
             ])
+            ->bulkActions([
+                ScopedBulkAction::make(
+                    'markSelectedInProgress',
+                    __('support::support.actions.mark_in_progress'),
+                    'update_support::ticket',
+                    static::class,
+                    function (SupportTicket $record): void {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof Authenticatable, 403);
+                        app(TransitionSupportTicketStatusAction::class)->execute(
+                            $record,
+                            $actor,
+                            SupportTicketStatus::InProgress,
+                        );
+                    },
+                ),
+            ])
             ->emptyStateIcon('heroicon-o-chat-bubble-left-right')
             ->emptyStateHeading(__('support::support.empty.heading'))
             ->emptyStateDescription(__('support::support.empty.description'));
@@ -178,6 +239,11 @@ class SupportTicketResource extends Resource
         ];
     }
 
+    public static function getRelations(): array
+    {
+        return [InternalRecordNotesRelationManager::class];
+    }
+
     private static function statusColor(SupportTicketStatus $status): string
     {
         return match ($status) {
@@ -186,5 +252,21 @@ class SupportTicketResource extends Resource
             SupportTicketStatus::Resolved => 'success',
             SupportTicketStatus::Closed => 'gray',
         };
+    }
+
+    private static function isInSupportQueue(SupportTicket $record): bool
+    {
+        return in_array($record->status, [SupportTicketStatus::Open, SupportTicketStatus::InProgress], true);
+    }
+
+    private static function slaStatus(SupportTicket $record): string
+    {
+        if (! self::isInSupportQueue($record)) {
+            return __('shared::shared.admin_queue_sla.not_active');
+        }
+
+        return app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Support, $record->created_at)
+            ? __('shared::shared.admin_queue_sla.overdue')
+            : __('shared::shared.admin_queue_sla.within_sla');
     }
 }

@@ -87,7 +87,7 @@ abstract class AbstractMarkFulfillmentAction
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // FR-EXT-040-019 steps 1-4 (state-machine validity is step 5, enforced below by MarkBookingItemStateAction)
+            // Ownership, allocation, booking, payment, and refund eligibility run before item-state validation.
             $this->guards->runAll($bookingVendor, $vendor);
 
             $fromState = $item->item_status;

@@ -33,7 +33,7 @@ class VendorProfileShowController
         VendorAvailabilityService $availability,
         VendorReviewRepository $reviews,
     ): JsonResponse {
-        $vendor = VendorProfile::with(['primaryCity', 'approvedTypes', 'user'])
+        $vendor = VendorProfile::with(['primaryCity.governorate', 'primaryGovernorate', 'coverageAreas.city.governorate', 'approvedTypes', 'user'])
             // Published-only — keeps the header badge equal to the visible list
             // and stats.services_count (VendorBrowsingRepository::statsFor).
             ->withCount(['services' => fn ($q) => $q->published()])

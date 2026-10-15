@@ -28,6 +28,7 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -114,7 +115,7 @@ it('filters admin booking services by occasion and clears a stale selection when
 
 it('preflights the admin booking occasion before creating a draft', function (): void {
     config(['catalog.digital_services_enabled' => true]);
-    Notification::fake();
+    NotificationFacade::fake();
 
     $admin = User::factory()->superAdmin()->create();
     $customer = User::factory()->asCustomer()->create();
@@ -172,7 +173,7 @@ it('preflights the admin booking occasion before creating a draft', function ():
 
 it('rolls back the admin booking when submit fails after adding the item and inventory hold', function (): void {
     config(['catalog.digital_services_enabled' => true]);
-    Notification::fake();
+    NotificationFacade::fake();
 
     $admin = User::factory()->superAdmin()->create();
     $customer = User::factory()->asCustomer()->create();
@@ -216,7 +217,7 @@ it('rolls back the admin booking when submit fails after adding the item and inv
 
 it('submits an admin booking whose vendor subtotal meets a nonzero coverage minimum', function (): void {
     config(['catalog.digital_services_enabled' => true]);
-    Notification::fake();
+    NotificationFacade::fake();
 
     $admin = User::factory()->superAdmin()->create();
     $customer = User::factory()->asCustomer()->create();

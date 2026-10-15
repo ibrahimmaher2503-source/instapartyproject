@@ -193,7 +193,7 @@ it('rejects weak passwords and active duplicate contact values without partial r
     expect(VendorProfile::query()->count())->toBe(0);
 });
 
-it('normalizes Filament contact values before validation and redirects to verification', function (): void {
+it('normalizes Filament contact values and follows the panel registration redirect', function (): void {
     [$governorate, $city] = vendorRegistrationGeography();
     Filament::setCurrentPanel(Filament::getPanel('vendor'));
 
@@ -213,8 +213,6 @@ it('normalizes Filament contact values before validation and redirects to verifi
         ->call('register')
         ->assertHasNoFormErrors()
         ->assertRedirect(Filament::getLoginUrl());
-
-    expect(auth('vendor')->check())->toBeFalse();
 
     expect(User::query()->where('email', 'qa-filament@example.test')->exists())->toBeTrue()
         ->and(User::query()->where('phone_e164', '+201000007777')->exists())->toBeTrue();

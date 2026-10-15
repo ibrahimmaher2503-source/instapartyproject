@@ -7,6 +7,8 @@ use App\Modules\Catalog\Filament\Vendor\Pages\VendorServicesListPage;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorDigitalServiceResource;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorRentalServiceResource;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource;
+use App\Modules\Geography\Domain\Models\City;
+use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Identity\Application\Services\VendorOnboardingChecklistService;
 use App\Modules\Identity\Domain\Enums\ChecklistItemStatus;
 use App\Modules\Identity\Domain\Enums\VendorOnboardingChecklistItemKey;
@@ -30,11 +32,15 @@ beforeEach(function (): void {
 
 function productTypeApprovalChecklistVendor(): VendorProfile
 {
+    $governorate = Governorate::factory()->create();
+    $city = City::factory()->create(['governorate_id' => $governorate->id]);
     $vendor = VendorProfile::factory()->approved()->create([
         'business_name' => ['en' => 'Approval Guidance Vendor', 'ar' => 'مقدم خدمات حالة الاعتماد'],
         'address_line' => ['en' => '1 Test Street', 'ar' => '١ شارع الاختبار'],
         'business_type' => 'individual',
         'national_id' => '29901011234567',
+        'primary_governorate_id' => $governorate->id,
+        'primary_city_id' => $city->id,
         'bank_name' => 'Test Bank',
         'bank_account_holder' => 'Approval Guidance Vendor',
         'bank_iban' => 'EG380019000500000000263180002',
@@ -63,15 +69,15 @@ it('makes the existing product-type approval workflow discoverable from the read
 
     $admin = User::factory()->superAdmin()->create();
     $admin->givePermissionTo(Permission::findOrCreate('approve_vendor_for_type', 'web'));
-    $admin->givePermissionTo(Permission::findOrCreate('view_any_vendor::approved_product_type', 'web'));
+    $admin->givePermissionTo(Permission::findOrCreate('view_any_vendor::approved::product::type', 'web'));
     $admin->givePermissionTo(Permission::findOrCreate('view_any_vendor::profile', 'web'));
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     $this->actingAs($admin);
 
     Livewire::test(ListVendorApprovedProductTypes::class)
-        ->assertActionVisible('manageProductTypeApprovals')
         ->assertSee(__('identity::identity.product_type_approval_guidance'))
+        ->assertSee(__('identity.actions.manage_product_type_approvals'))
         ->assertSee(VendorProfileResource::getUrl('index', panel: 'admin'));
 })->with(['en', 'ar']);
 

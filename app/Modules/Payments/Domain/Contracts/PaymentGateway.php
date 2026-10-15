@@ -15,11 +15,14 @@ use Brick\Money\Money;
 
 interface PaymentGateway
 {
-    public function initiate(InitiatePaymentDto $dto): PaymentIntentDto;
+    public function initiate(InitiatePaymentDto $dto, ?string $merchantOrderId = null): PaymentIntentDto;
 
     public function verifyWebhookSignature(array $payload, string $signature): bool;
 
     public function parseWebhook(array $payload): PaymobWebhookDto;
+
+    /** Resolve a Paymob order reference from a provider-authenticated inquiry. */
+    public function resolveMerchantOrderReference(string $providerOrderId): ?string;
 
     public function refund(Payment $payment, Money $amount): RefundResultDto;
 

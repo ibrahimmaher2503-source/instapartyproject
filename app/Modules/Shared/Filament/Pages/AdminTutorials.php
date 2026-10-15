@@ -11,7 +11,7 @@ final class AdminTutorials extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 90;
 
     protected static ?string $slug = 'tutorials';
 
@@ -21,7 +21,7 @@ final class AdminTutorials extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settings');
+        return __('admin.nav.groups.operations');
     }
 
     public static function getNavigationLabel(): string
@@ -32,6 +32,16 @@ final class AdminTutorials extends Page
     public function getTitle(): string
     {
         return __('admin_tutorial.page.title');
+    }
+
+    public static function canAccess(): bool
+    {
+        $service = new TutorialManifestService(
+            flowsPath: base_path('docs/admin-flows'),
+            screenshotsPath: base_path('docs/admin-flows/screenshots'),
+        );
+
+        return $service->loadForViewer(auth()->user())['flows'] !== [];
     }
 
     public function mount(): void

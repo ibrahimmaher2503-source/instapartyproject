@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Booking\Application\Listeners;
 
 use App\Modules\Booking\Domain\Events\BookingCancelled;
+use App\Modules\Booking\Domain\Events\BookingForceCancelled;
 use Illuminate\Support\Facades\DB;
 
 class ReleaseInventoryOnCancellationListener
 {
-    public function handle(BookingCancelled $event): void
+    public function handle(BookingCancelled|BookingForceCancelled $event): void
     {
         $booking = $event->booking;
 

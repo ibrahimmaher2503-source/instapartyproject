@@ -78,7 +78,9 @@ it('locks the occasion and registers added and removed categories when scalar fi
     Event::fake([OccasionCategoriesChanged::class]);
 
     $afterCommit = null;
-    DB::partialMock()
+    $database = Mockery::mock(app('db'))->makePartial();
+    DB::swap($database);
+    $database
         ->shouldReceive('afterCommit')
         ->once()
         ->with(Mockery::on(function ($callback) use (&$afterCommit): bool {
@@ -93,7 +95,7 @@ it('locks the occasion and registers added and removed categories when scalar fi
 
     app(UpdateOccasionAction::class)->execute($occasion, new OccasionDTO(
         code: $occasion->code,
-        name: $occasion->name,
+        name: $occasion->getTranslations('name'),
         categoryIds: [$retainedCategory->id, $addedCategory->id],
     ));
 
@@ -163,7 +165,7 @@ it('links occasion categories through the admin form and preserves retained pivo
     ]);
     DB::table('occasion_category')->where('occasion_id', $occasion->id)->where('category_id', $child->id)->update(['sort_order' => 17]);
 
-    Livewire::test(EditOccasion::class, ['record' => $occasion->getKey()])
+    Livewire::test(EditOccasion::class, ['record' => $occasion->public_id])
         ->fillForm(['category_ids' => [$child->id, $inactiveChild->id, $addedChild->id]])
         ->call('save')
         ->assertHasNoFormErrors();

@@ -17,7 +17,7 @@ class VendorDocumentResource extends JsonResource
 
         return [
             'id' => $doc->public_id,
-            'doc_type' => $doc->doc_type->value,
+            'doc_type' => $doc->doc_type_key,
             'file_name' => $doc->file_name,
             'status' => $doc->status->value,
             'reviewed_at' => $doc->reviewed_at?->toIso8601String(),

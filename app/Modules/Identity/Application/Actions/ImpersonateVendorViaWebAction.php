@@ -55,7 +55,7 @@ class ImpersonateVendorViaWebAction
             || ! $vendor->hasRole('vendor')
             || $vendor->status !== 'active'
             || ! $vendor->hasVerifiedEmail()
-            || $vendor->phone_verified_at === null
+            || ! $vendor->hasVerifiedPhone()
             || ! ($vendorProfile->approval_status instanceof ApprovedState)
             || ! $vendor->canAccessPanel(filament()->getPanel('vendor'))
         ) {

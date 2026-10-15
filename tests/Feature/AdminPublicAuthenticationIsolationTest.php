@@ -50,7 +50,11 @@ it('does not issue or consume public recovery tokens for administrative accounts
 })->with(['admin', 'super_admin', 'booking_manager', 'panel_user'])->with(['email', 'sms']);
 
 it('keeps ordinary customer and vendor password authentication available', function (string $role) {
-    $user = User::factory()->create(['password' => 'CustomerPassword123!']);
+    $factory = User::factory();
+    if ($role === 'customer') {
+        $factory = $factory->phoneVerified();
+    }
+    $user = $factory->create(['password' => 'CustomerPassword123!']);
     $user->assignRole($role);
     $result = app(LoginAction::class)->execute($user->email, 'CustomerPassword123!', useToken: false);
     expect($result['user']->is($user))->toBeTrue()->and($result['token'])->toBeNull();

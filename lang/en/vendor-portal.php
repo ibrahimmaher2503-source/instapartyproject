@@ -98,6 +98,8 @@ return [
         'title' => 'Approval Status',
         'overall' => 'Overall Approval',
         'per_type' => 'Per Product Type Approval',
+        'unavailable' => 'Unavailable',
+        'per_type_guidance' => 'Account approval and product-type approval are separate. Only approved types can create services; pending types stay blocked until an admin approves them. Digital services are available only when enabled on the platform.',
         'request_approval' => 'Request Approval for :type',
         'request_approval_btn' => 'Request Approval',
         'rejection_reason' => 'Rejection Reason',
@@ -131,6 +133,9 @@ return [
     'services' => [
         'changes_requested' => 'Changes requested',
         'title' => 'My Services',
+        'product_type_separator' => ', ',
+        'digital_services_disabled' => 'Digital services are currently unavailable on the platform.',
+        'check_product_type_status' => 'View product-type status',
         'rental_services' => 'Rental Services',
         'sale_services' => 'Sale Services',
         'digital_services' => 'Digital Services',

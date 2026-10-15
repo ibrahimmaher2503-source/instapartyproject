@@ -25,7 +25,7 @@ class VendorAdSubscriptionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tv';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 80;
 
     public static function getNavigationGroup(): ?string
     {

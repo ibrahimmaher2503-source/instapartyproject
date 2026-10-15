@@ -39,11 +39,11 @@ class DesignTokenResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-swatch';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 100;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.appearance');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getModelLabel(): string

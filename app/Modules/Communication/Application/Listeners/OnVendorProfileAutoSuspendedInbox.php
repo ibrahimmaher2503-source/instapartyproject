@@ -17,7 +17,7 @@ class OnVendorProfileAutoSuspendedInbox
     public function handle(VendorAutoSuspended $event): void
     {
         $vendorProfile = $event->vendorProfile;
-        $docType = $event->document->doc_type->value;
+        $docType = $event->document->doc_type_key;
         $vendorName = $vendorProfile->getTranslation('business_name', 'en');
         $expiryDate = $event->document->expires_at?->format('Y-m-d') ?? 'unknown';
 

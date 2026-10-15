@@ -29,7 +29,7 @@ class SubscriptionInvoiceResource extends Resource
         return __('subscriptions::subscription.invoices');
     }
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 120;
 
     protected static ?string $recordTitleAttribute = 'public_id';
 

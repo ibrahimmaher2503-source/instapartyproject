@@ -7,7 +7,7 @@ use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Payments\Domain\Models\Payment;
-use Illuminate\Support\CarbonImmutable;
+use Carbon\CarbonImmutable;
 
 it('uses each account heading as the localized document title', function (string $locale): void {
     $user = User::factory()->asCustomer()->create(['timezone' => 'UTC']);

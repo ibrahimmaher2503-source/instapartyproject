@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Application\Actions;
 
 use App\Modules\Catalog\Domain\Models\Service;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ShowPublishedServiceAction
 {
@@ -20,11 +22,17 @@ class ShowPublishedServiceAction
             ->with([
                 'media',
                 'category',
-                'vendor.primaryCity',
-                'vendor.primaryGovernorate',
+                'vendor.primaryCity.governorate',
+                'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate',
                 'rentalDetail',
                 'saleDetail',
                 'digitalDetail',
+                'themes' => fn (BelongsToMany $themes) => $themes->where('is_active', true),
+                'packages' => fn (HasMany $packages) => $packages
+                    ->available()
+                    ->orderBy('code'),
+                'packages.components',
+                'packages.media',
             ])
             ->where('public_id', $publicId)
             ->firstOrFail();

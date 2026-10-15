@@ -9,6 +9,8 @@ use App\Modules\Payments\Filament\Resources\RefundResource\Pages\ListRefunds;
 use App\Modules\Payments\Filament\Resources\RefundResource\Pages\ViewRefund;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -28,7 +30,7 @@ class RefundResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {
@@ -63,6 +65,8 @@ class RefundResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'booking.public_id', 'status', 'amount_minor', 'amount_currency', 'created_at'])])
+            ->filters([OperationalDateFilter::make()])
             ->columns([
                 TextColumn::make('public_id')
                     ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [

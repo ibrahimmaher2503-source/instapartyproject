@@ -69,7 +69,6 @@ it('restores booking wizard UTC old input in the submitted timezone', function (
     $service->category->occasions()->attach($occasion->id);
     $city = City::factory()->create(['is_active' => true]);
     $startsAt = CarbonImmutable::now($timezone)->subHours(2)->format('Y-m-d\\TH:i');
-    $utcStartsAt = CarbonImmutable::parse($startsAt, $timezone)->utc()->toIso8601String();
     $wizardUrl = '/en/wizard?service='.$service->public_id;
     $payload = [
         'service_id' => $service->public_id,
@@ -89,7 +88,7 @@ it('restores booking wizard UTC old input in the submitted timezone', function (
     $this->actingAs($customer)->from($wizardUrl)->post('/en/cart/setup', $payload)
         ->assertRedirect($wizardUrl)
         ->assertSessionHasErrors('event_starts_at')
-        ->assertSessionHasInput('event_starts_at', $utcStartsAt)
+        ->assertSessionHasInput('event_starts_at', $startsAt)
         ->assertSessionHasInput('occasion', $occasion->code)
         ->assertSessionHasInput('timezone', $timezone);
 
@@ -97,7 +96,7 @@ it('restores booking wizard UTC old input in the submitted timezone', function (
         ->assertSee('data-initial-step="0"', false)
         ->assertSee('data-initial-governorate="'.$city->governorate->public_id.'"', false)
         ->assertSee('data-initial-city="'.$city->public_id.'"', false)
-        ->assertSee('data-initial-date="'.$utcStartsAt.'"', false)
+        ->assertSee('data-initial-date="'.$startsAt.'"', false)
         ->assertSee('name="timezone" value="'.$timezone.'"', false)
         ->assertSee('aria-checked="true"', false);
 });

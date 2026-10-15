@@ -58,10 +58,10 @@ final class NotificationTemplateSeeder extends Seeder
                 'audience' => NotificationAudience::Customer,
                 'subject' => ['en' => 'Booking received', 'ar' => 'تم استلام الحجز'],
                 'body' => [
-                    'en' => 'Your booking #{{booking_id}} has been received. Vendors will confirm within 24 hours.',
-                    'ar' => 'تم استلام حجزك رقم #{{booking_id}}. سيقوم الموردون بالتأكيد خلال 24 ساعة.',
+                    'en' => 'Booking {{booking_number}} was received. Current status: {{booking_status}}.',
+                    'ar' => 'تم استلام الحجز {{booking_number}}. الحالة الحالية: {{booking_status}}.',
                 ],
-                'variables' => ['booking_id'],
+                'variables' => ['booking_number', 'booking_status'],
             ],
             [
                 'event_key' => 'booking.submitted',
@@ -69,10 +69,10 @@ final class NotificationTemplateSeeder extends Seeder
                 'audience' => NotificationAudience::Customer,
                 'subject' => ['en' => null, 'ar' => null],
                 'body' => [
-                    'en' => 'Your booking has been submitted. We will confirm it shortly.',
-                    'ar' => 'تم تقديم حجزك. سنؤكده قريبا.',
+                    'en' => 'Booking {{booking_number}} was received. Current status: {{booking_status}}.',
+                    'ar' => 'تم استلام الحجز {{booking_number}}. الحالة الحالية: {{booking_status}}.',
                 ],
-                'variables' => ['booking_id', 'vendor_name'],
+                'variables' => ['booking_number', 'booking_status'],
             ],
             [
                 'event_key' => 'booking.submitted',
@@ -135,10 +135,10 @@ final class NotificationTemplateSeeder extends Seeder
                 'audience' => NotificationAudience::Customer,
                 'subject' => ['en' => 'Booking received', 'ar' => 'تم استلام الحجز'],
                 'body' => [
-                    'en' => 'Your booking #{{booking_id}} has been received. Vendors will confirm within 24 hours.',
-                    'ar' => 'تم استلام حجزك رقم #{{booking_id}}. سيقوم الموردون بالتأكيد خلال 24 ساعة.',
+                    'en' => "Your booking {{booking_number}} was received.\n\nCurrent status: {{booking_status}}.\n\nView booking: {{action_url}}",
+                    'ar' => "تم استلام حجزك {{booking_number}}.\n\nالحالة الحالية: {{booking_status}}.\n\nعرض الحجز: {{action_url}}",
                 ],
-                'variables' => ['booking_id'],
+                'variables' => ['booking_number', 'booking_status', 'action_url'],
             ],
             [
                 'event_key' => 'booking.submitted',

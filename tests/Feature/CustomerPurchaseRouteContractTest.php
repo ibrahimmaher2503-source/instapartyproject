@@ -65,6 +65,7 @@ it('omits empty detail groups but still blocks an out-of-stock purchase', functi
 })->with(['en', 'ar']);
 
 it('renders only the attributes supported by each service type', function (): void {
+    app()->setLocale('en');
     $rental = (object) [
         'product_type' => ProductType::Rental,
         'rentalDetail' => (object) [

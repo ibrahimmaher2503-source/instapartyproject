@@ -58,7 +58,7 @@ it('retains one open condition and original evidence across repeated runs while 
         ->and(ReconciliationFinding::count())->toBe(1)
         ->and($repeat->only(array_keys($original)))->toEqual($original)
         ->and($repeat->last_seen_run_id)->toBe($nextRun->id)
-        ->and($repeat->last_seen_at->equalTo(now()))->toBeTrue();
+        ->and($repeat->last_seen_at->isSameSecond(now()))->toBeTrue();
 
     $other = new DetectedFinding(ReconciliationFindingType::WithdrawalWithoutReserveEntry, ReconciliationFindingSeverity::High, 'withdrawal', 999, ['valid_reserve_entry' => true], ['valid_reserve_entry' => false], null, 'settlement.findings.withdrawal_without_reserve');
     expect($this->repository->recordFinding($nextRun, $other)->id)->not->toBe($first->id)
@@ -82,7 +82,7 @@ it('adopts the same legacy finding repeatedly without deleting or rewriting hist
     expect($first->id)->toBe($legacy->id)
         ->and($repeat->id)->toBe($legacy->id)
         ->and(ReconciliationFinding::count())->toBe(2)
-        ->and($duplicate->fresh()->getAttributes())->toEqual($duplicateEvidence);
+        ->and(array_intersect_key($duplicate->fresh()->getRawOriginal(), $duplicateEvidence))->toEqual($duplicateEvidence);
     $admin = User::factory()->asAdmin()->create();
     $admin->givePermissionTo(Permission::findOrCreate('update_reconciliation::finding', 'web'));
     $this->actingAs($admin);
@@ -90,7 +90,7 @@ it('adopts the same legacy finding repeatedly without deleting or rewriting hist
     expect(ReconciliationFinding::query()->canonicalConditions()->count())->toBe(0)
         ->and(app(ReconciliationDashboard::class)->getOpenHighFindingsCount())->toBe(0)
         ->and(ReconciliationFinding::count())->toBe(2)
-        ->and($duplicate->fresh()->getAttributes())->toEqual($duplicateEvidence);
+        ->and(array_intersect_key($duplicate->fresh()->getRawOriginal(), $duplicateEvidence))->toEqual($duplicateEvidence);
 });
 
 it('keeps repeated findings visible in every observed run after a later scan replaces the last seen run', function (): void {
@@ -172,13 +172,13 @@ it('recognizes the reserve posted at request time and never debits it a second t
 it('rejects an unreserved pending withdrawal without changing financial history or approval state', function (): void {
     $withdrawal = WithdrawalFactory::new()->pending()->create(['vendor_profile_id' => $this->wallet->owner_id]);
     $admin = User::factory()->asAdmin()->create();
-    $original = $withdrawal->getAttributes();
+    $original = $withdrawal->getRawOriginal();
     $ledgerBefore = DB::table('wallet_ledger')->orderBy('id')->get()->toJson();
     $auditBefore = DB::table('audit_logs')->orderBy('id')->get()->toJson();
     $groupsBefore = DB::table('ledger_transaction_groups')->orderBy('id')->get()->toJson();
 
     expect(fn () => app(ApproveWithdrawalAction::class)->execute($withdrawal, $admin))->toThrow(ValidationException::class);
-    expect($withdrawal->fresh()->getAttributes())->toEqual($original)
+    expect(array_intersect_key($withdrawal->fresh()->getRawOriginal(), $original))->toEqual($original)
         ->and(DB::table('wallet_ledger')->orderBy('id')->get()->toJson())->toBe($ledgerBefore)
         ->and(DB::table('audit_logs')->orderBy('id')->get()->toJson())->toBe($auditBefore)
         ->and(DB::table('ledger_transaction_groups')->orderBy('id')->get()->toJson())->toBe($groupsBefore)

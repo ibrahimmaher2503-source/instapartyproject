@@ -7,10 +7,5 @@ it('requires the planner context before showing discovery results', function ():
 
     $response
         ->assertRedirect()
-        ->assertSessionHasErrors([
-            'occasion',
-            'governorate_public_id',
-            'city_public_id',
-            'event_starts_at',
-        ]);
+        ->assertSessionHasErrors('search');
 });

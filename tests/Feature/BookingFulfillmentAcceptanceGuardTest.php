@@ -36,13 +36,21 @@ it('retains eligibility for accepted and already progressing allocations', funct
     $allocation = BookingVendor::factory()->create(['booking_id' => $booking->id, 'sub_status' => $status]);
     app(FulfillmentGuards::class)->runAll($allocation, $allocation->vendor);
     expect($allocation->refresh()->sub_status)->toBe($status);
-})->with([VendorSubStatus::Accepted, VendorSubStatus::InProgress, VendorSubStatus::Completed]);
+})->with([VendorSubStatus::Accepted, VendorSubStatus::InProgress]);
+
+it('rejects further fulfillment transitions after the vendor allocation is complete', function (): void {
+    $booking = Booking::factory()->create(['lifecycle_status' => ConfirmedState::class, 'payment_status' => PaidState::class]);
+    $allocation = BookingVendor::factory()->create(['booking_id' => $booking->id, 'sub_status' => VendorSubStatus::Completed]);
+
+    expect(fn () => app(FulfillmentGuards::class)->runAll($allocation, $allocation->vendor))
+        ->toThrow(BookingNotEligibleForFulfillmentException::class);
+});
 
 it('blocks digital completion before vendor acceptance', function (): void {
     $vendor = VendorProfile::factory()->approved()->create();
     $booking = Booking::factory()->create(['lifecycle_status' => ConfirmedState::class, 'payment_status' => PaidState::class]);
     $allocation = BookingVendor::factory()->create(['booking_id' => $booking->id, 'vendor_profile_id' => $vendor->id, 'sub_status' => VendorSubStatus::Pending]);
-    $item = BookingItem::factory()->digital()->create(['booking_vendor_id' => $allocation->id]);
+    $item = BookingItem::factory()->digital()->create(['booking_vendor_id' => $allocation->id, 'item_status' => 'pending']);
 
     expect(fn () => app(MarkCompletedAction::class)->execute($item, $vendor, $vendor->user, new FulfillmentEvidenceDto))
         ->toThrow(BookingNotEligibleForFulfillmentException::class);

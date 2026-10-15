@@ -24,6 +24,7 @@ use App\Modules\Communication\Application\Listeners\OnBookingForceCancelledNotif
 use App\Modules\Communication\Application\Listeners\OnBookingModified;
 use App\Modules\Communication\Application\Listeners\OnBookingStalledInbox;
 use App\Modules\Communication\Application\Listeners\OnBookingSubmitted;
+use App\Modules\Communication\Application\Listeners\OnBookingSubmittedInbox;
 use App\Modules\Communication\Application\Listeners\OnChargebackOpenedInbox;
 use App\Modules\Communication\Application\Listeners\OnChatFlaggedInbox;
 use App\Modules\Communication\Application\Listeners\OnCustomerSuspended;
@@ -263,6 +264,7 @@ class CommunicationServiceProvider extends ServiceProvider
         Event::listen(ChangeRequestResubmitted::class, DispatchServiceResubmittedNotificationListener::class);
 
         // Admin inbox routing listeners
+        Event::listen('App\Modules\Booking\Domain\Events\BookingSubmittedToVendor', OnBookingSubmittedInbox::class);
         Event::listen('App\Modules\Identity\Domain\Events\VendorRegistered', OnVendorRegisteredInbox::class);
         Event::listen('App\Modules\Payments\Domain\Events\PaymentFailed', OnPaymentFailedInbox::class);
         Event::listen('App\Modules\Settlement\Domain\Events\WithdrawalRequested', OnWithdrawalRequestedInbox::class);
@@ -322,7 +324,8 @@ class CommunicationServiceProvider extends ServiceProvider
         Event::listen('App\Modules\Settlement\Domain\Events\WithdrawalRejected', OnWithdrawalRejected::class);
 
         // TrustSafety — report acknowledgement
-        Event::listen('App\Modules\TrustSafety\Domain\Events\ReportSubmitted', [OnReportSubmittedInbox::class, OnReportSubmittedCustomerAck::class]);
+        Event::listen('App\Modules\TrustSafety\Domain\Events\ReportSubmitted', OnReportSubmittedInbox::class);
+        Event::listen('App\Modules\TrustSafety\Domain\Events\ReportSubmitted', OnReportSubmittedCustomerAck::class);
 
         // Catalog — service moderation outcome
         Event::listen('App\Modules\Catalog\Domain\Events\ServicePublished', OnServicePublished::class);

@@ -99,7 +99,7 @@ echo json_encode(['invoice'=>route('admin.bookings.invoice',$booking->public_id)
   const invoicePage = await adminContext.newPage();
   await invoicePage.goto('/admin/login');
   await invoicePage.locator('input[type="email"]').fill('uat-admin@example.test');
-  await invoicePage.locator('input[type="password"]').fill('UatTest123!');
+  await invoicePage.locator('input[type="password"]').fill('UatAdminTest123!');
   await invoicePage.getByRole('button', { name: /sign in|تسجيل الدخول/i }).click();
   await expect(invoicePage).toHaveURL(/\/admin\/?$/, { timeout: 15_000 });
   await invoicePage.goto(new URL(fixtures.governorateEdit).pathname);

@@ -7,6 +7,7 @@ namespace App\Modules\Booking\Providers;
 use App\Modules\Booking\Application\Listeners\AggregateBookingVendorSubStatusListener;
 use App\Modules\Booking\Application\Listeners\CompleteBookingWhenAllVendorsCompletedListener;
 use App\Modules\Booking\Application\Listeners\ConfirmInventoryReservationsListener;
+use App\Modules\Booking\Application\Listeners\DispatchAlternativeVendorProposalNotifications;
 use App\Modules\Booking\Application\Listeners\OnAdminSuggestedAlternativeVendorsNotifyCustomer;
 use App\Modules\Booking\Application\Listeners\OnBookingChatFrozenNotifyParties;
 use App\Modules\Booking\Application\Listeners\OnBookingChatFrozenPushFirestore;
@@ -27,7 +28,10 @@ use App\Modules\Booking\Console\Commands\ExpireVendorProposalsCommand;
 use App\Modules\Booking\Console\Commands\ReleaseExpiredReservationsCommand;
 use App\Modules\Booking\Domain\Contracts\BookingHistoryReader;
 use App\Modules\Booking\Domain\Contracts\BookingRepository;
+use App\Modules\Booking\Domain\Contracts\CustomerBookingChatReader;
 use App\Modules\Booking\Domain\Events\AdminSuggestedAlternativeVendors;
+use App\Modules\Booking\Domain\Events\AlternativeVendorProposalCreated;
+use App\Modules\Booking\Domain\Events\AlternativeVendorProposalDecided;
 use App\Modules\Booking\Domain\Events\BookingCancelled;
 use App\Modules\Booking\Domain\Events\BookingChatFrozen;
 use App\Modules\Booking\Domain\Events\BookingChatResumed;
@@ -58,6 +62,7 @@ use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingItemReviewabi
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingPayoutWriter;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingRepository;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingVendorReviewabilityReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentCustomerBookingChatReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentPaymentsBookingReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentSettlementBookingReader;
 use App\Modules\Loyalty\Domain\Contracts\BookingDiscountWriter;
@@ -85,6 +90,7 @@ class BookingServiceProvider extends ServiceProvider
         $this->app->singleton(BookingItemReviewabilityReader::class, EloquentBookingItemReviewabilityReader::class);
         $this->app->singleton(BookingVendorReviewabilityReader::class, EloquentBookingVendorReviewabilityReader::class);
         $this->app->singleton(BookingHistoryReader::class, EloquentBookingHistoryReader::class);
+        $this->app->singleton(CustomerBookingChatReader::class, EloquentCustomerBookingChatReader::class);
 
         // Cross-module contracts consumed by the Loyalty module.
         $this->app->singleton(BookingItemNetAmountReader::class, EloquentBookingItemNetAmountReader::class);
@@ -134,6 +140,8 @@ class BookingServiceProvider extends ServiceProvider
 
         // Admin intervention events
         Event::listen(AdminSuggestedAlternativeVendors::class, OnAdminSuggestedAlternativeVendorsNotifyCustomer::class);
+        Event::listen(AlternativeVendorProposalCreated::class, DispatchAlternativeVendorProposalNotifications::class);
+        Event::listen(AlternativeVendorProposalDecided::class, DispatchAlternativeVendorProposalNotifications::class);
         Event::listen(CustomerReviewReminderSent::class, OnCustomerReviewReminderSentNotifyCustomer::class);
         Event::listen(BookingChatFrozen::class, OnBookingChatFrozenPushFirestore::class);
         Event::listen(BookingChatFrozen::class, OnBookingChatFrozenNotifyParties::class);

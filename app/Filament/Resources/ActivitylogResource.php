@@ -6,11 +6,20 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ActivitylogResource\Pages\ListActivitylog;
 use App\Filament\Resources\ActivitylogResource\Pages\ViewActivitylog;
+use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Filament\Resources\BookingResource;
+use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Identity\Filament\Resources\VendorProfileResource;
+use App\Modules\Support\Domain\Models\SupportTicket;
+use App\Modules\Support\Filament\Resources\SupportTicketResource;
+use App\Modules\TrustSafety\Domain\Models\Report;
+use App\Modules\TrustSafety\Filament\Resources\ReportResource;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
 use Livewire\Component as Livewire;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
@@ -81,6 +90,7 @@ class ActivitylogResource extends BaseActivitylogResource
                     ? "{$subjectLabel} · {$publicId}"
                     : "{$subjectLabel} · ".self::legacyLabel();
             })
+            ->url(fn (Model $record): ?string => self::subjectUrl($record))
             ->searchable()
             ->hidden(fn (Livewire $livewire): bool => $livewire instanceof ActivitylogRelationManager);
     }
@@ -98,10 +108,43 @@ class ActivitylogResource extends BaseActivitylogResource
         return self::translate('shared::admin.activity_log.legacy_unknown');
     }
 
+    private static function subjectUrl(Model $activity): ?string
+    {
+        $subject = $activity->getRelationValue('subject');
+        if (! $subject instanceof Model) {
+            return null;
+        }
+
+        $resource = match ($subject::class) {
+            Booking::class => BookingResource::class,
+            SupportTicket::class => SupportTicketResource::class,
+            Report::class => ReportResource::class,
+            VendorProfile::class => VendorProfileResource::class,
+            default => null,
+        };
+
+        if ($resource === null || ! $resource::canViewAny() || ! $resource::canView($subject)
+            || ! array_key_exists('view', $resource::getPages())) {
+            return null;
+        }
+
+        return $resource::getUrl('view', ['record' => $subject]);
+    }
+
     private static function translate(string $key): string
     {
-        $translation = __($key);
+        $locale = app()->getLocale();
+        $translation = Lang::get($key, [], $locale);
 
-        return is_string($translation) ? $translation : $key;
+        if (Lang::has($key, $locale, false) && is_string($translation) && $translation !== $key) {
+            return $translation;
+        }
+
+        $fallbackKey = 'shared::admin.activity_log.legacy_unknown';
+        $fallback = Lang::get($fallbackKey, [], $locale);
+
+        return Lang::has($fallbackKey, $locale, false) && is_string($fallback) && $fallback !== $fallbackKey
+            ? $fallback
+            : ($locale === 'ar' ? 'غير معروف' : 'Unknown');
     }
 }

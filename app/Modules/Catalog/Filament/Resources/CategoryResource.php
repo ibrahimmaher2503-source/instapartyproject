@@ -10,6 +10,7 @@ use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Filament\Resources\CategoryResource\Pages\CreateCategory;
 use App\Modules\Catalog\Filament\Resources\CategoryResource\Pages\EditCategory;
 use App\Modules\Catalog\Filament\Resources\CategoryResource\Pages\ListCategories;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -36,7 +37,7 @@ class CategoryResource extends Resource
         return __('admin.nav.groups.catalog');
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationLabel(): string
     {
@@ -93,9 +94,9 @@ class CategoryResource extends Resource
                 ])
                 ->columns(2),
 
-            Tabs::make('Translations')
+            BilingualTabErrorFeedback::tabs(Tabs::make('Translations'))
                 ->tabs([
-                    Tab::make('English')
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->required()
@@ -105,7 +106,7 @@ class CategoryResource extends Resource
                                 ->maxLength(500)
                                 ->label(__('catalog.fields.description_en')),
                         ]),
-                    Tab::make('العربية')
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->required()

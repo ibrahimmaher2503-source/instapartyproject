@@ -769,7 +769,7 @@ test('full marketplace journey records the real browser gates', async ({ browser
 
             if (/\/admin\/login$/.test(adminPage.url())) {
                 await adminPage.locator('input[wire\\:model="data.email"]').fill('uat-admin@example.test');
-                await adminPage.locator('input[wire\\:model="data.password"]').fill('UatTest123!');
+                await adminPage.locator('input[wire\\:model="data.password"]').fill('UatAdminTest123!');
                 await adminPage.getByRole('button', { name: /sign in/i }).click();
                 await expect(adminPage).toHaveURL(/\/admin\/vendor-approval-queue$/, { timeout: 15_000 });
             }
@@ -947,7 +947,7 @@ test('full marketplace journey records the real browser gates', async ({ browser
 
         if (/\/admin\/login$/.test(adminPage.url())) {
             await adminPage.locator('input[wire\\:model="data.email"]').fill('uat-admin@example.test');
-            await adminPage.locator('input[wire\\:model="data.password"]').fill('UatTest123!');
+            await adminPage.locator('input[wire\\:model="data.password"]').fill('UatAdminTest123!');
             await adminPage.getByRole('button', { name: /sign in/i }).click();
             await expect(adminPage).toHaveURL(/\/admin(?:\/vendor-document-filaments)?\/?$/, { timeout: 15_000 });
             if (!/\/admin\/vendor-document-filaments\/?$/.test(adminPage.url())) {
@@ -1074,7 +1074,7 @@ test('full marketplace journey records the real browser gates', async ({ browser
 
         if (/\/admin\/login$/.test(adminPage.url())) {
             await adminPage.locator('input[wire\\:model="data.email"]').fill('uat-admin@example.test');
-            await adminPage.locator('input[wire\\:model="data.password"]').fill('UatTest123!');
+            await adminPage.locator('input[wire\\:model="data.password"]').fill('UatAdminTest123!');
             await adminPage.getByRole('button', { name: /sign in/i }).click();
             await expect(adminPage).toHaveURL(/\/admin\/vendor-approval-queue$/, { timeout: 15_000 });
         }

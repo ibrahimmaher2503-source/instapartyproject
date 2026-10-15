@@ -17,7 +17,7 @@ use LogicException;
 
 final class FakePaymentGateway implements PaymentGateway
 {
-    public function initiate(InitiatePaymentDto $dto): PaymentIntentDto
+    public function initiate(InitiatePaymentDto $dto, ?string $merchantOrderId = null): PaymentIntentDto
     {
         throw new LogicException('Financial operations are disabled in the vendor lifecycle QA harness.');
     }
@@ -30,6 +30,11 @@ final class FakePaymentGateway implements PaymentGateway
     public function parseWebhook(array $payload): PaymobWebhookDto
     {
         throw new LogicException('Webhook parsing is disabled in the vendor lifecycle QA harness.');
+    }
+
+    public function resolveMerchantOrderReference(string $providerOrderId): ?string
+    {
+        return null;
     }
 
     public function refund(Payment $payment, Money $amount): RefundResultDto

@@ -14,7 +14,7 @@ class AdvertisingAnalyticsPage extends Page
 
     protected static string $view = 'filament.pages.advertising-analytics';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationGroup(): ?string
     {

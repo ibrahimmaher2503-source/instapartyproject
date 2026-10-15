@@ -1,5 +1,66 @@
 import './booking-actions';
 
+document.querySelectorAll('[data-home-vendors]').forEach((section) => {
+    const rail = section.querySelector('.sf-vendor-rail');
+    const pagination = section.querySelector('[data-vendor-pages]');
+    if (!(rail instanceof HTMLElement) || !(pagination instanceof HTMLElement)) return;
+    const rtl = getComputedStyle(rail).direction === 'rtl';
+    let distance = 0;
+    let perPage = 1;
+    const sync = () => {
+        const position = Math.abs(rail.scrollLeft);
+        const atEnd = position >= rail.scrollWidth - rail.clientWidth - 2;
+        const active = atEnd ? pagination.childElementCount - 1 : Math.round(position / (distance * perPage));
+        [...pagination.children].forEach((button, index) => button.setAttribute('aria-pressed', String(index === active)));
+    };
+    const resize = () => {
+        distance = rail.firstElementChild.getBoundingClientRect().width + parseFloat(getComputedStyle(rail).columnGap);
+        perPage = Math.max(1, Math.floor((rail.clientWidth + parseFloat(getComputedStyle(rail).columnGap) + 1) / distance));
+        const count = Math.ceil(rail.childElementCount / perPage);
+        if (pagination.childElementCount !== count) {
+            pagination.replaceChildren();
+            for (let index = 0; index < count; index++) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.setAttribute('aria-controls', rail.id);
+                button.setAttribute('aria-label', pagination.dataset.pageLabel.replace(':number', String(index + 1)));
+                button.addEventListener('click', () => rail.scrollTo({
+                    left: Math.min(index * perPage * distance, rail.scrollWidth - rail.clientWidth) * (rtl ? -1 : 1),
+                    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+                }));
+                pagination.append(button);
+            }
+        }
+        sync();
+    };
+    rail.addEventListener('scroll', sync, { passive: true });
+    new ResizeObserver(resize).observe(rail);
+    resize();
+});
+
+document.querySelectorAll('[data-home-services]').forEach((section) => {
+    const cards = [...section.querySelectorAll('[data-service-category]')];
+    const filters = [...section.querySelectorAll('[data-service-filter]')];
+    const pages = [...section.querySelectorAll('[data-service-page]')];
+    let category = '';
+    const showPage = (page) => {
+        const matches = cards.filter((card) => !category || card.dataset.serviceCategory === category);
+        cards.forEach((card) => { card.hidden = !matches.slice(page * 8, page * 8 + 8).includes(card); });
+        section.querySelector('.sf-service-rail').scrollLeft = 0;
+        pages.forEach((button, index) => {
+            button.hidden = index >= Math.ceil(matches.length / 8);
+            button.setAttribute('aria-pressed', String(index === page));
+        });
+    };
+    filters.forEach((button) => button.addEventListener('click', () => {
+        category = button.dataset.serviceFilter;
+        filters.forEach((filter) => filter.setAttribute('aria-pressed', String(filter === button)));
+        showPage(0);
+    }));
+    pages.forEach((button) => button.addEventListener('click', () => showPage(Number(button.dataset.servicePage))));
+    showPage(0);
+});
+
 const dialog = document.querySelector('[data-storefront-nav-dialog]');
 const openButton = document.querySelector('[data-storefront-nav-open]');
 const closeButton = document.querySelector('[data-storefront-nav-close]');
@@ -8,10 +69,14 @@ const storefrontHeader = document.querySelector('[data-storefront-header]');
 document.querySelectorAll('[data-service-gallery]').forEach((gallery) => {
     const image = gallery.querySelector('[data-service-gallery-main]');
     if (!(image instanceof HTMLImageElement)) return;
-    const buttons = gallery.querySelectorAll('[data-service-gallery-image]');
+    let buttons = Array.from(gallery.querySelectorAll('[data-service-gallery-image]'));
     buttons.forEach((button) => button.addEventListener('click', () => {
         image.src = button.dataset.serviceGalleryImage;
         buttons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        const position = gallery.querySelector('[data-gallery-position]');
+        if (position instanceof HTMLElement) {
+            position.textContent = `${buttons.indexOf(button) + 1} / ${buttons.length}`;
+        }
     }));
     gallery.querySelectorAll('[data-gallery-step]').forEach((control) => control.addEventListener('click', () => {
         if (buttons.length === 0) return;
@@ -19,6 +84,32 @@ document.querySelectorAll('[data-service-gallery]').forEach((gallery) => {
         const next = (current + Number(control.dataset.galleryStep) + buttons.length) % buttons.length;
         buttons[next].click();
     }));
+    if (gallery.hasAttribute('data-vendor-gallery')) {
+        const skipBrokenImage = () => {
+            buttons = buttons.filter((button) => {
+                if (button.dataset.serviceGalleryImage === image.getAttribute('src')) {
+                    button.remove();
+                    return false;
+                }
+                return true;
+            });
+            if (buttons.length > 0) {
+                buttons[0].click();
+            } else {
+                gallery.hidden = true;
+                const empty = gallery.parentElement.querySelector('[data-vendor-gallery-empty]');
+                if (empty) empty.hidden = false;
+            }
+        };
+        image.addEventListener('error', skipBrokenImage);
+        if (image.complete && image.naturalWidth === 0) skipBrokenImage();
+        buttons.forEach((button) => {
+            const thumbnail = button.querySelector('img');
+            if (!(thumbnail instanceof HTMLImageElement)) return;
+            thumbnail.addEventListener('error', () => { thumbnail.hidden = true; });
+            if (thumbnail.complete && thumbnail.naturalWidth === 0) thumbnail.hidden = true;
+        });
+    }
 });
 
 document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
@@ -31,7 +122,7 @@ document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
 });
 
 document.querySelectorAll('[data-browser-timezone]').forEach((input) => {
-    if (!(input instanceof HTMLInputElement)) return;
+    if (!(input instanceof HTMLInputElement) || input.hasAttribute('data-explicit-timezone')) return;
     const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
     try {
         new Intl.DateTimeFormat('en', { timeZone: input.value || browserTimezone });
@@ -40,6 +131,128 @@ document.querySelectorAll('[data-browser-timezone]').forEach((input) => {
     }
     if (input.value === '') input.value = browserTimezone;
 });
+
+const serviceEstimate = document.querySelector('[data-service-estimate]');
+
+if (serviceEstimate instanceof HTMLFormElement) {
+    const startInput = serviceEstimate.querySelector('[data-service-estimate-start]');
+    const durationInput = serviceEstimate.querySelector('[data-service-estimate-duration]');
+    const quantityInput = serviceEstimate.querySelector('[data-service-estimate-quantity]');
+    const checkButton = serviceEstimate.querySelector('[data-service-check-availability]');
+    const status = serviceEstimate.querySelector('[data-service-availability-status]');
+    const estimateRefreshStatus = serviceEstimate.querySelector('[data-service-estimate-refresh-status]');
+    const wizardLink = document.querySelector('[data-service-wizard-link]');
+
+    const updateWizardLink = () => {
+        if (!(wizardLink instanceof HTMLAnchorElement)) return;
+        const url = new URL(wizardLink.href);
+        const startsAt = startInput instanceof HTMLInputElement ? startInput.value : '';
+        const quantity = quantityInput instanceof HTMLInputElement ? quantityInput.value : '1';
+
+        if (startsAt) url.searchParams.set('event_starts_at', startsAt);
+        else url.searchParams.delete('event_starts_at');
+
+        if (durationInput instanceof HTMLInputElement && startsAt && Number(durationInput.value) > 0) {
+            const end = new Date(startsAt);
+            end.setTime(end.getTime() + Number(durationInput.value) * 60 * 60 * 1000);
+            const localEnd = [end.getFullYear(), String(end.getMonth() + 1).padStart(2, '0'), String(end.getDate()).padStart(2, '0')].join('-')
+                + `T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+            url.searchParams.set('event_ends_at', localEnd);
+        } else {
+            url.searchParams.delete('event_ends_at');
+        }
+
+        if (quantity) url.searchParams.set('quantity', quantity);
+        if (serviceEstimate.elements.namedItem('timezone') instanceof HTMLInputElement) {
+            url.searchParams.set('timezone', serviceEstimate.elements.namedItem('timezone').value);
+        }
+        wizardLink.href = `${url.pathname}?${url.searchParams.toString()}`;
+
+        const estimateIsStale = serviceEstimate.dataset.estimateQuantity !== quantity;
+        wizardLink.setAttribute('aria-disabled', String(estimateIsStale));
+        if (estimateRefreshStatus instanceof HTMLElement) {
+            estimateRefreshStatus.textContent = estimateIsStale ? (serviceEstimate.dataset.estimateRefreshMessage ?? '') : '';
+        }
+    };
+
+    wizardLink?.addEventListener('click', (event) => {
+        if (wizardLink.getAttribute('aria-disabled') !== 'true') return;
+        event.preventDefault();
+        estimateRefreshStatus?.focus?.();
+    });
+
+    serviceEstimate.addEventListener('input', () => {
+        updateWizardLink();
+        if (status instanceof HTMLElement) status.textContent = '';
+    });
+    serviceEstimate.addEventListener('change', () => {
+        updateWizardLink();
+        if (status instanceof HTMLElement) status.textContent = '';
+    });
+    updateWizardLink();
+
+    if (checkButton instanceof HTMLButtonElement && status instanceof HTMLElement) {
+        checkButton.addEventListener('click', async () => {
+            const productType = serviceEstimate.dataset.productType ?? '';
+            const startsAt = startInput instanceof HTMLInputElement ? startInput.value : '';
+            const duration = durationInput instanceof HTMLInputElement ? Number(durationInput.value) : null;
+            const quantity = quantityInput instanceof HTMLInputElement ? Number(quantityInput.value) : 1;
+
+            if (productType === 'rental' && startsAt === '') {
+                status.textContent = serviceEstimate.dataset.availabilityDateRequired ?? '';
+                startInput?.focus();
+                return;
+            }
+            if (startsAt !== '' && (!Number.isFinite(new Date(startsAt).getTime()) || new Date(startsAt).getTime() <= Date.now())) {
+                status.textContent = serviceEstimate.dataset.availabilityDateInvalid ?? '';
+                startInput?.focus();
+                return;
+            }
+            if (productType === 'rental' && (!Number.isInteger(duration) || duration < 1 || duration > 720)) {
+                status.textContent = serviceEstimate.dataset.availabilityDurationInvalid ?? '';
+                durationInput?.focus();
+                return;
+            }
+            if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
+                status.textContent = serviceEstimate.dataset.availabilityQuantityInvalid ?? '';
+                quantityInput?.focus();
+                return;
+            }
+
+            const payload = { quantity };
+            if (productType === 'rental' && startInput instanceof HTMLInputElement) {
+                const start = new Date(startInput.value);
+                const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+                payload.starts_at = start.toISOString();
+                payload.ends_at = end.toISOString();
+            }
+
+            checkButton.disabled = true;
+            status.textContent = serviceEstimate.dataset.availabilityChecking ?? '';
+            try {
+                const response = await fetch(serviceEstimate.dataset.availabilityEndpoint ?? '', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Accept-Language': document.documentElement.lang,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const result = await response.json();
+                if (!response.ok || typeof result?.data?.available !== 'boolean') throw new Error();
+
+                status.textContent = result.data.available
+                    ? (serviceEstimate.dataset[`availabilityAvailable${productType[0].toUpperCase()}${productType.slice(1)}`] ?? '')
+                    : (serviceEstimate.dataset.availabilityUnavailable ?? '');
+            } catch {
+                status.textContent = serviceEstimate.dataset.availabilityError ?? '';
+            } finally {
+                checkButton.disabled = false;
+            }
+        });
+    }
+}
 
 const searchGeography = document.querySelector('[data-search-geography]');
 
@@ -72,6 +285,19 @@ if (searchGeography instanceof HTMLFormElement) {
     }
 
     const categorySelect = searchGeography.querySelector('[data-search-category]');
+    const subcategorySelect = searchGeography.querySelector('[data-search-subcategory]');
+    const subcategoryOptionsNode = searchGeography.querySelector('[data-search-subcategory-options]');
+    if (categorySelect instanceof HTMLSelectElement && subcategorySelect instanceof HTMLSelectElement
+        && subcategoryOptionsNode instanceof HTMLScriptElement) {
+        const placeholder = subcategorySelect.options[0]?.text ?? '';
+        const options = JSON.parse(subcategoryOptionsNode.textContent || '[]');
+        categorySelect.addEventListener('change', () => {
+            subcategorySelect.replaceChildren(new Option(placeholder, ''));
+            const children = options.filter((option) => option.parent === categorySelect.value);
+            children.forEach((option) => subcategorySelect.add(new Option(option.name, option.code)));
+            subcategorySelect.disabled = children.length === 0;
+        });
+    }
     const occasionSelect = searchGeography.querySelector('[data-search-occasion]');
     const packageSelect = searchGeography.querySelector('[data-search-package]');
     const packageOptionsNode = searchGeography.querySelector('[data-search-package-options]');
@@ -87,7 +313,7 @@ if (searchGeography instanceof HTMLFormElement) {
 
         const refreshVendors = () => {
             const selectedVendor = vendorSelect.value;
-            const category = categorySelect.value;
+            const category = subcategorySelect?.value || categorySelect.value;
             const occasion = occasionSelect.value;
             const matching = vendorOptions.filter((vendor) => vendor.combinations.some((combination) => (
                 (category === '' || combination.categories.includes(category))
@@ -100,6 +326,7 @@ if (searchGeography instanceof HTMLFormElement) {
         };
 
         categorySelect.addEventListener('change', refreshVendors);
+        subcategorySelect?.addEventListener('change', refreshVendors);
         occasionSelect.addEventListener('change', refreshVendors);
     }
 
@@ -247,6 +474,23 @@ if (planner instanceof HTMLElement) {
     restoreInitialDate(startsAtInput);
     restoreInitialDate(endsAtInput);
     syncDateMinimums();
+
+    let previousStartValue = startsAtInput instanceof HTMLInputElement ? startsAtInput.value : '';
+    const preserveRentalDuration = () => {
+        if (!(startsAtInput instanceof HTMLInputElement) || !(endsAtInput instanceof HTMLInputElement)) return;
+        const nextStart = startsAtInput.value;
+
+        if (previousStartValue !== '' && nextStart !== '' && endsAtInput.value !== '') {
+            const previousStart = new Date(`${previousStartValue}:00Z`);
+            const selectedEnd = new Date(`${endsAtInput.value}:00Z`);
+            const durationMinutes = (selectedEnd.valueOf() - previousStart.valueOf()) / 60_000;
+            if (Number.isInteger(durationMinutes) && durationMinutes > 0) {
+                endsAtInput.value = addLocalMinutes(nextStart, durationMinutes);
+            }
+        }
+
+        previousStartValue = nextStart;
+    };
 
     const showPlannerError = (message) => {
         if (!(errorBox instanceof HTMLElement)) return;
@@ -429,10 +673,12 @@ if (planner instanceof HTMLElement) {
     [startsAtInput, endsAtInput].forEach((input) => {
         if (!(input instanceof HTMLInputElement)) return;
         input.addEventListener('input', () => {
+            if (input === startsAtInput) preserveRentalDuration();
             syncDateMinimums();
             clearPlannerError();
         });
         input.addEventListener('change', () => {
+            if (input === startsAtInput) preserveRentalDuration();
             syncDateMinimums();
             clearPlannerError();
         });
@@ -595,6 +841,29 @@ if (contactForm instanceof HTMLFormElement) {
         }
     });
 }
+
+document.querySelectorAll('[data-occasion-packages]').forEach((section) => {
+    const buttons = [...section.querySelectorAll('[data-package-filter]')];
+    const cards = [...section.querySelectorAll('[data-package-occasion]')];
+    const count = section.querySelector('[data-package-count]');
+    const empty = section.querySelector('[data-package-empty]');
+
+    const selectOccasion = (selected) => {
+        let visible = 0;
+        cards.forEach((card) => {
+            const matches = selected === '*' || card.dataset.packageOccasion === selected;
+            card.hidden = !matches || visible >= 10;
+            if (!card.hidden) visible += 1;
+        });
+        buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.packageFilter === selected)));
+        if (count) count.textContent = (count.dataset.countLabel ?? ':count').replace(':count', String(visible));
+        if (empty) empty.hidden = visible > 0;
+    };
+
+    buttons.forEach((button) => button.addEventListener('click', () => selectOccasion(button.dataset.packageFilter)));
+    const selected = buttons.find((button) => button.getAttribute('aria-pressed') === 'true');
+    if (selected) selectOccasion(selected.dataset.packageFilter);
+});
 
 document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
     if (!(toggle instanceof HTMLButtonElement)) return;

@@ -21,7 +21,7 @@ class OnVendorDocumentUploadedInbox
 
         $vendorId = $document->vendor_profile_id;
         $vendorName = $document->vendorProfile?->getTranslation('business_name', 'en') ?? "Vendor #{$vendorId}";
-        $docType = $document->doc_type->value;
+        $docType = $document->doc_type_key;
 
         $this->router->execute(
             eventKey: 'vendor.document.uploaded',

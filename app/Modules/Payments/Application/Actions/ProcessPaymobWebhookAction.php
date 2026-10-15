@@ -86,8 +86,14 @@ class ProcessPaymobWebhookAction
         if ($payment === null && $dto->orderId !== null) {
             $payment = Payment::query()
                 ->where('gateway', 'paymob')
-                ->where('metadata->paymob_order_id', $dto->orderId)
+                ->whereHas('attempts', fn ($query) => $query->where('response_payload->paymob_order_id', $dto->orderId))
                 ->first();
+        }
+        if ($payment === null && $dto->orderId !== null) {
+            $merchantOrderId = $this->gateway->resolveMerchantOrderReference($dto->orderId);
+            if ($merchantOrderId !== null) {
+                $payment = $this->payments->findByGatewayRef('paymob', $merchantOrderId);
+            }
         }
         if ($payment === null) {
             $log->update(['processing_error' => 'unknown_gateway_reference']);

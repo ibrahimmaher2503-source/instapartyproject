@@ -9,6 +9,7 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ReservationStatus;
 use App\Modules\Catalog\Domain\Exceptions\InventoryNotAvailableException;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Domain\Models\ServiceAvailabilityBlock;
 use App\Modules\Catalog\Domain\Models\ServiceInventoryReservation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -58,8 +59,12 @@ class HoldServiceInventoryAction
             ->where('reserved_starts_at', '<', $endsAt)
             ->where('reserved_ends_at', '>', $startsAt)
             ->exists();
+        $hasManualBlock = ServiceAvailabilityBlock::query()
+            ->where('service_id', $service->id)
+            ->overlapping($startsAt, $endsAt)
+            ->exists();
 
-        if ($hasOverlap) {
+        if ($hasOverlap || $hasManualBlock) {
             throw new InventoryNotAvailableException(
                 "Service {$service->public_id} is not available for the requested time window."
             );

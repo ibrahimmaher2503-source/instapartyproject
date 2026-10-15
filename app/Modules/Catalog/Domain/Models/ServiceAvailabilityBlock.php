@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Domain\Models;
 
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -42,5 +43,13 @@ class ServiceAvailabilityBlock extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    /** @param Builder<ServiceAvailabilityBlock> $query */
+    public function scopeOverlapping(Builder $query, Carbon $startsAt, Carbon $endsAt): Builder
+    {
+        return $query
+            ->where('starts_at', '<', $endsAt)
+            ->where('ends_at', '>', $startsAt);
     }
 }

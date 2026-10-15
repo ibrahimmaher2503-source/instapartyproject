@@ -23,6 +23,7 @@ class BookingPermissionsSeeder extends Seeder
         'booking.intervene.send_vendor_reminder',
         'booking.intervene.escalate_vendor_timeout',
         'booking.intervene.suggest_alternative_vendors',
+        'booking.intervene.decide_vendor_request',
         'booking.intervene.freeze_chat',
         'booking.intervene.resume_customer_review',
         'booking.intervene.create_note',

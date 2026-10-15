@@ -6,6 +6,7 @@ namespace App\Modules\Booking\Application\Listeners;
 
 use App\Modules\Booking\Domain\Events\BookingCancelled;
 use App\Modules\Booking\Domain\Events\BookingConfirmed;
+use App\Modules\Booking\Domain\Events\BookingForceCancelled;
 use App\Modules\Booking\Domain\Events\BookingSubmittedToVendor;
 use App\Modules\Booking\Domain\Events\CustomerModificationDecided;
 use App\Modules\Booking\Domain\Events\VendorAccepted;
@@ -21,7 +22,7 @@ use Illuminate\Support\Str;
 class WriteNegotiationSnapshotListener
 {
     public function handle(
-        BookingSubmittedToVendor|VendorAccepted|VendorModificationProposed|VendorRejected|CustomerModificationDecided|BookingConfirmed|BookingCancelled $event
+        BookingSubmittedToVendor|VendorAccepted|VendorModificationProposed|VendorRejected|CustomerModificationDecided|BookingConfirmed|BookingCancelled|BookingForceCancelled $event
     ): void {
         $booking = match (true) {
             $event instanceof BookingSubmittedToVendor => $event->booking,
@@ -31,6 +32,7 @@ class WriteNegotiationSnapshotListener
             $event instanceof CustomerModificationDecided => $event->modification->bookingVendor?->booking,
             $event instanceof BookingConfirmed => $event->booking,
             $event instanceof BookingCancelled => $event->booking,
+            $event instanceof BookingForceCancelled => $event->booking,
         };
 
         if ($booking === null) {
@@ -45,6 +47,7 @@ class WriteNegotiationSnapshotListener
             $event instanceof CustomerModificationDecided => 'vendor_responded',
             $event instanceof BookingConfirmed => 'booking_confirmed',
             $event instanceof BookingCancelled => 'booking_cancelled',
+            $event instanceof BookingForceCancelled => 'booking_cancelled',
         };
 
         $latestVersion = DB::table('booking_snapshots')

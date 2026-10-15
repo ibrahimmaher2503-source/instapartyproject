@@ -15,6 +15,7 @@ use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\SuspendedState;
 use App\Modules\Identity\Filament\Resources\VendorProfileResource;
+use App\Modules\Shared\Application\Services\StorefrontText;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -36,7 +37,7 @@ class ViewVendorProfile extends ViewRecord
                     && $record->user?->status === 'active'
                     && $record->user?->hasRole('vendor') === true
                     && $record->user?->hasVerifiedEmail() === true
-                    && $record->user?->phone_verified_at !== null
+                    && $record->user?->hasVerifiedPhone() === true
                     && auth()->guard('web')->user()?->can('impersonate_vendor') === true)
                 ->form([
                     Textarea::make('reason_en')
@@ -128,7 +129,11 @@ class ViewVendorProfile extends ViewRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading(__('identity.modals.suspend_vendor_heading'))
-                ->modalDescription(__('identity.modals.suspend_vendor_description'))
+                ->modalDescription(fn (VendorProfile $record): string => __('identity.modals.suspend_vendor_description', [
+                    'vendor' => app(StorefrontText::class)->translation($record, 'business_name', app()->getLocale()) ?: __('identity.vendor_profile'),
+                    'reference' => $record->public_id,
+                    'status' => __('identity.status.'.$record->approval_status::getMorphClass()),
+                ]))
                 ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof ApprovedState
                     && (bool) auth()->user()?->can('suspend_vendor'))
                 ->form([

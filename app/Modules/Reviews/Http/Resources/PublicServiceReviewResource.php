@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Reviews\Http\Resources;
 
+use App\Modules\Reviews\Domain\Enums\ModerationStatus;
+use App\Modules\Reviews\Domain\Enums\ReviewType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -32,6 +34,11 @@ class PublicServiceReviewResource extends JsonResource
             'locale' => $this->locale,
             'reviewer_first_name' => $firstName,
             'created_at' => $this->created_at?->toISOString(),
+            'vendor_response' => $this->vendorResponse?->moderation_status === ModerationStatus::Approved
+                && $this->vendorResponse?->review_type === ReviewType::Service
+                && (int) $this->vendorResponse?->vendor_profile_id === (int) $this->service?->vendor_profile_id
+                ? $this->vendorResponse->body
+                : null,
         ];
     }
 }

@@ -17,6 +17,7 @@ return [
         'active' => 'Active',
         'icon' => 'Badge icon',
         'created_at' => 'Created at',
+        'submission_conflict' => 'This submission was already saved with different values. Open a new create form to save another badge.',
     ],
     'reasons' => [
         'inappropriate_content' => 'Inappropriate Content',

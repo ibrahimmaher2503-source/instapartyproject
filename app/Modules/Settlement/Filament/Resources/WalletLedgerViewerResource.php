@@ -10,6 +10,7 @@ use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\Pages\L
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\Pages\ViewWalletLedger;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\RelationManagers\LedgerEntriesRelationManager;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
+use Brick\Money\Money;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -35,7 +36,7 @@ class WalletLedgerViewerResource extends Resource
 
     protected static ?string $slug = 'settlement-wallets';
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 80;
 
     public static function getNavigationLabel(): string
     {
@@ -87,6 +88,22 @@ class WalletLedgerViewerResource extends Resource
 
                             TextEntry::make('currency')
                                 ->label(__('settlement.columns.currency')),
+
+                            TextEntry::make('owner_type')
+                                ->label(__('settlement::settlement.wallet.stored_owner_type')),
+
+                            TextEntry::make('ledger_balance')
+                                ->label(__('settlement::settlement.wallet.ledger_balance'))
+                                ->state(function (Wallet $record): string {
+                                    $credits = (int) $record->ledgerEntries()->where('currency', $record->currency)
+                                        ->where('direction', 'credit')->sum('amount_minor');
+                                    $debits = (int) $record->ledgerEntries()->where('currency', $record->currency)
+                                        ->where('direction', 'debit')->sum('amount_minor');
+
+                                    return Money::ofMinor($credits, $record->currency)
+                                        ->minus(Money::ofMinor($debits, $record->currency))->formatTo(app()->getLocale());
+                                })
+                                ->helperText(__('settlement::settlement.wallet.diagnostic_note')),
 
                             TextEntry::make('balance_minor')
                                 ->label(__('settlement.columns.balance'))

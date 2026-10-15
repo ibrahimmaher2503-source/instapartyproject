@@ -20,6 +20,7 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Tests\Support\VendorDocumentTestFiles;
 
 function vendorDocumentReviewer(): User
 {
@@ -155,7 +156,7 @@ it('preserves rejected document history and creates one pending re-upload', func
 
     $replacement = app(ReuploadVendorDocumentAction::class)->execute(
         $rejected,
-        UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('national-id.pdf', VendorDocumentTestFiles::minimalPdf()),
         $owner,
     );
 
@@ -166,7 +167,7 @@ it('preserves rejected document history and creates one pending re-upload', func
 
     expect(fn () => app(ReuploadVendorDocumentAction::class)->execute(
         $rejected,
-        UploadedFile::fake()->create('again.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('again.pdf', VendorDocumentTestFiles::minimalPdf()),
         $owner,
     ))->toThrow(ConflictHttpException::class);
 });

@@ -19,7 +19,7 @@ class CustomerAddressResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.vendor_management');
+        return __('admin.nav.groups.customers');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
@@ -85,6 +85,7 @@ class CustomerAddressResource extends Resource
                     ->searchable(),
                 TextColumn::make('recipient_phone_e164')
                     ->label(__('identity.columns.recipient_phone'))
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->searchable(),
                 IconColumn::make('is_default')
                     ->label(__('identity.columns.is_default'))

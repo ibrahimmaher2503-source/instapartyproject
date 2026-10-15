@@ -3,6 +3,16 @@
 declare(strict_types=1);
 
 return [
+    'help' => [
+        'contact_support' => 'تواصل مع الدعم',
+        'ticket_title' => 'إرسال طلب دعم',
+        'ticket_intro' => 'إذا كنت لا تزال بحاجة إلى مساعدة، أرسل التفاصيل واحتفظ بالمرجع الظاهر بعد الإرسال.',
+        'ticket_subject' => 'الموضوع',
+        'ticket_email' => 'البريد الإلكتروني للرد',
+        'ticket_body' => 'كيف يمكننا مساعدتك؟',
+        'ticket_submit' => 'إرسال الطلب',
+        'ticket_received' => 'تم استلام طلب الدعم. المرجع: :reference',
+    ],
     'ticket_status' => [
         'open' => 'مفتوحة', 'in_progress' => 'قيد المعالجة',
         'resolved' => 'تم الحل', 'closed' => 'مغلقة',

@@ -26,7 +26,7 @@ class ManageBranding extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-paint-brush';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 10;
 
     protected static bool $shouldRegisterNavigation = true;
 

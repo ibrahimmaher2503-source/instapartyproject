@@ -34,6 +34,8 @@ final class SendVendorReminderAction
 
         $alreadyThrottled = DB::table('idempotency_keys')
             ->where('scope', 'internal')
+            ->whereIn('scope_key', ['booking_vendor_reminder', 'legacy'])
+            ->where('route', $scope)
             ->where('key', $throttleKey)
             ->where('expires_at', '>', now())
             ->exists();
@@ -65,6 +67,7 @@ final class SendVendorReminderAction
 
             DB::table('idempotency_keys')->insert([
                 'scope' => 'internal',
+                'scope_key' => 'booking_vendor_reminder',
                 'key' => $throttleKey,
                 'user_id' => $adminId,
                 'route' => $scope,

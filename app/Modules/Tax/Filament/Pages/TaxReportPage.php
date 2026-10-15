@@ -19,7 +19,7 @@ class TaxReportPage extends Page implements HasForms
 
     protected static string $view = 'tax::filament.pages.tax-report';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 90;
 
     public ?array $data = [];
 

@@ -23,7 +23,7 @@ final class ListPublishedServicesAction
 
         $services = Service::query()
             ->displayable()
-            ->with(['media', 'vendor.primaryCity', 'vendor.primaryGovernorate', 'category'])
+            ->with(['media', 'vendor.primaryCity.governorate', 'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate', 'category'])
             ->whereIn('public_id', $publicIds)
             ->get()
             ->keyBy('public_id');

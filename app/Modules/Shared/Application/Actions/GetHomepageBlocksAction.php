@@ -37,7 +37,7 @@ class GetHomepageBlocksAction
             if (! is_array($value)) {
                 return $value;
             }
-            if (isset($value['en']) || isset($value['ar'])) {
+            if (array_key_exists('en', $value) || array_key_exists('ar', $value)) {
                 return $value[$locale] ?? $value['en'] ?? $value['ar'] ?? null;
             }
 
@@ -47,7 +47,7 @@ class GetHomepageBlocksAction
         $deepMap = function (array $node) use (&$deepMap, $pickLocale): array {
             $out = [];
             foreach ($node as $k => $v) {
-                if (is_array($v) && (isset($v['en']) || isset($v['ar']))) {
+                if (is_array($v) && (array_key_exists('en', $v) || array_key_exists('ar', $v))) {
                     $out[$k] = $pickLocale($v);
                 } elseif (is_array($v)) {
                     $out[$k] = $deepMap($v);

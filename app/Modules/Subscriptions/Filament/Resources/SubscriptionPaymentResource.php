@@ -20,7 +20,7 @@ class SubscriptionPaymentResource extends Resource
         return __('admin.nav.groups.subscriptions');
     }
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 130;
 
     public static function getNavigationLabel(): string
     {

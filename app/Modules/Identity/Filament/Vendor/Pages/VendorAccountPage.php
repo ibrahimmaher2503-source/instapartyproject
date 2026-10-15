@@ -140,7 +140,7 @@ class VendorAccountPage extends Page implements HasInfolists
                     $user = auth()->user();
                     app(UpdateVendorPhoneAction::class)->execute($user, $data['new_phone']);
                     Notification::make()->title(__('vendor-portal.account.phone_changed'))->success()->send();
-                    if ($user->phone_verified_at === null) {
+                    if (! $user->hasVerifiedPhone()) {
                         $this->redirect(VendorPhoneVerificationPage::getUrl(panel: 'vendor'));
                     }
                 }),

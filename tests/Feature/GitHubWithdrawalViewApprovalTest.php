@@ -26,7 +26,8 @@ it('shows approval provenance and history in the withdrawal modal without rewrit
         'approved_at' => '2026-10-12 16:50:00',
         'approved_by_admin_id' => $admin->id,
     ]);
-    $before = $withdrawal->getRawOriginal();
+    $before = $withdrawal->refresh()->getRawOriginal();
+    ksort($before);
     $actionLabels = __('audit_timeline.action_keys');
 
     Livewire::test(ListWithdrawalsQueue::class)
@@ -36,10 +37,13 @@ it('shows approval provenance and history in the withdrawal modal without rewrit
         ->assertSeeText($admin->name)
         ->assertSeeText(__('audit_timeline.section_title'))
         ->assertSeeText($actionLabels['withdrawal.approved'])
-        ->assertSeeText(Carbon::parse('2026-10-12 18:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i e'))
-        ->assertSeeText(Carbon::parse('2026-10-12 16:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i e'));
+        ->assertSeeText(Carbon::parse('2026-10-12 18:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone)
+        ->assertSeeText(Carbon::parse('2026-10-12 16:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone);
 
-    expect($withdrawal->refresh()->getRawOriginal())->toBe($before);
+    $after = $withdrawal->refresh()->getRawOriginal();
+    ksort($after);
+
+    expect($after)->toBe($before);
 })->with([
     ['en', 'Africa/Cairo'],
     ['ar', 'Asia/Dubai'],
@@ -47,8 +51,12 @@ it('shows approval provenance and history in the withdrawal modal without rewrit
 
 it('leaves approval absent for a pending withdrawal', function (): void {
     $admin = User::factory()->superAdmin()->create();
-    $this->actingAs($admin);
+    foreach (['view_any_withdrawals::queue', 'view_withdrawals::queue'] as $permission) {
+        $admin->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+    }
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
     Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $this->actingAs($admin);
     $withdrawal = WithdrawalFactory::new()->pending()->create();
     $actionLabels = __('audit_timeline.action_keys');
 

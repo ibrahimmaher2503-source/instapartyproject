@@ -12,10 +12,12 @@ it('distinguishes package name and description labels and their required validat
     app()->setLocale($locale);
     $admin = User::factory()->superAdmin()->create();
     $admin->givePermissionTo(Permission::findOrCreate('create_package::recommendation', 'web'));
+    $admin->givePermissionTo(Permission::findOrCreate('view_any_package::recommendation', 'web'));
     $this->actingAs($admin);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     $component = Livewire::test(CreatePackageRecommendation::class)
+        ->assertSuccessful()
         ->fillForm([
             'name.en' => '', 'name.ar' => 'باقة اختبار',
             'description.en' => '', 'description.ar' => 'وصف الاختبار',
@@ -28,7 +30,7 @@ it('distinguishes package name and description labels and their required validat
     $descriptionLabel = __('discovery::discovery.package_recommendations.description_en');
     $component->assertSee($nameLabel)->assertSee($descriptionLabel);
     $errors = $component->instance()->getErrorBag();
-    expect($errors->first('data.name.en'))->toContain($nameLabel)
-        ->and($errors->first('data.description.en'))->toContain($descriptionLabel)
+    expect(mb_strtolower($errors->first('data.name.en')))->toContain(mb_strtolower($nameLabel))
+        ->and(mb_strtolower($errors->first('data.description.en')))->toContain(mb_strtolower($descriptionLabel))
         ->and($errors->first('data.name.en'))->not->toBe($errors->first('data.description.en'));
 })->with(['en', 'ar']);

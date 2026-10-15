@@ -3,6 +3,17 @@
 declare(strict_types=1);
 
 return [
+    'account' => [
+        'inquiries_heading' => 'Service conversations',
+        'inquiries_description' => 'Read and reply to your messages with vendors before booking.',
+        'all_inquiries' => 'View all service conversations',
+        'open_inquiry' => 'Open conversation',
+        'booking_chats_heading' => 'Booking conversations',
+        'booking_chats_description' => 'Conversation status for your confirmed bookings. Open the booking for its details.',
+        'booking_chat_unavailable' => 'Booking chat is not connected on this site right now. Your service conversations remain available above.',
+        'booking_reference' => 'Booking reference',
+        'vendor_unavailable' => 'Vendor unavailable',
+    ],
     'inbox_title' => 'Customer conversations',
     'inbox_description' => 'Booking conversations keep their existing booking and moderation restrictions.',
     'booking' => 'Booking',

@@ -30,10 +30,8 @@ final class VendorApprovalEligibilityService
         return $query->with([
             'user',
             'primaryCity',
-            'businessHours',
-            'coverageAreas',
             'latestDocumentsPerType',
-        ]);
+        ])->withCount(['businessHours', 'coverageAreas']);
     }
 
     public function evaluate(VendorProfile $vendor, ?CarbonImmutable $asOf = null): VendorApprovalEligibilityResult
@@ -59,7 +57,7 @@ final class VendorApprovalEligibilityService
             'identity' => filled($vendor->user?->name),
             'contact' => filled($vendor->user?->email)
                 && filled($vendor->user?->phone_e164)
-                && $vendor->user?->email_verified_at !== null,
+                && $vendor->user?->hasVerifiedEmail() === true,
             'profile' => $this->hasRequiredBusinessFields($vendor, $businessType),
             'geography' => $primaryCityMatchesGovernorate,
             'banking' => ! MaskBankData::isAbsent($vendor->bank_name)
@@ -67,10 +65,14 @@ final class VendorApprovalEligibilityService
                 && ! MaskBankData::isAbsent($vendor->bank_iban),
             'hours' => $vendor->relationLoaded('businessHours')
                 ? $vendor->businessHours->isNotEmpty()
-                : $vendor->businessHours()->exists(),
+                : (array_key_exists('business_hours_count', $vendor->getAttributes())
+                    ? (int) $vendor->business_hours_count > 0
+                    : $vendor->businessHours()->exists()),
             'coverage' => $vendor->relationLoaded('coverageAreas')
                 ? $vendor->coverageAreas->isNotEmpty()
-                : $vendor->coverageAreas()->exists(),
+                : (array_key_exists('coverage_areas_count', $vendor->getAttributes())
+                    ? (int) $vendor->coverage_areas_count > 0
+                    : $vendor->coverageAreas()->exists()),
             'documents' => $documentIssues !== null && $documentIssues === [],
         ];
 

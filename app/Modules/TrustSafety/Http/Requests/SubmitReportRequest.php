@@ -21,7 +21,7 @@ class SubmitReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reportable_type' => ['required', 'string', Rule::in(['vendor_profile', 'chat_thread'])],
+            'reportable_type' => ['required', 'string', Rule::in(['vendor_profile'])],
             'reportable_id' => ['required', 'string'],
             'reason' => ['required', 'string', Rule::in(array_column(ReportReason::cases(), 'value'))],
             'details' => ['nullable', 'string', 'max:1000'],

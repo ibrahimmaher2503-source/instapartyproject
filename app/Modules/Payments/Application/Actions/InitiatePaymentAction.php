@@ -8,10 +8,13 @@ use App\Modules\Payments\Application\DTOs\InitiatePaymentDto;
 use App\Modules\Payments\Domain\Contracts\PaymentGateway;
 use App\Modules\Payments\Domain\Enums\PaymentStatus;
 use App\Modules\Payments\Domain\Events\PaymentInitiated;
+use App\Modules\Payments\Domain\Models\Payment;
+use App\Modules\Payments\Domain\Models\PaymentAttempt;
 use App\Modules\Payments\Domain\States\PaymentStatus\PendingState;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentPaymentRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Throwable;
 
 class InitiatePaymentAction
 {
@@ -25,7 +28,8 @@ class InitiatePaymentAction
      */
     public function execute(InitiatePaymentDto $dto): array
     {
-        return DB::transaction(function () use ($dto): array {
+        /** @var Payment $payment */
+        $payment = DB::transaction(function () use ($dto): Payment {
             $booking = DB::table('bookings')
                 ->where('id', $dto->bookingId)
                 ->where('public_id', $dto->bookingPublicId)
@@ -58,36 +62,70 @@ class InitiatePaymentAction
                 'Payment amount does not match the booking total',
             );
 
-            $intent = $this->gateway->initiate($dto);
+            $merchantOrderId = (string) Str::ulid();
 
-            $payment = $this->payments->create([
+            return $this->payments->create([
                 'public_id' => (string) Str::ulid(),
                 'booking_id' => $dto->bookingId,
                 'user_id' => $dto->payerId,
                 'gateway' => 'paymob',
-                'gateway_ref' => $intent->gatewayRef,
+                'gateway_ref' => $merchantOrderId,
                 'amount_minor' => $dto->amount->getMinorAmount()->toInt(),
                 'amount_currency' => $dto->amount->getCurrency()->getCurrencyCode(),
                 'method' => $dto->method,
                 'status' => PendingState::class,
-                'metadata' => $intent->rawResponse,
+                'metadata' => ['merchant_order_id' => $merchantOrderId],
+            ]);
+        });
+
+        $requestPayload = [
+            'merchant_order_id' => $payment->gateway_ref,
+            'amount_minor' => $dto->amount->getMinorAmount()->toInt(),
+            'currency' => $dto->amount->getCurrency()->getCurrencyCode(),
+            'method' => $dto->method->value,
+        ];
+
+        try {
+            // The durable payment row and stable merchant reference are committed before
+            // the provider call. A timeout therefore cannot make a retry create a second order.
+            $intent = $this->gateway->initiate($dto, $payment->gateway_ref);
+            abort_if($intent->gatewayRef !== $payment->gateway_ref, 502, 'Payment provider returned a different merchant reference');
+        } catch (Throwable $exception) {
+            PaymentAttempt::query()->create([
+                'payment_id' => $payment->id,
+                'attempt_no' => 1,
+                'request_payload' => $requestPayload,
+                'response_payload' => ['outcome' => 'unknown'],
+                'http_status' => null,
+                'created_at' => now(),
             ]);
 
-            $payload = [
-                'payment_public_id' => $payment->public_id,
-                'redirect_url' => $intent->redirectUrl,
-                'status' => $payment->status->getValue(),
-            ];
+            throw $exception;
+        }
 
-            DB::afterCommit(fn () => event(new PaymentInitiated(
-                $payment->id,
-                $payment->booking_id,
-                $payment->user_id,
-                $payment->amount_minor,
-                $payment->amount_currency,
-            )));
+        PaymentAttempt::query()->create([
+            'payment_id' => $payment->id,
+            'attempt_no' => 1,
+            'request_payload' => $requestPayload,
+            'response_payload' => $intent->rawResponse,
+            'http_status' => 200,
+            'created_at' => now(),
+        ]);
 
-            return $payload;
-        });
+        $payload = [
+            'payment_public_id' => $payment->public_id,
+            'redirect_url' => $intent->redirectUrl,
+            'status' => $payment->status->getValue(),
+        ];
+
+        DB::afterCommit(fn () => event(new PaymentInitiated(
+            $payment->id,
+            $payment->booking_id,
+            $payment->user_id,
+            $payment->amount_minor,
+            $payment->amount_currency,
+        )));
+
+        return $payload;
     }
 }

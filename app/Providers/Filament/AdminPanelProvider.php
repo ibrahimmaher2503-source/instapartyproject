@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\AdminActivityLogResource;
+use App\Modules\Booking\Filament\Resources\BookingsMonitorResource\Pages\ListBookingsMonitor;
 use App\Modules\Identity\Filament\Auth\AdminEditProfile;
 use App\Modules\Identity\Filament\Auth\AdminLogin;
 use App\Modules\Identity\Filament\Auth\AdminResetPassword;
@@ -13,7 +15,6 @@ use App\Modules\Identity\Filament\Pages\AdminSecurityPage;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
 use App\Modules\Identity\Http\Middleware\EnsureAdminMfa;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
-use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
 use App\Modules\Shared\Filament\RenderHooks\TutorialLauncherRenderHook;
 use App\Modules\Shared\Http\Middleware\SetHtmlDirectionMiddleware;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
@@ -24,6 +25,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
@@ -31,7 +33,10 @@ use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Facades\FilamentView;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -45,15 +50,21 @@ class AdminPanelProvider extends PanelProvider
     public function boot(): void
     {
         DatePicker::configureUsing(fn (DatePicker $field) => $field->native(false)->displayFormat('Y-m-d'));
-        \Filament\Tables\Actions\DeleteAction::configureUsing(fn (\Filament\Tables\Actions\DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getModelLabel().' '.($action->getRecord()?->getAttribute('public_id') ?: $action->getRecord()?->getKey())])), isImportant: true);
-        DeleteAction::configureUsing(fn (DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getModelLabel().' '.($action->getRecord()?->getAttribute('public_id') ?: $action->getRecord()?->getKey())])), isImportant: true);
-        Table::$defaultDateTimeDisplayFormat = 'j M Y, g:i A';
-        Infolist::$defaultDateTimeDisplayFormat = 'j M Y, g:i A';
+        \Filament\Tables\Actions\DeleteAction::configureUsing(fn (\Filament\Tables\Actions\DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getRecord()?->getAttribute('public_id') ?: $action->getRecordTitle() ?: $action->getModelLabel()])), isImportant: true);
+        DeleteAction::configureUsing(fn (DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getRecord()?->getAttribute('public_id') ?: $action->getRecordTitle() ?: $action->getModelLabel()])), isImportant: true);
+        Table::$defaultDateTimeDisplayFormat = 'Y-m-d H:i';
+        Infolist::$defaultDateTimeDisplayFormat = 'Y-m-d H:i';
+        TextColumn::configureUsing(fn (TextColumn $column) => $column->extraAttributes(fn (): array => str_contains($column->getName(), 'phone') ? ['dir' => 'ltr', 'style' => 'unicode-bidi:isolate'] : [], merge: true));
+        TextEntry::configureUsing(fn (TextEntry $entry) => $entry->extraAttributes(fn (): array => str_contains($entry->getName(), 'phone') ? ['dir' => 'ltr', 'style' => 'unicode-bidi:isolate'] : [], merge: true));
 
         Table::configureUsing(fn (Table $table): Table => $table
             ->paginationPageOptions([10, 25, 50, 100])
             ->defaultPaginationPageOption(25)
             ->searchDebounce('400ms')
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession()
+            ->persistSortInSession()
             ->emptyStateIcon('heroicon-o-inbox')
             ->emptyStateHeading(__('admin.empty_states.no_records'))
             ->emptyStateDescription(__('admin.empty_states.no_records_description')));
@@ -61,11 +72,27 @@ class AdminPanelProvider extends PanelProvider
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
             $switch
                 ->locales(['en', 'ar'])
+                ->labels([
+                    'en' => 'English',
+                    'ar' => 'العربية',
+                ])
                 ->visible(insidePanels: true);
         });
 
-        HtmlDirectionRenderHook::register();
         TutorialLauncherRenderHook::register();
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::SIDEBAR_NAV_START,
+            fn (): string => filament()->getCurrentPanel()->getId() === 'admin'
+                ? view('filament.admin.navigation-shortcuts', ['userId' => auth()->id()])->render()
+                : '',
+        );
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::RESOURCE_PAGES_LIST_RECORDS_TABLE_BEFORE,
+            fn (): string => filament()->getCurrentPanel()->getId() === 'admin'
+                ? view('filament.admin.booking-monitor-saved-views', ['userId' => auth()->id()])->render()
+                : '',
+            ListBookingsMonitor::class,
+        );
     }
 
     public function panel(Panel $panel): Panel
@@ -211,18 +238,26 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn (): string => __('admin.nav.groups.vendor_management'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.services'))
                     ->label(fn (): string => __('admin.nav.groups.services'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.packages_occasions'))
+                    ->label(fn (): string => __('admin.nav.groups.packages_occasions')),
+                NavigationGroup::make(__('admin.nav.groups.customers'))
+                    ->label(fn (): string => __('admin.nav.groups.customers'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.payments'))
                     ->label(fn (): string => __('admin.nav.groups.payments'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.support'))
                     ->label(fn (): string => __('admin.nav.groups.support'))->collapsed(),
-                NavigationGroup::make(__('admin.nav.groups.communication'))
-                    ->label(fn (): string => __('admin.nav.groups.communication'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.content'))
                     ->label(fn (): string => __('admin.nav.groups.content'))->collapsed(),
-                NavigationGroup::make(__('admin.nav.groups.security'))
-                    ->label(fn (): string => __('admin.nav.groups.security'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.growth'))
+                    ->label(fn (): string => __('admin.nav.groups.growth'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.communication'))
+                    ->label(fn (): string => __('admin.nav.groups.communication'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.settings'))
                     ->label(fn (): string => __('admin.nav.groups.settings'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.security'))
+                    ->label(fn (): string => __('admin.nav.groups.security'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.technical'))
+                    ->label(fn (): string => __('admin.nav.groups.technical'))->collapsed(),
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
@@ -230,7 +265,10 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn (): string => __('admin.activity_log.singular'))
                     ->pluralLabel(fn (): string => __('admin.activity_log.plural'))
                     ->navigationGroup(fn (): string => __('admin.nav.groups.operations'))
-                    ->navigationSort(80),
+                    ->navigationSort(80)
+                    ->resource(AdminActivityLogResource::class)
+                    ->isRestoreActionHidden(true)
+                    ->isRestoreModelActionHidden(true),
 
                 SpatieLaravelTranslatablePlugin::make()
                     ->defaultLocales(['en', 'ar']),

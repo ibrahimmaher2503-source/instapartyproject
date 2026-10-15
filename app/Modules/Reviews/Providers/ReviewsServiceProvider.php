@@ -19,6 +19,8 @@ use App\Modules\Reviews\Domain\Models\ReviewResponse;
 use App\Modules\Reviews\Domain\Models\ServiceReview;
 use App\Modules\Reviews\Domain\Models\VendorReview;
 use App\Modules\Reviews\Domain\Policies\ReviewResponsePolicy;
+use App\Modules\Reviews\Domain\Policies\ServiceReviewPolicy;
+use App\Modules\Reviews\Domain\Policies\VendorReviewPolicy;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentCustomerReviewReader;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentReviewModerationLogRepository;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentServiceReviewRepository;
@@ -43,6 +45,8 @@ class ReviewsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(ReviewResponse::class, ReviewResponsePolicy::class);
+        Gate::policy(ServiceReview::class, ServiceReviewPolicy::class);
+        Gate::policy(VendorReview::class, VendorReviewPolicy::class);
 
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'reviews');

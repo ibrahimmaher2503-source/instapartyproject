@@ -8,6 +8,7 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Identity\Application\Actions\ApproveVendorForTypeAction;
 use App\Modules\Identity\Application\Actions\ApproveVendorProfileAction;
 use App\Modules\Identity\Application\Actions\RejectVendorProfileAction;
+use App\Modules\Identity\Application\Services\VendorApprovalEligibilityService;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\PendingState;
@@ -39,6 +40,10 @@ class ReviewVendorApplication extends ViewRecord
                 ->modalDescription(__('identity.modals.approve_vendor_description'))
                 ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof PendingState
                     && (bool) auth()->user()?->can('approve_vendor_profile'))
+                ->disabled(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
+                ->tooltip(fn (VendorProfile $record): ?string => app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible
+                    ? null
+                    : (string) __('identity.approval_eligibility.complete_requirements'))
                 ->action(function (VendorProfile $record): void {
                     try {
                         app(ApproveVendorProfileAction::class)->execute($record);

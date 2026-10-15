@@ -1,8 +1,8 @@
 @extends('storefront.account.layout')
 @section('account-title', __('account.booking_details'))
 @section('account-content')
-@php($viewerTimezone = auth()->user()?->timezone ?? 'Africa/Cairo')
 @php
+    $viewerTimezone = auth()->user()?->timezone ?? 'Africa/Cairo';
     $lifecycle = $booking->lifecycle_status->getValue();
     $hasItems = $booking->vendors->contains(fn ($vendor) => $vendor->items->isNotEmpty());
     $hasActivePayment = $booking->payments->contains(fn ($payment) => in_array($payment->status->getValue(), ['pending', 'authorized', 'captured'], true));
@@ -13,6 +13,7 @@
     $paymentAwaitingConfirmation = in_array($lifecycle, ['submitted', 'vendor_review', 'customer_review'], true)
         && $booking->payment_status->getValue() === 'unpaid' && $hasItems && ! $hasActivePayment;
 @endphp
+@include('storefront.account.partials.vendor-proposal-consent', ['pendingVendorProposals' => $pendingVendorProposals])
 <a class="sf-text-link" href="{{ route('storefront.account.bookings') }}">{{ __('account.back_bookings') }}</a>
 @if (session('booking_submitted') === $booking->public_id)
 <section class="sf-account-panel" data-booking-confirmation role="status"><h2>{{ __('account.booking_submitted') }}</h2><p>{{ __('booking.columns.reference_no') }}: <bdi>{{ $booking->reference_no }}</bdi></p><a class="sf-text-link" href="{{ route('storefront.account.bookings.show', $booking->public_id) }}">{{ __('account.view_details') }}</a></section>
@@ -51,6 +52,7 @@
 @endif
 <section class="sf-account-panel" data-booking-actions>
     <h2>{{ __('account.booking_actions') }}</h2>
+    <a class="sf-text-link" data-booking-invoice href="{{ route('storefront.account.bookings.invoice', ['locale' => app()->getLocale(), 'bookingPublicId' => $booking->public_id]) }}">{{ __('booking.invoice.title') }}</a>
     <dl class="sf-account-details"><div><dt>{{ __('account.delivery_total') }}</dt><dd>{{ $booking->delivery_total->formatTo(app()->getLocale() === 'ar' ? 'ar_EG' : 'en_GB') }}</dd></div></dl>
     @if ($canCancel)
         <form method="POST" action="{{ url('/api/v1/customer/bookings/'.$booking->public_id.'/cancel') }}" data-booking-api-form data-preview="{{ url('/api/v1/customer/bookings/'.$booking->public_id.'/cancellation-preview') }}" data-confirm="{{ __('account.cancel_confirm') }}" data-blocked="{{ __('account.cancellation_unavailable') }}" data-manual-review="{{ __('account.cancel_manual_review') }}" data-error="{{ __('account.action_error') }}">
@@ -84,7 +86,18 @@
     @foreach($booking->vendors as $vendor)
         <div class="sf-account-vendor"><h3>{{ $vendor->vendor?->getTranslation('business_name', app()->getLocale()) ?? __('account.vendor') }}</h3>
             @foreach($vendor->items as $item)
-                <div class="sf-account-row"><div><h3>{{ $item->name_snapshot[app()->getLocale()] ?? $item->name_snapshot['en'] ?? __('account.service') }}</h3><p>{{ __('booking.product_type.'.$item->product_type->value) }} · {{ $item->quantity }} · {{ $item->line_total->formatTo(app()->getLocale() === 'ar' ? 'ar_EG' : 'en_GB') }}</p><p>{{ __('booking.item_status.'.$item->item_status) }}</p></div>
+                <div class="sf-account-row"><div><h3>{{ $item->name_snapshot[app()->getLocale()] ?? $item->name_snapshot['en'] ?? __('account.service') }}</h3><p>{{ __('booking.product_type.'.$item->product_type->value) }} · {{ $item->quantity }} · {{ $item->line_total->formatTo(app()->getLocale() === 'ar' ? 'ar_EG' : 'en_GB') }}</p><p>{{ __('booking.item_status.'.$item->item_status) }}</p>
+                    @if (is_array(data_get($item->type_snapshot, 'service_package')))
+                        @php($packageSnapshot = data_get($item->type_snapshot, 'service_package'))
+                        <p class="mt-2 font-semibold">{{ $packageSnapshot['description'][app()->getLocale()] ?? $packageSnapshot['description']['en'] ?? '' }}</p>
+                        @foreach ($packageSnapshot['components'] ?? [] as $component)
+                            <p class="text-sm">{{ $component['name'][app()->getLocale()] ?? $component['name']['en'] ?? '' }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component['quantity']]) }}</p>
+                        @endforeach
+                        @foreach ($packageSnapshot['media'] ?? [] as $media)
+                            <img src="{{ $media['thumb'] }}" alt="{{ $packageSnapshot['name'][app()->getLocale()] ?? $packageSnapshot['name']['en'] ?? __('account.service') }}" class="mt-2 inline-block h-12 w-12 rounded object-cover">
+                        @endforeach
+                    @endif
+                    </div>
                     @if($availableServices[$item->public_id] ?? null)
                         <a class="sf-text-link" href="{{ url('/'.app()->getLocale().'/services/'.$availableServices[$item->public_id]->publicId) }}">{{ __('account.view_service') }}</a>
                     @else
@@ -100,6 +113,8 @@
                         <button class="sf-button sf-button--quiet" type="submit">{{ __('account.write_review') }}</button>
                         <p data-booking-feedback role="status" aria-live="polite"></p>
                     </form>
+                @else
+                    <p>{{ __('account.review_unavailable') }}</p>
                 @endif
             @endforeach
         </div>

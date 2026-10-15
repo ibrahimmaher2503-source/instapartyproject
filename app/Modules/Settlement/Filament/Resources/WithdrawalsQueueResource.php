@@ -10,9 +10,15 @@ use App\Modules\Settlement\Application\Actions\RejectWithdrawalAction;
 use App\Modules\Settlement\Application\DTOs\MarkWithdrawalPaidInput;
 use App\Modules\Settlement\Domain\Enums\WithdrawalStatus;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
+use App\Modules\Settlement\Domain\States\WithdrawalStatus\ApprovedState;
+use App\Modules\Settlement\Domain\States\WithdrawalStatus\PendingState;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource\Pages\ListWithdrawalsQueue;
+use App\Modules\Shared\Application\Services\AdminQueueSlaSettings;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
+use App\Modules\Shared\Domain\Enums\AdminQueue;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Tabs\Tab;
@@ -33,6 +39,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Spatie\ModelStates\State;
 use Throwable;
@@ -52,7 +59,7 @@ class WithdrawalsQueueResource extends Resource
 
     protected static ?string $slug = 'settlement-withdrawals';
 
-    protected static ?int $navigationSort = 120;
+    protected static ?int $navigationSort = 40;
 
     public static function getNavigationLabel(): string
     {
@@ -111,8 +118,9 @@ class WithdrawalsQueueResource extends Resource
 
                         TextEntry::make('requested_at')
                             ->label(__('settlement.columns.requested_at'))
-                            ->dateTime('d M Y H:i e')
-                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
+                            ->dateTime('d M Y H:i')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                            ->suffix(fn (): string => ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')),
 
                         TextEntry::make('vendorProfile.business_name')
                             ->label(__('settlement.columns.vendor'))
@@ -125,8 +133,11 @@ class WithdrawalsQueueResource extends Resource
                     Grid::make(2)->schema([
                         TextEntry::make('approved_at')
                             ->label(__('settlement.fields.approved_at'))
-                            ->dateTime('d M Y H:i e')
+                            ->dateTime('d M Y H:i')
                             ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                            ->suffix(fn (Withdrawal $record): ?string => $record->approved_at === null
+                                ? null
+                                : ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                             ->placeholder(__('settlement.withdrawal.not_yet_approved')),
 
                         TextEntry::make('approvedByAdmin.name')
@@ -165,7 +176,9 @@ class WithdrawalsQueueResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('requested_at', 'desc')
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'vendorProfile.public_id', 'status', 'requested_amount_minor', 'requested_amount_currency', 'requested_at'])])
+            ->defaultSort(fn (Builder $query): Builder => $query
+                ->orderBy('requested_at', 'asc'))
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.reference'))
@@ -208,19 +221,51 @@ class WithdrawalsQueueResource extends Resource
                     }),
 
                 TextColumn::make('requested_at')
-                    ->dateTime('d M Y H:i e')
+                    ->dateTime('d M Y H:i')
                     ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->suffix(fn (): string => ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                     ->label(__('settlement.columns.requested_at'))
                     ->sortable(),
 
-                TextColumn::make('approved_at')
-                    ->dateTime('d M Y H:i e')
+                TextColumn::make('queue_age')
+                    ->label(__('shared::shared.admin_queue_sla.queue_age'))
+                    ->getStateUsing(fn (Withdrawal $record): ?string => self::isInWithdrawalQueue($record)
+                        ? Carbon::parse($record->requested_at ?? $record->created_at, 'UTC')->diffForHumans(now('UTC'))
+                        : null)
+                    ->placeholder(__('shared::shared.admin_queue_sla.not_active')),
+
+                TextColumn::make('sla_deadline')
+                    ->label(__('shared::shared.admin_queue_sla.deadline'))
+                    ->dateTime('d M Y H:i')
                     ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->getStateUsing(fn (Withdrawal $record) => self::isInWithdrawalQueue($record)
+                        ? app(AdminQueueSlaSettings::class)->deadlineFor(AdminQueue::Withdrawal, $record->requested_at ?? $record->created_at)
+                        : null)
+                    ->suffix(fn (Withdrawal $record): ?string => self::isInWithdrawalQueue($record)
+                        ? ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')
+                        : null)
+                    ->placeholder(__('shared::shared.admin_queue_sla.not_active')),
+
+                TextColumn::make('sla_status')
+                    ->label(__('shared::shared.admin_queue_sla.status'))
+                    ->badge()
+                    ->getStateUsing(fn (Withdrawal $record): string => self::slaStatus($record))
+                    ->color(fn (Withdrawal $record): string => self::isInWithdrawalQueue($record)
+                        ? (app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Withdrawal, $record->requested_at ?? $record->created_at) ? 'danger' : 'success')
+                        : 'gray'),
+
+                TextColumn::make('approved_at')
+                    ->dateTime('d M Y H:i')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->suffix(fn (Withdrawal $record): ?string => $record->approved_at === null
+                        ? null
+                        : ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                     ->label(__('settlement.columns.approved_at'))
                     ->sortable()
                     ->placeholder('—'),
             ])
             ->filters([
+                OperationalDateFilter::make('requested_at'),
                 SelectFilter::make('status')
                     ->options([
                         WithdrawalStatus::Pending->value => __('settlement.withdrawal_status.pending'),
@@ -404,5 +449,21 @@ class WithdrawalsQueueResource extends Resource
         $iban = preg_replace('/\s+/', '', (string) $value) ?? '';
 
         return strlen($iban) <= 7 ? ($iban === '' ? '—' : '***') : substr($iban, 0, 4).'••••'.substr($iban, -3);
+    }
+
+    private static function isInWithdrawalQueue(Withdrawal $record): bool
+    {
+        return $record->status instanceof PendingState || $record->status instanceof ApprovedState;
+    }
+
+    private static function slaStatus(Withdrawal $record): string
+    {
+        if (! self::isInWithdrawalQueue($record)) {
+            return __('shared::shared.admin_queue_sla.not_active');
+        }
+
+        return app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Withdrawal, $record->requested_at ?? $record->created_at)
+            ? __('shared::shared.admin_queue_sla.overdue')
+            : __('shared::shared.admin_queue_sla.within_sla');
     }
 }

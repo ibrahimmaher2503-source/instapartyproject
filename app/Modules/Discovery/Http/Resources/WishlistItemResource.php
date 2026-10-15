@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Discovery\Http\Resources;
 
-use App\Modules\Catalog\Domain\Enums\ServiceStatus;
+use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,7 +21,7 @@ class WishlistItemResource extends JsonResource
             'product_type' => $service?->product_type?->value,
             'base_price_minor' => $service?->base_price_minor,
             'base_price_currency' => $service?->base_price_currency ?? 'EGP',
-            'is_available' => $service?->status === ServiceStatus::Published,
+            'is_available' => $service?->status instanceof PublishedState,
             'added_at' => $this->created_at?->toIso8601String(),
         ];
     }

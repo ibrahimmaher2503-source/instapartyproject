@@ -24,7 +24,8 @@ class ViewVendorDocument extends ViewRecord
                     app(GenerateDocumentSignedUrlAction::class)->execute($this->getRecord(), auth()->user())
                 )),
             EditAction::make()
-                ->visible(fn (): bool => VendorDocumentFilamentResource::canEdit($this->getRecord())),
+                ->visible(fn (): bool => VendorDocumentFilamentResource::canEdit($this->getRecord())
+                    && auth()->user()?->can('review_vendor_documents')),
         ];
     }
 }

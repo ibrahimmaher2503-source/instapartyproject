@@ -35,6 +35,7 @@ final class BookingAdminInterventionPolicy
             InterventionType::VendorReminder => $user->can('booking.intervene.send_vendor_reminder'),
             InterventionType::VendorTimeout => $user->can('booking.intervene.escalate_vendor_timeout'),
             InterventionType::VendorProposal => $user->can('booking.intervene.suggest_alternative_vendors'),
+            InterventionType::VendorDecision => $user->can('booking.intervene.decide_vendor_request'),
             InterventionType::ChatFrozen,
             InterventionType::ChatResumed => $user->can('booking.intervene.freeze_chat'),
             InterventionType::CustomerReviewReminder => $user->can('booking.intervene.resume_customer_review'),

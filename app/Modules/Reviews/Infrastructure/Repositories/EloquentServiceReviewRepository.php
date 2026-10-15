@@ -45,7 +45,7 @@ class EloquentServiceReviewRepository implements ServiceReviewRepository
         $limit = $options['limit'] ?? 15;
         $cursor = $options['cursor'] ?? null;
 
-        $query = ServiceReview::with('reviewer')
+        $query = ServiceReview::with(['reviewer', 'vendorResponse'])
             ->where('service_id', $serviceId)
             ->where('moderation_status', ModerationStatus::Approved->value)
             ->orderByDesc('created_at')

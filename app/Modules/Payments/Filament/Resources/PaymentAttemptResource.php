@@ -18,12 +18,12 @@ class PaymentAttemptResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.payments');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationLabel(): string
     {

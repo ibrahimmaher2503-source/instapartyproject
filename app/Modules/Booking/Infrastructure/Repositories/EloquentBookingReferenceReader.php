@@ -16,6 +16,9 @@ final class EloquentBookingReferenceReader implements BookingReferenceReader
     /** @var array<int, string|null> */
     private array $referencesById = [];
 
+    /** @var array<int, string|null> */
+    private array $publicIdsById = [];
+
     public function referenceNoFor(int $bookingId): ?string
     {
         if (! array_key_exists($bookingId, $this->referencesById)) {
@@ -25,6 +28,17 @@ final class EloquentBookingReferenceReader implements BookingReferenceReader
         }
 
         return $this->referencesById[$bookingId];
+    }
+
+    public function publicIdFor(int $bookingId): ?string
+    {
+        if (! array_key_exists($bookingId, $this->publicIdsById)) {
+            $this->publicIdsById[$bookingId] = Booking::query()
+                ->whereKey($bookingId)
+                ->value('public_id');
+        }
+
+        return $this->publicIdsById[$bookingId];
     }
 
     public function isVendorRequestPending(string $bookingVendorPublicId, int $vendorUserId): bool

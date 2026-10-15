@@ -23,6 +23,8 @@ class RequestSaleServiceChangesAction
             DB::table('idempotency_keys')
                 ->where('user_id', $admin->id)
                 ->where('route', $routeName)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
                 ->where('key', $idempotencyKey)
                 ->exists(),
             409,
@@ -75,6 +77,8 @@ class RequestSaleServiceChangesAction
 
             DB::table('idempotency_keys')->insert([
                 'key' => $idempotencyKey,
+                'scope' => 'http',
+                'scope_key' => 'http',
                 'user_id' => $admin->id,
                 'route' => $routeName,
                 'request_hash' => hash('sha256', request()->getContent() ?: ''),

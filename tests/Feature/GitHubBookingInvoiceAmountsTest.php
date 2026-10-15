@@ -121,6 +121,13 @@ it('removes only the matching loyalty line and retains recorded delivery and dis
         'loyalty_redemption_public_id' => $redemptionPublicId,
         'total_minor' => 1_150,
     ]);
+    BookingVendor::factory()->create([
+        'booking_id' => $booking->id,
+        'subtotal_minor' => 1_000,
+        'subtotal_currency' => 'EGP',
+        'delivery_fee_minor' => 300,
+        'delivery_fee_currency' => 'EGP',
+    ]);
     $writer = app(EloquentBookingDiscountWriter::class);
     $writer->removeLoyaltyDiscount($booking->id, (string) Str::ulid());
     expect($booking->fresh()->total_minor)->toBe(1_150);

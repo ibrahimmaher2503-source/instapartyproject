@@ -21,10 +21,14 @@ final class EloquentBookingPaymentTotalsReader implements BookingPaymentTotalsRe
             ->whereIn('payment_id', $payments->select('id'))
             ->where('amount_currency', $currency)
             ->where('status', 'completed')->sum('amount_minor'), $currency);
+        $hasPendingRefund = Refund::query()
+            ->whereIn('payment_id', $payments->select('id'))
+            ->whereIn('status', ['pending', 'processing'])->exists();
 
         return [
             'captured_minor' => $captured->getMinorAmount()->toInt(),
             'refunded_minor' => $refunded->getMinorAmount()->toInt(),
+            'has_pending_refund' => $hasPendingRefund,
             'net_paid_minor' => Money::max(Money::ofMinor(0, $currency), $captured->minus($refunded))
                 ->getMinorAmount()->toInt(),
         ];

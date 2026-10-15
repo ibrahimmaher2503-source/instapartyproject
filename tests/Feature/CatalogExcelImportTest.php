@@ -3,18 +3,27 @@
 declare(strict_types=1);
 
 use App\Modules\Catalog\Application\Actions\CreateRentalServiceAction;
+use App\Modules\Catalog\Application\Actions\DigitalTemplateExport;
+use App\Modules\Catalog\Application\Actions\DownloadTemplateAction;
 use App\Modules\Catalog\Application\Actions\FailExcelImportAction;
 use App\Modules\Catalog\Application\Actions\ImportDigitalServicesFromExcelAction;
 use App\Modules\Catalog\Application\Actions\ImportRentalServicesFromExcelAction;
 use App\Modules\Catalog\Application\Actions\ImportSaleServicesFromExcelAction;
+use App\Modules\Catalog\Application\Actions\RentalTemplateExport;
+use App\Modules\Catalog\Application\Actions\SaleTemplateExport;
 use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Database\Factories\ExcelImportFactory;
+use App\Modules\Catalog\Domain\Enums\ProductType;
+use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\ExcelImportError;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
+use App\Modules\Subscriptions\Application\DTOs\PolicyDecisionDto;
+use App\Modules\Subscriptions\Domain\Contracts\SubscriptionPolicyContract;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
@@ -142,6 +151,67 @@ it('imports a valid rental row and commits completed counters', function (): voi
         ->and($import->total_rows)->toBe(1)
         ->and($import->imported_rows)->toBe(1)
         ->and($import->error_rows)->toBe(0);
+});
+
+it('imports a row from the downloadable digital template with every required column', function (): void {
+    config(['catalog.digital_services_enabled' => true]);
+    Storage::fake('local');
+    $vendor = VendorProfile::factory()->approved()->create();
+    $category = Category::factory()->create(['allowed_product_types' => [ProductType::Digital->value]]);
+    $policy = Mockery::mock(SubscriptionPolicyContract::class);
+    $policy->shouldReceive('canCreateService')->once()->andReturn(PolicyDecisionDto::allow());
+    app()->instance(SubscriptionPolicyContract::class, $policy);
+
+    app(DownloadTemplateAction::class)->execute(ProductType::Digital);
+    $csv = Excel::raw(new DigitalTemplateExport, ExcelFormat::CSV);
+    $rows = array_map('str_getcsv', preg_split('/\r\n|\r|\n/', trim($csv)) ?: []);
+    $headers = array_shift($rows);
+    $row = array_shift($rows);
+    expect($headers)->toContain('has_expiry');
+
+    $values = array_combine($headers, $row);
+    expect($values['has_expiry'])->toBe('0');
+    $values['category_id'] = (string) $category->id;
+    $values['name_en'] = 'QA Digital Template Service';
+    $values['name_ar'] = 'خدمة رقمية من القالب';
+    $stream = fopen('php://temp', 'r+');
+    fputcsv($stream, $headers);
+    fputcsv($stream, array_values($values));
+    rewind($stream);
+    $fileContents = stream_get_contents($stream);
+    fclose($stream);
+
+    $import = app(ImportDigitalServicesFromExcelAction::class)->execute(
+        UploadedFile::fake()->createWithContent('digital-template.csv', $fileContents),
+        $vendor->id,
+    );
+    expect($import->status)->toBe('completed')
+        ->and($import->total_rows)->toBe(1)
+        ->and($import->imported_rows)->toBe(1)
+        ->and($import->error_rows)->toBe(0);
+    $service = Service::query()->sole();
+
+    expect($service->vendor_profile_id)->toBe($vendor->id)
+        ->and($service->category_id)->toBe($category->id)
+        ->and($service->product_type)->toBe(ProductType::Digital)
+        ->and($service->base_price_minor)->toBe((int) $values['base_price_minor'])
+        ->and($service->digitalDetail->has_expiry)->toBeFalse();
+});
+
+it('keeps required false boolean values in each downloadable catalog template', function (): void {
+    foreach ([
+        [ProductType::Rental, RentalTemplateExport::class, 'requires_outdoor_space'],
+        [ProductType::Sale, SaleTemplateExport::class, 'is_made_to_order'],
+        [ProductType::Digital, DigitalTemplateExport::class, 'has_expiry'],
+    ] as [$type, $exportClass, $falseField]) {
+        app(DownloadTemplateAction::class)->execute($type);
+        $csv = Excel::raw(new $exportClass, ExcelFormat::CSV);
+        $rows = array_map('str_getcsv', preg_split('/\r\n|\r|\n/', trim($csv)) ?: []);
+        $headers = array_shift($rows);
+        $values = array_combine($headers, array_shift($rows));
+
+        expect($values[$falseField])->toBe('0');
+    }
 });
 
 it('renders every import product type and malformed error rows in admin detail', function (): void {

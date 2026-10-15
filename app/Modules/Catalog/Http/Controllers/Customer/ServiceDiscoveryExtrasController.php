@@ -55,7 +55,7 @@ class ServiceDiscoveryExtrasController
             ->where('category_id', $service->category_id)
             ->where('product_type', $service->product_type)
             ->whereKeyNot($service->id)
-            ->with(['category', 'vendor'])
+            ->with(['category', 'media', 'vendor.primaryCity.governorate', 'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate'])
             ->orderByDesc('rating_avg')
             ->limit(6)
             ->get();

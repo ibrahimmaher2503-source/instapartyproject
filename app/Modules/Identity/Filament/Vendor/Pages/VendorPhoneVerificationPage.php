@@ -58,7 +58,7 @@ class VendorPhoneVerificationPage extends Page implements HasForms
     public function mount(): void
     {
         $user = $this->getUser();
-        $this->isVerified = $user->phone_verified_at !== null;
+        $this->isVerified = $user->hasVerifiedPhone();
 
         $this->form->fill([
             'phone_e164' => $user->phone_e164,

@@ -50,14 +50,22 @@ it('exposes category-specific fields and converts major currency input on each a
         'vendor_profile_id' => $vendor->id, 'name' => ['en' => 'Schema service', 'ar' => 'خدمة حقول التصنيف'],
         'short_description' => ['en' => 'Short description', 'ar' => 'وصف مختصر'],
         'base_price_minor' => '250.50', 'category_field_values.flavor' => 'vanilla', 'category_field_values.extras' => ['removed'],
-        'rentalDetail.default_rental_duration_hours' => 4, 'digitalDetail.delivery_method' => 'email',
+        'rentalDetail.default_rental_duration_hours' => 4,
+        'saleDetail' => ['is_made_to_order' => true, 'lead_time_hours' => 24, 'stock_quantity' => 10, 'customization_fields' => []],
+        'digitalDetail.delivery_method' => 'email',
     ])->call('create')->assertHasFormErrors(['category_field_values.extras.0']);
     expect(Service::query()->count())->toBe(0);
     $component->fillForm(['category_field_values.extras' => ['candles']])
         ->call('create')->assertHasNoFormErrors();
     $service = Service::query()->sole();
-    expect($service->base_price_minor)->toBe(25050)
+    expect($service->slug)->not->toBeEmpty()
+        ->and($service->base_price_minor)->toBe(25050)
         ->and($service->category_field_values)->toBe(['flavor' => 'vanilla', 'extras' => ['candles']]);
+    if ($type === ProductType::Rental) {
+        expect($service->rentalDetail->setup_time_minutes)->toBe(0)
+            ->and($service->rentalDetail->teardown_time_minutes)->toBe(0)
+            ->and($service->rentalDetail->security_deposit_minor)->toBe(0);
+    }
     Livewire::test($edit, ['record' => $service->getRouteKey()])->assertFormSet([
         'base_price_minor' => '250.50', 'category_field_values.flavor' => 'vanilla',
     ])->call('save')->assertHasNoFormErrors();

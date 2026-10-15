@@ -6,15 +6,16 @@ namespace App\Modules\Identity\Http\Middleware;
 
 use BackedEnum;
 use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 class CheckVendorSuspension
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
+        $user = Auth::guard('vendor')->user();
 
         $profile = $user?->vendorProfile;
 
@@ -36,7 +37,7 @@ class CheckVendorSuspension
                 return $next($request);
             }
 
-            return redirect($suspensionRoute);
+            return new RedirectResponse($suspensionRoute);
         }
 
         return $next($request);

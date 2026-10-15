@@ -8,6 +8,7 @@ use App\Modules\Identity\Application\Actions\ApproveVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\GenerateDocumentSignedUrlAction;
 use App\Modules\Identity\Application\Actions\RejectVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\SetDocumentExpiryAction;
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use App\Modules\Identity\Domain\Enums\DocumentStatus;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Filament\Resources\VendorDocumentFilamentResource\Pages\EditVendorDocument;
@@ -43,7 +44,7 @@ class VendorDocumentFilamentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -80,7 +81,7 @@ class VendorDocumentFilamentResource extends Resource
                         ->content(fn (?VendorDocument $record): string => $record?->public_id ?? '—'),
                     Placeholder::make('document_type')
                         ->label(__('identity.columns.doc_type'))
-                        ->content(fn (?VendorDocument $record): string => $record === null ? '—' : __('identity.document_type.'.$record->doc_type->value)),
+                        ->content(fn (?VendorDocument $record): string => $record === null ? '—' : app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key)),
                     Placeholder::make('file_context')
                         ->label(__('identity.columns.file_name'))
                         ->content(fn (?VendorDocument $record): string => $record?->file_name ?? '—'),
@@ -123,7 +124,7 @@ class VendorDocumentFilamentResource extends Resource
                     TextEntry::make('public_id')->label(__('identity.columns.document_reference'))->copyable(),
                     TextEntry::make('doc_type')
                         ->label(__('identity.columns.doc_type'))
-                        ->formatStateUsing(fn (BackedEnum|string $state): string => __('identity.document_type.'.($state instanceof BackedEnum ? $state->value : $state))),
+                        ->formatStateUsing(fn (VendorDocument $record): string => app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key)),
                     TextEntry::make('file_name')->label(__('identity.columns.file_name')),
                     TextEntry::make('status')
                         ->label(__('identity.columns.status'))
@@ -154,14 +155,6 @@ class VendorDocumentFilamentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('public_id')
-                    ->label(__('identity.columns.document_reference'))
-                    ->searchable()
-                    ->copyable(),
-                TextColumn::make('vendorProfile.public_id')
-                    ->label(__('identity.columns.vendor_reference'))
-                    ->searchable()
-                    ->copyable(),
                 TextColumn::make('vendorProfile.business_name')
                     ->label(__('identity.columns.vendor'))
                     ->getStateUsing(fn (VendorDocument $record): string => $record->vendorProfile === null
@@ -183,10 +176,10 @@ class VendorDocumentFilamentResource extends Resource
                     ->label(__('identity.columns.doc_type'))
                     ->badge()
                     ->searchable()
-                    ->formatStateUsing(fn ($state): string => __('identity.document_type.'.($state instanceof BackedEnum ? $state->value : $state))),
+                    ->formatStateUsing(fn (VendorDocument $record): string => app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key)),
                 TextColumn::make('file_name')
                     ->label(__('identity.columns.file_name'))
-                    ->searchable(),
+                    ->searchable(['file_name', 'public_id']),
                 TextColumn::make('status')
                     ->label(__('identity.columns.status'))
                     ->badge()
@@ -240,13 +233,7 @@ class VendorDocumentFilamentResource extends Resource
                     ]),
                 SelectFilter::make('doc_type')
                     ->label(__('identity.columns.doc_type'))
-                    ->options([
-                        'cr' => __('identity.document_type.cr'),
-                        'tax_card' => __('identity.document_type.tax_card'),
-                        'national_id' => __('identity.document_type.national_id'),
-                        'iban_proof' => __('identity.document_type.iban_proof'),
-                        'other' => __('identity.document_type.other'),
-                    ]),
+                    ->options(fn (): array => app(RequiredVendorDocumentTypesResolver::class)->options()),
             ])
             ->actions([
                 Action::make('download')
@@ -257,7 +244,8 @@ class VendorDocumentFilamentResource extends Resource
                     )),
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn (VendorDocument $record): bool => static::canEdit($record))
+                    ->visible(fn (VendorDocument $record): bool => static::canEdit($record)
+                        && auth()->user()?->can('review_vendor_documents'))
                     ->using(function (VendorDocument $record, array $data) {
                         app(SetDocumentExpiryAction::class)->execute(
                             $record,

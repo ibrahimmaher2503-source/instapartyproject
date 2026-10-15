@@ -30,7 +30,7 @@ class OnVendorDocumentRejected implements ShouldQueue
         }
 
         $context = [
-            'doc_type' => $document->doc_type->value,
+            'doc_type' => $document->doc_type_key,
             'review_notes' => $event->reviewNotes['en'] ?? (is_string($event->reviewNotes[0] ?? null) ? $event->reviewNotes[0] : ''),
         ];
 

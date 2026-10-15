@@ -60,14 +60,15 @@ it('keeps coverage city options beyond the default limit and localized like the 
         'name' => ['en' => 'Inactive City', 'ar' => 'مدينة غير نشطة'],
     ]);
 
-    $vendor = VendorProfile::factory()->create([
+    $vendor = VendorProfile::factory()->approved()->create([
         'primary_governorate_id' => $governorate->id,
         'primary_city_id' => $dokki->id,
     ]);
     $this->actingAs($vendor->user, 'vendor');
 
-    $coveragePage = Livewire::test(VendorCoverageAreasPage::class)->mountAction('addArea');
-    $coverageCitySelect = $coveragePage->instance()->getMountedActionForm()?->getComponent('city_id');
+    $coveragePage = Livewire::test(VendorCoverageAreasPage::class)->mountAction('addArea')->assertActionMounted('addArea');
+    $coverageCitySelect = collect($coveragePage->instance()->getMountedActionForm()?->getFlatComponents() ?? [])
+        ->first(fn ($component): bool => $component instanceof Select && $component->getName() === 'city_id');
     expect($coverageCitySelect)->toBeInstanceOf(Select::class);
     /** @var Select $coverageCitySelect */
     $activeCityCount = City::query()->active()->count();
@@ -81,10 +82,11 @@ it('keeps coverage city options beyond the default limit and localized like the 
         app()->setLocale($locale);
 
         $coverageOptions = $coverageCitySelect->getOptions();
-        $profileCitySelect = Livewire::test(VendorProfilePage::class)
+        $profileCitySelect = collect(Livewire::test(VendorProfilePage::class)
             ->instance()
             ->getForm('form')
-            ?->getComponent('primary_city_id');
+            ?->getFlatComponents() ?? [])
+            ->first(fn ($component): bool => $component instanceof Select && $component->getName() === 'primary_city_id');
 
         expect($coverageOptions[$dokki->id] ?? null)->toBe($labels['coverage'])
             ->and($coverageOptions)->not->toHaveKey($inactiveCity->id)

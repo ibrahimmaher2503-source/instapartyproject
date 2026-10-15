@@ -234,5 +234,7 @@ it('accepts start-only planner searches and still rejects earlier supplied ends'
     ];
     $this->get("/{$locale}/search?".http_build_query($filters))->assertOk();
     $filters['event_ends_at'] = Carbon::parse($payload['event_starts_at'])->subHour()->toDateTimeString();
-    $this->get("/{$locale}/search?".http_build_query($filters))->assertSessionHasErrors('event_ends_at');
+    $this->get("/{$locale}/search?".http_build_query($filters))
+        ->assertSessionHasErrors('search')
+        ->assertSessionHasInput('event_ends_at', $filters['event_ends_at']);
 })->with(['en', 'ar']);

@@ -10,6 +10,8 @@ use App\Modules\Settlement\Filament\Resources\WithdrawalResource\Pages\ListWithd
 use App\Modules\Settlement\Filament\Resources\WithdrawalResource\Pages\ViewWithdrawal;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Exception;
 use Filament\Infolists\Components\Grid;
@@ -34,7 +36,7 @@ class WithdrawalResource extends Resource
 
     protected static ?string $slug = 'settlement-withdrawal-audit';
 
-    protected static ?int $navigationSort = 130;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationGroup(): ?string
     {
@@ -111,8 +113,9 @@ class WithdrawalResource extends Resource
 
                             TextEntry::make('requested_at')
                                 ->label(__('settlement.columns.requested_at'))
-                                ->dateTime('d M Y H:i e')
-                                ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
+                                ->dateTime('d M Y H:i')
+                                ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                                ->suffix(fn (): string => ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')),
 
                             TextEntry::make('vendorProfile.business_name')
                                 ->label(__('settlement.columns.vendor'))
@@ -131,8 +134,11 @@ class WithdrawalResource extends Resource
                         ->schema([
                             TextEntry::make('approved_at')
                                 ->label(__('settlement.fields.approved_at'))
-                                ->dateTime('d M Y H:i e')
+                                ->dateTime('d M Y H:i')
                                 ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                                ->suffix(fn (Withdrawal $record): ?string => $record->approved_at === null
+                                    ? null
+                                    : ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                                 ->placeholder(__('settlement.withdrawal.not_yet_approved')),
 
                             TextEntry::make('approvedByAdmin.name')
@@ -148,8 +154,11 @@ class WithdrawalResource extends Resource
                         ->schema([
                             TextEntry::make('paid_at')
                                 ->label(__('settlement.columns.paid_at'))
-                                ->dateTime('d M Y H:i e')
+                                ->dateTime('d M Y H:i')
                                 ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                                ->suffix(fn (Withdrawal $record): ?string => $record->paid_at === null
+                                    ? null
+                                    : ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                                 ->placeholder(__('settlement.withdrawal.not_paid_yet')),
 
                             TextEntry::make('paidByAdmin.name')
@@ -231,6 +240,7 @@ class WithdrawalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'vendorProfile.public_id', 'status', 'requested_amount_minor', 'requested_amount_currency', 'requested_at'])])
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('public_id')
@@ -274,19 +284,24 @@ class WithdrawalResource extends Resource
                     }),
 
                 TextColumn::make('requested_at')
-                    ->dateTime('d M Y H:i e')
+                    ->dateTime('d M Y H:i')
                     ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->suffix(fn (): string => ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                     ->label(__('settlement.columns.requested'))
                     ->sortable(),
 
                 TextColumn::make('paid_at')
-                    ->dateTime('d M Y H:i e')
+                    ->dateTime('d M Y H:i')
                     ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->suffix(fn (Withdrawal $record): ?string => $record->paid_at === null
+                        ? null
+                        : ' '.(auth()->user()?->timezone ?? 'Africa/Cairo'))
                     ->label(__('settlement.columns.paid_at'))
                     ->sortable()
                     ->placeholder('—'),
             ])
             ->filters([
+                OperationalDateFilter::make('requested_at'),
                 SelectFilter::make('status')
                     ->options([
                         WithdrawalStatus::Pending->value => __('settlement.withdrawal_status.pending'),

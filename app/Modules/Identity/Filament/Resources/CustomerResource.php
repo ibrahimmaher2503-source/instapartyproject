@@ -12,6 +12,7 @@ use App\Modules\Identity\Application\DTOs\AdminUpdateCustomerDTO;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Filament\Resources\CustomerResource\Pages\ListCustomers;
 use App\Modules\Identity\Filament\Resources\CustomerResource\Pages\ViewCustomer;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -28,7 +29,7 @@ class CustomerResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.vendor_management');
+        return __('admin.nav.groups.customers');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -64,6 +65,11 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('public_id')
+                    ->label(__('identity.columns.id'))
+                    ->copyable()
+                    ->searchable(),
+
                 TextColumn::make('name')
                     ->label(__('identity.columns.name'))
                     ->searchable()
@@ -75,6 +81,7 @@ class CustomerResource extends Resource
 
                 TextColumn::make('phone_e164')
                     ->label(__('identity.columns.phone'))
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->searchable(),
 
                 TextColumn::make('status')
@@ -126,6 +133,7 @@ class CustomerResource extends Resource
                     ->label(__('identity.fields.phone'))
                     ->nullable()
                     ->tel()
+                    ->extraInputAttributes(['dir' => 'ltr'])
                     ->helperText('E.164 format: +201001234567'),
             ])
             ->fillForm(fn (User $record): array => [
@@ -213,5 +221,10 @@ class CustomerResource extends Resource
             'index' => ListCustomers::route('/'),
             'view' => ViewCustomer::route('/{record}'),
         ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [InternalRecordNotesRelationManager::class];
     }
 }

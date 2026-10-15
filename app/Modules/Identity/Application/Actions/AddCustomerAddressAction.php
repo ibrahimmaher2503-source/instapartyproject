@@ -17,7 +17,7 @@ class AddCustomerAddressAction
             $city = City::where('public_id', $data['city_id'])->firstOrFail();
             $data['city_id'] = $city->id;
 
-            if (($data['is_default'] ?? false) === true) {
+            if ((bool) ($data['is_default'] ?? false)) {
                 CustomerAddress::where('user_id', $user->id)
                     ->whereNull('deleted_at')
                     ->update(['is_default' => false]);

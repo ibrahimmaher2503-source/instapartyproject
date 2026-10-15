@@ -75,6 +75,18 @@
                     @if ($shortDescription)
                         <p class="mt-4 max-w-2xl text-lg leading-8 text-ink-600">{{ $shortDescription }}</p>
                     @endif
+                    @if ($service->themes->isNotEmpty())
+                        <section class="mt-5" aria-labelledby="service-themes-heading" data-service-themes>
+                            <h2 id="service-themes-heading" class="text-sm font-bold text-ink-700">{{ __('catalog.service_themes') }}</h2>
+                            <ul class="mt-2 flex flex-wrap gap-2">
+                                @foreach ($service->themes->where('is_active', true) as $theme)
+                                    <li class="rounded-full border border-secondary-200 bg-white px-3 py-1 text-sm font-semibold text-secondary-800">
+                                        {{ $theme->getTranslation('name', $locale, useFallbackLocale: true) }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endif
                 </div>
 
                 <aside class="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24">
@@ -101,10 +113,30 @@
                         </dl>
                         @endif
 
+                        <form method="GET" action="{{ route('storefront.services.show', ['servicePublicId' => $service->public_id]) }}" class="mt-6 space-y-3">
+                            <h2 class="font-bold">{{ __('catalog::estimate.title') }}</h2>
+                            <label class="block text-sm" for="estimate-quantity">{{ __('catalog::estimate.quantity') }}</label>
+                            <input class="sf-field w-full text-ink-900" id="estimate-quantity" type="number" name="quantity" min="1" max="100" required value="{{ $selection['quantity'] }}">
+                            <label class="block text-sm" for="estimate-start">{{ __('catalog::estimate.start') }}</label>
+                            <input class="sf-field w-full text-ink-900" id="estimate-start" type="datetime-local" name="event_starts_at" value="{{ $selection['event_starts_at'] }}">
+                            <label class="block text-sm" for="estimate-end">{{ __('catalog::estimate.end') }}</label>
+                            <input class="sf-field w-full text-ink-900" id="estimate-end" type="datetime-local" name="event_ends_at" value="{{ $selection['event_ends_at'] }}">
+                            <label class="block text-sm" for="estimate-timezone">{{ __('catalog::estimate.timezone') }}</label>
+                            <select class="sf-field w-full text-ink-900" id="estimate-timezone" name="timezone">
+                                @foreach (array_unique(['Africa/Cairo', 'UTC', $selection['timezone']]) as $zone)
+                                    <option value="{{ $zone }}" @selected($selection['timezone'] === $zone)>{{ $zone }}</option>
+                                @endforeach
+                            </select>
+                            <button class="sf-button sf-button--light w-full justify-center" type="submit">{{ __('catalog::estimate.check') }}</button>
+                        </form>
+                        <p class="mt-4 text-sm">{{ __('catalog::estimate.total') }}: <strong><x-storefront.price :minor="$estimate->getMinorAmount()->toInt()" :currency="$service->base_price_currency" /></strong></p>
+                        <p class="mt-2 text-xs leading-5 text-white/80">{{ __('catalog::estimate.help') }}</p>
+                        <p class="mt-3 text-sm" role="status">{{ $availability === null ? __('catalog::estimate.choose_date') : ($availability->available ? __('catalog::estimate.available') : __('catalog::estimate.unavailable')) }}</p>
+
                         @if ($isOutOfStock)
                             <button type="button" class="sf-button mt-7 min-h-12 w-full cursor-not-allowed justify-center bg-white/10 text-white/55" disabled>{{ __('storefront.service.out_of_stock') }}</button>
                         @else
-                            <a href="{{ url('/'.$locale.'/wizard?service='.$service->public_id) }}" class="sf-button sf-button--light mt-7 min-h-12 w-full justify-center" aria-describedby="service-cart-hint">
+                            <a href="{{ $wizardUrl }}" data-service-wizard-link class="sf-button sf-button--light mt-7 min-h-12 w-full justify-center" aria-describedby="service-cart-hint" aria-disabled="false">
                                 {{ __('storefront.service.add_to_cart') }}
                                 <span aria-hidden="true">{{ $locale === 'ar' ? '←' : '→' }}</span>
                             </a>
@@ -112,7 +144,67 @@
                         @unless ($isOutOfStock)
                             <p id="service-cart-hint" class="mt-3 text-center text-xs leading-5 text-white/60">{{ __('storefront.service.add_to_cart_hint') }}</p>
                         @endunless
+                        <a href="{{ route('storefront.inquiries.create', ['locale' => $locale, 'servicePublicId' => $service->public_id]) }}" class="mt-5 block rounded-xl border border-white/25 px-4 py-3 text-center font-bold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                            {{ __('communication::communication.vendor_inquiries.ask_vendor') }}
+                        </a>
+                        <p class="mt-2 text-center text-xs leading-5 text-white/60">{{ __('communication::communication.vendor_inquiries.ask_vendor_hint') }}</p>
                     </div>
+
+                    <section class="mt-5 rounded-[1.35rem] border border-ink-200 bg-white p-5" aria-labelledby="service-estimate-title">
+                        <h2 id="service-estimate-title" class="text-lg font-extrabold text-ink-900">{{ __('storefront.service.estimate_title') }}</h2>
+                        <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.service.estimate_note') }}</p>
+                        @if ($service->product_type === ProductType::Rental)
+                            <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.service.rental_estimate_note') }}</p>
+                        @endif
+
+                        <p class="mt-4 text-sm font-semibold text-ink-500">{{ __('storefront.service.estimate_amount') }}</p>
+                        <bdi data-service-estimate-total dir="ltr" class="mt-1 block text-2xl font-extrabold text-ink-900">{{ $estimate }}</bdi>
+
+                        <form
+                            method="GET"
+                            action="{{ route('storefront.services.show', ['locale' => $locale, 'servicePublicId' => $service->public_id]) }}"
+                            data-service-estimate
+                            data-estimate-quantity="{{ $quantity }}"
+                            data-estimate-refresh-message="{{ __('storefront.service.estimate_refresh_required') }}"
+                            data-availability-endpoint="{{ url('/api/v1/customer/services/'.$service->public_id.'/check-availability') }}"
+                            data-product-type="{{ $service->product_type->value }}"
+                            data-availability-error="{{ __('storefront.service.availability_error') }}"
+                            data-availability-date-required="{{ __('storefront.service.availability_date_required') }}"
+                            data-availability-date-invalid="{{ __('storefront.service.availability_date_invalid') }}"
+                            data-availability-duration-invalid="{{ __('storefront.service.availability_duration_invalid') }}"
+                            data-availability-quantity-invalid="{{ __('storefront.service.availability_quantity_invalid') }}"
+                            data-availability-checking="{{ __('storefront.service.availability_checking') }}"
+                            data-availability-available-rental="{{ __('storefront.service.availability_available_rental') }}"
+                            data-availability-available-sale="{{ __('storefront.service.availability_available_sale') }}"
+                            data-availability-available-digital="{{ __('storefront.service.availability_available_digital') }}"
+                            data-availability-unavailable="{{ __('storefront.service.availability_unavailable') }}"
+                            class="mt-5 space-y-4"
+                        >
+                            <input type="hidden" name="timezone" value="{{ request('timezone') }}" data-browser-timezone>
+                            <label class="block text-sm font-bold text-ink-800">
+                                <span>{{ __('storefront.service.date') }}</span>
+                                <input type="datetime-local" name="event_starts_at" value="{{ request('event_starts_at') }}" class="sf-field mt-2 w-full" data-service-estimate-start>
+                            </label>
+                            @if ($service->product_type === ProductType::Rental)
+                                <label class="block text-sm font-bold text-ink-800">
+                                    <span>{{ __('storefront.service.rental_duration') }} ({{ __('storefront.common.hours') }})</span>
+                                    <input type="number" name="rental_duration_hours" min="1" max="720" value="{{ $durationHours }}" class="sf-field mt-2 w-full" data-service-estimate-duration>
+                                </label>
+                                <input type="hidden" name="quantity" value="1" data-service-estimate-quantity>
+                            @else
+                                <label class="block text-sm font-bold text-ink-800">
+                                    <span>{{ __('storefront.service.quantity') }}</span>
+                                    <input type="number" name="quantity" min="1" max="100" value="{{ $quantity }}" class="sf-field mt-2 w-full" data-service-estimate-quantity>
+                                </label>
+                            @endif
+                            <div class="flex flex-col gap-3 sm:flex-row">
+                                <button type="submit" class="sf-button sf-button--secondary min-h-11 flex-1 justify-center">{{ __('storefront.service.update_estimate') }}</button>
+                                <button type="button" data-service-check-availability class="sf-button min-h-11 flex-1 justify-center border border-secondary-200 bg-white text-secondary-900">{{ __('storefront.service.check_availability') }}</button>
+                            </div>
+                            <p data-service-availability-status class="min-h-6 text-sm leading-6 text-ink-700" role="status" aria-live="polite"></p>
+                            <p data-service-estimate-refresh-status class="min-h-6 text-sm leading-6 text-amber-800" role="status" aria-live="polite" tabindex="-1"></p>
+                        </form>
+                    </section>
 
                     @if ($vendor)
                         <a href="{{ route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="sf-service-vendor mt-5 flex items-center gap-4 rounded-[1.35rem] border border-ink-200 bg-white p-5 transition hover:border-secondary-300 hover:shadow-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600">
@@ -141,6 +233,19 @@
                             <div class="prose prose-ink mt-5 max-w-3xl text-base leading-8 text-ink-600">
                                 {!! nl2br(e($serviceDescription)) !!}
                             </div>
+                        </section>
+                    @endif
+
+                    @if (! empty($vendorPortfolioItems))
+                        <section data-vendor-portfolio class="mt-10 border-t border-ink-200 pt-8" aria-labelledby="vendor-portfolio-heading">
+                            <h2 id="vendor-portfolio-heading" class="text-2xl font-extrabold tracking-[-0.03em] text-ink-900">{{ __('storefront.vendor.portfolio_heading') }}</h2>
+                            <ul class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="{{ __('storefront.vendor.portfolio_heading') }}">
+                                @foreach ($vendorPortfolioItems as $item)
+                                    <li class="overflow-hidden rounded-2xl bg-secondary-50">
+                                        <img src="{{ $item['url'] }}" alt="{{ $vendorName }}" class="aspect-square w-full object-cover" width="480" height="480" loading="lazy">
+                                    </li>
+                                @endforeach
+                            </ul>
                         </section>
                     @endif
                 </div>

@@ -37,6 +37,13 @@ class FulfillmentGuards
         );
     }
 
+    public function ensureAllocationEligibleForFulfillment(BookingVendor $bookingVendor): void
+    {
+        if (! in_array($bookingVendor->sub_status, [VendorSubStatus::Accepted, VendorSubStatus::InProgress], true)) {
+            throw BookingNotEligibleForFulfillmentException::allocationNotEligible();
+        }
+    }
+
     public function ensurePaymentCaptured(BookingVendor $bookingVendor): void
     {
         $booking = $bookingVendor->booking ?? $bookingVendor->booking()->first();
@@ -85,15 +92,13 @@ class FulfillmentGuards
     }
 
     /**
-     * Run the pre-state-machine guards before any fulfillment transition.
+     * Run all pre-state-machine guards before the item state machine.
      */
     public function runAll(BookingVendor $bookingVendor, VendorProfile $vendor): void
     {
         $this->ensureOwningVendor($bookingVendor, $vendor);
+        $this->ensureAllocationEligibleForFulfillment($bookingVendor);
         $this->ensureBookingEligible($bookingVendor);
-        if (! in_array($bookingVendor->sub_status, [VendorSubStatus::Accepted, VendorSubStatus::InProgress, VendorSubStatus::Completed], true)) {
-            throw BookingNotEligibleForFulfillmentException::notAccepted();
-        }
         $this->ensurePaymentCaptured($bookingVendor);
         $this->ensureNoOpenRefund($bookingVendor);
     }

@@ -153,6 +153,42 @@ class VendorBookingDetailPage extends Page implements HasInfolists
                                         ->label(__('vendor-portal.bookings.line_total'))
                                         ->money('EGP', divideBy: 100),
                                 ]),
+                                TextEntry::make('service_package_snapshot')
+                                    ->label(__('booking.package_snapshot'))
+                                    ->getStateUsing(function (BookingItem $record): string {
+                                        $snapshot = data_get($record->type_snapshot, 'service_package');
+                                        if (! is_array($snapshot)) {
+                                            return '';
+                                        }
+
+                                        $locale = app()->getLocale();
+                                        $components = collect($snapshot['components'] ?? [])
+                                            ->map(fn (array $component): string => ($component['name'][$locale] ?? $component['name']['en'] ?? '')
+                                                .' × '.($component['quantity'] ?? 0))
+                                            ->implode("\n");
+
+                                        return ($snapshot['description'][$locale] ?? $snapshot['description']['en'] ?? '')."\n".$components;
+                                    })
+                                    ->visible(fn (BookingItem $record): bool => is_array(data_get($record->type_snapshot, 'service_package')))
+                                    ->columnSpanFull(),
+                                TextEntry::make('service_package_gallery')
+                                    ->label(__('booking.package_gallery_snapshot'))
+                                    ->getStateUsing(function (BookingItem $record): HtmlString {
+                                        $snapshot = data_get($record->type_snapshot, 'service_package');
+                                        if (! is_array($snapshot)) {
+                                            return new HtmlString('');
+                                        }
+
+                                        $locale = app()->getLocale();
+                                        $alt = e($snapshot['name'][$locale] ?? $snapshot['name']['en'] ?? '');
+                                        $images = collect($snapshot['media'] ?? [])
+                                            ->map(fn (array $media): string => '<img src="'.e($media['thumb']).'" alt="'.$alt.'" width="96" height="96" style="display:inline-block;object-fit:cover;border-radius:.5rem;margin-inline-end:.5rem">')
+                                            ->implode('');
+
+                                        return new HtmlString($images);
+                                    })
+                                    ->visible(fn (BookingItem $record): bool => (array) data_get($record->type_snapshot, 'service_package.media', []) !== [])
+                                    ->columnSpanFull(),
                             ]),
                     ]),
 

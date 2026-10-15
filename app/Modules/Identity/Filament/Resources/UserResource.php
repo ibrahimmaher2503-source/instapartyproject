@@ -7,6 +7,7 @@ namespace App\Modules\Identity\Filament\Resources;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Filament\Resources\UserResource\Pages\ListUsers;
 use App\Modules\Identity\Filament\Resources\UserResource\Pages\ViewUser;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -61,12 +62,12 @@ class UserResource extends Resource
         return false;
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }
@@ -153,5 +154,10 @@ class UserResource extends Resource
             'index' => ListUsers::route('/'),
             'view' => ViewUser::route('/{record}'),
         ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [InternalRecordNotesRelationManager::class];
     }
 }

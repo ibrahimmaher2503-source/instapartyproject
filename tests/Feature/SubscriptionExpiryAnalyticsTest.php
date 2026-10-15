@@ -28,7 +28,7 @@ it('advances paid periods through the existing grace window exactly once', funct
     $action->execute();
 
     expect($boundary->fresh()->status->getValue())->toBe('past_due')
-        ->and($boundary->fresh()->grace_period_ends_at->equalTo(now()->addDays(7)))->toBeTrue()
+        ->and($boundary->fresh()->grace_period_ends_at->timestamp)->toBe(now()->addDays(7)->timestamp)
         ->and($old->fresh()->status->getValue())->toBe('expired')
         ->and($pastDue->fresh()->status->getValue())->toBe('expired')
         ->and($permanent->fresh()->status->getValue())->toBe('active')

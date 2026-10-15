@@ -41,7 +41,7 @@ final class EnsureVendorApproved
             ], 403);
         }
 
-        if ($user?->phone_verified_at === null) {
+        if (! $user?->hasVerifiedPhone()) {
             return response()->json([
                 'data' => null,
                 'meta' => (object) [],

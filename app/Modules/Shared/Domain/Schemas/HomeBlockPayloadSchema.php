@@ -144,10 +144,44 @@ class HomeBlockPayloadSchema
                 }
             });
         }
+        $validator->after(function ($validator) use ($payload): void {
+            self::validateCtaDestinations($payload, '', $validator);
+        });
+
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
         return $validator->validated();
+    }
+
+    /** @param array<string, mixed> $node */
+    private static function validateCtaDestinations(array $node, string $path, mixed $validator): void
+    {
+        foreach ($node as $key => $value) {
+            $field = $path === '' ? (string) $key : $path.'.'.$key;
+
+            if ($key === 'cta_url' && filled($value) && (! is_string($value) || ! self::isSafeCtaDestination($value))) {
+                $validator->errors()->add($field, __('shared::shared.home_block.invalid_destination'));
+            }
+
+            if (is_array($value)) {
+                self::validateCtaDestinations($value, $field, $validator);
+            }
+        }
+    }
+
+    private static function isSafeCtaDestination(string $url): bool
+    {
+        if (preg_match('/[\x00-\x20\\\\]/', $url) === 1) {
+            return false;
+        }
+
+        if (str_starts_with($url, '/')) {
+            return ! str_starts_with($url, '//');
+        }
+
+        return filter_var($url, FILTER_VALIDATE_URL) !== false
+            && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
     }
 }

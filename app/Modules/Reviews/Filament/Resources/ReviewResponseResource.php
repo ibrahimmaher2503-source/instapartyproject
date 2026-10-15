@@ -25,7 +25,7 @@ final class ReviewResponseResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?int $navigationSort = 35;
+    protected static ?int $navigationSort = 70;
 
     public static function getNavigationGroup(): ?string
     {

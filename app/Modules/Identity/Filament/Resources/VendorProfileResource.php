@@ -31,7 +31,9 @@ use App\Modules\Identity\Filament\Resources\VendorProfileResource\RelationManage
 use App\Modules\Identity\Filament\Resources\VendorProfileResource\RelationManagers\WithdrawalsRelationManager;
 use App\Modules\Shared\Application\Services\StorefrontText;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
 use App\Modules\TrustSafety\Application\Actions\AssignBadgeToVendorAction;
 use BackedEnum;
 use Filament\Forms\Components\Repeater;
@@ -61,6 +63,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Spatie\ModelStates\State;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class VendorProfileResource extends Resource
 {
@@ -68,7 +71,7 @@ class VendorProfileResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationGroup(): ?string
     {
@@ -93,9 +96,9 @@ class VendorProfileResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make(__('identity.misc.translations_tab'))
+            BilingualTabErrorFeedback::tabs(Tabs::make(__('identity.misc.translations_tab')))
                 ->tabs([
-                    Tab::make(__('identity.misc.tab_english'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('identity.misc.tab_english')), 'en')
                         ->schema([
                             TextInput::make('business_name.en')
                                 ->label(__('identity.forms.business_name_en'))
@@ -110,7 +113,7 @@ class VendorProfileResource extends Resource
                                 ->rows(2)
                                 ->maxLength(500),
                         ]),
-                    Tab::make(__('identity.misc.tab_arabic'))
+                    BilingualTabErrorFeedback::tab(Tab::make(__('identity.misc.tab_arabic')), 'ar')
                         ->schema([
                             TextInput::make('business_name.ar')
                                 ->label(__('identity.forms.business_name_ar'))
@@ -301,13 +304,10 @@ class VendorProfileResource extends Resource
 
         return $table
             ->columns([
-                TextColumn::make('public_id')
-                    ->label(__('identity.columns.id'))
-                    ->searchable(query: fn (Builder $query, string $search): Builder => app(VendorSearchQuery::class)->apply($query, $search))
-                    ->copyable(),
                 TextColumn::make('business_name')
                     ->label(__('identity.columns.business_name'))
                     ->getStateUsing(fn (VendorProfile $record): string => app(StorefrontText::class)->translation($record, 'business_name') ?: '')
+                    ->searchable(query: fn (Builder $query, string $search): Builder => app(VendorSearchQuery::class)->apply($query, $search))
                     ->limit(40),
                 TextColumn::make('approval_status')
                     ->label(__('identity.columns.approval_status'))
@@ -386,18 +386,18 @@ class VendorProfileResource extends Resource
                     ->modalDescription(__('identity.modals.approve_vendor_description'))
                     ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof PendingState
                         && auth()->user()?->can('approve_vendor_profile'))
-                    ->tooltip(function (VendorProfile $record): ?string {
-                        $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
-
-                        return $result->eligible ? null : implode(' ', $result->errors);
-                    })
+                    ->disabled(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
+                    ->tooltip(fn (VendorProfile $record): ?string => app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible
+                        ? null
+                        : (string) __('identity.approval_eligibility.complete_requirements'))
                     ->action(function (VendorProfile $record): void {
                         try {
                             app(ApproveVendorProfileAction::class)->execute($record);
                         } catch (ValidationException $exception) {
                             Notification::make()
                                 ->title(__('identity.notifications.vendor_approval_failed'))
-                                ->body(collect($exception->errors())->flatten()->implode(' '))
+                                ->body(collect($exception->errors())->flatten()->implode(' ')
+                                    .' '.__('shared::admin-feedback.approval_error_reference', ['reference' => $record->public_id]))
                                 ->danger()
                                 ->send();
 
@@ -501,7 +501,16 @@ class VendorProfileResource extends Resource
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading(__('identity.modals.suspend_vendor_heading'))
-                    ->modalDescription(__('identity.modals.suspend_vendor_description'))
+                    ->modalDescription(fn (VendorProfile $record): string => __('identity.modals.suspend_vendor_description', [
+                        'vendor' => app(StorefrontText::class)->translation($record, 'business_name', app()->getLocale()) ?: __('identity.vendor_profile'),
+                        'reference' => $record->public_id,
+                        'status' => __('identity.status.'.$record->approval_status::getMorphClass()),
+                        'types' => $record->approvedTypes()
+                            ->whereNull('revoked_at')
+                            ->pluck('product_type')
+                            ->map(fn ($type): string => __('identity.product_type.'.($type instanceof ProductType ? $type->value : $type)))
+                            ->join(', ') ?: __('identity.placeholders.none'),
+                    ]))
                     ->visible(fn (VendorProfile $record) => $record->approval_status instanceof ApprovedState && auth()->user()?->can('suspend_vendor'))
                     ->form([
                         Textarea::make('reason')
@@ -512,7 +521,20 @@ class VendorProfileResource extends Resource
                             ->rows(3),
                     ])
                     ->action(function (VendorProfile $record, array $data): void {
-                        app(SuspendVendorAction::class)->execute($record, $data['reason']);
+                        abort_unless(auth()->user()?->can('suspend_vendor') === true, 403);
+
+                        try {
+                            app(SuspendVendorAction::class)->execute($record, $data['reason']);
+                        } catch (ConflictHttpException) {
+                            Notification::make()
+                                ->title(__('identity::identity.validation.vendor_not_approved'))
+                                ->body(__('shared::admin-feedback.suspend_vendor_failed', ['reference' => $record->public_id]))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
                         Notification::make()->title(__('identity.notifications.vendor_suspended'))->danger()->send();
                     }),
 
@@ -637,7 +659,9 @@ class VendorProfileResource extends Resource
                         ->visible(fn (VendorProfile $record): bool => (bool) $record->logo_path),
                     TextEntry::make('public_id')->label(__('identity.columns.id'))->copyable(),
                     TextEntry::make('user.email')->label(__('identity.columns.email')),
-                    TextEntry::make('user.phone_e164')->label(__('identity.columns.phone')),
+                    TextEntry::make('user.phone_e164')
+                        ->label(__('identity.columns.phone'))
+                        ->extraAttributes(['dir' => 'ltr']),
                     TextEntry::make('business_type')
                         ->label(__('identity.columns.business_type'))
                         ->badge()
@@ -724,6 +748,7 @@ class VendorProfileResource extends Resource
     public static function getRelationManagers(): array
     {
         return [
+            InternalRecordNotesRelationManager::class,
             DocumentsRelationManager::class,
             ServicesRelationManager::class,
             BookingVendorsRelationManager::class,

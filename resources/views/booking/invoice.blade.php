@@ -51,7 +51,19 @@
             </tr>
             @foreach ($vendor->items as $item)
                 <tr>
-                    <td>{{ is_array($item->name_snapshot) ? ($item->name_snapshot[app()->getLocale()] ?? $item->name_snapshot['en'] ?? '—') : '—' }} × {{ $item->quantity }}</td>
+                    <td>
+                        {{ is_array($item->name_snapshot) ? ($item->name_snapshot[app()->getLocale()] ?? $item->name_snapshot['en'] ?? '—') : '—' }} × {{ $item->quantity }}
+                        @php($packageSnapshot = data_get($item->type_snapshot, 'service_package'))
+                        @if (is_array($packageSnapshot))
+                            <div>{{ $packageSnapshot['description'][app()->getLocale()] ?? $packageSnapshot['description']['en'] ?? '' }}</div>
+                            @foreach ($packageSnapshot['components'] ?? [] as $component)
+                                <div>{{ $component['name'][app()->getLocale()] ?? $component['name']['en'] ?? '' }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component['quantity']]) }}</div>
+                            @endforeach
+                            @foreach ($packageSnapshot['media'] ?? [] as $media)
+                                <img src="{{ $media['thumb'] }}" alt="{{ $packageSnapshot['name'][app()->getLocale()] ?? $packageSnapshot['name']['en'] ?? '' }}" width="48" height="48">
+                            @endforeach
+                        @endif
+                    </td>
                     <td>{{ $format((int) $item->line_total_minor, $item->line_total_currency) }}</td>
                 </tr>
             @endforeach
@@ -70,7 +82,7 @@
         <tr><td>{{ __('booking.invoice.vendor_delivery') }}</td><td>{{ $format((int) $vendorDeliveryMinor, $calculationCurrency) }}</td></tr>
         <tr><td>{{ __('booking.columns.transport_base') }}</td><td>{{ $format((int) ($booking->transport_base_minor ?? 0), $booking->transport_base_currency ?: $booking->total_currency) }}</td></tr>
         @foreach ($adjustments as $adjustment)
-            <tr><td>{{ __('booking.columns.transportation_adjustment') }} — {{ $adjustment->source }}</td><td>{{ $format((int) $adjustment->amount_minor, $adjustment->currency) }}</td></tr>
+            <tr><td>{{ __('booking.columns.transportation_adjustment') }}@unless ($customerDocument ?? false) — {{ $adjustment->source }}@endunless</td><td>{{ $format((int) $adjustment->amount_minor, $adjustment->currency) }}</td></tr>
         @endforeach
         @if ($deliveryReconciliationMinor !== 0)
             <tr><td>{{ __('booking.invoice.recorded_delivery_adjustment') }}</td><td>{{ $format((int) $deliveryReconciliationMinor, $calculationCurrency) }}</td></tr>

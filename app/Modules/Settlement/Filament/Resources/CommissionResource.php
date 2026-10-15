@@ -26,7 +26,7 @@ class CommissionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calculator';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationLabel(): string
     {
@@ -82,10 +82,9 @@ class CommissionResource extends Resource
                 TextColumn::make('vendor.business_name')
                     ->label(__('settlement.columns.vendor'))
                     ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—'))
-                    ->searchable(query: fn (Builder $query, string $search) => $query->whereHas(
-                        'vendor',
-                        fn ($q) => $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(business_name, '$.en')) LIKE ?", ["%{$search}%"])
-                    )),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'vendor' => ['business_name->en', 'business_name->ar'],
+                    ])),
                 TextColumn::make('bookingItem.public_id')
                     ->label(__('settlement.columns.booking_item'))
                     ->copyable()

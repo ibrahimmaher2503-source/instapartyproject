@@ -1,5 +1,16 @@
 @php
     $hasChartData = collect($chart['series'])->contains(fn (array $series): bool => collect($series['values'])->contains(fn (array $point): bool => $point['value'] > 0));
+    $chartMaximum = max(1, collect($chart['series'])->flatMap(fn (array $series): array => $series['values'])->max('value'));
+    $chartPoints = static function (array $values) use ($chartMaximum): string {
+        $points = [];
+        foreach ($values as $index => $point) {
+            $x = round($index * 1000 / max(count($values) - 1, 1), 2);
+            $y = round(220 - $point['value'] / $chartMaximum * 190, 2);
+            $points[] = "$x,$y";
+        }
+
+        return implode(' ', $points);
+    };
 @endphp
 <section class="{{ $panelClass ?? '' }} rounded-xl border border-gray-200/80 bg-white p-4 dark:border-white/10 dark:bg-gray-900" aria-label="{{ $chart['title'] }}">
     <div class="flex items-start justify-between gap-3"><div><h3 class="text-base font-bold text-gray-950 dark:text-white">{{ $chart['title'] }}</h3><p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $chart['caption'] }}</p></div><div class="flex shrink-0 items-center gap-1 rounded-md border border-gray-200 p-0.5 text-[11px] dark:border-white/10"><button type="button" @click="rangeOpen = false" class="rounded bg-primary-50 px-2 py-1 font-semibold text-primary-700 dark:bg-primary-400/10 dark:text-primary-300">{{ __('shared::dashboard.range.seven_days') }}</button><button type="button" disabled title="{{ __('shared::dashboard.empty_chart_caption') }}" class="cursor-not-allowed px-2 py-1 text-gray-400">{{ __('shared::dashboard.range.thirty_days') }}</button></div></div>

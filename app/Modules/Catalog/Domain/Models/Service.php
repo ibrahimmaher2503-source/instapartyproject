@@ -177,6 +177,11 @@ class Service extends Model implements ChangeRequestSubject, HasMedia
         )->withPivot('sort_order')->orderBy('sort_order');
     }
 
+    public function packages(): HasMany
+    {
+        return $this->hasMany(ServicePackage::class);
+    }
+
     public function availabilityBlocks(): HasMany
     {
         return $this->hasMany(ServiceAvailabilityBlock::class);

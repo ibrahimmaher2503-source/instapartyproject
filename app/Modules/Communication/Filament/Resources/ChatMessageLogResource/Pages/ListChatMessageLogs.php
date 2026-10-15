@@ -45,6 +45,14 @@ class ListChatMessageLogs extends ListRecords
                     ]))
                     ->label(__('chat_moderation.columns.thread'))
                     ->limit(20)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'thread' => ['public_id'],
+                        'thread.booking' => ['public_id'],
+                        'thread.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'thread.vendorProfile' => ['public_id'],
+                        'thread.vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'sender' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->url(fn (ChatMessageLog $record): ?string => $record->thread
                         ? ChatThreadResource::getUrl('view', ['record' => $record->thread])
                         : null

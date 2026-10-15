@@ -7,6 +7,7 @@ namespace App\Modules\Shared\Application\Services;
 use App\Modules\Settlement\Domain\Exceptions\DuplicateIdempotencyKeyWithDifferentPayloadException;
 use App\Modules\Shared\Http\ApiResponse;
 use Closure;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,42 +27,102 @@ class IdempotencyService
             return ApiResponse::error('The Idempotency-Key header is required.', 422);
         }
 
-        $key = $request->header('Idempotency-Key');
-        $requestHash = hash('sha256', $route.'|'.$request->getContent());
+        $key = (string) $request->header('Idempotency-Key');
+        $userId = auth()->id();
+        $requestHash = hash('sha256', implode('|', [
+            $request->getMethod(),
+            $request->getRequestUri(),
+            $route,
+            $request->getContent(),
+        ]));
+        $ttlSeconds = $this->ttlForScope('http');
 
-        $cached = DB::table('idempotency_keys')
-            ->where('key', $key)
-            ->where('user_id', auth()->id())
-            ->where('expires_at', '>', now())
-            ->first();
+        return DB::transaction(function () use ($route, $callback, $key, $userId, $requestHash, $ttlSeconds): JsonResponse {
+            DB::table('idempotency_keys')
+                ->where('key', $key)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
+                ->where('expires_at', '<=', now())
+                ->delete();
 
-        if ($cached) {
-            if (! hash_equals($cached->request_hash, $requestHash)) {
-                return ApiResponse::error('Idempotency-Key reused with a different request payload.', 409);
+            $cached = DB::table('idempotency_keys')
+                ->where('key', $key)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
+                ->lockForUpdate()
+                ->first();
+
+            if ($cached !== null) {
+                if ((int) $cached->user_id !== (int) $userId
+                    || $cached->route !== $route
+                    || ! hash_equals((string) $cached->request_hash, $requestHash)) {
+                    return ApiResponse::error('Idempotency-Key reused with a different request payload.', 409);
+                }
+
+                if ($cached->response_status === null) {
+                    return ApiResponse::error('Idempotency request is already in progress.', 409);
+                }
+
+                return response()->json(json_decode((string) $cached->response_body, true), (int) $cached->response_status);
             }
 
-            return response()->json(json_decode($cached->response_body, true), $cached->response_status);
-        }
-
-        $response = $callback();
-
-        if ($response->getStatusCode() < 400) {
-            DB::table('idempotency_keys')->insertOrIgnore([[
+            $claimed = DB::table('idempotency_keys')->insertOrIgnore([[
                 'key' => $key,
-                'user_id' => auth()->id(),
+                'scope' => 'http',
+                'scope_key' => 'http',
+                'ttl_seconds' => $ttlSeconds,
+                'user_id' => $userId,
                 'route' => $route,
                 'request_hash' => $requestHash,
-                'response_status' => $response->getStatusCode(),
-                'response_body' => $response->getContent(),
-                'expires_at' => now()->addHours(24),
-                'created_at' => now(),
-                'scope' => 'http',
-                'ttl_seconds' => 86400,
                 'payload_hash' => $requestHash,
+                'response_status' => null,
+                'response_body' => null,
+                'expires_at' => now()->addSeconds($ttlSeconds),
+                'created_at' => now(),
             ]]);
-        }
 
-        return $response;
+            if ($claimed === 0) {
+                $raced = DB::table('idempotency_keys')
+                    ->where('key', $key)
+                    ->where('scope', 'http')
+                    ->where('scope_key', 'http')
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($raced === null || (int) $raced->user_id !== (int) $userId
+                    || $raced->route !== $route || ! hash_equals((string) $raced->request_hash, $requestHash)
+                    || $raced->response_status === null) {
+                    return ApiResponse::error('Idempotency-Key conflict or request already in progress.', 409);
+                }
+
+                return response()->json(json_decode((string) $raced->response_body, true), (int) $raced->response_status);
+            }
+
+            $claimId = DB::table('idempotency_keys')
+                ->where('key', $key)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
+                ->value('id');
+            $response = $callback();
+
+            if ($response->getStatusCode() >= 400) {
+                DB::table('idempotency_keys')->where('id', $claimId)->delete();
+
+                return $response;
+            }
+
+            $completed = DB::table('idempotency_keys')
+                ->where('id', $claimId)
+                ->whereNull('response_status')
+                ->update([
+                    'response_status' => $response->getStatusCode(),
+                    'response_body' => $response->getContent(),
+                ]);
+
+            return $completed === 1
+                ? $response
+                : ApiResponse::error('Idempotency request could not be completed.', 409);
+        });
     }
 
     /**
@@ -83,42 +144,69 @@ class IdempotencyService
         $ttlSeconds = $this->ttlForScope($scope);
         $payloadHash = hash('sha256', is_string($payload) ? $payload : json_encode($payload));
 
-        $existing = DB::table('idempotency_keys')
-            ->where('key', $key)
-            ->whereIn('scope', ['internal', $scope])
-            ->where('route', $scope.':'.$key)
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if ($existing !== null) {
-            if (! hash_equals((string) $existing->payload_hash, $payloadHash)) {
-                throw new DuplicateIdempotencyKeyWithDifferentPayloadException(
-                    "Idempotency key '{$key}' was already used with a different payload (scope={$scope})."
-                );
+        return DB::transaction(function () use ($scope, $key, $payloadHash, $ttlSeconds, $callback): mixed {
+            if ($this->hasAmbiguousLegacyKey($scope, $key)) {
+                throw new DuplicateIdempotencyKeyWithDifferentPayloadException($key);
             }
 
-            $decoded = json_decode((string) ($existing->response_body ?? 'null'), true);
+            $existing = $this->internalKeyQuery($scope, $key)->where('expires_at', '>', now())->lockForUpdate()->first();
 
-            return $decoded;
-        }
+            if ($existing !== null) {
+                if ($existing->response_status === null || ! hash_equals((string) $existing->payload_hash, $payloadHash)) {
+                    throw new DuplicateIdempotencyKeyWithDifferentPayloadException($key);
+                }
 
-        $result = $callback();
+                return json_decode((string) ($existing->response_body ?? 'null'), true);
+            }
 
-        DB::table('idempotency_keys')->insertOrIgnore([[
-            'key' => $key,
-            'user_id' => null,
-            'route' => $scope.':'.$key,
-            'request_hash' => $payloadHash,
-            'response_status' => 200,
-            'response_body' => json_encode($result),
-            'expires_at' => now()->addSeconds($ttlSeconds),
-            'created_at' => now(),
-            'scope' => 'internal',
-            'ttl_seconds' => $ttlSeconds,
-            'payload_hash' => $payloadHash,
-        ]]);
+            $this->internalKeyQuery($scope, $key)
+                ->where('expires_at', '<=', now())
+                ->delete();
 
-        return $result;
+            $claimed = DB::table('idempotency_keys')->insertOrIgnore([[
+                'key' => $key,
+                'user_id' => null,
+                'route' => $scope.':'.$key,
+                'request_hash' => $payloadHash,
+                'response_status' => null,
+                'response_body' => null,
+                'expires_at' => now()->addSeconds($ttlSeconds),
+                'created_at' => now(),
+                'scope' => 'internal',
+                'scope_key' => $scope,
+                'ttl_seconds' => $ttlSeconds,
+                'payload_hash' => $payloadHash,
+            ]]);
+
+            if ($claimed === 0) {
+                $raced = $this->internalKeyQuery($scope, $key)->lockForUpdate()->first();
+                if ($raced === null || $raced->response_status === null || ! hash_equals((string) $raced->payload_hash, $payloadHash)) {
+                    throw new DuplicateIdempotencyKeyWithDifferentPayloadException($key);
+                }
+
+                return json_decode((string) ($raced->response_body ?? 'null'), true);
+            }
+
+            $claimId = DB::table('idempotency_keys')
+                ->where('key', $key)
+                ->where('scope', 'internal')
+                ->where('scope_key', $scope)
+                ->value('id');
+            $result = $callback();
+            $completed = DB::table('idempotency_keys')
+                ->where('id', $claimId)
+                ->whereNull('response_status')
+                ->update([
+                    'response_status' => 200,
+                    'response_body' => json_encode($result),
+                ]);
+
+            if ($completed !== 1) {
+                throw new DuplicateIdempotencyKeyWithDifferentPayloadException($key);
+            }
+
+            return $result;
+        });
     }
 
     /**
@@ -126,10 +214,39 @@ class IdempotencyService
      */
     public function hasBeenUsed(string $scope, string $key): bool
     {
+        if ($this->hasAmbiguousLegacyKey($scope, $key)) {
+            throw new DuplicateIdempotencyKeyWithDifferentPayloadException($key);
+        }
+
+        $existing = $this->internalKeyQuery($scope, $key)->where('expires_at', '>', now())->first();
+
+        if ($existing === null) {
+            return false;
+        }
+
+        if ($existing->response_status === null) {
+            throw new DuplicateIdempotencyKeyWithDifferentPayloadException($key);
+        }
+
+        return true;
+    }
+
+    private function internalKeyQuery(string $scope, string $key): Builder
+    {
         return DB::table('idempotency_keys')
             ->where('key', $key)
-            ->whereIn('scope', ['internal', $scope])
             ->where('route', $scope.':'.$key)
+            ->whereIn('scope', [$scope, 'internal', ''])
+            ->whereIn('scope_key', [$scope, 'legacy', 'http']);
+    }
+
+    private function hasAmbiguousLegacyKey(string $scope, string $key): bool
+    {
+        return DB::table('idempotency_keys')
+            ->where('key', $key)
+            ->whereIn('scope', ['internal', ''])
+            ->whereIn('scope_key', ['legacy', 'http'])
+            ->where('route', '!=', $scope.':'.$key)
             ->where('expires_at', '>', now())
             ->exists();
     }

@@ -33,7 +33,7 @@ class ReviewModerationPage extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 40;
 
     public static function getNavigationLabel(): string
     {

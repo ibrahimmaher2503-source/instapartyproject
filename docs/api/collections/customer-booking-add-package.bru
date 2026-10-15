@@ -1,0 +1,42 @@
+meta {
+  name: Add packaged service to customer booking draft
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customer/bookings/{{bookingPublicId}}/items
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{customerToken}}
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+}
+
+body:json {
+  "service_id": "{{servicePublicId}}",
+  "quantity": 1,
+  "package_public_id": "{{servicePackagePublicId}}"
+}
+
+tests {
+  test("uses the saved package price and returns its booking snapshot", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().data.service_package.public_id).to.equal(bru.getVar("servicePackagePublicId"));
+    expect(res.getBody().data.service_package.price_minor).to.be.a("number");
+    expect(res.getBody().data.service_package.components).to.be.an("array");
+  });
+}
+
+docs {
+  The package ULID must be active, belong to servicePublicId, and use the
+  service/booking currency. The API does not accept a client-supplied price.
+  Package name, description, price, components, and public media are copied
+  into the immutable booking item snapshot for future history views.
+}

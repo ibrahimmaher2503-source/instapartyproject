@@ -89,6 +89,40 @@ function eligibleVendorProfile(): VendorProfile
     return $profile;
 }
 
+it('explains unavailable approval in the queue and review and clears it when requirements are complete', function (string $locale, bool $complete): void {
+    app()->setLocale($locale);
+    $admin = User::factory()->superAdmin()->create();
+    foreach (['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile'] as $permission) {
+        $admin->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+    }
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $vendor = eligibleVendorProfile();
+    if (! $complete) {
+        $vendor->update(['bank_iban' => null]);
+    }
+    $message = $locale === 'ar' ? 'الموافقة متوقفة' : 'Approval is unavailable';
+
+    foreach (['index', 'view'] as $page) {
+        $response = $this->get(VendorApprovalQueueResource::getUrl($page, ['record' => $vendor, 'lang' => $locale]));
+        $response->assertOk();
+        if ($complete) {
+            $response->assertDontSee($message);
+        } else {
+            $response->assertSee($message)
+                ->assertSee(__('identity.approval_eligibility.requirements.banking'));
+        }
+    }
+    $queue = Livewire::test(VendorApprovalQueueResource::getPages()['index']->getPage());
+    if ($complete) {
+        $queue->assertTableActionHidden('approvalRequirements', $vendor);
+    } else {
+        $queue->assertTableActionVisible('approvalRequirements', $vendor)
+            ->mountTableAction('approvalRequirements', $vendor)
+            ->assertSee(__('identity.approval_eligibility.banking'));
+    }
+})->with(['en', 'ar'])->with([false, true]);
+
 it('denies incomplete approval with a localized structured checklist', function (string $locale): void {
     app()->setLocale($locale);
     $actor = vendorLifecycleActor(['approve_vendor_profile']);
@@ -145,10 +179,13 @@ it('names the required documents and their current status when blocking company 
         'document' => __('identity::identity.document_type.tax_card'),
         'status' => __('identity::identity.approval_eligibility.document_status.pending'),
     ]);
+    $expectedDocumentError = __('identity::identity.approval_eligibility.documents_need_attention', [
+        'documents' => implode('; ', [$pendingTaxCard, $expiredIbanProof]),
+    ]);
 
     Livewire::test(ListVendorProfiles::class)
         ->assertSuccessful()
-        ->assertTableActionEnabled('approve', $profile);
+        ->assertTableActionDisabled('approve', $profile);
 
     $queue = Livewire::test(ListVendorApprovalQueue::class)
         ->assertSuccessful()
@@ -164,7 +201,7 @@ it('names the required documents and their current status when blocking company 
     $queue->callMountedTableAction()
         ->assertNotified(Notification::make()
             ->title(__('identity.notifications.vendor_approval_failed'))
-            ->body(implode(' ', [$pendingTaxCard, $expiredIbanProof]))
+            ->body($expectedDocumentError)
             ->danger());
 
     expect($profile->fresh()->approval_status)->toBeInstanceOf(PendingState::class);
@@ -185,23 +222,19 @@ it('explains incomplete approval in the queue and review while allowing valid re
     $this->actingAs(vendorLifecycleActor(['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile', 'reject_vendor_profile']));
     $profile = eligibleVendorProfile();
     $profile->businessHours()->delete();
-    $failure = Notification::make()
-        ->title(__('identity.notifications.vendor_approval_failed'))
-        ->body(__('identity::identity.approval_eligibility.hours'))
-        ->danger();
-
     Livewire::test(ListVendorApprovalQueue::class)
         ->assertTableActionEnabled('approve', $profile)
         ->assertTableActionEnabled('reject', $profile)
-        ->assertSee(__('identity::identity.approval_eligibility.hours'))
+        ->assertSee(__('identity.approval_eligibility.requirements.hours'))
         ->callTableAction('approve', $profile)
-        ->assertNotified($failure);
+        ->assertNotified(Notification::make()
+            ->title(__('identity.notifications.vendor_approval_failed'))
+            ->body(__('identity::identity.approval_eligibility.hours'))
+            ->danger());
     Livewire::test(ReviewVendorApplication::class, ['record' => $profile->getRouteKey()])
-        ->assertActionEnabled('approve')
+        ->assertActionDisabled('approve')
         ->assertActionEnabled('reject')
-        ->assertSee(__('identity::identity.approval_eligibility.hours'))
-        ->callAction('approve')
-        ->assertNotified($failure);
+        ->assertSee(__('identity.approval_eligibility.requirements.hours'));
     expect($profile->refresh()->approval_status)->toBeInstanceOf(PendingState::class);
 })->with(['en', 'ar']);
 
@@ -223,13 +256,15 @@ it('notifies when eligibility becomes incomplete after approval was offered', fu
     if ($surface === 'queue') {
         $page->callMountedTableAction();
     } else {
-        $page->callMountedAction();
+        $page->assertActionDisabled('approve');
     }
 
-    $page->assertNotified(Notification::make()
-        ->title(__('identity.notifications.vendor_approval_failed'))
-        ->body(__('identity::identity.approval_eligibility.hours'))
-        ->danger());
+    if ($surface === 'queue') {
+        $page->assertNotified(Notification::make()
+            ->title(__('identity.notifications.vendor_approval_failed'))
+            ->body(__('identity::identity.approval_eligibility.hours'))
+            ->danger());
+    }
     expect($profile->refresh()->approval_status)->toBeInstanceOf(PendingState::class);
 })->with(['en', 'ar'])->with(['queue', 'review']);
 

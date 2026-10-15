@@ -7,6 +7,7 @@ use App\Modules\Booking\Domain\Models\BookingItem;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Domain\States\ServiceStatus\DraftState;
 use App\Modules\Identity\Domain\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -19,17 +20,17 @@ it('offers only state eligible booking actions to the customer in both locales',
     $item = BookingItem::factory()->sale()->create(['booking_vendor_id' => $allocation->id]);
     $url = "/{$locale}/account/bookings/{$booking->public_id}";
     $this->actingAs($customer)->get($url)->assertOk()
-        ->assertSee('data-preview=', false)->assertDontSee('data-payment', false)
+        ->assertSee('data-preview=', false)->assertDontSee('data-payment data-error=', false)
         ->assertSee(__('account.review_unavailable', [], $locale));
 
     $booking->update(['lifecycle_status' => 'confirmed']);
     $allocation->update(['sub_status' => 'accepted']);
-    $this->get($url)->assertOk()->assertSee('data-preview=', false)->assertSee('data-payment', false);
+    $this->get($url)->assertOk()->assertSee('data-preview=', false)->assertSee('data-payment data-error=', false);
 
     $booking->update(['lifecycle_status' => 'completed']);
     $allocation->update(['sub_status' => 'completed']);
     $item->update(['item_status' => 'completed']);
-    $this->get($url)->assertOk()->assertDontSee('data-preview=', false)->assertDontSee('data-payment', false)
+    $this->get($url)->assertOk()->assertDontSee('data-preview=', false)->assertDontSee('data-payment data-error=', false)
         ->assertSee(route('reviews.service.store', $item->public_id), false)
         ->assertDontSee(__('account.review_unavailable', [], $locale));
 
@@ -50,7 +51,7 @@ it('keeps historical service snapshots while replacing an unavailable service li
     $url = "/{$locale}/account/bookings/{$booking->public_id}";
     $link = url("/{$locale}/services/{$service->public_id}");
     $this->actingAs($customer)->get($url)->assertOk()->assertSee($link, false);
-    $service->update(['status' => 'draft']);
+    $service->status->transitionTo(DraftState::class);
     $this->get($url)->assertOk()->assertDontSee($link, false)
         ->assertSee($item->name_snapshot[$locale])
         ->assertSee(__('account.service_unavailable', [], $locale));

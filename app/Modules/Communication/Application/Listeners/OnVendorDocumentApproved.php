@@ -30,7 +30,7 @@ class OnVendorDocumentApproved implements ShouldQueue
         }
 
         $context = [
-            'doc_type' => $document->doc_type->value,
+            'doc_type' => $document->doc_type_key,
         ];
 
         foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {

@@ -19,7 +19,7 @@ class ManageHomepage extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
-    protected static ?int $navigationSort = 25;
+    protected static ?int $navigationSort = 20;
 
     protected static string $view = 'filament.pages.manage-homepage';
 

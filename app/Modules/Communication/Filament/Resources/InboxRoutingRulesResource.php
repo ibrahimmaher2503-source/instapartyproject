@@ -27,7 +27,7 @@ class InboxRoutingRulesResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationLabel(): string
     {
@@ -36,7 +36,7 @@ class InboxRoutingRulesResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settings');
+        return __('admin.nav.groups.technical');
     }
 
     public static function canAccess(): bool

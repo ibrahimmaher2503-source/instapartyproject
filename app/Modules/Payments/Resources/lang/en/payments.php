@@ -154,6 +154,7 @@ return [
             'open_chargeback' => 'Open Chargeback',
             'resolve' => 'Resolve',
         ],
+        'capture_modal_description' => 'This records a manual capture of :amount for payment :reference, customer :customer, vendors :vendors. It does not contact the payment gateway; the booking status follows the recorded capture event.',
 
         'forms' => [
             'reason_manual_capture' => 'Reason for manual capture',

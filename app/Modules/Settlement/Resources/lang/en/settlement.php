@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'display_timezone' => ':field (Timezone: :timezone)',
     'delivery_accrual' => 'Vendor delivery fee',
     'balance' => 'Balance',
     'currency' => 'Currency',
@@ -178,6 +179,9 @@ return [
 
     'wallet' => [
         'section_details' => 'Wallet Details',
+        'stored_owner_type' => 'Stored owner type',
+        'ledger_balance' => 'Balance from ledger credits less debits',
+        'diagnostic_note' => 'Platform accounts use named suspense accounts. Unresolved owners require investigation; a negative balance alone does not identify an error. Ledger entries below retain their source references.',
     ],
 
     'commission_rule' => [
@@ -339,7 +343,13 @@ return [
     ],
     'identity' => [
         'legacy_unknown' => 'Legacy / Unknown',
+        'platform_accounts' => [
+            1 => 'Gateway in transit', 2 => 'Platform clearing',
+            3 => 'Platform commission receivable', 4 => 'Platform commission realised',
+            5 => 'Platform refund payable', 6 => 'Platform withdrawal payable', 7 => 'Platform adjustments',
+        ],
         'types' => [
+            'platform_account' => 'Platform account',
             'customer' => 'Customer',
             'vendor' => 'Vendor',
             'wallet' => 'Wallet',

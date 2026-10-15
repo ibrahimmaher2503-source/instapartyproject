@@ -105,7 +105,11 @@ final class VendorResubmitAfterChangesAction
 
         return DB::transaction(function () use ($profile, $addressedItemIds, $waivedItemIds, $notes, $idempotencyKey, $payloadHash, $actor, $corrections): ChangeRequest {
             $lockedProfile = VendorProfile::query()->lockForUpdate()->findOrFail($profile->getKey());
-            $existing = DB::table('idempotency_keys')->where('key', $idempotencyKey)->first();
+            $existing = DB::table('idempotency_keys')
+                ->where('key', $idempotencyKey)
+                ->where('scope', 'http')
+                ->where('scope_key', 'http')
+                ->first();
 
             if ($existing !== null && now()->greaterThanOrEqualTo($existing->expires_at)) {
                 DB::table('idempotency_keys')->where('id', $existing->id)->delete();
@@ -181,6 +185,7 @@ final class VendorResubmitAfterChangesAction
                 'expires_at' => now()->addDay(),
                 'created_at' => now(),
                 'scope' => 'http',
+                'scope_key' => 'http',
                 'ttl_seconds' => 86400,
                 'payload_hash' => $payloadHash,
             ]);

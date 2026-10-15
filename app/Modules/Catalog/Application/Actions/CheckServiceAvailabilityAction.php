@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Application\Actions;
 use App\Modules\Catalog\Application\DTOs\ServiceAvailabilityResultDTO;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Domain\Models\ServiceAvailabilityBlock;
 use App\Modules\Catalog\Domain\Models\ServiceInventoryReservation;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -47,11 +48,16 @@ class CheckServiceAvailabilityAction
             ->where('reserved_starts_at', '<', $endsAt)
             ->where('reserved_ends_at', '>', $startsAt)
             ->exists();
+        $hasManualBlock = ServiceAvailabilityBlock::query()
+            ->where('service_id', $service->id)
+            ->overlapping($startsAt, $endsAt)
+            ->exists();
+        $unavailable = $hasOverlap || $hasManualBlock;
 
         return new ServiceAvailabilityResultDTO(
-            available: ! $hasOverlap,
+            available: ! $unavailable,
             productType: ProductType::Rental,
-            reasonCode: $hasOverlap ? 'window_unavailable' : null,
+            reasonCode: $unavailable ? 'window_unavailable' : null,
             remainingQuantity: null,
             startsAt: $startsAt,
             endsAt: $endsAt,

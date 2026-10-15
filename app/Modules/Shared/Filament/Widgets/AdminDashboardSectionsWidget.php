@@ -35,6 +35,7 @@ use App\Modules\Settlement\Domain\Models\Commission;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
 use App\Modules\Settlement\Filament\Resources\CommissionResource;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource;
+use App\Modules\Shared\Domain\Models\StateTransition;
 use Brick\Money\Money;
 use Carbon\CarbonInterface;
 use Filament\Widgets\Widget;
@@ -167,11 +168,11 @@ class AdminDashboardSectionsWidget extends Widget
 
         if ($access['withdrawals']) {
             $kpis[] = $this->metric(__('shared::dashboard.financials.vendor_payables'), $this->formatMinor($payablesMinor, $currency), 'heroicon-o-arrow-up-tray', 'warning', WithdrawalsQueueResource::getUrl('index'));
-            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.pending_withdrawals'), (int) Withdrawal::query()->where('status', WithdrawalStatus::Pending->value)->count(), WithdrawalsQueueResource::getUrl('index'), 'warning');
+            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.pending_withdrawals'), (int) Withdrawal::query()->where('requested_amount_currency', $currency)->where('status', WithdrawalStatus::Pending->value)->count(), WithdrawalsQueueResource::getUrl('index'), 'warning');
         }
 
         if ($access['refunds']) {
-            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.refund_issues'), (int) Refund::query()->where('status', RefundStatus::Failed->value)->count(), RefundResource::getUrl('index'), 'danger');
+            $attention[] = $this->attentionMetric(__('shared::dashboard.attention.refund_issues'), (int) Refund::query()->where('amount_currency', $currency)->where('status', RefundStatus::Failed->value)->count(), RefundResource::getUrl('index'), 'danger');
         }
 
         $financialSeries = $this->financialSeries(7, $access, $now);
@@ -179,7 +180,7 @@ class AdminDashboardSectionsWidget extends Widget
         return [
             'comparison' => $access['payments'] ? __('shared::panel.comparison', [
                 'current' => $this->formatMinor((int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Captured->value)->whereBetween('created_at', [$currentStart, $now])->sum('amount_minor'), $currency),
-                'previous' => $this->formatMinor((int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Captured->value)->whereBetween('created_at', [$currentStart->copy()->subDays(7), $now->copy()->subDays(7)])->sum('amount_minor'), $currency),
+                'previous' => $this->formatMinor((int) Payment::query()->where('amount_currency', $currency)->where('status', PaymentStatus::Captured->value)->whereBetween('created_at', [$currentStart->copy()->subDays(7), $currentStart->copy()->subMicrosecond()])->sum('amount_minor'), $currency),
             ]) : null,
             'chart' => [
                 'title' => __('shared::dashboard.financials.trend_title'),
@@ -237,6 +238,7 @@ class AdminDashboardSectionsWidget extends Widget
                 'caption' => __('shared::dashboard.operations.activity_caption'),
                 'series' => $this->operationsSeries($access),
             ],
+            'booking_funnel' => $bookingAccess ? $this->bookingFunnel(now('UTC')) : null,
             'attention' => [
                 $this->attentionMetric(__('shared::dashboard.attention.new_requests'), $pendingRequests, $bookingAccess ? BookingResource::getUrl('index').'?tableFilters[lifecycle_status][value]=customer_review' : null, 'warning', $bookingAccess),
                 $this->attentionMetric(__('shared::dashboard.attention.late_responses'), $lateResponses, $monitorAccess ? BookingsMonitorResource::getUrl('index').'?tableFilters[negotiation_scope][value]=late' : null, 'danger', $monitorAccess),
@@ -256,7 +258,8 @@ class AdminDashboardSectionsWidget extends Widget
                     'date' => $booking->event_starts_at?->format('M d, Y · H:i'),
                     'services' => (int) $booking->items_count,
                     'vendors' => (int) $booking->vendors_count,
-                    'status' => (string) $booking->lifecycle_status,
+                    'status' => __('booking.lifecycle_status.'.(string) $booking->lifecycle_status),
+                    'url' => BookingResource::getUrl('view', ['record' => $booking]),
                 ])->all() : [],
             'negotiations' => [
                 ['label' => __('shared::dashboard.operations.pending_vendor_responses'), 'value' => $lateResponses, 'url' => $monitorAccess ? BookingsMonitorResource::getUrl('index').'?tableFilters[negotiation_scope][value]=late' : null],
@@ -264,6 +267,79 @@ class AdminDashboardSectionsWidget extends Widget
                 ['label' => __('shared::dashboard.operations.pending_modifications'), 'value' => $pendingModifications, 'url' => $modificationAccess ? BookingModificationResource::getUrl('index') : null],
                 ['label' => __('shared::dashboard.operations.interventions'), 'value' => $interventions, 'url' => $interventionAccess ? AdminBookingInterventionResource::getUrl('index') : null],
             ],
+        ];
+    }
+
+    private function bookingFunnel(CarbonInterface $now): array
+    {
+        $windowEnd = $now->copy()->utc();
+        $windowStart = $windowEnd->copy()->startOfDay()->subDays(6);
+        $window = [$windowStart, $windowEnd];
+
+        $submittedRecords = (int) Booking::query()
+            ->whereBetween('submitted_at', $window)
+            ->count();
+        $trackedSubmissionsQuery = Booking::query()
+            ->whereBetween('submitted_at', $window)
+            ->whereHas('stateTransitions', fn (Builder $query): Builder => $query
+                ->where('from_state', 'draft')
+                ->where('to_state', 'vendor_review')
+                ->whereBetween('created_at', $window));
+        $trackedSubmissions = (int) (clone $trackedSubmissionsQuery)->count();
+
+        $stages = [[
+            'key' => 'submitted',
+            'count' => $trackedSubmissions,
+        ]];
+
+        foreach ([
+            'confirmed' => 'confirmed',
+            'active' => 'active',
+            'completed' => 'completed',
+        ] as $key => $state) {
+            $count = (int) StateTransition::query()
+                ->where('transitionable_type', Booking::class)
+                ->where('to_state', $state)
+                ->where('created_at', '<=', $windowEnd)
+                ->whereIn('transitionable_id', (clone $trackedSubmissionsQuery)->select('bookings.id'))
+                ->whereExists(function (\Illuminate\Database\Query\Builder $query): void {
+                    $query->selectRaw('1')
+                        ->from('state_transitions as booking_submission')
+                        ->whereColumn('booking_submission.transitionable_id', 'state_transitions.transitionable_id')
+                        ->where('booking_submission.transitionable_type', Booking::class)
+                        ->where('booking_submission.from_state', 'draft')
+                        ->where('booking_submission.to_state', 'vendor_review')
+                        ->whereColumn('state_transitions.created_at', '>=', 'booking_submission.created_at');
+                })
+                ->distinct('transitionable_id')
+                ->count('transitionable_id');
+
+            $stages[] = [
+                'key' => $key,
+                'count' => $count,
+            ];
+        }
+
+        foreach ($stages as &$stage) {
+            $stage['conversion_percent'] = $trackedSubmissions > 0
+                ? round(($stage['count'] / $trackedSubmissions) * 100, 1)
+                : null;
+            $stage['bar_percent'] = $trackedSubmissions > 0
+                ? round(($stage['count'] / $trackedSubmissions) * 100, 1)
+                : 0.0;
+        }
+        unset($stage);
+
+        return [
+            'window_start' => $windowStart->toDateString(),
+            'window_end' => $windowEnd->toDateString(),
+            'submitted_records' => $submittedRecords,
+            'tracked_submissions' => $trackedSubmissions,
+            'transition_coverage_percent' => $submittedRecords > 0
+                ? round(($trackedSubmissions / $submittedRecords) * 100, 1)
+                : null,
+            'coverage_gap' => max(0, $submittedRecords - $trackedSubmissions),
+            'stages' => $stages,
         ];
     }
 
@@ -344,6 +420,7 @@ class AdminDashboardSectionsWidget extends Widget
         $rows = $query->whereBetween($column, [$start, $now])
             ->selectRaw("DATE({$column}) as day, COUNT(*) as total")
             ->groupByRaw("DATE({$column})")
+            ->toBase()
             ->pluck('total', 'day');
 
         return collect(range(0, $days - 1))->map(fn (int $offset): array => [

@@ -28,7 +28,7 @@ class FaqCategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 110;
 
     public static function getNavigationGroup(): ?string
     {

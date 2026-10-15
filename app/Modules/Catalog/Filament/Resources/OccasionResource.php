@@ -11,6 +11,7 @@ use App\Modules\Catalog\Domain\Models\Occasion;
 use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\CreateOccasion;
 use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\EditOccasion;
 use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\ListOccasions;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -36,10 +37,10 @@ class OccasionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.catalog');
+        return __('admin.nav.groups.packages_occasions');
     }
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {
@@ -87,9 +88,9 @@ class OccasionResource extends Resource
                 ])
                 ->columns(3),
 
-            Tabs::make('Translations')
+            BilingualTabErrorFeedback::tabs(Tabs::make('Translations'))
                 ->tabs([
-                    Tab::make('English')
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_english')), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->required()
@@ -99,7 +100,7 @@ class OccasionResource extends Resource
                                 ->maxLength(500)
                                 ->label(__('catalog.fields.description_en')),
                         ]),
-                    Tab::make('العربية')
+                    BilingualTabErrorFeedback::tab(Tab::make(__('catalog.language_arabic')), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->required()

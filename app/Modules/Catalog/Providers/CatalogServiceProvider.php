@@ -12,6 +12,7 @@ use App\Modules\Catalog\Application\Listeners\RevalidateFrontendCatalogListener;
 use App\Modules\Catalog\Application\Listeners\WriteServiceChangeRequestAuditListener;
 use App\Modules\Catalog\Application\Timeline\ChangeRequestTimelineDescriptors;
 use App\Modules\Catalog\Application\Timeline\ServiceTimelineDescriptors;
+use App\Modules\Catalog\Domain\Contracts\PublishedServiceInquiryTargetReader;
 use App\Modules\Catalog\Domain\Contracts\VendorServicePresenceQuery;
 use App\Modules\Catalog\Domain\Events\OccasionCategoriesChanged;
 use App\Modules\Catalog\Domain\Events\ServiceChangeRequestApproved;
@@ -22,8 +23,13 @@ use App\Modules\Catalog\Domain\Events\ServiceChangeRequestSubmitted;
 use App\Modules\Catalog\Domain\Events\ServicePublished;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\Models\ServiceChangeRequest;
+use App\Modules\Catalog\Domain\Models\ServicePackage;
+use App\Modules\Catalog\Domain\Models\ServiceTheme;
+use App\Modules\Catalog\Domain\Policies\ServicePackagePolicy;
+use App\Modules\Catalog\Domain\Policies\ServiceThemePolicy;
 use App\Modules\Catalog\Infrastructure\Repositories\EloquentCatalogServiceReader;
 use App\Modules\Catalog\Infrastructure\Repositories\EloquentPaymentsCatalogReader;
+use App\Modules\Catalog\Infrastructure\Repositories\EloquentPublishedServiceInquiryTargetReader;
 use App\Modules\Catalog\Infrastructure\Repositories\EloquentServiceRatingWriter;
 use App\Modules\Catalog\Infrastructure\Repositories\EloquentVendorServicePresenceQuery;
 use App\Modules\Communication\Application\Listeners\DispatchServiceChangeApprovedNotificationListener;
@@ -35,6 +41,7 @@ use App\Modules\Payments\Domain\Contracts\PaymentsCatalogReader;
 use App\Modules\Reviews\Domain\Contracts\ServiceRatingWriter;
 use App\Modules\Shared\Application\Timeline\TimelineSourceRegistry;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class CatalogServiceProvider extends ServiceProvider
@@ -45,10 +52,14 @@ class CatalogServiceProvider extends ServiceProvider
         $this->app->bind(PaymentsCatalogReader::class, EloquentPaymentsCatalogReader::class);
         $this->app->singleton(ServiceRatingWriter::class, EloquentServiceRatingWriter::class);
         $this->app->bind(VendorServicePresenceQuery::class, EloquentVendorServicePresenceQuery::class);
+        $this->app->bind(PublishedServiceInquiryTargetReader::class, EloquentPublishedServiceInquiryTargetReader::class);
     }
 
     public function boot(): void
     {
+        Gate::policy(ServiceTheme::class, ServiceThemePolicy::class);
+        Gate::policy(ServicePackage::class, ServicePackagePolicy::class);
+
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'catalog');
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'catalog');

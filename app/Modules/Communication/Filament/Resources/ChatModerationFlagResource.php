@@ -36,11 +36,11 @@ class ChatModerationFlagResource extends Resource
         return __('communication.chat.moderation_flags_label');
     }
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 90;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.communication');
+        return __('admin.nav.groups.support');
     }
 
     public static function getNavigationLabel(): string

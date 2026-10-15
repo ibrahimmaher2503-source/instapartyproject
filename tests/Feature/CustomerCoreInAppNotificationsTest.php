@@ -57,7 +57,7 @@ it('renders one customer inbox item per core event after listener replay', funct
         expect($dispatch->locale)->toBe($locale)
             ->and($dispatch->context['subject'])->not->toBeEmpty()
             ->and($dispatch->context['body'])->toContain($booking->public_id)->not->toContain('{{');
-        $this->actingAs($customer)->get(route('account.notifications'))
+        $this->actingAs($customer)->get(route('storefront.account.notifications', ['locale' => $locale]))
             ->assertOk()->assertSeeText($dispatch->context['subject'])->assertSeeText($dispatch->context['body']);
     }
 

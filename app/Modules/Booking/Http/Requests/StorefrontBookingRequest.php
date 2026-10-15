@@ -5,16 +5,23 @@ declare(strict_types=1);
 namespace App\Modules\Booking\Http\Requests;
 
 use App\Modules\Booking\Application\DTOs\CreateBookingDraftDTO;
+use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class StorefrontBookingRequest extends FormRequest
 {
     public function attributes(): array
     {
-        return ['notes' => __('storefront.wizard.step3.notes_label')];
+        return [
+            'notes' => __('storefront.wizard.step3.notes_label'),
+            'theme_public_id' => __('storefront.wizard.step1.theme_label'),
+            'package_public_id' => __('storefront.wizard.step1.package_label'),
+        ];
     }
 
     public function authorize(): bool
@@ -28,6 +35,9 @@ class StorefrontBookingRequest extends FormRequest
             'address.recipient_phone_e164.required' => __('storefront.wizard.validation.recipient_phone_invalid'),
             'address.recipient_phone_e164.string' => __('storefront.wizard.validation.recipient_phone_invalid'),
             'address.recipient_phone_e164.regex' => __('storefront.wizard.validation.recipient_phone_invalid'),
+            'guest_count.integer' => __('booking.validation.guest_count_range'),
+            'guest_count.min' => __('booking.validation.guest_count_range'),
+            'guest_count.max' => __('booking.validation.guest_count_range'),
         ];
     }
 
@@ -39,7 +49,7 @@ class StorefrontBookingRequest extends FormRequest
             'occasion' => ['required', 'string', 'exists:occasions,code'],
             'event_starts_at' => ['required', 'date', 'after:now'],
             'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
-            'guest_count' => ['nullable', 'integer', 'min:1'],
+            'guest_count' => ['nullable', 'integer', 'min:1', 'max:'.CreateBookingDraftDTO::MAX_GUEST_COUNT],
             'notes' => ['nullable', 'string', 'max:10000'],
             'celebrant_name' => ['nullable', 'string', 'max:120'],
             'address' => ['required', 'array'],
@@ -51,7 +61,55 @@ class StorefrontBookingRequest extends FormRequest
             'address.landmark' => ['nullable', 'string', 'max:255'],
             'address.recipient_name' => ['required', 'string', 'max:120'],
             'address.recipient_phone_e164' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
-            'quantity' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'quantity' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:100',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! is_numeric($value) || (int) $value === 1) {
+                        return;
+                    }
+
+                    $serviceId = $this->input('service_id');
+                    $resolvedId = is_string($serviceId) ? app(CatalogServiceReader::class)->resolvePublicId($serviceId) : null;
+                    $service = $resolvedId === null ? null : app(CatalogServiceReader::class)->findPublishedById($resolvedId);
+
+                    if ($service?->productType === ProductType::Rental) {
+                        $fail(__('storefront.wizard.validation.rental_quantity_must_be_one'));
+                    }
+                },
+            ],
+            'theme_public_id' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! is_string($value) || $value === '') {
+                        return;
+                    }
+
+                    $servicePublicId = $this->input('service_id');
+                    if (! is_string($servicePublicId)
+                        || app(CatalogServiceReader::class)->findActiveThemeForService($servicePublicId, $value) === null) {
+                        $fail(__('storefront.wizard.validation.theme_invalid'));
+                    }
+                },
+            ],
+            'package_public_id' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! is_string($value) || $value === '') {
+                        return;
+                    }
+
+                    $servicePublicId = $this->input('service_id');
+                    if (! is_string($servicePublicId)
+                        || app(CatalogServiceReader::class)->findActivePackageForService($servicePublicId, $value) === null) {
+                        $fail(__('storefront.wizard.validation.package_invalid'));
+                    }
+                },
+            ],
             'timezone' => ['nullable', 'timezone'],
         ];
     }
@@ -88,13 +146,26 @@ class StorefrontBookingRequest extends FormRequest
         $user = $this->user();
         abort_unless($user !== null, 401);
 
+        $theme = null;
+        if ($this->filled('theme_public_id')) {
+            $selectedTheme = app(CatalogServiceReader::class)->findActiveThemeForService(
+                $this->servicePublicId(),
+                (string) $this->input('theme_public_id'),
+            );
+            if ($selectedTheme === null) {
+                throw ValidationException::withMessages(['theme_public_id' => __('storefront.wizard.validation.theme_invalid')]);
+            }
+
+            $theme = $selectedTheme->snapshot();
+        }
+
         return new CreateBookingDraftDTO(
             customerId: (int) $user->id,
             occasionId: (int) DB::table('occasions')->where('code', $this->string('occasion')->toString())->value('id'),
             eventStartsAt: Carbon::parse($this->input('event_starts_at'))->utc(),
             eventEndsAt: $this->filled('event_ends_at') ? Carbon::parse($this->input('event_ends_at'))->utc() : null,
             guestCount: $this->integer('guest_count') ?: null,
-            theme: null,
+            theme: $theme,
             celebrantName: $this->input('celebrant_name'),
             celebrantDob: null,
             celebrantGender: null,
@@ -121,5 +192,10 @@ class StorefrontBookingRequest extends FormRequest
     public function quantity(): int
     {
         return max(1, (int) ($this->input('quantity') ?: 1));
+    }
+
+    public function packagePublicId(): ?string
+    {
+        return $this->filled('package_public_id') ? (string) $this->input('package_public_id') : null;
     }
 }

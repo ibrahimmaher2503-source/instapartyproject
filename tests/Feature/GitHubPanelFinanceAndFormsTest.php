@@ -28,7 +28,7 @@ it('keeps dashboard EGP totals and current and previous chart windows separate',
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     Payment::factory()->captured()->create(['amount_minor' => 1000, 'created_at' => now()]);
     Payment::factory()->captured()->create(['amount_minor' => 500, 'created_at' => now()->subDays(10)]);
-    Payment::factory()->captured()->create(['amount_minor' => 700, 'created_at' => now()->subDays(7)->addHour()]);
+    Payment::factory()->captured()->create(['amount_minor' => 700, 'created_at' => now()->startOfDay()->subDays(6)->addHour()]);
     Payment::factory()->captured()->create(['amount_minor' => 999999, 'amount_currency' => 'USD', 'created_at' => now()]);
 
     $data = (new ReflectionMethod(AdminDashboardSectionsWidget::class, 'financialData'))->invoke(
@@ -37,9 +37,9 @@ it('keeps dashboard EGP totals and current and previous chart windows separate',
     );
 
     expect($data['kpis'][0]['value'])->toBe(Money::ofMinor(2200, 'EGP')->formatTo(app()->getLocale()))
-        ->and(array_sum(array_column($data['chart']['series'][0]['values'], 'value')))->toBe(1000)
+        ->and(array_sum(array_column($data['chart']['series'][0]['values'], 'value')))->toBe(1700)
         ->and($data['comparison'])->toBe(__('shared::panel.comparison', [
-            'current' => Money::ofMinor(1000, 'EGP')->formatTo(app()->getLocale()),
+            'current' => Money::ofMinor(1700, 'EGP')->formatTo(app()->getLocale()),
             'previous' => Money::ofMinor(500, 'EGP')->formatTo(app()->getLocale()),
         ]));
 });

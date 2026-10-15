@@ -126,7 +126,7 @@ it('hydrates and saves rental category attributes and physical dimensions in the
     ])->call('save')->assertHasNoFormErrors();
 
     $service = $service->refresh()->load('rentalDetail');
-    expect($service->category_field_values)->toBe(['dimensions' => '5 x 3 x 2 m', 'capacity' => '48'])
+    expect($service->category_field_values)->toEqualCanonicalizing(['dimensions' => '5 x 3 x 2 m', 'capacity' => '48'])
         ->and($service->rentalDetail->length_m)->toBe('5.00')
         ->and($service->rentalDetail->width_m)->toBe('3.50')
         ->and($service->rentalDetail->height_m)->toBe('2.25');
