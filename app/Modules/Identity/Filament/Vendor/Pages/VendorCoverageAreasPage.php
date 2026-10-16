@@ -153,7 +153,17 @@ class VendorCoverageAreasPage extends Page implements HasTable
                         ->optionsLimit(fn (): int => City::query()->active()->count())
                         ->preload()
                         ->live()
-                        ->afterStateUpdated(fn (Select $component) => $this->validateOnly($component->getStatePath()))
+                        ->afterStateUpdated(function (Select $component, mixed $state): void {
+                            if (! empty($state)) {
+                                $this->resetErrorBag([
+                                    $component->getStatePath(),
+                                    'city_id',
+                                    'mountedActionsData.0.city_id',
+                                    'data.city_id',
+                                ]);
+                            }
+                            $this->validateOnly($component->getStatePath());
+                        })
                         ->required(),
                     Grid::make(2)->schema([
                         TextInput::make('delivery_fee')
@@ -191,6 +201,21 @@ class VendorCoverageAreasPage extends Page implements HasTable
                     Notification::make()->title(__('identity.notifications.coverage_saved'))->success()->send();
                 }),
         ];
+    }
+
+    public function updated($propertyName): void
+    {
+        if (is_string($propertyName) && str_ends_with($propertyName, 'city_id')) {
+            $value = data_get($this, $propertyName);
+            if (! empty($value)) {
+                $this->resetErrorBag([
+                    $propertyName,
+                    'city_id',
+                    'mountedActionsData.0.city_id',
+                    'data.city_id',
+                ]);
+            }
+        }
     }
 
     private function getVendorProfile(): VendorProfile
