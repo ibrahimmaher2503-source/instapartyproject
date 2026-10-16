@@ -51,6 +51,13 @@ class CreateTrustBadge extends CreateRecord
             ->extraAttributes(['wire:click.throttle.500ms' => 'createAnother']);
     }
 
+    protected function getCreatedNotification(): ?Notification
+    {
+        $this->dispatch('trust-badge-save-confirmed');
+
+        return parent::getCreatedNotification();
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         try {

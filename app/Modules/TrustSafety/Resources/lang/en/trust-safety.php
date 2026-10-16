@@ -18,6 +18,7 @@ return [
         'icon' => 'Badge icon',
         'created_at' => 'Created at',
         'submission_conflict' => 'This submission was already saved with different values. Open a new create form to save another badge.',
+        'save_confirmation_unknown' => 'The request failed, so we could not confirm whether this badge was saved. Your form is still here. Check the badge list before retrying.',
     ],
     'reasons' => [
         'inappropriate_content' => 'Inappropriate Content',
