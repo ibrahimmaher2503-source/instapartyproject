@@ -272,6 +272,7 @@ return [
         'per_unit' => 'للقطعة',
         'book_now' => 'احجز الآن',
         'add_to_cart' => 'أضف إلى السلة',
+        'choose_package' => 'اختر هذه الباقة',
         'add_to_cart_hint' => 'أكمل تفاصيل المناسبة والتوصيل لإضافة الخدمة بأمان.',
         'delivery_required' => 'عنوان التوصيل مطلوب',
         'security_deposit' => 'تأمين',

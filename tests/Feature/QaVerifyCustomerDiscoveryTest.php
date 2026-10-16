@@ -18,6 +18,7 @@ use App\Modules\Identity\Domain\Models\User;
 use Brick\Money\Money;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Str;
 
 it('shows the authoritative estimate and carries selected inputs into the booking wizard', function (ProductType $type, string $locale): void {
     config(['catalog.digital_services_enabled' => true]);
@@ -67,8 +68,17 @@ it('shows the authoritative estimate and carries selected inputs into the bookin
         ->assertSee('/'.$locale.'/wizard?service='.$service->public_id, false)
         ->assertSee('event_starts_at='.rawurlencode($startsAt), false)
         ->assertSee('quantity='.$quantity, false);
+    expect(preg_match_all('/data-service-estimate\s/', $response->getContent()))->toBe(1);
+    $response->assertSee('name="event_starts_at" value="'.$startsAt.'"', false)
+        ->assertSee('name="timezone" value="Africa/Cairo"', false);
+    if ($type === ProductType::Rental) {
+        $response->assertSee('name="quantity" value="1" data-service-estimate-quantity', false);
+    } else {
+        $response->assertSee('name="quantity" min="1" max="100" value="'.$quantity.'"', false);
+    }
     if (isset($query['event_ends_at'])) {
         $response->assertSee('event_ends_at='.rawurlencode($query['event_ends_at']), false);
+        $response->assertSee('name="event_ends_at" value="'.$query['event_ends_at'].'"', false);
     }
 
     $customer = User::factory()->asCustomer()->create();
@@ -86,6 +96,50 @@ it('shows the authoritative estimate and carries selected inputs into the bookin
     'digital in English' => [ProductType::Digital, 'en'],
     'digital in Arabic' => [ProductType::Digital, 'ar'],
 ]);
+
+it('shows only active service packages and carries the selected package into booking', function (string $locale): void {
+    app()->setLocale($locale);
+    $customer = User::factory()->asCustomer()->create();
+    $service = Service::factory()->sale()->published()->create(['base_price_minor' => 50000, 'base_price_currency' => 'EGP']);
+    $service->vendor->approvedTypes()->create(['product_type' => ProductType::Sale, 'approved_at' => now()]);
+    $createPackage = function (string $code, array $name, bool $active) use ($service) {
+        $package = $service->packages()->create([
+            'public_id' => (string) Str::ulid(),
+            'code' => $code,
+            'name' => $name,
+            'description' => ['en' => 'Includes the essentials.', 'ar' => 'تشمل الأساسيات.'],
+            'price_minor' => 65000,
+            'currency' => 'EGP',
+            'is_active' => $active,
+        ]);
+        $package->components()->create([
+            'public_id' => (string) Str::ulid(),
+            'name' => ['en' => 'Chair', 'ar' => 'كرسي'],
+            'description' => ['en' => 'One chair', 'ar' => 'كرسي واحد'],
+            'quantity' => 2,
+            'sort_order' => 0,
+        ]);
+
+        return $package;
+    };
+    $package = $createPackage('qa-service-package-'.$locale, ['en' => 'Celebration bundle', 'ar' => 'باقة الاحتفال'], true);
+    $inactive = $createPackage('qa-inactive-service-package-'.$locale, ['en' => 'Inactive bundle', 'ar' => 'باقة غير نشطة'], false);
+
+    $this->get(route('storefront.services.show', ['locale' => $locale, 'servicePublicId' => $service->public_id]))
+        ->assertOk()
+        ->assertSee('data-service-packages', false)
+        ->assertSee(__('storefront.service.choose_package', [], $locale))
+        ->assertSee($package->getTranslation('name', $locale))
+        ->assertDontSee($inactive->getTranslation('name', $locale))
+        ->assertSee('package_public_id='.$package->public_id, false);
+
+    $this->actingAs($customer)->get(route('storefront.wizard', [
+        'locale' => $locale, 'service' => $service->public_id, 'package_public_id' => $package->public_id,
+    ]))
+        ->assertOk()
+        ->assertSee('name="package_public_id" value="'.$package->public_id.'" checked', false)
+        ->assertDontSee('value="'.$inactive->public_id.'"', false);
+})->with(['en', 'ar']);
 
 it('marks the estimate stale and disables the booking link until the customer refreshes it', function (): void {
     $service = Service::factory()->sale()->published()->create([

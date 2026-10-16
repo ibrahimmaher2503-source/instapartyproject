@@ -2511,6 +2511,15 @@
         background: oklch(0.975 0.018 87 / 0.1);
     }
 
+    .sf-button--danger {
+        background: #b91c1c;
+        color: #fff;
+    }
+
+    .sf-button--danger:hover {
+        background: #991b1b;
+    }
+
     /* Hero */
     .sf-hero {
         overflow: hidden;

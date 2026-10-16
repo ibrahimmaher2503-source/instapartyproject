@@ -113,26 +113,6 @@
                         </dl>
                         @endif
 
-                        <form method="GET" action="{{ route('storefront.services.show', ['servicePublicId' => $service->public_id]) }}" class="mt-6 space-y-3">
-                            <h2 class="font-bold">{{ __('catalog::estimate.title') }}</h2>
-                            <label class="block text-sm" for="estimate-quantity">{{ __('catalog::estimate.quantity') }}</label>
-                            <input class="sf-field w-full text-ink-900" id="estimate-quantity" type="number" name="quantity" min="1" max="100" required value="{{ $selection['quantity'] }}">
-                            <label class="block text-sm" for="estimate-start">{{ __('catalog::estimate.start') }}</label>
-                            <input class="sf-field w-full text-ink-900" id="estimate-start" type="datetime-local" name="event_starts_at" value="{{ $selection['event_starts_at'] }}">
-                            <label class="block text-sm" for="estimate-end">{{ __('catalog::estimate.end') }}</label>
-                            <input class="sf-field w-full text-ink-900" id="estimate-end" type="datetime-local" name="event_ends_at" value="{{ $selection['event_ends_at'] }}">
-                            <label class="block text-sm" for="estimate-timezone">{{ __('catalog::estimate.timezone') }}</label>
-                            <select class="sf-field w-full text-ink-900" id="estimate-timezone" name="timezone">
-                                @foreach (array_unique(['Africa/Cairo', 'UTC', $selection['timezone']]) as $zone)
-                                    <option value="{{ $zone }}" @selected($selection['timezone'] === $zone)>{{ $zone }}</option>
-                                @endforeach
-                            </select>
-                            <button class="sf-button sf-button--light w-full justify-center" type="submit">{{ __('catalog::estimate.check') }}</button>
-                        </form>
-                        <p class="mt-4 text-sm">{{ __('catalog::estimate.total') }}: <strong><x-storefront.price :minor="$estimate->getMinorAmount()->toInt()" :currency="$service->base_price_currency" /></strong></p>
-                        <p class="mt-2 text-xs leading-5 text-white/80">{{ __('catalog::estimate.help') }}</p>
-                        <p class="mt-3 text-sm" role="status">{{ $availability === null ? __('catalog::estimate.choose_date') : ($availability->available ? __('catalog::estimate.available') : __('catalog::estimate.unavailable')) }}</p>
-
                         @if ($isOutOfStock)
                             <button type="button" class="sf-button mt-7 min-h-12 w-full cursor-not-allowed justify-center bg-white/10 text-white/55" disabled>{{ __('storefront.service.out_of_stock') }}</button>
                         @else
@@ -158,7 +138,7 @@
                         @endif
 
                         <p class="mt-4 text-sm font-semibold text-ink-500">{{ __('storefront.service.estimate_amount') }}</p>
-                        <bdi data-service-estimate-total dir="ltr" class="mt-1 block text-2xl font-extrabold text-ink-900">{{ $estimate }}</bdi>
+                        <bdi data-service-estimate-total dir="ltr" class="mt-1 block text-2xl font-extrabold text-ink-900"><x-storefront.price :minor="$estimate->getMinorAmount()->toInt()" :currency="$service->base_price_currency" /></bdi>
 
                         <form
                             method="GET"
@@ -180,12 +160,13 @@
                             data-availability-unavailable="{{ __('storefront.service.availability_unavailable') }}"
                             class="mt-5 space-y-4"
                         >
-                            <input type="hidden" name="timezone" value="{{ request('timezone') }}" data-browser-timezone>
+                            <input type="hidden" name="timezone" value="{{ $selection['timezone'] }}" data-browser-timezone>
                             <label class="block text-sm font-bold text-ink-800">
                                 <span>{{ __('storefront.service.date') }}</span>
-                                <input type="datetime-local" name="event_starts_at" value="{{ request('event_starts_at') }}" class="sf-field mt-2 w-full" data-service-estimate-start>
+                                <input type="datetime-local" name="event_starts_at" value="{{ $selection['event_starts_at'] }}" class="sf-field mt-2 w-full" data-service-estimate-start>
                             </label>
                             @if ($service->product_type === ProductType::Rental)
+                                <input type="hidden" name="event_ends_at" value="{{ $selection['event_ends_at'] }}" data-service-estimate-end>
                                 <label class="block text-sm font-bold text-ink-800">
                                     <span>{{ __('storefront.service.rental_duration') }} ({{ __('storefront.common.hours') }})</span>
                                     <input type="number" name="rental_duration_hours" min="1" max="720" value="{{ $durationHours }}" class="sf-field mt-2 w-full" data-service-estimate-duration>
@@ -194,7 +175,7 @@
                             @else
                                 <label class="block text-sm font-bold text-ink-800">
                                     <span>{{ __('storefront.service.quantity') }}</span>
-                                    <input type="number" name="quantity" min="1" max="100" value="{{ $quantity }}" class="sf-field mt-2 w-full" data-service-estimate-quantity>
+                                    <input type="number" name="quantity" min="1" max="100" value="{{ $selection['quantity'] }}" class="sf-field mt-2 w-full" data-service-estimate-quantity>
                                 </label>
                             @endif
                             <div class="flex flex-col gap-3 sm:flex-row">
@@ -226,6 +207,28 @@
 
                 <div class="min-w-0 lg:col-start-1 lg:row-start-2">
                     <x-storefront.service-attributes :service="$service" class="mt-10 border-t border-ink-200 pt-8" />
+
+                    @if ($service->packages->isNotEmpty())
+                        <section class="mt-10 border-t border-ink-200 pt-8" aria-labelledby="service-packages-heading" data-service-packages>
+                            <h2 id="service-packages-heading" class="text-2xl font-extrabold tracking-[-0.03em] text-ink-900">{{ __('storefront.wizard.step1.package_label') }}</h2>
+                            <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.wizard.step1.package_hint') }}</p>
+                            <ul class="mt-5 grid gap-4 sm:grid-cols-2">
+                                @foreach ($service->packages as $package)
+                                    <li class="rounded-2xl border border-ink-200 bg-white p-5">
+                                        <h3 class="font-bold text-ink-900">{{ $package->getTranslation('name', $locale, useFallbackLocale: true) }}</h3>
+                                        <p class="mt-2 text-sm leading-6 text-ink-600">{{ $package->getTranslation('description', $locale, useFallbackLocale: true) }}</p>
+                                        <p class="mt-3 font-extrabold text-secondary-800"><bdi dir="ltr">{{ \Brick\Money\Money::ofMinor($package->price_minor, $package->currency)->formatTo($locale) }}</bdi></p>
+                                        <ul class="mt-3 space-y-1 text-sm text-ink-600">
+                                            @foreach ($package->components as $component)
+                                                <li>{{ $component->getTranslation('name', $locale, useFallbackLocale: true) }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component->quantity]) }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <a href="{{ route('storefront.wizard', array_filter(['locale' => $locale, 'service' => $service->public_id, 'package_public_id' => $package->public_id, 'event_starts_at' => $selection['event_starts_at'], 'event_ends_at' => $selection['event_ends_at'], 'quantity' => $selection['quantity'], 'timezone' => $selection['timezone'], 'rental_duration_hours' => $durationHours])) }}" class="sf-button sf-button--secondary mt-5 w-full justify-center">{{ __('storefront.service.choose_package') }}</a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endif
 
                     @if ($serviceDescription)
                         <section class="mt-10 border-t border-ink-200 pt-8" aria-labelledby="service-about-heading">

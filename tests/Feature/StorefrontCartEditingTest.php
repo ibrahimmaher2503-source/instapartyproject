@@ -94,7 +94,7 @@ it('updates sale and digital quantities with snapshot prices and replay-safe tot
         ->assertOk()
         ->assertSee($url, false)
         ->assertSee('name="quantity"', false)
-        ->assertSee(__('storefront.checkout.event.submit'));
+        ->assertSee(__('storefront.checkout.summary.submit'));
 
     $this->actingAs($customer)->put($url, ['quantity' => 2])->assertRedirect('/en/cart');
     $this->put($url, ['quantity' => 2])->assertRedirect('/en/cart');
