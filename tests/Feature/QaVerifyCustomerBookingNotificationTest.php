@@ -3,18 +3,24 @@
 declare(strict_types=1);
 
 use App\Modules\Booking\Domain\Enums\VendorSubStatus;
+use App\Modules\Booking\Domain\Events\BookingForceCancelled;
 use App\Modules\Booking\Domain\Events\BookingSubmittedToVendor;
 use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Communication\Application\Actions\RetryFailedDispatchAction;
 use App\Modules\Communication\Application\Jobs\DispatchNotificationJob;
+use App\Modules\Communication\Application\Listeners\OnBookingForceCancelledNotifyListener;
 use App\Modules\Communication\Application\Listeners\OnBookingSubmitted;
+use App\Modules\Communication\Database\Seeders\GapNotificationTemplateSeeder;
 use App\Modules\Communication\Database\Seeders\NotificationTemplateSeeder;
 use App\Modules\Communication\Domain\Enums\DispatchStatus;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
+use App\Modules\Communication\Infrastructure\Gateways\DatabaseNotificationAdapter;
 use App\Modules\Identity\Domain\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 
 it('sends one customer submission notification per channel with reference, submitted status, and owner link', function (string $locale): void {
@@ -51,6 +57,51 @@ it('sends one customer submission notification per channel with reference, submi
                 'booking_submitted', 'customer', (string) $customer->id, $booking->public_id, $dispatch->channel->value,
             ]));
     }
+
+    $inApp = $dispatches->firstWhere('channel', NotificationChannel::InApp);
+    app(DatabaseNotificationAdapter::class)->send($inApp);
+    $data = json_decode(DB::table('notifications')->where('notifiable_id', $customer->id)->firstOrFail()->data, true, flags: JSON_THROW_ON_ERROR);
+    $this->actingAs($customer)->get(route('storefront.account.notifications', ['locale' => $locale]))
+        ->assertOk()
+        ->assertSeeText($data['title'])
+        ->assertSeeText($data['body'])
+        ->assertSee('href="'.e($data['action_url']).'"', false);
+})->with(['en', 'ar']);
+
+it('shows localized force-cancellation content and links to the owned booking', function (string $locale): void {
+    Queue::fake();
+    $this->seed(GapNotificationTemplateSeeder::class);
+    $customer = User::factory()->asCustomer()->create(['preferred_locale' => $locale]);
+    $booking = Booking::factory()->create([
+        'customer_id' => $customer->id,
+        'reference_no' => 'IP-2026-000733',
+    ]);
+    $admin = User::factory()->create();
+    $intervention = BookingAdminIntervention::query()->create([
+        'booking_id' => $booking->id,
+        'admin_id' => $admin->id,
+        'intervention_type' => 'force_cancel',
+        'reason' => 'Operational issue',
+        'before_state' => [],
+        'after_state' => [],
+    ]);
+
+    app(OnBookingForceCancelledNotifyListener::class)->handle(new BookingForceCancelled($booking, $intervention, []));
+
+    $dispatch = NotificationDispatch::query()->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::InApp)->firstOrFail();
+    expect($dispatch->status)->toBe(DispatchStatus::Queued);
+    app(DatabaseNotificationAdapter::class)->send($dispatch);
+    $data = json_decode(DB::table('notifications')->where('notifiable_id', $customer->id)->firstOrFail()->data, true, flags: JSON_THROW_ON_ERROR);
+    expect($data['title'])->not->toBeEmpty()
+        ->and($data['body'])->toContain('IP-2026-000733')
+        ->and($data['action_url'])->toContain('/'.$locale.'/account/bookings/'.$booking->public_id);
+
+    $this->actingAs($customer)->get(route('storefront.account.notifications', ['locale' => $locale]))
+        ->assertOk()
+        ->assertSeeText($data['title'])
+        ->assertSeeText($data['body'])
+        ->assertSee('href="'.e($data['action_url']).'"', false);
 })->with(['en', 'ar']);
 
 it('keeps a failed customer channel retryable without duplicating successful channels', function (): void {

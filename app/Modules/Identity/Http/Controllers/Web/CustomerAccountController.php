@@ -10,8 +10,6 @@ use App\Modules\Booking\Domain\Enums\InterventionType;
 use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingAdminIntervention;
-use App\Modules\Communication\Domain\Enums\NotificationChannel;
-use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Discovery\Domain\Models\Wishlist;
 use App\Modules\Identity\Application\Actions\UpdateCustomerProfileAction;
 use App\Modules\Identity\Domain\Models\User;
@@ -41,7 +39,7 @@ final class CustomerAccountController
         return view('storefront.account.dashboard', compact('user', 'upcoming') + [
             'activeBookings' => $bookings->filter(fn (Booking $booking): bool => ! in_array($booking->lifecycle_status->getValue(), ['cancelled', 'completed'], true))->count(),
             'upcomingCount' => $bookings->filter(fn (Booking $booking): bool => $booking->event_starts_at?->isFuture() ?? false)->count(),
-            'unreadCount' => $this->notificationsQuery($user)->whereNull('read_at')->count(),
+            'unreadCount' => $user->notifications()->whereNull('read_at')->count(),
         ]);
     }
 
@@ -174,7 +172,7 @@ final class CustomerAccountController
 
     public function notifications(Request $request): View
     {
-        $notifications = $this->notificationsQuery($this->user($request))->latest('id')->paginate(20);
+        $notifications = $this->user($request)->notifications()->latest('created_at')->paginate(20);
 
         return view('storefront.account.notifications', compact('notifications'));
     }
@@ -212,11 +210,6 @@ final class CustomerAccountController
         $this->user($request)->update(['password' => Hash::make($data['new_password'])]);
 
         return back()->with('status', __('account.password_saved'));
-    }
-
-    private function notificationsQuery(User $user)
-    {
-        return NotificationDispatch::query()->where('user_id', $user->id)->where('channel', NotificationChannel::InApp);
     }
 
     private function user(Request $request): User

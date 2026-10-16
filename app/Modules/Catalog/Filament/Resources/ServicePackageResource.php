@@ -156,12 +156,12 @@ class ServicePackageResource extends Resource
                 ])->columns(2),
             Tabs::make(__('catalog.translations'))->tabs([
                 Tab::make(__('catalog.language_english'))->schema([
-                    TextInput::make('name.en')->label(__('catalog.name'))->required()->maxLength(255),
-                    Textarea::make('description.en')->label(__('catalog.description'))->required()->maxLength(2000)->rows(4),
+                    TextInput::make('name.en')->label(__('catalog.name'))->required(false)->rule('required')->markAsRequired()->maxLength(255),
+                    Textarea::make('description.en')->label(__('catalog.description'))->required(false)->rule('required')->markAsRequired()->maxLength(2000)->rows(4),
                 ]),
                 Tab::make(__('catalog.language_arabic'))->schema([
-                    TextInput::make('name.ar')->label(__('catalog.name'))->required()->maxLength(255)->extraInputAttributes(['dir' => 'rtl']),
-                    Textarea::make('description.ar')->label(__('catalog.description'))->required()->maxLength(2000)->rows(4)->extraInputAttributes(['dir' => 'rtl']),
+                    TextInput::make('name.ar')->label(__('catalog.name'))->required(false)->rule('required')->markAsRequired()->maxLength(255)->extraInputAttributes(['dir' => 'rtl']),
+                    Textarea::make('description.ar')->label(__('catalog.description'))->required(false)->rule('required')->markAsRequired()->maxLength(2000)->rows(4)->extraInputAttributes(['dir' => 'rtl']),
                 ]),
             ])->columnSpanFull(),
             Section::make(__('catalog.package_components'))->schema([

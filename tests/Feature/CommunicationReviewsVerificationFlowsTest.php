@@ -37,6 +37,8 @@ use App\Modules\Communication\Domain\Models\NotificationPreference;
 use App\Modules\Communication\Domain\Models\NotificationTemplate;
 use App\Modules\Communication\Filament\Resources\AdminInboxResource\Pages\ListAdminInboxItems;
 use App\Modules\Communication\Filament\Resources\CampaignResource\Pages\CreateCampaign;
+use App\Modules\Communication\Filament\Resources\CampaignResource\Pages\ListCampaigns;
+use App\Modules\Communication\Filament\Resources\CampaignResource\Pages\ViewCampaign;
 use App\Modules\Communication\Filament\Resources\NotificationTemplateResource;
 use App\Modules\Communication\Filament\Resources\NotificationTemplateResource\Pages\EditNotificationTemplate;
 use App\Modules\Identity\Domain\Models\User;
@@ -254,6 +256,47 @@ it('creates, schedules, safely dispatches, cancels, and idempotently tracks a ca
     $campaign->refresh()->update(['status' => CampaignStatus::Scheduled, 'scheduled_at' => now()->addDay()]);
     app(CancelCampaignAction::class)->execute($campaign);
     expect($campaign->fresh()->status)->toBe(CampaignStatus::Cancelled);
+});
+
+it('shows the complete campaign definition and matched audience before dispatch confirmation', function (): void {
+    Queue::fake();
+    $admin = User::factory()->superAdmin()->create();
+    foreach (['view_any_campaign', 'view_campaign'] as $ability) {
+        $admin->givePermissionTo(Permission::findOrCreate($ability, 'web'));
+    }
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $campaign = Campaign::factory()->create([
+        'name' => 'Definition review',
+        'target_locale' => CampaignTargetLocale::Both,
+        'scheduled_at' => now()->addDay(),
+        'segment_filters' => ['preferred_locale' => 'en'],
+        'subject' => ['en' => 'English subject', 'ar' => 'عنوان عربي'],
+        'body' => ['en' => 'English body', 'ar' => 'محتوى عربي'],
+    ]);
+    $customer = User::factory()->asCustomer()->create(['preferred_locale' => 'en']);
+    $booking = Booking::factory()->create(['customer_id' => $customer->id]);
+    $bookingVendor = BookingVendor::factory()->create(['booking_id' => $booking->id]);
+    BookingItem::factory()->sale()->create(['booking_vendor_id' => $bookingVendor->id]);
+
+    Livewire::test(ViewCampaign::class, ['record' => $campaign->getRouteKey()])
+        ->assertSuccessful()
+        ->assertSee('preferred_locale')
+        ->assertSee('English subject')
+        ->assertSee('عنوان عربي')
+        ->assertSee('English body')
+        ->assertSee('محتوى عربي');
+
+    Livewire::test(ListCampaigns::class)
+        ->assertTableActionVisible('sendNow', $campaign)
+        ->mountTableAction('sendNow', $campaign)
+        ->assertSee(__('communication.campaign.dispatch_description', ['count' => 1]));
+
+    expect($campaign->fresh()->status)->toBe(CampaignStatus::Draft)
+        ->and(CampaignRun::query()->where('campaign_id', $campaign->id)->exists())->toBeFalse();
+    Queue::assertNotPushed(DispatchCampaignRecipientJob::class);
 });
 
 it('saves an edited bilingual template and renders it into an isolated queued dispatch', function (): void {

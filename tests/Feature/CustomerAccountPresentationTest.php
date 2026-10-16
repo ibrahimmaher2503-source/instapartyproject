@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Modules\Booking\Domain\Models\Booking;
-use App\Modules\Communication\Domain\Enums\NotificationChannel;
-use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Payments\Domain\Models\Payment;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 it('uses each account heading as the localized document title', function (string $locale): void {
     $user = User::factory()->asCustomer()->create(['timezone' => 'UTC']);
@@ -70,11 +70,14 @@ it('formats account date-times by locale and keeps the viewer timezone visible',
         'user_id' => $user->id,
         'created_at' => $date,
     ]);
-    NotificationDispatch::factory()->create([
-        'user_id' => $user->id,
-        'channel' => NotificationChannel::InApp,
-        'context' => ['subject' => 'Date notice', 'body' => 'Date notice body'],
+    DB::table('notifications')->insert([
+        'id' => (string) Str::uuid(),
+        'type' => 'in_app',
+        'notifiable_type' => $user->getMorphClass(),
+        'notifiable_id' => $user->id,
+        'data' => json_encode(['title' => 'Date notice', 'body' => 'Date notice body'], JSON_THROW_ON_ERROR),
         'created_at' => $date,
+        'updated_at' => $date,
     ]);
     $this->actingAs($user);
 

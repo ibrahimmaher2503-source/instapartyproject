@@ -32,10 +32,14 @@ class OnBookingForceCancelledNotifyListener implements ShouldQueue
         // Notify customer via in-app + Push + Email
         if ($booking->customer_id !== null) {
             $customerContext = [
-                'booking_number' => $booking->public_id,
+                'booking_number' => $booking->reference_no ?: $booking->public_id,
                 'event_date' => $booking->event_starts_at?->format('Y-m-d') ?? '',
                 'reason' => $reason,
                 'refund_days' => '5–7',
+                'action_url' => route('storefront.account.bookings.show', [
+                    'locale' => $booking->customer?->preferred_locale === 'ar' ? 'ar' : 'en',
+                    'publicId' => $booking->public_id,
+                ]),
             ];
 
             foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {

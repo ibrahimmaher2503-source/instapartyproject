@@ -17,6 +17,7 @@ use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Domain\Models\NotificationTemplate;
+use App\Modules\Communication\Infrastructure\Gateways\DatabaseNotificationAdapter;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Payments\Domain\Events\PaymentCaptured;
 use App\Modules\Payments\Domain\Events\RefundCompleted;
@@ -57,6 +58,7 @@ it('renders one customer inbox item per core event after listener replay', funct
         expect($dispatch->locale)->toBe($locale)
             ->and($dispatch->context['subject'])->not->toBeEmpty()
             ->and($dispatch->context['body'])->toContain($booking->public_id)->not->toContain('{{');
+        app(DatabaseNotificationAdapter::class)->send($dispatch);
         $this->actingAs($customer)->get(route('storefront.account.notifications', ['locale' => $locale]))
             ->assertOk()->assertSeeText($dispatch->context['subject'])->assertSeeText($dispatch->context['body']);
     }

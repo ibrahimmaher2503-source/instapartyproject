@@ -187,6 +187,40 @@ it('lets an admin create bilingual service packages for approved services of eve
         ->and($package->getMedia('gallery')->sole()->disk)->toBe('s3-public');
 })->with(ProductType::cases());
 
+it('shows required package fields for both locales and creates a valid package', function (string $locale): void {
+    app()->setLocale($locale);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo(Permission::findOrCreate('create_sale::service', 'web'));
+    $this->actingAs($admin);
+    $service = makePackageService(ProductType::Sale);
+
+    Livewire::test(CreateServicePackage::class)
+        ->call('create')
+        ->assertHasFormErrors([
+            'service_id' => 'required', 'code' => 'required', 'price_minor' => 'required',
+            'name.en' => 'required', 'name.ar' => 'required',
+            'description.en' => 'required', 'description.ar' => 'required',
+        ])
+        ->fillForm([
+            'service_id' => $service->id,
+            'code' => 'qa-empty-validation-'.$locale,
+            'name' => ['en' => 'Wedding Bundle', 'ar' => 'باقة زفاف'],
+            'description' => ['en' => 'English details', 'ar' => 'تفاصيل عربية'],
+            'price_minor' => 12345,
+            'components' => [[
+                'name' => ['en' => 'Chair', 'ar' => 'كرسي'],
+                'description' => ['en' => 'One chair', 'ar' => 'كرسي واحد'],
+                'quantity' => 1,
+                'sort_order' => 0,
+            ]],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(ServicePackage::query()->where('code', 'qa-empty-validation-'.$locale)->exists())->toBeTrue();
+})->with(['en', 'ar']);
+
 it('edits a package and its component values without changing its service owner', function (): void {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     $admin = User::factory()->superAdmin()->create();

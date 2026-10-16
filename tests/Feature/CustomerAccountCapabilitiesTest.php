@@ -29,6 +29,13 @@ it('lets a customer manage only their own saved addresses in English and Arabic'
     $this->actingAs($customer, 'web')
         ->get(route('storefront.account.addresses', ['locale' => $locale]))
         ->assertOk()
+        ->assertSeeText($locale === 'ar' ? 'العناوين المحفوظة' : 'Saved addresses')
+        ->assertSeeText($locale === 'ar' ? 'إضافة عنوان' : 'Add address')
+        ->assertSeeText($locale === 'ar' ? 'التسمية' : 'Label')
+        ->assertSeeText($locale === 'ar' ? 'حفظ' : 'Save')
+        ->assertSeeText($locale === 'ar' ? 'تعديل' : 'Edit')
+        ->assertSeeText($locale === 'ar' ? 'إزالة' : 'Remove')
+        ->assertSeeText($locale === 'ar' ? 'الافتراضي' : 'Default')
         ->assertSeeText('12 Example Street')
         ->assertDontSeeText($otherAddress->address_line);
 

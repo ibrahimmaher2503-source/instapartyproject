@@ -15,6 +15,7 @@ use App\Modules\Booking\Domain\Exceptions\CurrencyMismatchException;
 use App\Modules\Booking\Domain\Exceptions\DeliveryCityRequiredException;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\DraftState;
+use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Booking\Http\Requests\StorefrontBookingRequest;
 use App\Modules\Shared\Application\Actions\GetPublishedCmsPageAction;
 use Illuminate\Contracts\View\View;
@@ -22,6 +23,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 class CartController
 {
@@ -91,12 +93,21 @@ class CartController
         abort_if($booking === null || $booking->customer_id !== auth()->id(), 404);
 
         try {
-            $submittedBooking = $action->execute(new SubmitBookingDTO(
-                bookingId: $booking->id,
-                customerId: (int) auth()->id(),
-                idempotencyKey: (string) Str::uuid(),
-                requestContent: 'storefront-submit:'.$booking->public_id,
-            ));
+            try {
+                $submittedBooking = $action->execute(new SubmitBookingDTO(
+                    bookingId: $booking->id,
+                    customerId: (int) auth()->id(),
+                    idempotencyKey: (string) Str::uuid(),
+                    requestContent: 'storefront-submit:'.$booking->public_id,
+                ));
+            } catch (Throwable $exception) {
+                $submittedBooking = $booking->fresh();
+                if (! ($booking->lifecycle_status instanceof DraftState) || ! ($submittedBooking?->lifecycle_status instanceof VendorReviewState)) {
+                    throw $exception;
+                }
+
+                report($exception);
+            }
         } catch (BelowCoverageMinimumException) {
             return redirect()->route('storefront.cart')->withErrors(['booking' => __('booking.errors.below_coverage_minimum.message')]);
         } catch (DeliveryCityRequiredException) {

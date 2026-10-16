@@ -30,6 +30,38 @@ function qaVerifyHeroBlock(string $name, int $position, string $headline, string
     ];
 }
 
+it('respects vendor join visibility and keeps the fallback only when no block exists', function (): void {
+    foreach (['en', 'ar'] as $locale) {
+        $this->get('/'.$locale)->assertOk()->assertSee('sf-vendor-join-section', false);
+    }
+
+    $data = [
+        'block_type' => HomeBlockType::VendorJoin->value,
+        'name' => 'QA vendor join',
+        'position' => 1,
+        'is_visible' => false,
+        'payload' => [
+            'headline' => ['en' => 'Visible vendor invitation', 'ar' => 'دعوة الموردين'],
+            'body' => ['en' => 'Join us', 'ar' => 'انضم إلينا'],
+            'cta_label' => ['en' => 'Register', 'ar' => 'سجل'],
+            'cta_url' => '/register',
+        ],
+    ];
+    $save = app(SaveHomeBlockAction::class);
+    $block = $save->execute(null, $data);
+
+    foreach (['en', 'ar'] as $locale) {
+        $this->get('/'.$locale)->assertOk()->assertDontSee('sf-vendor-join-section', false);
+    }
+
+    $data['is_visible'] = true;
+    $save->execute($block, $data);
+    foreach (['en', 'ar'] as $locale) {
+        $this->get('/'.$locale)->assertOk()->assertSee('sf-vendor-join-section', false);
+        $this->get('/'.$locale)->assertSee($locale === 'en' ? 'Visible vendor invitation' : 'دعوة الموردين');
+    }
+});
+
 it('edits homepage block content, ordering and visibility and propagates both locales', function (): void {
     $save = app(SaveHomeBlockAction::class);
     $get = app(GetHomepageBlocksAction::class);

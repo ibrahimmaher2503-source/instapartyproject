@@ -76,18 +76,18 @@ class CmsPageResource extends Resource
                                 ->label('Meta Description (English)')
                                 ->maxLength(255),
                         ]),
-                    Tab::make('Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©')
+                    Tab::make('العربية')
                         ->schema([
                             TextInput::make('title.ar')
-                                ->label('Ø§Ù„Ø¹Ù†ÙˆØ§Ù† (Ø¹Ø±Ø¨ÙŠ)')
+                                ->label('العنوان (عربي)')
                                 ->required()
                                 ->maxLength(255),
                             RichEditor::make('body.ar')
-                                ->label('Ø§Ù„Ù…Ø­ØªÙˆÙ‰ (Ø¹Ø±Ø¨ÙŠ)')
+                                ->label('المحتوى (عربي)')
                                 ->required()
                                 ->columnSpanFull(),
                             TextInput::make('meta_description.ar')
-                                ->label('ÙˆØµÙ Ø§Ù„Ù…ÙŠØªØ§ (Ø¹Ø±Ø¨ÙŠ)')
+                                ->label('وصف الميتا (عربي)')
                                 ->maxLength(255),
                         ]),
                 ])
@@ -182,7 +182,7 @@ class CmsPageResource extends Resource
                     ->sortable(),
                 TextColumn::make('title')
                     ->label('Title')
-                    ->formatStateUsing(fn (CmsPage $record): string => $record->getTranslation('title', app()->getLocale()) ?: 'â€”')
+                    ->formatStateUsing(fn (CmsPage $record): string => $record->getTranslation('title', app()->getLocale()) ?: '—')
                     ->limit(50),
                 IconColumn::make('is_published')
                     ->boolean()
@@ -190,7 +190,7 @@ class CmsPageResource extends Resource
                 TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable()
-                    ->placeholder('â€”'),
+                    ->placeholder('—'),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()

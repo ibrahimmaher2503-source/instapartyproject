@@ -9,6 +9,7 @@ use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\ServiceState;
 use App\Modules\Catalog\Filament\Actions\ApproveServiceAction;
+use App\Modules\Catalog\Filament\Actions\ArchiveServiceFilamentAction;
 use App\Modules\Catalog\Filament\Actions\BulkApproveServicesAction;
 use App\Modules\Catalog\Filament\Actions\BulkArchiveServicesAction;
 use App\Modules\Catalog\Filament\Actions\BulkRejectServicesAction;
@@ -324,6 +325,7 @@ class RentalServiceResource extends Resource
             ->actions([
                 ActionGroup::make([
                     ApproveServiceAction::make(),
+                    ArchiveServiceFilamentAction::make(),
                     RejectServiceAction::make(),
                     RequestServiceEditsAction::make(),
                     EditAction::make(),
