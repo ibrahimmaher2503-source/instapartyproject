@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\TrustSafety\Domain\Enums;
 
+use Illuminate\Support\Facades\Lang;
+
 enum ReportReason: string
 {
     case InappropriateContent = 'inappropriate_content';
@@ -14,6 +16,16 @@ enum ReportReason: string
 
     public function label(): string
     {
-        return __('trust-safety::reasons.'.$this->value);
+        $key = 'trust-safety::trust-safety.reasons.'.$this->value;
+        if (Lang::has($key)) {
+            return __($key);
+        }
+
+        $fallback = 'trust-safety::reasons.'.$this->value;
+        if (Lang::has($fallback)) {
+            return __($fallback);
+        }
+
+        return str($this->value)->replace('_', ' ')->title()->toString();
     }
 }
