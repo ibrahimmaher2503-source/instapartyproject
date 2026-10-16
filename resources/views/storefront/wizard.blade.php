@@ -190,7 +190,7 @@
                                         <span class="min-w-0 flex-1">
                                             <span class="block font-bold">{{ $package->getTranslation('name', app()->getLocale(), useFallbackLocale: true) }}</span>
                                             <span class="mt-1 block text-sm text-ink-600">{{ $package->getTranslation('description', app()->getLocale(), useFallbackLocale: true) }}</span>
-                                            <span class="mt-2 block font-semibold"><bdi dir="ltr">{{ \Brick\Money\Money::ofMinor($package->price_minor, $package->currency)->formatTo(app()->getLocale()) }}</bdi></span>
+                                            <span class="mt-2 block font-semibold"><x-storefront.price :minor="$package->price_minor" :currency="$package->currency" /></span>
                                             @foreach ($package->components as $component)
                                                 <span class="mt-1 block text-xs text-ink-500">{{ $component->getTranslation('name', app()->getLocale(), useFallbackLocale: true) }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component->quantity]) }}</span>
                                             @endforeach

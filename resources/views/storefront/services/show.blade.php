@@ -217,7 +217,7 @@
                                     <li class="rounded-2xl border border-ink-200 bg-white p-5">
                                         <h3 class="font-bold text-ink-900">{{ $package->getTranslation('name', $locale, useFallbackLocale: true) }}</h3>
                                         <p class="mt-2 text-sm leading-6 text-ink-600">{{ $package->getTranslation('description', $locale, useFallbackLocale: true) }}</p>
-                                        <p class="mt-3 font-extrabold text-secondary-800"><bdi dir="ltr">{{ \Brick\Money\Money::ofMinor($package->price_minor, $package->currency)->formatTo($locale) }}</bdi></p>
+                                        <p class="mt-3 font-extrabold text-secondary-800"><x-storefront.price :minor="$package->price_minor" :currency="$package->currency" /></p>
                                         <ul class="mt-3 space-y-1 text-sm text-ink-600">
                                             @foreach ($package->components as $component)
                                                 <li>{{ $component->getTranslation('name', $locale, useFallbackLocale: true) }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component->quantity]) }}</li>
