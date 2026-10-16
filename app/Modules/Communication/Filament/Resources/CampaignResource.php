@@ -8,6 +8,7 @@ use App\Modules\Communication\Application\Actions\CampaignAlreadyDispatchedExcep
 use App\Modules\Communication\Application\Actions\CampaignCannotBeCancelledException;
 use App\Modules\Communication\Application\Actions\CancelCampaignAction;
 use App\Modules\Communication\Application\Actions\DispatchCampaignAction;
+use App\Modules\Communication\Application\Services\SegmentResolver;
 use App\Modules\Communication\Domain\Enums\CampaignChannel;
 use App\Modules\Communication\Domain\Enums\CampaignStatus;
 use App\Modules\Communication\Domain\Enums\CampaignTargetLocale;
@@ -157,7 +158,12 @@ class CampaignResource extends Resource
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading(__('communication.campaign.dispatch_heading'))
-                    ->modalDescription(__('communication.campaign.dispatch_description'))
+                    ->modalDescription(fn (Campaign $record) => __('communication.campaign.dispatch_description', [
+                        'count' => app(SegmentResolver::class)->resolve(
+                            $record->segment_filters ?? [],
+                            $record->target_locale->value,
+                        )->count(),
+                    ]))
                     ->visible(fn (Campaign $record) => $record->isDraft())
                     ->action(function (Campaign $record) {
                         try {

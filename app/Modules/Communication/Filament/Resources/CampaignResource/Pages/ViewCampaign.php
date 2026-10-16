@@ -40,6 +40,33 @@ class ViewCampaign extends ViewRecord implements HasTable
                             ->badge()
                             ->color(fn ($state) => $state->color())
                             ->formatStateUsing(fn ($state) => $state->label()),
+                        TextEntry::make('target_locale')
+                            ->label(__('communication.view_campaign.field_target_locale'))
+                            ->formatStateUsing(fn ($state) => $state->label()),
+                        TextEntry::make('scheduled_at')
+                            ->label(__('communication.view_campaign.field_scheduled_at'))
+                            ->dateTime()
+                            ->default('—'),
+                        TextEntry::make('segment_filters')
+                            ->label(__('communication.view_campaign.field_segment_filters'))
+                            ->state(fn ($record) => collect($record->segment_filters ?? [])->map(fn ($value, $key) => "{$key}: {$value}")->implode("\n"))
+                            ->columnSpanFull(),
+                    ]),
+                ]),
+
+            Section::make(__('communication.view_campaign.section_content'))
+                ->schema([
+                    Grid::make(2)->schema([
+                        TextEntry::make('subject_en')->label(__('communication.view_campaign.field_subject_en'))
+                            ->state(fn ($record) => $record->getTranslation('subject', 'en', false) ?: '—'),
+                        TextEntry::make('subject_ar')->label(__('communication.view_campaign.field_subject_ar'))
+                            ->state(fn ($record) => $record->getTranslation('subject', 'ar', false) ?: '—'),
+                        TextEntry::make('body_en')->label(__('communication.view_campaign.field_body_en'))
+                            ->state(fn ($record) => $record->getTranslation('body', 'en', false) ?: '—')
+                            ->columnSpanFull(),
+                        TextEntry::make('body_ar')->label(__('communication.view_campaign.field_body_ar'))
+                            ->state(fn ($record) => $record->getTranslation('body', 'ar', false) ?: '—')
+                            ->columnSpanFull(),
                     ]),
                 ]),
 
