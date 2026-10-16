@@ -19,7 +19,7 @@ final class CustomerSavedSearchController
 {
     /** @var list<string> */
     private const FILTER_KEYS = [
-        'q', 'planner', 'product_type', 'category_slug', 'occasion', 'package', 'vendor',
+        'q', 'planner', 'product_type', 'product_types', 'category_slug', 'occasion', 'package', 'vendor',
         'governorate_public_id', 'city_public_id', 'event_date', 'event_starts_at',
         'event_ends_at', 'price_min', 'price_max', 'guest_count', 'min_rating', 'sort',
     ];
@@ -82,6 +82,8 @@ final class CustomerSavedSearchController
             'q' => ['nullable', 'string', 'max:255'],
             'planner' => ['nullable', 'boolean'],
             'product_type' => ['nullable', Rule::enum(ProductType::class)],
+            'product_types' => ['nullable', 'array', 'list', 'size:1'],
+            'product_types.*' => [Rule::enum(ProductType::class)],
             'category_slug' => ['nullable', 'string', 'max:120'],
             'occasion' => [$planner ? 'required' : 'nullable', 'string', 'max:120'],
             'package' => ['nullable', 'string', 'max:26'],
@@ -130,6 +132,11 @@ final class CustomerSavedSearchController
                 default => $value,
             };
         }
+
+        if (! isset($normalized['product_type']) && isset($normalized['product_types'])) {
+            $normalized['product_type'] = $normalized['product_types'][0];
+        }
+        unset($normalized['product_types']);
 
         return $normalized;
     }
