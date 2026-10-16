@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\TrustSafety\Domain\Enums;
 
+use Illuminate\Support\Facades\Lang;
+
 enum ReportStatus: string
 {
     case Open = 'open';
@@ -13,6 +15,16 @@ enum ReportStatus: string
 
     public function label(): string
     {
-        return __('trust-safety::statuses.'.$this->value);
+        $key = 'trust-safety::trust-safety.statuses.'.$this->value;
+        if (Lang::has($key)) {
+            return __($key);
+        }
+
+        $fallback = 'trust-safety::statuses.'.$this->value;
+        if (Lang::has($fallback)) {
+            return __($fallback);
+        }
+
+        return str($this->value)->replace('_', ' ')->title()->toString();
     }
 }

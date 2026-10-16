@@ -29,6 +29,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Lang;
 
 class ReportResource extends Resource
 {
@@ -66,7 +67,8 @@ class ReportResource extends Resource
 
                 TextColumn::make('reportable_type')
                     ->badge()
-                    ->label('Target Type'),
+                    ->label(__('trust-safety::trust-safety.fields.target_type'))
+                    ->formatStateUsing(fn (?string $state): string => self::formatReportableType($state)),
 
                 TextColumn::make('reason')
                     ->badge()
@@ -76,7 +78,7 @@ class ReportResource extends Resource
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (ReportReason $state) => $state->label())
-                    ->label('Reason'),
+                    ->label(__('trust-safety::trust-safety.fields.reason')),
 
                 TextColumn::make('status')
                     ->badge()
@@ -87,12 +89,12 @@ class ReportResource extends Resource
                         ReportStatus::Dismissed => 'gray',
                     })
                     ->formatStateUsing(fn (ReportStatus $state) => $state->label())
-                    ->label('Status'),
+                    ->label(__('trust-safety::trust-safety.fields.status')),
 
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->label('Submitted'),
+                    ->label(__('trust-safety::trust-safety.fields.submitted')),
                 TextColumn::make('queue_age')
                     ->label(__('shared::shared.admin_queue_sla.queue_age'))
                     ->getStateUsing(fn (Report $record): ?string => self::isInReviewQueue($record)
@@ -129,13 +131,13 @@ class ReportResource extends Resource
                     ->options(collect(ReportStatus::cases())->mapWithKeys(
                         fn (ReportStatus $s) => [$s->value => $s->label()]
                     ))
-                    ->label('Status'),
+                    ->label(__('trust-safety::trust-safety.fields.status')),
 
                 SelectFilter::make('reason')
                     ->options(collect(ReportReason::cases())->mapWithKeys(
                         fn (ReportReason $r) => [$r->value => $r->label()]
                     ))
-                    ->label('Reason'),
+                    ->label(__('trust-safety::trust-safety.fields.reason')),
             ])
             ->actions([
                 ViewAction::make(),
@@ -222,5 +224,22 @@ class ReportResource extends Resource
         return app(AdminQueueSlaSettings::class)->isOverdue(AdminQueue::Report, $record->created_at)
             ? __('shared::shared.admin_queue_sla.overdue')
             : __('shared::shared.admin_queue_sla.within_sla');
+    }
+
+    public static function formatReportableType(?string $state): string
+    {
+        if ($state === null || $state === '') {
+            return '';
+        }
+
+        $normalized = class_basename($state);
+        $snake = str($normalized)->snake()->toString();
+
+        $key = 'trust-safety::trust-safety.target_types.'.$snake;
+        if (Lang::has($key)) {
+            return __($key);
+        }
+
+        return str($snake)->replace('_', ' ')->title()->toString();
     }
 }
