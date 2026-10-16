@@ -66,6 +66,8 @@
 
         <x-home.featured-vendors :vendors="$featuredVendors" />
         <x-home.how-it-works />
-        <x-home.vendor-join :block="$vendorJoinBlock" />
+        @if ($blockByType('vendor_join') || ! ($homepage['vendor_join_configured'] ?? false))
+            <x-home.vendor-join :block="$vendorJoinBlock" />
+        @endif
     </div>
 @endsection

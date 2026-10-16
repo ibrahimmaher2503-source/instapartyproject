@@ -44,6 +44,10 @@ it('lets an admin edit the policy through the existing CMS resource', function (
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     Livewire::test(EditCmsPage::class, ['record' => $page->getRouteKey()])
+        ->assertSee('العربية')
+        ->assertSee('العنوان (عربي)')
+        ->assertSee('المحتوى (عربي)')
+        ->assertSee('وصف الميتا (عربي)')
         ->fillForm([
             'title.en' => 'Updated refund policy',
             'title.ar' => 'سياسة استرداد محدثة',
