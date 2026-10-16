@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Modules\Booking\Application\Actions\SubmitBookingAction;
+use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Events\BookingSubmittedToVendor;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingAddress;
@@ -10,6 +12,34 @@ use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Identity\Domain\Models\User;
 use Illuminate\Support\Facades\Event;
+
+it('redirects to a booking committed before a post-submit failure', function (): void {
+    $customer = User::factory()->asCustomer()->create();
+    $booking = Booking::factory()->draft()->create(['customer_id' => $customer->id]);
+    $action = Mockery::mock(SubmitBookingAction::class);
+    $action->shouldReceive('execute')->once()->andReturnUsing(function () use ($booking): never {
+        $booking->forceFill(['lifecycle_status' => LifecycleStatus::VendorReview->value])->save();
+        throw new RuntimeException('post-commit listener failed');
+    });
+    $this->instance(SubmitBookingAction::class, $action);
+
+    $this->actingAs($customer)->post("/en/cart/{$booking->public_id}/submit")
+        ->assertRedirect("/en/account/bookings/{$booking->public_id}")
+        ->assertSessionHas('booking_submitted', $booking->public_id);
+    expect($booking->fresh()->lifecycle_status->getValue())->toBe('vendor_review');
+});
+
+it('rethrows a submit failure when no booking was committed', function (): void {
+    $customer = User::factory()->asCustomer()->create();
+    $booking = Booking::factory()->draft()->create(['customer_id' => $customer->id]);
+    $action = Mockery::mock(SubmitBookingAction::class);
+    $action->shouldReceive('execute')->once()->andThrow(new RuntimeException('creation failed'));
+    $this->instance(SubmitBookingAction::class, $action);
+
+    $this->actingAs($customer)->post("/en/cart/{$booking->public_id}/submit")
+        ->assertServerError()->assertSessionMissing('booking_submitted');
+    expect($booking->fresh()->lifecycle_status->getValue())->toBe('draft');
+});
 
 it('takes a successful submission to its booking with a reference and confirmation', function (string $locale, string $productType): void {
     Event::fake([BookingSubmittedToVendor::class]);
