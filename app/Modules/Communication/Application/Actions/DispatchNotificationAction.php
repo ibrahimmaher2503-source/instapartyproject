@@ -59,14 +59,37 @@ class DispatchNotificationAction implements NotificationDispatcher
                     $dto->audience,
                     $locale,
                 );
-                $rendered = $resolved->render($dto->context);
+                $rendered = $resolved->render($this->contextForLocale($dto->context, $locale));
             } catch (TemplateNotFoundException|InvalidArgumentException $e) {
                 $this->writeFailedDispatch($dto, $locale, $e->getMessage());
 
                 return null;
             }
 
-            $context = array_merge($dto->context, $rendered);
+            $translations = [];
+            foreach (['en', 'ar'] as $translationLocale) {
+                try {
+                    $translation = $this->templateResolver->resolve(
+                        $dto->eventKey,
+                        $dto->channel,
+                        $dto->audience,
+                        $translationLocale,
+                    )->render($this->contextForLocale($dto->context, $translationLocale));
+                    $translations[$translationLocale] = $translation;
+                } catch (TemplateNotFoundException|InvalidArgumentException) {
+                    // The resolved recipient locale remains authoritative.
+                }
+            }
+            $context = array_merge($dto->context, $rendered, [
+                'title_translations' => array_filter(array_map(
+                    static fn (array $translation): ?string => $translation['subject'],
+                    $translations,
+                )),
+                'body_translations' => array_filter(array_map(
+                    static fn (array $translation): string => $translation['body'],
+                    $translations,
+                )),
+            ]);
             $templateId = $resolved->templateId;
         }
 
@@ -128,6 +151,21 @@ class DispatchNotificationAction implements NotificationDispatcher
                 referenceId: $referenceId,
             ));
         }
+    }
+
+    /** @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function contextForLocale(array $context, string $locale): array
+    {
+        foreach ($context as $key => $value) {
+            if (str_ends_with((string) $key, '_translations') && is_array($value)) {
+                $baseKey = substr((string) $key, 0, -13);
+                $context[$baseKey] = $value[$locale] ?? $value['en'] ?? reset($value);
+            }
+        }
+
+        return $context;
     }
 
     private function resolveLocale(int $userId): string

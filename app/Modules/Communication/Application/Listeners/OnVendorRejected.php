@@ -40,6 +40,7 @@ class OnVendorRejected implements ShouldQueue
             'booking_id' => $booking->public_id,
             'vendor_name' => $vendorName,
             'rejection_reason' => is_array($reason) ? ($reason['en'] ?? $reason['ar'] ?? '') : '',
+            'rejection_reason_translations' => is_array($reason) ? $reason : [],
         ];
 
         foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {

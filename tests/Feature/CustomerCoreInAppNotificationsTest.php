@@ -89,3 +89,34 @@ it('adds missing core templates without replacing customer edits or reactivating
         )->count())->toBe(1);
     }
 });
+
+it('renders a rejection notification in the current storefront locale', function (): void {
+    Queue::fake();
+    app(CustomerCoreInAppNotificationTemplateSeeder::class)->run();
+    $customer = User::factory()->asCustomer()->create(['preferred_locale' => 'ar']);
+    $booking = Booking::factory()->create(['customer_id' => $customer->id]);
+    $bookingVendor = BookingVendor::factory()->create([
+        'booking_id' => $booking->id,
+        'rejection_reason' => ['en' => 'English rejection reason', 'ar' => 'سبب الرفض بالعربية'],
+    ]);
+
+    app(OnVendorRejected::class)->handle(new VendorRejected($bookingVendor));
+    $dispatch = NotificationDispatch::query()
+        ->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::InApp->value)
+        ->whereHas('template', fn ($query) => $query->where('event_key', 'booking.rejected'))
+        ->firstOrFail();
+    app(DatabaseNotificationAdapter::class)->send($dispatch);
+
+    $this->actingAs($customer)
+        ->get(route('storefront.account.notifications', ['locale' => 'en']))
+        ->assertOk()
+        ->assertSeeText('English rejection reason')
+        ->assertDontSeeText('سبب الرفض بالعربية');
+
+    $this->actingAs($customer)
+        ->get('/ar/account/notifications')
+        ->assertOk()
+        ->assertSeeText('سبب الرفض بالعربية')
+        ->assertDontSeeText('English rejection reason');
+});
