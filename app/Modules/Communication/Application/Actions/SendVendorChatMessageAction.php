@@ -68,19 +68,20 @@ final class SendVendorChatMessageAction
                 $this->writeAuditRow($thread, $vendorProfile, $log, 'chat.message.sent');
 
                 $gateway = $this->gateway;
-                DB::afterCommit(static function () use ($thread, $vendorProfile, $dto, $gateway): void {
+                DB::afterCommit(static function () use ($thread, $vendorProfile, $dto, $gateway, $localMessageId): void {
                     try {
                         $gateway->sendMessage(
                             $thread->firestore_thread_id ?? '',
                             (string) $vendorProfile->user_id,
                             $dto->body,
+                            $localMessageId,
                         );
                     } catch (Throwable $e) {
-                        // Gateway failure is non-fatal: the audit row is committed.
-                        Log::warning('FirestoreChatGateway::sendMessage failed', [
+                        Log::warning('communication.booking_chat.send_failed', [
                             'thread_id' => $thread->id,
-                            'error' => $e->getMessage(),
+                            'error_class' => class_basename($e),
                         ]);
+
                     }
                 });
             }

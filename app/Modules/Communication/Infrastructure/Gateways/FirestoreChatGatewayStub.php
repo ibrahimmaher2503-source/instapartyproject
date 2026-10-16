@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Infrastructure\Gateways;
 
 use App\Modules\Communication\Domain\Contracts\FirestoreChatGateway;
+use App\Modules\Communication\Domain\DTOs\FirestoreChatMessagePage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use RuntimeException;
 
 final class FirestoreChatGatewayStub implements FirestoreChatGateway
 {
@@ -16,10 +17,7 @@ final class FirestoreChatGatewayStub implements FirestoreChatGateway
         string $customerUserId,
         string $vendorUserId,
     ): void {
-        Log::info('FirestoreChatGateway::createThread', [
-            'thread_id' => $firestoreThreadId,
-            'booking' => $bookingPublicId,
-        ]);
+        Log::info('FirestoreChatGateway::createThread', ['thread_id' => $firestoreThreadId, 'booking' => $bookingPublicId]);
     }
 
     public function freezeThread(string $firestoreThreadId): void
@@ -32,13 +30,13 @@ final class FirestoreChatGatewayStub implements FirestoreChatGateway
         Log::info('FirestoreChatGateway::unfreezeThread', ['thread_id' => $firestoreThreadId]);
     }
 
-    public function sendMessage(string $firestoreThreadId, string $senderUserId, string $body): string
+    public function sendMessage(string $firestoreThreadId, string $senderUserId, string $body, ?string $messageId = null): string
     {
-        Log::info('FirestoreChatGateway::sendMessage', [
-            'thread_id' => $firestoreThreadId,
-            'sender' => $senderUserId,
-        ]);
+        throw new RuntimeException('FIRESTORE_CHAT_NOT_CONFIGURED');
+    }
 
-        return 'stub_msg_'.Str::uuid()->toString();
+    public function listMessages(string $firestoreThreadId, ?string $pageToken = null): FirestoreChatMessagePage
+    {
+        throw new RuntimeException('FIRESTORE_CHAT_NOT_CONFIGURED');
     }
 }

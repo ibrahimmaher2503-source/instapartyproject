@@ -42,7 +42,9 @@
             <p class="mt-1 text-sm text-ink-600">{{ __('communication::chat.account.booking_chats_description') }}</p>
         </div>
 
-        @if ($bookingChatConfigured)
+        @if (! $bookingChatConfigured)
+            <div class="sf-account-empty mb-3"><p>{{ __('communication::chat.account.booking_chat_unavailable') }}</p></div>
+        @endif
             <div class="grid gap-3">
                 @forelse ($bookingChats as $thread)
                     @php
@@ -66,6 +68,7 @@
                                 </div>
                                 <span class="rounded-full border px-3 py-1 text-sm">{{ __('communication::chat.thread_status.'.$threadState) }}</span>
                             </div>
+                            <a class="sf-text-link mt-3 inline-flex" href="{{ route('storefront.account.chats.thread', ['locale' => $locale, 'threadPublicId' => $thread->public_id]) }}">{{ __('communication::chat.account.open_booking_chat') }}</a>
                             <a class="sf-text-link mt-3 inline-flex" href="{{ route('storefront.account.bookings.show', ['locale' => $locale, 'publicId' => $bookingReference->publicId]) }}">{{ __('account.view_details') }}</a>
                         </article>
                     @endif
@@ -74,8 +77,5 @@
                 @endforelse
             </div>
             {{ $bookingChats->links() }}
-        @else
-            <div class="sf-account-empty"><p>{{ __('communication::chat.account.booking_chat_unavailable') }}</p></div>
-        @endif
     </section>
 @endsection

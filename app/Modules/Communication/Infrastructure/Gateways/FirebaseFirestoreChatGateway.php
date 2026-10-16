@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Infrastructure\Gateways;
 
 use App\Modules\Communication\Domain\Contracts\FirestoreChatGateway;
+use App\Modules\Communication\Domain\DTOs\FirestoreChatMessage;
+use App\Modules\Communication\Domain\DTOs\FirestoreChatMessagePage;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -22,6 +25,8 @@ use RuntimeException;
  */
 final class FirebaseFirestoreChatGateway implements FirestoreChatGateway
 {
+    private const MESSAGE_PAGE_SIZE = 50;
+
     private const TOKEN_URI = 'https://oauth2.googleapis.com/token';
 
     private const SCOPE = 'https://www.googleapis.com/auth/datastore';
@@ -75,9 +80,9 @@ final class FirebaseFirestoreChatGateway implements FirestoreChatGateway
         ], ['frozen', 'status']);
     }
 
-    public function sendMessage(string $firestoreThreadId, string $senderUserId, string $body): string
+    public function sendMessage(string $firestoreThreadId, string $senderUserId, string $body, ?string $messageId = null): string
     {
-        $messageId = Str::ulid()->toBase32();
+        $messageId ??= Str::ulid()->toBase32();
 
         $this->patchDocument("threads/{$firestoreThreadId}/messages/{$messageId}", [
             'senderUserId' => $this->stringValue($senderUserId),
@@ -88,6 +93,55 @@ final class FirebaseFirestoreChatGateway implements FirestoreChatGateway
         ]);
 
         return $messageId;
+    }
+
+    public function listMessages(string $firestoreThreadId, ?string $pageToken = null): FirestoreChatMessagePage
+    {
+        $url = sprintf(
+            'https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/threads/%s/messages',
+            $this->projectId,
+            rawurlencode($firestoreThreadId),
+        );
+        $query = ['pageSize' => self::MESSAGE_PAGE_SIZE, 'orderBy' => 'createdAt desc'];
+        if ($pageToken !== null && $pageToken !== '') {
+            $query['pageToken'] = $pageToken;
+        }
+
+        $response = $this->http->get($url, [
+            'headers' => ['Authorization' => 'Bearer '.$this->accessToken()],
+            'query' => $query,
+        ]);
+        $data = json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $messages = [];
+
+        foreach ($data['documents'] ?? [] as $document) {
+            $fields = $document['fields'] ?? [];
+            $senderUserId = $fields['senderUserId']['stringValue'] ?? null;
+            $body = $fields['body']['stringValue'] ?? null;
+            $createdAt = $fields['createdAt']['timestampValue'] ?? $document['createTime'] ?? null;
+            $name = $document['name'] ?? null;
+
+            if (! is_string($senderUserId) || ! is_string($name) || ! is_string($createdAt)
+                || ($body !== null && ! is_string($body))) {
+                throw new RuntimeException('Firestore returned an invalid chat message document.');
+            }
+
+            $messages[] = new FirestoreChatMessage(
+                id: basename($name),
+                senderUserId: $senderUserId,
+                body: $body,
+                createdAt: Carbon::parse($createdAt)->utc(),
+                blocked: (bool) ($fields['blocked']['booleanValue'] ?? false),
+                redacted: (bool) ($fields['redacted']['booleanValue'] ?? false),
+            );
+        }
+
+        $nextPageToken = $data['nextPageToken'] ?? null;
+
+        return new FirestoreChatMessagePage(
+            messages: $messages,
+            nextPageToken: is_string($nextPageToken) && $nextPageToken !== '' ? $nextPageToken : null,
+        );
     }
 
     /**

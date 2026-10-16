@@ -19,9 +19,11 @@
         </x-filament::section>
 
         @include('vendor-portal.components.chat-messages-list')
+        @include('vendor-portal.components.chat-history-controls')
 
     @elseif ($this->state === \App\Modules\Communication\Domain\Enums\ChatPanelState::Closed)
         @include('vendor-portal.components.chat-messages-list')
+        @include('vendor-portal.components.chat-history-controls')
 
         <p>{{ __('communication::chat.closed_notice') }}</p>
 
@@ -30,6 +32,7 @@
 
     @else
         @include('vendor-portal.components.chat-messages-list')
+        @include('vendor-portal.components.chat-history-controls')
 
         @if ($flashMessage)
             <x-filament::badge :color="$isBlocked ? 'danger' : 'success'">
