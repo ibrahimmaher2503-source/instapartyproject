@@ -10,10 +10,12 @@ use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Discovery\Application\Listeners\LogSearchQueryListener;
 use App\Modules\Discovery\Application\Listeners\ServiceIndexListener;
 use App\Modules\Discovery\Domain\Contracts\AlternativeVendorFinder;
+use App\Modules\Discovery\Domain\Contracts\PackageRecommendationOccasionReferenceReader;
 use App\Modules\Discovery\Domain\Contracts\PackageRecommendationReader;
 use App\Modules\Discovery\Domain\Contracts\SearchRepository;
 use App\Modules\Discovery\Domain\Events\ServiceSearchPerformed;
 use App\Modules\Discovery\Infrastructure\Repositories\EloquentAlternativeVendorFinder;
+use App\Modules\Discovery\Infrastructure\Repositories\EloquentPackageRecommendationOccasionReferenceReader;
 use App\Modules\Discovery\Infrastructure\Repositories\EloquentPackageRecommendationReader;
 use App\Modules\Discovery\Infrastructure\Repositories\EloquentSearchRepository;
 use Illuminate\Support\Facades\Event;
@@ -31,6 +33,7 @@ class DiscoveryServiceProvider extends ServiceProvider
 
         $this->app->bind(AlternativeVendorFinder::class, EloquentAlternativeVendorFinder::class);
         $this->app->bind(PackageRecommendationReader::class, EloquentPackageRecommendationReader::class);
+        $this->app->bind(PackageRecommendationOccasionReferenceReader::class, EloquentPackageRecommendationOccasionReferenceReader::class);
     }
 
     public function boot(): void

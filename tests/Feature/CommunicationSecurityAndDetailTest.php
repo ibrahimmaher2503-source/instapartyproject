@@ -81,10 +81,11 @@ it('renders communication and trust safety detail pages', function (): void {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     $this->get('/admin/reports/'.$report->public_id)->assertOk();
-    $this->get('/admin/campaigns/'.$campaign->public_id)->assertOk();
+    $this->get('/admin/campaigns/'.$campaign->public_id)->assertOk()->assertSee('—');
     $this->get('/admin/campaigns/'.$campaign->getKey())->assertNotFound();
     $this->get('/admin/chat-moderation-flags/'.$flag->getKey())->assertOk();
-    $this->get('/admin/chat-threads/'.$flag->thread->getKey())->assertOk();
+    $this->get('/admin/chat-threads/'.$flag->thread->public_id)->assertOk();
+    $this->get('/admin/chat-threads/'.$flag->thread->getKey())->assertNotFound();
 });
 
 it('renders message log and spreadsheet import detail pages', function (): void {

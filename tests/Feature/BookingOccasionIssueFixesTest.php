@@ -16,11 +16,12 @@ use App\Modules\Booking\Filament\Resources\BookingResource\Pages\ViewBooking;
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\BookingVendorsRelationManager;
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\PaymentsRelationManager;
 use App\Modules\Catalog\Application\Actions\DeleteOccasionAction;
-use App\Modules\Catalog\Application\Actions\ListPublicOccasionsAction;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Occasion;
+use App\Modules\Catalog\Filament\Resources\OccasionResource\Pages\ListOccasions;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages\CreateVendorSaleService;
+use App\Modules\Discovery\Domain\Models\PackageRecommendation;
 use App\Modules\Geography\Domain\Models\City;
 use App\Modules\Geography\Domain\Models\Governorate;
 use App\Modules\Identity\Domain\Models\User;
@@ -34,20 +35,66 @@ use App\Modules\Subscriptions\Domain\Contracts\SubscriptionPolicyContract;
 use Carbon\CarbonImmutable;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
-it('retains existing booking references when an in-use occasion is soft deleted', function (): void {
+it('blocks soft-deleting an occasion referenced by booking history', function (): void {
     $occasion = Occasion::factory()->active()->create();
     $booking = Booking::factory()->create(['occasion_id' => $occasion->id]);
 
-    app(DeleteOccasionAction::class)->execute($occasion);
+    expect(fn () => app(DeleteOccasionAction::class)->execute($occasion))
+        ->toThrow(ValidationException::class);
 
     expect($booking->fresh()->occasion_id)->toBe($occasion->id)
-        ->and(Occasion::withTrashed()->findOrFail($occasion->id)->trashed())->toBeTrue()
-        ->and(app(ListPublicOccasionsAction::class)->execute()->pluck('id'))->not->toContain($occasion->id);
+        ->and(Occasion::findOrFail($occasion->id)->trashed())->toBeFalse()
+        ->and(DB::table('audit_logs')->where('auditable_id', $occasion->id)->where('action', 'occasion_deleted')->exists())->toBeFalse();
+});
+
+it('blocks deleting an occasion linked to service subcategories or package recommendations', function (): void {
+    $occasion = Occasion::factory()->active()->create();
+    $category = Category::factory()->create();
+    $category->occasions()->attach($occasion->id);
+
+    expect(fn () => app(DeleteOccasionAction::class)->execute($occasion))
+        ->toThrow(ValidationException::class);
+
+    $category->occasions()->detach($occasion->id);
+    PackageRecommendation::query()->create([
+        'public_id' => (string) Str::ulid(),
+        'slug' => 'occasion-reference-'.Str::lower(Str::random(8)),
+        'name' => ['en' => 'Occasion reference', 'ar' => 'مرجع المناسبة'],
+        'occasion_id' => $occasion->id,
+    ]);
+
+    expect(fn () => app(DeleteOccasionAction::class)->execute($occasion))
+        ->toThrow(ValidationException::class);
+    expect(Occasion::findOrFail($occasion->id)->trashed())->toBeFalse();
+});
+
+it('restores an unused soft-deleted occasion from the admin trashed filter', function (): void {
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $admin = User::factory()->superAdmin()->create();
+    foreach (['view_any_occasion', 'restore_occasion'] as $ability) {
+        $admin->givePermissionTo(Permission::findOrCreate($ability, 'web'));
+    }
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    $this->actingAs($admin);
+
+    $occasion = Occasion::factory()->active()->create();
+    app(DeleteOccasionAction::class)->execute($occasion, $admin);
+
+    Livewire::test(ListOccasions::class)
+        ->filterTable('trashed', '0')
+        ->assertTableActionVisible('restore', $occasion)
+        ->callTableAction('restore', $occasion)
+        ->assertHasNoTableActionErrors();
+
+    expect(Occasion::find($occasion->id)?->trashed())->toBeFalse()
+        ->and(DB::table('audit_logs')->where('auditable_id', $occasion->id)->where('action', 'occasion_restored')->exists())->toBeTrue();
 });
 
 it('shows only active linked occasions in the vendor service form guidance', function (): void {

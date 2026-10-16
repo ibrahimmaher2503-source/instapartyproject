@@ -64,7 +64,7 @@ class VendorImportDigitalServicesPage extends Page implements HasForms
                 ->label(__('catalog.download_template'))
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
-                ->url(route('vendor.catalog.import.template', ['type' => 'digital']))
+                ->url(route('vendor.catalog.import.template.web', ['type' => 'digital']))
                 ->openUrlInNewTab(),
         ];
     }
@@ -94,6 +94,7 @@ class VendorImportDigitalServicesPage extends Page implements HasForms
 
     public function import(ImportDigitalServicesFromExcelAction $action): void
     {
+        abort_unless(static::canAccess(), 403);
         $data = $this->form->getState();
         $vendor = auth()->user()?->vendorProfile;
 

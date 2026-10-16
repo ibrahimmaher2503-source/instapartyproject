@@ -6,11 +6,13 @@ namespace App\Modules\Communication\Filament\Resources;
 
 use App\Modules\Communication\Domain\Models\ChatModerationFlag;
 use App\Modules\Communication\Domain\Models\ChatThread;
+use App\Modules\Communication\Filament\Resources\ChatThreadResource\Components\ChatModerationHistory;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource\Pages;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource\Pages\ListChatThreads;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource\Pages\ViewChatThread;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use Filament\Infolists\Components\Livewire as LivewireEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -143,33 +145,8 @@ class ChatThreadResource extends Resource
 
             Section::make(__('chat_moderation.sections.messages'))
                 ->schema([
-                    RepeatableEntry::make('messages')
-                        ->label('')
-                        ->schema([
-                            TextEntry::make('sender.name')
-                                ->label(__('chat_moderation.audit.event_actor'))
-                                ->default('<deleted user>'),
-                            TextEntry::make('created_at')
-                                ->label(__('chat_moderation.columns.last_message_at'))
-                                ->dateTime(timezone: config('app.timezone', 'UTC')),
-                            TextEntry::make('body_view')
-                                ->label(__('chat_moderation.sections.message_body'))
-                                ->getStateUsing(function ($record): string {
-                                    if ($record->redacted) {
-                                        $en = '<message redacted by moderation>';
-                                        $ar = '<تم حجب الرسالة بواسطة الإشراف>';
-
-                                        return $en.' / '.$ar;
-                                    }
-
-                                    // chat_message_log.body is the mirrored content (FR-EXT-056-008).
-                                    $body = (string) ($record->body ?? '');
-
-                                    return $body !== '' ? $body : '['.__('chat_moderation.firestore_placeholder').']';
-                                })
-                                ->columnSpanFull(),
-                        ])
-                        ->columns(2),
+                    LivewireEntry::make(ChatModerationHistory::class)
+                        ->columnSpanFull(),
                 ])
                 ->collapsible(),
 

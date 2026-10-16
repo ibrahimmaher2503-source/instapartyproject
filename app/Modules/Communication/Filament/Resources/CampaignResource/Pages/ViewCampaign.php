@@ -46,7 +46,7 @@ class ViewCampaign extends ViewRecord implements HasTable
                         TextEntry::make('scheduled_at')
                             ->label(__('communication.view_campaign.field_scheduled_at'))
                             ->dateTime()
-                            ->default('—'),
+                            ->placeholder('—'),
                         TextEntry::make('segment_filters')
                             ->label(__('communication.view_campaign.field_segment_filters'))
                             ->state(fn ($record) => collect($record->segment_filters ?? [])->map(fn ($value, $key) => "{$key}: {$value}")->implode("\n"))

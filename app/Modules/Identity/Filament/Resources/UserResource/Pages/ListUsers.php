@@ -12,6 +12,7 @@ use App\Modules\Identity\Filament\Resources\UserResource;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
@@ -33,6 +34,9 @@ class ListUsers extends ListRecords
                 TextInput::make('name')->label(__('identity.fields.name'))->required()->maxLength(255),
                 TextInput::make('email')->label(__('identity.fields.email'))->email()->required()->maxLength(255),
                 TextInput::make('phone_e164')->label(__('identity.fields.phone'))->required()->regex('/^\+[1-9][0-9]{6,14}$/D'),
+                Toggle::make('verify_email')->label(__('identity::account_management.verify_email'))->default(false),
+                Toggle::make('verify_phone')->label(__('identity::account_management.verify_phone'))->default(false),
+                Toggle::make('send_invite')->label(__('identity::account_management.send_invite'))->default(true),
                 Select::make('account_type')->label(__('identity::account_management.account_type'))->required()->live()->default('staff')->options([
                     'staff' => __('identity::account_management.staff'), 'customer' => __('identity.roles.customer'), 'vendor' => __('identity.roles.vendor'),
                 ]),
@@ -61,11 +65,18 @@ class ListUsers extends ListRecords
                 $operator = Auth::guard('web')->user();
                 abort_unless($operator instanceof User, 403);
                 $user = app(AdminCreateAccountAction::class)->execute($operator, $data);
-                $status = app(AdminSendUserPasswordResetLinkAction::class)->execute($operator, $user);
+                $status = ($data['send_invite'] ?? true)
+                    ? app(AdminSendUserPasswordResetLinkAction::class)->execute($operator, $user)
+                    : null;
                 $notification = Notification::make()->title(__('identity::account_management.created'))
-                    ->body($status === Password::RESET_LINK_SENT
-                        ? __('identity::account_management.invitation_requested') : __('identity::account_management.invitation_failed'));
-                $status === Password::RESET_LINK_SENT ? $notification->success() : $notification->warning();
+                    ->body(match ($status) {
+                        Password::RESET_LINK_SENT => __('identity::account_management.invitation_requested'),
+                        null => __('identity::account_management.invitation_not_requested'),
+                        default => __('identity::account_management.invitation_failed'),
+                    });
+                $status === Password::RESET_LINK_SENT || $status === null
+                    ? $notification->success()
+                    : $notification->warning();
                 $notification->send();
                 $this->redirect(UserResource::getUrl('view', ['record' => $user]));
             })];

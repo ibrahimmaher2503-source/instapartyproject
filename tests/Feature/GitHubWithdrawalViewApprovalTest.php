@@ -38,7 +38,9 @@ it('shows approval provenance and history in the withdrawal modal without rewrit
         ->assertSeeText(__('audit_timeline.section_title'))
         ->assertSeeText($actionLabels['withdrawal.approved'])
         ->assertSeeText(Carbon::parse('2026-10-12 18:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone)
-        ->assertSeeText(Carbon::parse('2026-10-12 16:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone);
+        ->assertSeeText(Carbon::parse('2026-10-12 16:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' '.$timezone)
+        ->assertDontSeeText(Carbon::parse('2026-10-12 18:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' e')
+        ->assertDontSeeText(Carbon::parse('2026-10-12 16:50:00', 'UTC')->setTimezone($timezone)->translatedFormat('d M Y H:i').' e');
 
     $after = $withdrawal->refresh()->getRawOriginal();
     ksort($after);

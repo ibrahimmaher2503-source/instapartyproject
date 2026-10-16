@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 return [
     'message_redacted' => 'تم إخفاء الرسالة بواسطة الإشراف',
+    'deleted_sender' => 'مشارك محذوف',
+    'unknown_sender' => 'مشارك غير معروف',
+    'no_messages' => 'لا توجد رسائل متاحة لهذه المحادثة.',
+    'refresh_history' => 'إعادة محاولة تحميل الرسائل',
     // Index columns
     'columns' => [
         'booking_ref' => 'الحجز',

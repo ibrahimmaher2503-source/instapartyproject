@@ -28,6 +28,9 @@ final class AdminCreateAccountAction
             'account_type' => ['required', Rule::in(['staff', 'customer', 'vendor'])],
             'role' => ['required_if:account_type,staff', 'nullable', Rule::in(['admin', 'super_admin', 'booking_manager']),
                 Rule::exists('roles', 'name')->where('guard_name', 'web')],
+            'verify_email' => ['sometimes', 'boolean'],
+            'verify_phone' => ['sometimes', 'boolean'],
+            'send_invite' => ['sometimes', 'boolean'],
             'business_name' => ['required_if:account_type,vendor', 'nullable', 'array'],
             'business_name.en' => ['required_if:account_type,vendor', 'nullable', 'string', 'max:255'],
             'business_name.ar' => ['required_if:account_type,vendor', 'nullable', 'string', 'max:255'],
@@ -43,6 +46,8 @@ final class AdminCreateAccountAction
             abort_unless((int) Auth::guard('web')->id() === (int) $actor->id
                 && $actor->status === 'active' && $actor->hasRole('super_admin', 'web'), 403);
             $password = 'A1!'.Str::random(61);
+            $emailVerifiedAt = ($data['verify_email'] ?? false) ? now() : null;
+            $phoneVerifiedAt = ($data['verify_phone'] ?? false) ? now() : null;
             if ($data['account_type'] === 'vendor') {
                 $profile = app(RegisterVendorAction::class)->execute(RegisterVendorDTO::fromArray([
                     ...$data, 'password' => $password, 'password_confirmation' => $password,
@@ -60,11 +65,19 @@ final class AdminCreateAccountAction
                     CustomerProfile::create(['user_id' => $user->id, 'accepts_marketing' => false]);
                 }
             }
+            $user->forceFill([
+                'email_verified_at' => $emailVerifiedAt,
+                'phone_verified_at' => $phoneVerifiedAt,
+            ])->save();
             DB::table('audit_logs')->insert([
                 'public_id' => (string) Str::ulid(), 'auditable_type' => User::class,
                 'auditable_id' => $user->id, 'user_id' => $actor->id, 'action' => 'managed_account_created',
-                'changes' => json_encode(['account_type' => $data['account_type'],
-                    'role' => $data['account_type'] === 'staff' ? $data['role'] : $data['account_type']], JSON_THROW_ON_ERROR),
+                'changes' => json_encode([
+                    'account_type' => $data['account_type'],
+                    'role' => $data['account_type'] === 'staff' ? $data['role'] : $data['account_type'],
+                    'email_verified' => $user->email_verified_at !== null,
+                    'phone_verified' => $user->phone_verified_at !== null,
+                ], JSON_THROW_ON_ERROR),
                 'ip_address' => request()->ip(), 'user_agent' => request()->userAgent(), 'created_at' => now(),
             ]);
 

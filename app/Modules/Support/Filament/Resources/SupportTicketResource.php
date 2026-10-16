@@ -225,6 +225,21 @@ class SupportTicketResource extends Resource
                         );
                     },
                 ),
+                ScopedBulkAction::make(
+                    'resolveSelected',
+                    __('support::support.actions.resolve'),
+                    'update_support::ticket',
+                    static::class,
+                    function (SupportTicket $record): void {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof Authenticatable, 403);
+                        app(TransitionSupportTicketStatusAction::class)->execute(
+                            $record,
+                            $actor,
+                            SupportTicketStatus::Resolved,
+                        );
+                    },
+                ),
             ])
             ->emptyStateIcon('heroicon-o-chat-bubble-left-right')
             ->emptyStateHeading(__('support::support.empty.heading'))

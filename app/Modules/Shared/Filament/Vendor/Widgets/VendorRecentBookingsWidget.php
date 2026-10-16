@@ -59,7 +59,9 @@ class VendorRecentBookingsWidget extends TableWidget
                     ->label(__('vendor-portal.dashboard.recent_bookings.reference')),
                 TextColumn::make('booking.event_starts_at')
                     ->label(__('vendor-portal.dashboard.recent_bookings.event_date'))
-                    ->dateTime('d M Y H:i'),
+                    ->dateTime('d M Y H:i')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->suffix(fn (): string => ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')),
                 TextColumn::make('sub_status')
                     ->label(__('vendor-portal.dashboard.recent_bookings.status'))
                     ->badge()

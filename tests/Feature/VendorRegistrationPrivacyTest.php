@@ -38,6 +38,23 @@ it('ignores malicious global validation rules that query account existence', fun
         ->assertHasNoFormErrors(['email']);
 });
 
+it('clears password values from the Livewire snapshot after failed password validation', function () {
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+    $payload = privacyRegistrationForm('weak-password@example.test');
+    $payload['password'] = $payload['passwordConfirmation'] = 'weakpass';
+
+    $component = Livewire::test(RegisterVendorPage::class)
+        ->fillForm($payload)
+        ->call('register')
+        ->assertHasFormErrors(['password']);
+
+    expect(json_encode($component->snapshot, JSON_THROW_ON_ERROR))
+        ->not->toContain('weakpass')
+        ->not->toContain('passwordConfirmation');
+    expect(User::query()->where('email', 'weak-password@example.test')->exists())->toBeFalse()
+        ->and(VendorProfile::query()->count())->toBe(0);
+});
+
 it('returns the same neutral guest outcome for new existing and case-variant email addresses', function (string $kind) {
     $existing = User::factory()->create(['email' => 'existing@example.test']);
     Filament::setCurrentPanel(Filament::getPanel('vendor'));

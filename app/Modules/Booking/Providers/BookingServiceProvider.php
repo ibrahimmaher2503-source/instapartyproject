@@ -27,6 +27,7 @@ use App\Modules\Booking\Console\Commands\ExpireStaleVendorReviewsCommand;
 use App\Modules\Booking\Console\Commands\ExpireVendorProposalsCommand;
 use App\Modules\Booking\Console\Commands\ReleaseExpiredReservationsCommand;
 use App\Modules\Booking\Domain\Contracts\BookingHistoryReader;
+use App\Modules\Booking\Domain\Contracts\BookingOccasionReferenceReader;
 use App\Modules\Booking\Domain\Contracts\BookingRepository;
 use App\Modules\Booking\Domain\Contracts\CustomerBookingChatReader;
 use App\Modules\Booking\Domain\Events\AdminSuggestedAlternativeVendors;
@@ -59,6 +60,7 @@ use App\Modules\Booking\Infrastructure\Loyalty\EloquentBookingDraftReader;
 use App\Modules\Booking\Infrastructure\Loyalty\EloquentBookingItemNetAmountReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingHistoryReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingItemReviewabilityReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingOccasionReferenceReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingPayoutWriter;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingRepository;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingVendorReviewabilityReader;
@@ -90,6 +92,7 @@ class BookingServiceProvider extends ServiceProvider
         $this->app->singleton(BookingItemReviewabilityReader::class, EloquentBookingItemReviewabilityReader::class);
         $this->app->singleton(BookingVendorReviewabilityReader::class, EloquentBookingVendorReviewabilityReader::class);
         $this->app->singleton(BookingHistoryReader::class, EloquentBookingHistoryReader::class);
+        $this->app->singleton(BookingOccasionReferenceReader::class, EloquentBookingOccasionReferenceReader::class);
         $this->app->singleton(CustomerBookingChatReader::class, EloquentCustomerBookingChatReader::class);
 
         // Cross-module contracts consumed by the Loyalty module.
