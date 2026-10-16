@@ -94,7 +94,7 @@
                                                     @method('PUT')
                                                     <label for="cart-quantity-{{ $item->public_id }}" class="text-sm text-ink-500">{{ __('storefront.service.quantity') }}</label>
                                                     <input id="cart-quantity-{{ $item->public_id }}" name="quantity" type="number" min="1" max="100" value="{{ $item->quantity }}" required aria-label="{{ __('storefront.service.quantity') }}: {{ $itemName }}" class="w-20 rounded-lg border border-ink-200 px-2 py-1 text-sm text-ink-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-300">
-                                                    <button type="submit" aria-label="{{ __('booking.actions.change_quantity') }}: {{ $itemName }}" class="text-xs font-bold text-secondary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-300">{{ __('booking.actions.change_quantity') }}</button>
+                                                    <button type="submit" aria-label="{{ __('booking.proposal_kind.change_quantity') }}: {{ $itemName }}" class="text-xs font-bold text-secondary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-300">{{ __('booking.proposal_kind.change_quantity') }}</button>
                                                 </form>
                                             @else
                                                 <p class="mt-1 text-sm text-ink-500">{{ __('storefront.service.quantity') }}: {{ $item->quantity }}</p>

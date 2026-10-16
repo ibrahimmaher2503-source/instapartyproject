@@ -117,6 +117,20 @@ it('updates sale and digital quantities with snapshot prices and replay-safe tot
     };
 })->with([ProductType::Sale, ProductType::Digital]);
 
+it('renders a localized cart quantity label instead of the raw translation key', function () use ($makeCartFixture): void {
+    ['customer' => $customer] = $makeCartFixture(ProductType::Sale);
+
+    $this->actingAs($customer)->get('/en/cart')
+        ->assertOk()
+        ->assertSee(__('booking.proposal_kind.change_quantity', [], 'en'))
+        ->assertDontSee('booking.actions.change_quantity');
+
+    $this->get('/ar/cart')
+        ->assertOk()
+        ->assertSee(__('booking.proposal_kind.change_quantity', [], 'ar'))
+        ->assertDontSee('booking.actions.change_quantity');
+});
+
 it('keeps rental quantity fixed while preserving its existing value', function () use ($makeCartFixture): void {
     ['customer' => $customer, 'booking' => $booking, 'item' => $item, 'reservation' => $reservation] = $makeCartFixture(ProductType::Rental);
     $item->update(['quantity' => 3, 'line_total_minor' => 270000]);
