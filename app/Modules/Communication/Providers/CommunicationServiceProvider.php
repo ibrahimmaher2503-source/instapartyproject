@@ -9,6 +9,7 @@ use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingHistoryReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingReferenceReader;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
+use App\Modules\Communication\Application\Services\ProviderSettingsResolver;
 use App\Modules\Communication\Application\Listeners\CreateChatThreadOnBookingConfirmed;
 use App\Modules\Communication\Application\Listeners\DispatchChatFlagEscalatedNotificationsListener;
 use App\Modules\Communication\Application\Listeners\DispatchChatThreadFrozenNotificationsListener;
@@ -167,21 +168,30 @@ class CommunicationServiceProvider extends ServiceProvider
      */
     private function bindFirestoreChatGateway(): void
     {
-        $credentials = (string) config('services.firebase.credentials', '');
-        $projectId = (string) config('services.firebase.project_id', '');
-
-        if ($credentials === '' || $projectId === '' || $this->app->environment(['local', 'testing'])) {
+        if ($this->app->environment(['local', 'testing'])) {
             $this->app->bind(FirestoreChatGateway::class, FirestoreChatGatewayStub::class);
 
             return;
         }
 
-        $this->app->singleton(FirestoreChatGateway::class, fn ($app) => new FirebaseFirestoreChatGateway(
-            new Client,
-            $app['cache.store'],
-            $projectId,
-            $credentials,
-        ));
+        $this->app->singleton(FirestoreChatGateway::class, function ($app): FirestoreChatGateway {
+            $credentials = (string) config('services.firebase.credentials', '');
+            $projectId = (string) config('services.firebase.project_id', '');
+
+            if ($credentials === '') {
+                $settings = $app->make(ProviderSettingsResolver::class)->firebase();
+                $credentials = $settings['enabled'] && is_array($settings['credentials'])
+                    ? json_encode($settings['credentials'], JSON_THROW_ON_ERROR)
+                    : '';
+                $projectId = (string) ($settings['project_id'] ?? '');
+            }
+
+            if ($credentials === '' || $projectId === '') {
+                return $app->make(FirestoreChatGatewayStub::class);
+            }
+
+            return new FirebaseFirestoreChatGateway(new Client, $app['cache.store'], $projectId, $credentials);
+        });
     }
 
     public function boot(): void

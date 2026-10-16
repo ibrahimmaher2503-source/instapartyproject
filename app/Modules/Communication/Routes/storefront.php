@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Modules\Communication\Http\Controllers\Web\CustomerConversationInboxController;
+use App\Modules\Communication\Http\Controllers\Web\CustomerBookingChatController;
 use App\Modules\Communication\Http\Controllers\Web\CustomerVendorInquiryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:customer'])->group(function (): void {
     Route::get('account/chats', CustomerConversationInboxController::class)->name('account.chats');
+    Route::get('account/chats/{threadPublicId}', CustomerBookingChatController::class)->name('account.chats.thread');
     Route::get('services/{servicePublicId}/inquiries/create', [CustomerVendorInquiryController::class, 'create'])
         ->name('inquiries.create');
     Route::post('services/{servicePublicId}/inquiries', [CustomerVendorInquiryController::class, 'store'])
