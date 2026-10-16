@@ -29,6 +29,7 @@ use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Domain\Enums\TriggerKind;
 use Filament\Facades\Filament;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Storage;
@@ -353,4 +354,34 @@ it('archives through the admin action for a permissioned super-admin without the
         ->and($admin->hasRole('super_admin'))->toBeTrue()
         ->and(app(ArchiveServiceAction::class)->execute($service, $admin)->fresh()->status)->toBeInstanceOf(ArchivedState::class)
         ->and(Context::get('trigger_kind'))->toBe(TriggerKind::Admin->value);
+});
+
+it('archives a published sale service from its admin row and removes it from the storefront', function (): void {
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo([
+        Permission::findOrCreate('archive_service', 'web'),
+        Permission::findOrCreate('view_any_sale::service', 'web'),
+    ]);
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $this->actingAs($admin);
+    $draft = Service::factory()->sale()->create();
+    Livewire::test(ListSaleServices::class)->assertTableActionHidden('archive', $draft);
+
+    $service = Service::factory()->sale()->published()->create();
+    Livewire::test(ListSaleServices::class)->callTableAction('archive', $service);
+
+    expect($service->fresh()->status)->toBeInstanceOf(ArchivedState::class);
+    $this->get(route('storefront.services.show', ['locale' => 'en', 'servicePublicId' => $service->public_id]))
+        ->assertNotFound();
+});
+
+it('denies archiving a service without archive permission', function (): void {
+    $admin = User::factory()->asAdmin()->create();
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    $this->actingAs($admin);
+    $service = Service::factory()->sale()->published()->create();
+
+    expect(fn () => app(ArchiveServiceAction::class)->execute($service, $admin))
+        ->toThrow(AuthorizationException::class);
 });
