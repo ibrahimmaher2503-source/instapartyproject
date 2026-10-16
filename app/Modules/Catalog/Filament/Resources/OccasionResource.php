@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Filament\Resources;
 
 use App\Modules\Catalog\Application\Actions\DeleteOccasionAction;
+use App\Modules\Catalog\Application\Actions\RestoreOccasionAction;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\Occasion;
@@ -23,15 +24,23 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class OccasionResource extends Resource
 {
     protected static ?string $model = Occasion::class;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withTrashed();
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
@@ -258,17 +267,36 @@ class OccasionResource extends Resource
                     ->sortable()
                     ->label(__('catalog.sort_order')),
 
+                TextColumn::make('deleted_at')
+                    ->label(__('catalog.deleted_at'))
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([TrashedFilter::make()])
             ->defaultSort('sort_order')
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->authorize('update')
+                    ->visible(fn (Occasion $record): bool => ! $record->trashed()),
                 DeleteAction::make()
+                    ->authorize('delete')
+                    ->modalDescription(__('catalog.occasion_delete_warning'))
+                    ->visible(fn (Occasion $record): bool => ! $record->trashed())
                     ->using(function (Occasion $record): bool {
                         app(DeleteOccasionAction::class)->execute($record, auth()->user());
+
+                        return true;
+                    }),
+                RestoreAction::make()
+                    ->authorize('restore')
+                    ->visible(fn (Occasion $record): bool => $record->trashed())
+                    ->using(function (Occasion $record): bool {
+                        app(RestoreOccasionAction::class)->execute($record, auth()->user());
 
                         return true;
                     }),

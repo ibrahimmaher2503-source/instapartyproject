@@ -40,6 +40,7 @@ use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
 use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Brick\Money\Money;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -49,6 +50,7 @@ use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -204,6 +206,40 @@ class BookingResource extends Resource
             ])
             ->filters([
                 OperationalDateFilter::make(),
+                SelectFilter::make('vendor_id')
+                    ->label(__('payments.filters.vendor'))
+                    ->relationship('vendors.vendor', 'business_name->'.app()->getLocale())
+                    ->searchable(),
+                Filter::make('amount')
+                    ->label(__('booking.columns.total'))
+                    ->form([
+                        TextInput::make('min')->numeric()->minValue(0)->maxLength(21)
+                            ->rules(['nullable', 'regex:/^\\d{1,18}(?:\\.\\d{1,2})?$/D'])
+                            ->label(__('payments.filters.amount_min')),
+                        TextInput::make('max')->numeric()->minValue(0)->maxLength(21)
+                            ->rules(['nullable', 'regex:/^\\d{1,18}(?:\\.\\d{1,2})?$/D'])
+                            ->label(__('payments.filters.amount_max')),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $toMinor = static function (mixed $amount): ?string {
+                            if ((! is_string($amount)) && (! is_int($amount))) {
+                                return null;
+                            }
+
+                            $amount = trim((string) $amount);
+
+                            return preg_match('/^\\d{1,18}(?:\\.\\d{1,2})?$/D', $amount)
+                                ? (string) Money::of($amount, 'EGP')->getMinorAmount()
+                                : null;
+                        };
+                        $minimum = $toMinor($data['min'] ?? null);
+                        $maximum = $toMinor($data['max'] ?? null);
+
+                        return $query
+                            ->when($minimum !== null || $maximum !== null, fn (Builder $query): Builder => $query->where('total_currency', 'EGP'))
+                            ->when($minimum !== null, fn (Builder $query): Builder => $query->where('total_minor', '>=', $minimum))
+                            ->when($maximum !== null, fn (Builder $query): Builder => $query->where('total_minor', '<=', $maximum));
+                    }),
                 SelectFilter::make('lifecycle_status')
                     ->label(__('booking.columns.status'))
                     ->options(collect(LifecycleStatus::cases())->mapWithKeys(fn ($status): array => [$status->value => __('booking.lifecycle_status.'.$status->value)])->all()),

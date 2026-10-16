@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 return [
     'message_redacted' => 'Message hidden by moderation',
+    'deleted_sender' => 'Deleted participant',
+    'unknown_sender' => 'Unknown participant',
+    'no_messages' => 'No messages are available for this conversation.',
+    'refresh_history' => 'Retry loading messages',
     // Status pills
     'status' => [
         'open' => 'Open',

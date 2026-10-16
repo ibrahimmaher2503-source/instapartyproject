@@ -56,7 +56,7 @@
     <dl class="sf-account-details"><div><dt>{{ __('account.delivery_total') }}</dt><dd>{{ $booking->delivery_total->formatTo(app()->getLocale() === 'ar' ? 'ar_EG' : 'en_GB') }}</dd></div></dl>
     @if ($canCancel)
         <form method="POST" action="{{ url('/api/v1/customer/bookings/'.$booking->public_id.'/cancel') }}" data-booking-api-form data-preview="{{ url('/api/v1/customer/bookings/'.$booking->public_id.'/cancellation-preview') }}" data-confirm="{{ __('account.cancel_confirm') }}" data-blocked="{{ __('account.cancellation_unavailable') }}" data-manual-review="{{ __('account.cancel_manual_review') }}" data-error="{{ __('account.action_error') }}">
-            <button class="sf-button sf-button--quiet" type="submit">{{ __('account.cancel_booking') }}</button>
+            <button class="sf-button sf-button--danger" type="submit">{{ __('account.cancel_booking') }}</button>
             <p data-booking-feedback role="status" aria-live="polite" class="whitespace-pre-wrap"></p>
         </form>
     @else

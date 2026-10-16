@@ -119,7 +119,7 @@
                     @endif
                     <dl class="mt-6 space-y-4 border-b border-white/15 pb-6 text-sm"><div class="flex justify-between gap-4"><dt class="text-white/65">{{ __('storefront.cart.subtotal') }}</dt><dd><bdi dir="ltr">{{ Money::ofMinor((int) $items->sum('line_total_minor'), $currency)->formatTo($locale) }}</bdi></dd></div><div class="flex justify-between gap-4"><dt class="text-white/65">{{ __('storefront.cart.delivery') }}</dt><dd><bdi dir="ltr">{{ Money::ofMinor((int) ($booking->delivery_total_minor ?? 0), $currency)->formatTo($locale) }}</bdi></dd></div></dl>
                     <div class="flex justify-between gap-4 pt-5 text-lg font-extrabold"><span>{{ __('storefront.cart.total') }}</span><span><bdi dir="ltr">{{ Money::ofMinor($totalMinor, $currency)->formatTo($locale) }}</bdi></span></div>
-                    <form action="{{ route('storefront.cart.submit', $booking->public_id) }}" method="POST" class="mt-7">@csrf<button type="submit" class="sf-button sf-button--light w-full justify-center">{{ __('storefront.checkout.event.submit') }} <span aria-hidden="true">↗</span></button></form>
+                    <form action="{{ route('storefront.cart.submit', $booking->public_id) }}" method="POST" class="mt-7">@csrf<button type="submit" class="sf-button sf-button--light w-full justify-center">{{ __('storefront.checkout.summary.submit') }} <span aria-hidden="true">↗</span></button></form>
                     <p class="mt-4 text-center text-xs leading-5 text-white/55">{{ __('storefront.home.trust.secure_sub') }}</p>
                 </aside>
             </section>

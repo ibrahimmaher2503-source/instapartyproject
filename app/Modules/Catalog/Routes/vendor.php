@@ -24,6 +24,10 @@ use App\Modules\Catalog\Http\Controllers\Vendor\VendorServiceStatsController;
 use App\Modules\Payments\Http\Middleware\IdempotencyKeyMiddleware;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(['web', 'auth:vendor', 'role:vendor', 'vendor.not_suspended', 'vendor.approved'])
+    ->get('/vendor-portal/catalog/import/template/{type}', DownloadImportTemplateController::class)
+    ->name('vendor.catalog.import.template.web');
+
 // Template downloads are static files, but they live on the vendor surface —
 // vendor role required (P0 hardening, vendor-portal audit 2026-06-04).
 Route::middleware(['api', 'auth:sanctum', 'role:vendor', 'vendor.not_suspended', 'vendor.approved'])->prefix('api/v1/vendor')->group(function (): void {

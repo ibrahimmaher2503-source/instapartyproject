@@ -34,6 +34,7 @@ use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
 use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use App\Modules\TrustSafety\Application\Actions\AssignBadgeToVendorAction;
 use BackedEnum;
 use Filament\Forms\Components\Repeater;
@@ -303,6 +304,7 @@ class VendorProfileResource extends Resource
         ];
 
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'approval_status', 'business_type', 'created_at'])])
             ->columns([
                 TextColumn::make('business_name')
                     ->label(__('identity.columns.business_name'))
@@ -721,8 +723,9 @@ class VendorProfileResource extends Resource
                         ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—')),
                     TextEntry::make('created_at')
                         ->label(__('identity.columns.created_at'))
-                        ->dateTime()
-                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
+                        ->dateTime('Y-m-d H:i')
+                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                        ->suffix(fn (): string => ' '.(auth()->user()?->timezone ?? 'Africa/Cairo')),
                 ]),
             InfolistSection::make(__('identity.sections.approved_product_types'))
                 ->schema([

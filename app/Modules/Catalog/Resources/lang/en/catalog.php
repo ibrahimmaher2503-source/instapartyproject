@@ -15,6 +15,8 @@ return [
     'service_themes' => 'Service Themes',
     'inactive' => 'Inactive',
     'deleted_at' => 'Deleted At',
+    'occasion_in_use' => 'This occasion is still referenced by bookings, service subcategories, or package recommendations. Remove catalog links before deleting it; booking history cannot be detached.',
+    'occasion_delete_warning' => 'Deletion is blocked while bookings, service subcategories, or package recommendations reference this occasion. Soft-deleted occasions can be restored from the Trashed filter.',
 
     'nav' => [
         'categories' => 'Categories',

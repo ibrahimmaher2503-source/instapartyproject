@@ -216,7 +216,7 @@ it('shows only main categories with an active compatible subcategory and localiz
     config(['catalog.digital_services_enabled' => true]);
     [$profile, $page] = batch07VendorCreateFixture($type);
     $eligibleRoot = Category::factory()->create(['parent_id' => null, 'allowed_product_types' => [$type->value]]);
-    Category::factory()->create(['parent_id' => $eligibleRoot->id, 'allowed_product_types' => [$type->value]]);
+    $eligibleChild = Category::factory()->create(['parent_id' => $eligibleRoot->id, 'allowed_product_types' => [$type->value]]);
 
     $emptyRoot = Category::factory()->create(['parent_id' => null, 'allowed_product_types' => [$type->value]]);
     Category::factory()->create(['parent_id' => $emptyRoot->id, 'allowed_product_types' => [$type->value], 'is_active' => false]);
@@ -230,5 +230,7 @@ it('shows only main categories with an active compatible subcategory and localiz
     $this->actingAs($profile->user, 'vendor');
     Livewire::test($page)
         ->assertFormFieldExists('main_category_id', fn (Select $field): bool => array_keys($field->getOptions()) === [$eligibleRoot->id]
-            && $field->getHelperText() === __('catalog.vendor_category_requires_subcategory_help'));
+            && $field->getHelperText() === __('catalog.vendor_category_requires_subcategory_help'))
+        ->fillForm(['main_category_id' => $eligibleRoot->id])
+        ->assertFormFieldExists('category_id', fn (Select $field): bool => array_keys($field->getOptions()) === [$eligibleChild->id]);
 })->with(['en', 'ar'])->with(ProductType::cases());

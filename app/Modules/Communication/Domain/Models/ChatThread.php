@@ -43,6 +43,11 @@ class ChatThread extends Model
         'frozen_at' => 'datetime',
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
+    }
+
     public function frozenByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'frozen_by');

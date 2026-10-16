@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Filament\Resources\ChatThreadResource\Pages;
 
-use App\Modules\Communication\Application\Actions\RecordChatModerationReadAction;
 use App\Modules\Communication\Domain\Models\ChatThread;
 use App\Modules\Communication\Filament\Actions\FreezeChatAction;
 use App\Modules\Communication\Filament\Actions\UnfreezeChatAction;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource;
 use Filament\Resources\Pages\ViewRecord;
-use Illuminate\Support\Facades\Auth;
 
 class ViewChatThread extends ViewRecord
 {
@@ -22,8 +20,6 @@ class ViewChatThread extends ViewRecord
 
         abort_unless($this->record instanceof ChatThread, 404);
 
-        $actorId = Auth::guard('web')->id();
-        app(RecordChatModerationReadAction::class)->execute($this->record, $actorId === null ? null : (int) $actorId);
     }
 
     /**

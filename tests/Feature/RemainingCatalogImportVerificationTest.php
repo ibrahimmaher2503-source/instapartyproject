@@ -14,11 +14,14 @@ use App\Modules\Catalog\Domain\Models\CategoryFieldSchema;
 use App\Modules\Catalog\Domain\Models\ExcelImport;
 use App\Modules\Catalog\Domain\Models\Occasion;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Filament\Vendor\Pages\VendorImportRentalServicesPage;
+use App\Modules\Catalog\Filament\Vendor\Pages\VendorImportSaleServicesPage;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Subscriptions\Application\DTOs\PolicyDecisionDto;
 use App\Modules\Subscriptions\Domain\Contracts\SubscriptionPolicyContract;
+use Filament\Facades\Filament;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -163,6 +166,21 @@ it('keeps the digital template inside the enabled approved-vendor scope', functi
 
     $this->actingAs(User::factory()->superAdmin()->create());
     $this->get('/admin/catalog/import/template/digital')->assertDownload('digital-template.xlsx');
+});
+
+it('scopes vendor import pages and template downloads to approved product types', function (): void {
+    $vendor = VendorProfile::factory()->approved()->create();
+    VendorApprovedProductType::factory()->forType(ProductType::Sale)->create(['vendor_profile_id' => $vendor->id]);
+    $this->actingAs($vendor->user, 'vendor');
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+
+    expect(VendorImportSaleServicesPage::canAccess())->toBeTrue()
+        ->and(VendorImportRentalServicesPage::canAccess())->toBeFalse();
+
+    $this->get(route('vendor.catalog.import.template.web', ['type' => 'sale']))
+        ->assertDownload('sale-template.xlsx');
+    $this->get(route('vendor.catalog.import.template.web', ['type' => 'rental']))
+        ->assertNotFound();
 });
 
 it('replays a keyed import once while a distinct key permits a fresh upload', function (): void {

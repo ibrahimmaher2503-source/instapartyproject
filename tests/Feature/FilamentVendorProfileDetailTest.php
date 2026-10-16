@@ -8,7 +8,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
 it('renders the admin vendor profile detail page for an authorized user', function (): void {
-    $admin = User::factory()->superAdmin()->create();
+    $admin = User::factory()->superAdmin()->create(['timezone' => 'Africa/Cairo']);
 
     foreach (['view_any_vendor::profile', 'view_vendor::profile'] as $permission) {
         $admin->givePermissionTo(Permission::findOrCreate($permission, 'web'));
@@ -16,11 +16,12 @@ it('renders the admin vendor profile detail page for an authorized user', functi
 
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-    $vendor = VendorProfile::factory()->create();
+    $vendor = VendorProfile::factory()->create(['created_at' => '2026-10-13 11:36:00']);
 
     $this->actingAs($admin)
         ->get('/admin/vendor-profiles/'.$vendor->public_id)
-        ->assertOk();
+        ->assertOk()
+        ->assertSeeText($vendor->created_at->copy()->timezone('Africa/Cairo')->format('Y-m-d H:i').' Africa/Cairo');
 });
 
 it('renders the approval checklist for an incomplete pending vendor', function (): void {

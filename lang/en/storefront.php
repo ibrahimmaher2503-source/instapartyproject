@@ -272,6 +272,7 @@ return [
         'per_unit' => 'per unit',
         'book_now' => 'Book now',
         'add_to_cart' => 'Add to cart',
+        'choose_package' => 'Choose this package',
         'add_to_cart_hint' => 'Complete the event and delivery details to add this service securely.',
         'delivery_required' => 'Delivery address required',
         'security_deposit' => 'Security deposit',

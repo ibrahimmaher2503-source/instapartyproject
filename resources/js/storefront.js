@@ -138,25 +138,34 @@ if (serviceEstimate instanceof HTMLFormElement) {
     const startInput = serviceEstimate.querySelector('[data-service-estimate-start]');
     const durationInput = serviceEstimate.querySelector('[data-service-estimate-duration]');
     const quantityInput = serviceEstimate.querySelector('[data-service-estimate-quantity]');
+    const endInput = serviceEstimate.querySelector('[data-service-estimate-end]');
     const checkButton = serviceEstimate.querySelector('[data-service-check-availability]');
     const status = serviceEstimate.querySelector('[data-service-availability-status]');
     const estimateRefreshStatus = serviceEstimate.querySelector('[data-service-estimate-refresh-status]');
     const wizardLink = document.querySelector('[data-service-wizard-link]');
 
-    const updateWizardLink = () => {
-        if (!(wizardLink instanceof HTMLAnchorElement)) return;
-        const url = new URL(wizardLink.href);
+    const updateWizardLink = (syncEnd = false) => {
         const startsAt = startInput instanceof HTMLInputElement ? startInput.value : '';
         const quantity = quantityInput instanceof HTMLInputElement ? quantityInput.value : '1';
+        let localEnd = '';
+
+        if (!syncEnd && endInput instanceof HTMLInputElement && endInput.value) {
+            localEnd = endInput.value;
+        } else if (durationInput instanceof HTMLInputElement && startsAt && Number(durationInput.value) > 0) {
+            const end = new Date(startsAt);
+            end.setTime(end.getTime() + Number(durationInput.value) * 60 * 60 * 1000);
+            localEnd = [end.getFullYear(), String(end.getMonth() + 1).padStart(2, '0'), String(end.getDate()).padStart(2, '0')].join('-')
+                + `T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+        }
+        if (syncEnd && endInput instanceof HTMLInputElement) endInput.value = localEnd;
+        if (!(wizardLink instanceof HTMLAnchorElement)) return;
+
+        const url = new URL(wizardLink.href);
 
         if (startsAt) url.searchParams.set('event_starts_at', startsAt);
         else url.searchParams.delete('event_starts_at');
 
-        if (durationInput instanceof HTMLInputElement && startsAt && Number(durationInput.value) > 0) {
-            const end = new Date(startsAt);
-            end.setTime(end.getTime() + Number(durationInput.value) * 60 * 60 * 1000);
-            const localEnd = [end.getFullYear(), String(end.getMonth() + 1).padStart(2, '0'), String(end.getDate()).padStart(2, '0')].join('-')
-                + `T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+        if (localEnd) {
             url.searchParams.set('event_ends_at', localEnd);
         } else {
             url.searchParams.delete('event_ends_at');
@@ -182,11 +191,11 @@ if (serviceEstimate instanceof HTMLFormElement) {
     });
 
     serviceEstimate.addEventListener('input', () => {
-        updateWizardLink();
+        updateWizardLink(true);
         if (status instanceof HTMLElement) status.textContent = '';
     });
     serviceEstimate.addEventListener('change', () => {
-        updateWizardLink();
+        updateWizardLink(true);
         if (status instanceof HTMLElement) status.textContent = '';
     });
     updateWizardLink();

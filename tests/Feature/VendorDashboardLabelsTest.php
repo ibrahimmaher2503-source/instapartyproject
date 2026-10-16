@@ -10,6 +10,7 @@ use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Filament\Vendor\Widgets\VendorRecentBookingsWidget;
 use App\Modules\Shared\Filament\Vendor\Widgets\VendorStatsOverviewWidget;
+use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
 
@@ -53,3 +54,17 @@ it('renders translated service type cards and booking status labels without raw 
         expect(__($key))->not->toBe($key)->not->toBe('');
     }
 })->with(['en', 'ar']);
+
+it('shows recent booking event times in the vendor timezone with an explicit label', function (): void {
+    config(['app.timezone' => 'UTC']);
+    Filament::setCurrentPanel(Filament::getPanel('vendor'));
+    $user = User::factory()->phoneVerified()->asVendor()->create(['timezone' => 'Africa/Cairo']);
+    $profile = VendorProfile::factory()->approved()->create(['user_id' => $user->id]);
+    $allocation = BookingVendor::factory()->create(['vendor_profile_id' => $profile->id]);
+    $allocation->booking->update(['event_starts_at' => '2026-12-21 16:00:00']);
+    $this->actingAs($user, 'vendor');
+
+    Livewire::test(VendorRecentBookingsWidget::class)
+        ->assertCanSeeTableRecords([$allocation])
+        ->assertSeeText(Carbon::parse('2026-12-21 16:00:00', 'UTC')->timezone('Africa/Cairo')->translatedFormat('d M Y H:i').' Africa/Cairo');
+});

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Filament\Vendor\Pages;
 
 use App\Modules\Catalog\Application\Actions\ImportRentalServicesFromExcelAction;
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\ExcelImport;
 use App\Modules\Shared\Application\Services\Concerns\RequiresApprovedVendor;
+use App\Modules\Shared\Application\Services\VendorOperationalAccess;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -36,6 +38,14 @@ class VendorImportRentalServicesPage extends Page implements HasForms
 
     public ?ExcelImport $lastImport = null;
 
+    public static function canAccess(): bool
+    {
+        return VendorOperationalAccess::allowed()
+            && auth()->user()?->vendorProfile?->approvedTypes()
+                ->where('product_type', ProductType::Rental->value)
+                ->exists();
+    }
+
     public static function getNavigationLabel(): string
     {
         return __('vendor-portal.imports.import_rental');
@@ -53,7 +63,7 @@ class VendorImportRentalServicesPage extends Page implements HasForms
                 ->label(__('catalog.download_template'))
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
-                ->url(route('vendor.catalog.import.template', ['type' => 'rental']))
+                ->url(route('vendor.catalog.import.template.web', ['type' => 'rental']))
                 ->openUrlInNewTab(),
         ];
     }
@@ -83,6 +93,7 @@ class VendorImportRentalServicesPage extends Page implements HasForms
 
     public function import(ImportRentalServicesFromExcelAction $action): void
     {
+        abort_unless(static::canAccess(), 403);
         $data = $this->form->getState();
         $vendor = auth()->user()?->vendorProfile;
 

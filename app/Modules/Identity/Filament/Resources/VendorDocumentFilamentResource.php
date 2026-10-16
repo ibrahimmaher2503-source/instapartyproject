@@ -15,6 +15,8 @@ use App\Modules\Identity\Filament\Resources\VendorDocumentFilamentResource\Pages
 use App\Modules\Identity\Filament\Resources\VendorDocumentFilamentResource\Pages\ListVendorDocuments;
 use App\Modules\Identity\Filament\Resources\VendorDocumentFilamentResource\Pages\ViewVendorDocument;
 use App\Modules\Shared\Application\Services\StorefrontText;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\ScopedBulkAction;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -154,6 +156,7 @@ class VendorDocumentFilamentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'vendorProfile.public_id', 'doc_type', 'status', 'expires_at', 'created_at'])])
             ->columns([
                 TextColumn::make('vendorProfile.business_name')
                     ->label(__('identity.columns.vendor'))
@@ -300,6 +303,30 @@ class VendorDocumentFilamentResource extends Resource
                             ->danger()
                             ->send();
                     }),
+            ])
+            ->bulkActions([
+                ScopedBulkAction::make(
+                    'approveSelected',
+                    __('identity.actions.approve'),
+                    'review_vendor_documents',
+                    static::class,
+                    fn (VendorDocument $record) => app(ApproveVendorDocumentAction::class)->execute($record, auth()->user()),
+                ),
+                ScopedBulkAction::make(
+                    'rejectSelected',
+                    __('identity.actions.reject'),
+                    'review_vendor_documents',
+                    static::class,
+                    function (VendorDocument $record, array $data): void {
+                        app(RejectVendorDocumentAction::class)->execute($record, array_filter([
+                            'en' => $data['review_notes_en'] ?? null,
+                            'ar' => $data['review_notes_ar'] ?? null,
+                        ]), auth()->user());
+                    },
+                )->form([
+                    Textarea::make('review_notes_en')->label(__('identity.forms.rejection_reason_en'))->required()->maxLength(1000),
+                    Textarea::make('review_notes_ar')->label(__('identity.forms.rejection_reason_ar'))->maxLength(1000)->extraInputAttributes(['dir' => 'rtl']),
+                ]),
             ]);
     }
 
