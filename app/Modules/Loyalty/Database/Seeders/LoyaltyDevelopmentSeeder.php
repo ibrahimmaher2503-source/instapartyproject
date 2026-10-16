@@ -24,6 +24,10 @@ final class LoyaltyDevelopmentSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            return;
+        }
+
         $vendorSlugs = ['joy-rentals-cairo', 'sweet-table-studio'];
         $vendors = VendorProfile::query()
             ->whereIn('slug', $vendorSlugs)
