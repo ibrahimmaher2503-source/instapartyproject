@@ -38,6 +38,8 @@ class SearchController
                 'planner' => ['nullable', 'boolean'],
                 'q' => ['nullable', 'string', 'max:255'],
                 'product_type' => ['nullable', Rule::enum(ProductType::class)],
+                'product_types' => ['nullable', 'array', 'list', 'size:1'],
+                'product_types.*' => [Rule::enum(ProductType::class)],
                 'category_slug' => ['nullable', 'string', 'max:120'],
                 'subcategory' => ['nullable', 'string', 'max:120'],
                 'occasion' => [$planner ? 'required' : 'nullable', 'string', 'max:120'],
@@ -55,12 +57,16 @@ class SearchController
                 'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'rating_desc', 'newest'])],
                 'page' => ['nullable', 'integer', 'min:1'],
             ]);
+            if (! isset($filters['product_type']) && isset($filters['product_types'])) {
+                $filters['product_type'] = $filters['product_types'][0];
+            }
+            unset($filters['product_types']);
         } catch (ValidationException $exception) {
             $query = $request->query();
             $errorKeys = array_keys($exception->errors());
 
             foreach ($errorKeys as $errorKey) {
-                unset($query[$errorKey]);
+                unset($query[explode('.', $errorKey, 2)[0]]);
             }
 
             if (array_intersect($errorKeys, ['price_min', 'price_max']) !== []) {

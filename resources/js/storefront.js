@@ -814,7 +814,7 @@ if (contactForm instanceof HTMLFormElement) {
         try {
             const response = await fetch(contactForm.dataset.endpoint ?? '', {
                 method: 'POST',
-                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': document.documentElement.lang || 'en' },
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': document.documentElement.lang || 'en', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
                 body: JSON.stringify(Object.fromEntries(new FormData(contactForm))),
             });
             const payload = await response.json();
