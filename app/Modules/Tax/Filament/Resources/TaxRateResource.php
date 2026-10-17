@@ -69,7 +69,9 @@ class TaxRateResource extends Resource
                         ->schema([
                             TextInput::make('name.en')
                                 ->label('Name (EN)')
-                                ->required()
+                                ->required(false)
+                                ->rule('required')
+                                ->markAsRequired()
                                 ->maxLength(255),
                             Textarea::make('description.en')
                                 ->label('Description (EN)')
@@ -79,7 +81,9 @@ class TaxRateResource extends Resource
                         ->schema([
                             TextInput::make('name.ar')
                                 ->label('Name (AR)')
-                                ->required()
+                                ->required(false)
+                                ->rule('required')
+                                ->markAsRequired()
                                 ->maxLength(255),
                             Textarea::make('description.ar')
                                 ->label('Description (AR)')
@@ -92,7 +96,9 @@ class TaxRateResource extends Resource
                 ->schema([
                     TextInput::make('rate_bps')
                         ->label(__('tax.rate_percent'))
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->numeric()
                         ->minValue(0)
                         ->maxValue(100_00)
@@ -103,7 +109,9 @@ class TaxRateResource extends Resource
                     Select::make('applies_to')
                         ->label(__('tax.applies_to'))
                         ->options(collect(TaxAppliesTo::cases())->mapWithKeys(fn ($c) => [$c->value => $c->label()]))
-                        ->required(),
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired(),
 
                     CheckboxList::make('product_types')
                         ->label(__('tax.product_types'))
@@ -127,7 +135,9 @@ class TaxRateResource extends Resource
                 ->schema([
                     DatePicker::make('effective_from')
                         ->label(__('tax.effective_from'))
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->native(false),
                     DatePicker::make('effective_to')
                         ->label(__('tax.effective_to'))
