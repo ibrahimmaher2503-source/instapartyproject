@@ -7,15 +7,20 @@ use App\Modules\Booking\Domain\Events\BookingConfirmed;
 use App\Modules\Booking\Domain\Events\VendorRejected;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingVendor;
+use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
+use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Application\Listeners\OnBookingCancelled;
 use App\Modules\Communication\Application\Listeners\OnBookingConfirmed;
 use App\Modules\Communication\Application\Listeners\OnPaymentCaptured;
 use App\Modules\Communication\Application\Listeners\OnRefundCompleted;
 use App\Modules\Communication\Application\Listeners\OnVendorRejected;
 use App\Modules\Communication\Database\Seeders\CustomerCoreInAppNotificationTemplateSeeder;
+use App\Modules\Communication\Database\Seeders\NotificationTemplateSeeder;
+use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
+use App\Modules\Communication\Domain\Models\NotificationPreference;
 use App\Modules\Communication\Domain\Models\NotificationTemplate;
 use App\Modules\Communication\Infrastructure\Gateways\DatabaseNotificationAdapter;
 use App\Modules\Identity\Domain\Models\User;
@@ -88,4 +93,84 @@ it('adds missing core templates without replacing customer edits or reactivating
             $eventKey, NotificationChannel::InApp, NotificationAudience::Customer,
         )->count())->toBe(1);
     }
+});
+
+it('renders a rejection notification in the current storefront locale', function (): void {
+    Queue::fake();
+    app(CustomerCoreInAppNotificationTemplateSeeder::class)->run();
+    app(NotificationTemplateSeeder::class)->run();
+    $customer = User::factory()->asCustomer()->create(['preferred_locale' => 'ar']);
+    foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+        NotificationPreference::factory()->create([
+            'user_id' => $customer->id,
+            'channel' => $channel,
+            'event_category' => EventCategory::Booking,
+            'is_enabled' => true,
+        ]);
+    }
+    $booking = Booking::factory()->create(['customer_id' => $customer->id]);
+    $bookingVendor = BookingVendor::factory()->create([
+        'booking_id' => $booking->id,
+        'rejection_reason' => ['en' => 'English rejection reason', 'ar' => 'سبب الرفض بالعربية'],
+    ]);
+
+    app(OnVendorRejected::class)->handle(new VendorRejected($bookingVendor));
+    $dispatch = NotificationDispatch::query()
+        ->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::InApp->value)
+        ->whereHas('template', fn ($query) => $query->where('event_key', 'booking.rejected'))
+        ->firstOrFail();
+    app(DatabaseNotificationAdapter::class)->send($dispatch);
+
+    foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+        $otherChannel = NotificationDispatch::query()
+            ->where('user_id', $customer->id)
+            ->where('channel', $channel->value)
+            ->whereHas('template', fn ($query) => $query->where('event_key', 'booking.rejected'))
+            ->firstOrFail();
+        expect($otherChannel->context['body'])->toContain('سبب الرفض بالعربية')
+            ->and($otherChannel->context['body'])->not->toContain('English rejection reason')
+            ->and(collect(array_keys($otherChannel->context))
+                ->filter(fn (string $key): bool => str_ends_with($key, '_translations'))
+                ->all())->toBe([]);
+    }
+
+    $this->actingAs($customer)
+        ->get(route('storefront.account.notifications', ['locale' => 'en']))
+        ->assertOk()
+        ->assertSeeText('English rejection reason')
+        ->assertDontSeeText('سبب الرفض بالعربية');
+
+    $this->actingAs($customer)
+        ->get('/ar/account/notifications')
+        ->assertOk()
+        ->assertSeeText('سبب الرفض بالعربية')
+        ->assertDontSeeText('English rejection reason');
+
+    app(DispatchNotificationAction::class)->execute(new DispatchNotificationDTO(
+        eventKey: 'campaign.direct',
+        channel: NotificationChannel::Push,
+        audience: NotificationAudience::Customer,
+        eventCategory: EventCategory::Marketing,
+        userId: $customer->id,
+        context: ['body_translations' => ['en' => 'English', 'ar' => 'العربية']],
+        directBody: 'Direct body',
+    ));
+    $direct = NotificationDispatch::query()->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::Push->value)
+        ->whereNull('notification_template_id')->latest('id')->firstOrFail();
+    expect(collect(array_keys($direct->context))->filter(fn (string $key): bool => str_ends_with($key, '_translations'))->all())->toBe([]);
+
+    app(DispatchNotificationAction::class)->execute(new DispatchNotificationDTO(
+        eventKey: 'missing.event',
+        channel: NotificationChannel::Email,
+        audience: NotificationAudience::Customer,
+        eventCategory: EventCategory::Marketing,
+        userId: $customer->id,
+        context: ['rejection_reason_translations' => ['en' => 'English', 'ar' => 'العربية']],
+    ));
+    $failed = NotificationDispatch::query()->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::Email->value)
+        ->where('status', 'failed')->latest('id')->firstOrFail();
+    expect(collect(array_keys($failed->context))->filter(fn (string $key): bool => str_ends_with($key, '_translations'))->all())->toBe([]);
 });

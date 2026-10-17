@@ -51,6 +51,8 @@ final class DatabaseNotificationAdapter implements NotificationChannelAdapter
         $data = [
             'title' => $context['subject'] ?? null,
             'body' => $context['body'] ?? null,
+            'title_translations' => $context['title_translations'] ?? [],
+            'body_translations' => $context['body_translations'] ?? [],
             'action_url' => $context['action_url'] ?? null,
             'data' => $context['data'] ?? [],
             'reference_type' => $dispatch->reference_type,

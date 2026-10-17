@@ -46,10 +46,10 @@ class DispatchNotificationAction implements NotificationDispatcher
         $locale = $this->resolveLocale($dto->userId);
 
         if ($dto->directBody !== null) {
-            $context = array_merge($dto->context, [
+            $context = $this->contextForChannel(array_merge($dto->context, [
                 'body' => $dto->directBody,
                 'subject' => $dto->directSubject,
-            ]);
+            ]), $dto->channel);
             $templateId = null;
         } else {
             try {
@@ -59,16 +59,46 @@ class DispatchNotificationAction implements NotificationDispatcher
                     $dto->audience,
                     $locale,
                 );
-                $rendered = $resolved->render($dto->context);
+                $rendered = $resolved->render($this->contextForLocale($dto->context, $locale));
             } catch (TemplateNotFoundException|InvalidArgumentException $e) {
                 $this->writeFailedDispatch($dto, $locale, $e->getMessage());
 
                 return null;
             }
 
+            $translations = [];
+            if ($dto->channel === NotificationChannel::InApp) {
+                foreach (['en', 'ar'] as $translationLocale) {
+                    try {
+                        $translation = $this->templateResolver->resolve(
+                            $dto->eventKey,
+                            $dto->channel,
+                            $dto->audience,
+                            $translationLocale,
+                        )->render($this->contextForLocale($dto->context, $translationLocale));
+                        $translations[$translationLocale] = $translation;
+                    } catch (TemplateNotFoundException|InvalidArgumentException) {
+                        // The resolved recipient locale remains authoritative.
+                    }
+                }
+            }
             $context = array_merge($dto->context, $rendered);
+            if ($dto->channel === NotificationChannel::InApp) {
+                $context = array_merge($context, [
+                    'title_translations' => array_filter(array_map(
+                        static fn (array $translation): ?string => $translation['subject'],
+                        $translations,
+                    )),
+                    'body_translations' => array_filter(array_map(
+                        static fn (array $translation): string => $translation['body'],
+                        $translations,
+                    )),
+                ]);
+            }
             $templateId = $resolved->templateId;
         }
+
+        $context = $this->contextForChannel($context, $dto->channel);
 
         return DB::transaction(function () use ($dto, $templateId, $context, $locale): NotificationDispatch {
             $dispatch = NotificationDispatch::create([
@@ -130,6 +160,39 @@ class DispatchNotificationAction implements NotificationDispatcher
         }
     }
 
+    /** @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function contextForLocale(array $context, string $locale): array
+    {
+        foreach ($context as $key => $value) {
+            if (str_ends_with((string) $key, '_translations') && is_array($value)) {
+                $baseKey = substr((string) $key, 0, -13);
+                $context[$baseKey] = $value[$locale] ?? $value['en'] ?? reset($value);
+            }
+        }
+
+        return $context;
+    }
+
+    /** @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function contextForChannel(array $context, NotificationChannel $channel): array
+    {
+        if ($channel === NotificationChannel::InApp) {
+            return $context;
+        }
+
+        foreach (array_keys($context) as $key) {
+            if (str_ends_with((string) $key, '_translations')) {
+                unset($context[$key]);
+            }
+        }
+
+        return $context;
+    }
+
     private function resolveLocale(int $userId): string
     {
         try {
@@ -152,7 +215,7 @@ class DispatchNotificationAction implements NotificationDispatcher
                 'channel' => $dto->channel->value,
                 'locale' => $locale,
                 'status' => DispatchStatus::Failed->value,
-                'context' => $dto->context,
+                'context' => $this->contextForChannel($dto->context, $dto->channel),
                 'reference_type' => $dto->referenceType,
                 'reference_id' => $dto->referenceId,
                 'error_message' => $error,
