@@ -14,6 +14,8 @@
     $vendorLogo = $mediaUrls->publicPath($vendor?->logo_path);
     $categoryName = $service->category ? $storefrontText->translation($service->category, 'name') : '';
     $ratingCount = (int) ($service->rating_count ?? 0);
+    $isSale = $service->product_type === ProductType::Sale;
+    $isRental = $service->product_type === ProductType::Rental;
     $isOutOfStock = $service->product_type === ProductType::Sale
         && $service->saleDetail?->stock_quantity !== null
         && $service->saleDetail->stock_quantity <= 0;
@@ -131,11 +133,13 @@
                     </div>
 
                     <section class="mt-5 rounded-[1.35rem] border border-ink-200 bg-white p-5" aria-labelledby="service-estimate-title">
-                        <h2 id="service-estimate-title" class="text-lg font-extrabold text-ink-900">{{ __('storefront.service.estimate_title') }}</h2>
-                        <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.service.estimate_note') }}</p>
-                        @if ($service->product_type === ProductType::Rental)
-                            <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.service.rental_estimate_note') }}</p>
-                        @endif
+                        <h2 id="service-estimate-title" class="text-lg font-extrabold text-ink-900">{{ $isSale ? __('storefront.service.estimate_amount') : __('storefront.service.estimate_title') }}</h2>
+                        @unless ($isSale)
+                            <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.service.estimate_note') }}</p>
+                            @if ($isRental)
+                                <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('storefront.service.rental_estimate_note') }}</p>
+                            @endif
+                        @endunless
 
                         <p class="mt-4 text-sm font-semibold text-ink-500">{{ __('storefront.service.estimate_amount') }}</p>
                         <bdi data-service-estimate-total dir="ltr" class="mt-1 block text-2xl font-extrabold text-ink-900"><x-storefront.price :minor="$estimate->getMinorAmount()->toInt()" :currency="$service->base_price_currency" /></bdi>
@@ -146,18 +150,22 @@
                             data-service-estimate
                             data-estimate-quantity="{{ $quantity }}"
                             data-estimate-refresh-message="{{ __('storefront.service.estimate_refresh_required') }}"
-                            data-availability-endpoint="{{ url('/api/v1/customer/services/'.$service->public_id.'/check-availability') }}"
                             data-product-type="{{ $service->product_type->value }}"
-                            data-availability-error="{{ __('storefront.service.availability_error') }}"
-                            data-availability-date-required="{{ __('storefront.service.availability_date_required') }}"
-                            data-availability-date-invalid="{{ __('storefront.service.availability_date_invalid') }}"
-                            data-availability-duration-invalid="{{ __('storefront.service.availability_duration_invalid') }}"
-                            data-availability-quantity-invalid="{{ __('storefront.service.availability_quantity_invalid') }}"
-                            data-availability-checking="{{ __('storefront.service.availability_checking') }}"
-                            data-availability-available-rental="{{ __('storefront.service.availability_available_rental') }}"
-                            data-availability-available-sale="{{ __('storefront.service.availability_available_sale') }}"
-                            data-availability-available-digital="{{ __('storefront.service.availability_available_digital') }}"
-                            data-availability-unavailable="{{ __('storefront.service.availability_unavailable') }}"
+                            @unless ($isSale)
+                                data-availability-endpoint="{{ url('/api/v1/customer/services/'.$service->public_id.'/check-availability') }}"
+                                data-availability-error="{{ __('storefront.service.availability_error') }}"
+                                data-availability-date-required="{{ __('storefront.service.availability_date_required') }}"
+                                data-availability-date-invalid="{{ __('storefront.service.availability_date_invalid') }}"
+                                data-availability-duration-invalid="{{ __('storefront.service.availability_duration_invalid') }}"
+                                data-availability-quantity-invalid="{{ __('storefront.service.availability_quantity_invalid') }}"
+                                data-availability-checking="{{ __('storefront.service.availability_checking') }}"
+                                @if ($isRental)
+                                    data-availability-available-rental="{{ __('storefront.service.availability_available_rental') }}"
+                                @else
+                                    data-availability-available-digital="{{ __('storefront.service.availability_available_digital') }}"
+                                @endif
+                                data-availability-unavailable="{{ __('storefront.service.availability_unavailable') }}"
+                            @endunless
                             class="mt-5 space-y-4"
                         >
                             <input type="hidden" name="timezone" value="{{ $selection['timezone'] }}" data-browser-timezone>
@@ -180,9 +188,13 @@
                             @endif
                             <div class="flex flex-col gap-3 sm:flex-row">
                                 <button type="submit" class="sf-button sf-button--secondary min-h-11 flex-1 justify-center">{{ __('storefront.service.update_estimate') }}</button>
-                                <button type="button" data-service-check-availability class="sf-button min-h-11 flex-1 justify-center border border-secondary-200 bg-white text-secondary-900">{{ __('storefront.service.check_availability') }}</button>
+                                @unless ($isSale)
+                                    <button type="button" data-service-check-availability class="sf-button min-h-11 flex-1 justify-center border border-secondary-200 bg-white text-secondary-900">{{ __('storefront.service.check_availability') }}</button>
+                                @endunless
                             </div>
-                            <p data-service-availability-status class="min-h-6 text-sm leading-6 text-ink-700" role="status" aria-live="polite"></p>
+                            @unless ($isSale)
+                                <p data-service-availability-status class="min-h-6 text-sm leading-6 text-ink-700" role="status" aria-live="polite"></p>
+                            @endunless
                             <p data-service-estimate-refresh-status class="min-h-6 text-sm leading-6 text-amber-800" role="status" aria-live="polite" tabindex="-1"></p>
                         </form>
                     </section>
