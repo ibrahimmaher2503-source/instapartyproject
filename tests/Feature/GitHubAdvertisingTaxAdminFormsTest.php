@@ -100,6 +100,47 @@ it('creates customer and all tax rates with the supplied percentages and transla
         ->and($allRate->public_id)->toHaveLength(26);
 });
 
+it('shows field-level validation feedback for an empty tax-rate create form', function (): void {
+    app()->setLocale('en');
+
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo([
+        Permission::findOrCreate('view_any_tax::rate', 'web'),
+        Permission::findOrCreate('create_tax::rate', 'web'),
+    ]);
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $component = Livewire::test(CreateTaxRate::class);
+    $fields = collect($component->instance()->form->getFlatComponents())
+        ->filter(fn ($field): bool => method_exists($field, 'getName'))
+        ->keyBy(fn ($field): string => $field->getName());
+
+    foreach (['name.en', 'name.ar', 'rate_bps', 'applies_to', 'effective_from'] as $name) {
+        expect($fields)->toHaveKey($name)
+            ->and($fields[$name]->isRequired())->toBeFalse()
+            ->and($fields[$name]->isMarkedAsRequired())->toBeTrue();
+    }
+
+    $component
+        ->call('create')
+        ->assertHasFormErrors([
+            'name.en' => 'required',
+            'name.ar' => 'required',
+            'rate_bps' => 'required',
+            'applies_to' => 'required',
+            'effective_from' => 'required',
+        ])
+        ->assertSeeText('The name (EN) field is required.')
+        ->assertSeeText('The name (AR) field is required.')
+        ->assertSeeText('The rate (%) field is required.')
+        ->assertSeeText('The applies To field is required.')
+        ->assertSeeText('The effective From field is required.');
+
+    expect(TaxRate::query()->count())->toBe(0);
+});
+
 it('hydrates and saves both existing tax-rate translations', function (): void {
     $admin = User::factory()->superAdmin()->create();
     $admin->givePermissionTo([
