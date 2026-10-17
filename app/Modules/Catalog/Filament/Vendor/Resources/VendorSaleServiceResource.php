@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Filament\Vendor\Resources;
 
 use App\Modules\Catalog\Application\Actions\CloneServiceAction;
+use App\Modules\Catalog\Application\Actions\DeleteVendorDraftSaleServiceAction;
 use App\Modules\Catalog\Application\Actions\SubmitServiceForReviewAction;
 use App\Modules\Catalog\Application\Actions\VendorArchiveServiceAction;
 use App\Modules\Catalog\Domain\Enums\ProductType;
@@ -36,6 +37,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -252,6 +254,15 @@ class VendorSaleServiceResource extends Resource
                         } catch (Throwable $e) {
                             Notification::make()->title($e->getMessage())->danger()->send();
                         }
+                    }),
+
+                DeleteAction::make()
+                    ->authorize('delete')
+                    ->visible(fn (Service $record): bool => $record->status instanceof DraftState)
+                    ->using(function (Service $record): bool {
+                        app(DeleteVendorDraftSaleServiceAction::class)->execute($record, self::getVendorProfile());
+
+                        return true;
                     }),
 
                 EditAction::make(),
