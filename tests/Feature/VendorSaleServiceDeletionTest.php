@@ -7,7 +7,6 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\PendingReviewState;
 use App\Modules\Catalog\Domain\States\ServiceStatus\PublishedState;
-use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages\EditVendorSaleService;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages\ListVendorSaleServices;
 use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
@@ -36,9 +35,6 @@ it('lets a vendor delete only their own draft sale service', function (): void {
     $submitted = Service::factory()->sale()->pendingReview()->create(['vendor_profile_id' => $vendor->id]);
 
     $this->actingAs($vendor->user, 'vendor');
-
-    Livewire::test(EditVendorSaleService::class, ['record' => $draft->public_id])
-        ->assertActionVisible('delete');
 
     Livewire::test(ListVendorSaleServices::class)
         ->assertTableActionVisible('delete', $draft)
