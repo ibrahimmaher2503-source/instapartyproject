@@ -17,11 +17,21 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Attributes\Url;
 
 class VendorBookingsPage extends Page implements HasTable
 {
     use InteractsWithTable;
     use RequiresApprovedVendor;
+
+    /** @var array<string> */
+    protected const ALLOWED_STATUSES = [
+        'pending',
+        'accepted',
+        'in_progress',
+        'completed',
+        'rejected',
+    ];
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
@@ -31,7 +41,30 @@ class VendorBookingsPage extends Page implements HasTable
 
     protected static string $view = 'vendor-portal.pages.vendor-bookings';
 
+    #[Url(as: 'statusFilter', keep: true)]
     public string $statusFilter = 'pending';
+
+    public function mount(): void
+    {
+        if (! in_array($this->statusFilter, self::ALLOWED_STATUSES, true)) {
+            $this->statusFilter = 'pending';
+        }
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        if (! in_array($this->statusFilter, self::ALLOWED_STATUSES, true)) {
+            $this->statusFilter = 'pending';
+        }
+
+        $this->resetTable();
+    }
+
+    public function setStatusFilter(string $status): void
+    {
+        $this->statusFilter = in_array($status, self::ALLOWED_STATUSES, true) ? $status : 'pending';
+        $this->resetTable();
+    }
 
     public function getTitle(): string|Htmlable
     {
