@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Http\Controllers\Web;
 use App\Modules\Catalog\Application\Actions\BuildServiceEstimateAction;
 use App\Modules\Catalog\Http\Requests\ServiceEstimateRequest;
 use App\Modules\Identity\Domain\Contracts\PublicVendorPortfolioReader;
+use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
 use Illuminate\Contracts\View\View;
 
 class ServiceController
@@ -16,10 +17,14 @@ class ServiceController
         ServiceEstimateRequest $request,
         BuildServiceEstimateAction $estimate,
         PublicVendorPortfolioReader $portfolioReader,
+        ServiceReviewRepository $reviews,
     ): View {
         $data = $estimate->execute($servicePublicId, $request->validated());
         $service = $data['service'];
         $selection = $data['selection'];
+        $reviewSummary = $reviews->aggregateApprovedForService((int) $service->id);
+        $service->setAttribute('rating_avg', $reviewSummary['average']);
+        $service->setAttribute('rating_count', $reviewSummary['count']);
         $wizardQuery = array_filter([
             'locale' => app()->getLocale(),
             'service' => $service->public_id,
