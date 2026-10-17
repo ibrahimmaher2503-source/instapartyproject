@@ -7,6 +7,8 @@ use App\Modules\Booking\Domain\Events\BookingConfirmed;
 use App\Modules\Booking\Domain\Events\VendorRejected;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingVendor;
+use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
+use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
 use App\Modules\Communication\Application\Listeners\OnBookingCancelled;
 use App\Modules\Communication\Application\Listeners\OnBookingConfirmed;
 use App\Modules\Communication\Application\Listeners\OnPaymentCaptured;
@@ -144,4 +146,31 @@ it('renders a rejection notification in the current storefront locale', function
         ->assertOk()
         ->assertSeeText('سبب الرفض بالعربية')
         ->assertDontSeeText('English rejection reason');
+
+    app(DispatchNotificationAction::class)->execute(new DispatchNotificationDTO(
+        eventKey: 'campaign.direct',
+        channel: NotificationChannel::Push,
+        audience: NotificationAudience::Customer,
+        eventCategory: EventCategory::Marketing,
+        userId: $customer->id,
+        context: ['body_translations' => ['en' => 'English', 'ar' => 'العربية']],
+        directBody: 'Direct body',
+    ));
+    $direct = NotificationDispatch::query()->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::Push->value)
+        ->whereNull('notification_template_id')->latest('id')->firstOrFail();
+    expect(collect(array_keys($direct->context))->filter(fn (string $key): bool => str_ends_with($key, '_translations'))->all())->toBe([]);
+
+    app(DispatchNotificationAction::class)->execute(new DispatchNotificationDTO(
+        eventKey: 'missing.event',
+        channel: NotificationChannel::Email,
+        audience: NotificationAudience::Customer,
+        eventCategory: EventCategory::Marketing,
+        userId: $customer->id,
+        context: ['rejection_reason_translations' => ['en' => 'English', 'ar' => 'العربية']],
+    ));
+    $failed = NotificationDispatch::query()->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::Email->value)
+        ->where('status', 'failed')->latest('id')->firstOrFail();
+    expect(collect(array_keys($failed->context))->filter(fn (string $key): bool => str_ends_with($key, '_translations'))->all())->toBe([]);
 });

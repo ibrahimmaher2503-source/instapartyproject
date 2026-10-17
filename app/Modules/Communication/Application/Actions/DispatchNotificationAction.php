@@ -46,10 +46,10 @@ class DispatchNotificationAction implements NotificationDispatcher
         $locale = $this->resolveLocale($dto->userId);
 
         if ($dto->directBody !== null) {
-            $context = array_merge($dto->context, [
+            $context = $this->contextForChannel(array_merge($dto->context, [
                 'body' => $dto->directBody,
                 'subject' => $dto->directSubject,
-            ]);
+            ]), $dto->channel);
             $templateId = null;
         } else {
             try {
@@ -94,15 +94,11 @@ class DispatchNotificationAction implements NotificationDispatcher
                         $translations,
                     )),
                 ]);
-            } else {
-                foreach (array_keys($context) as $key) {
-                    if (str_ends_with((string) $key, '_translations')) {
-                        unset($context[$key]);
-                    }
-                }
             }
             $templateId = $resolved->templateId;
         }
+
+        $context = $this->contextForChannel($context, $dto->channel);
 
         return DB::transaction(function () use ($dto, $templateId, $context, $locale): NotificationDispatch {
             $dispatch = NotificationDispatch::create([
@@ -179,6 +175,24 @@ class DispatchNotificationAction implements NotificationDispatcher
         return $context;
     }
 
+    /** @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function contextForChannel(array $context, NotificationChannel $channel): array
+    {
+        if ($channel === NotificationChannel::InApp) {
+            return $context;
+        }
+
+        foreach (array_keys($context) as $key) {
+            if (str_ends_with((string) $key, '_translations')) {
+                unset($context[$key]);
+            }
+        }
+
+        return $context;
+    }
+
     private function resolveLocale(int $userId): string
     {
         try {
@@ -201,7 +215,7 @@ class DispatchNotificationAction implements NotificationDispatcher
                 'channel' => $dto->channel->value,
                 'locale' => $locale,
                 'status' => DispatchStatus::Failed->value,
-                'context' => $dto->context,
+                'context' => $this->contextForChannel($dto->context, $dto->channel),
                 'reference_type' => $dto->referenceType,
                 'reference_id' => $dto->referenceId,
                 'error_message' => $error,
