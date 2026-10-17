@@ -67,29 +67,34 @@ class DispatchNotificationAction implements NotificationDispatcher
             }
 
             $translations = [];
-            foreach (['en', 'ar'] as $translationLocale) {
-                try {
-                    $translation = $this->templateResolver->resolve(
-                        $dto->eventKey,
-                        $dto->channel,
-                        $dto->audience,
-                        $translationLocale,
-                    )->render($this->contextForLocale($dto->context, $translationLocale));
-                    $translations[$translationLocale] = $translation;
-                } catch (TemplateNotFoundException|InvalidArgumentException) {
-                    // The resolved recipient locale remains authoritative.
+            if ($dto->channel === NotificationChannel::InApp) {
+                foreach (['en', 'ar'] as $translationLocale) {
+                    try {
+                        $translation = $this->templateResolver->resolve(
+                            $dto->eventKey,
+                            $dto->channel,
+                            $dto->audience,
+                            $translationLocale,
+                        )->render($this->contextForLocale($dto->context, $translationLocale));
+                        $translations[$translationLocale] = $translation;
+                    } catch (TemplateNotFoundException|InvalidArgumentException) {
+                        // The resolved recipient locale remains authoritative.
+                    }
                 }
             }
-            $context = array_merge($dto->context, $rendered, [
-                'title_translations' => array_filter(array_map(
-                    static fn (array $translation): ?string => $translation['subject'],
-                    $translations,
-                )),
-                'body_translations' => array_filter(array_map(
-                    static fn (array $translation): string => $translation['body'],
-                    $translations,
-                )),
-            ]);
+            $context = array_merge($dto->context, $rendered);
+            if ($dto->channel === NotificationChannel::InApp) {
+                $context = array_merge($context, [
+                    'title_translations' => array_filter(array_map(
+                        static fn (array $translation): ?string => $translation['subject'],
+                        $translations,
+                    )),
+                    'body_translations' => array_filter(array_map(
+                        static fn (array $translation): string => $translation['body'],
+                        $translations,
+                    )),
+                ]);
+            }
             $templateId = $resolved->templateId;
         }
 
