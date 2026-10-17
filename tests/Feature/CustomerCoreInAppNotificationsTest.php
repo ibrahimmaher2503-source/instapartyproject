@@ -128,7 +128,9 @@ it('renders a rejection notification in the current storefront locale', function
             ->firstOrFail();
         expect($otherChannel->context['body'])->toContain('سبب الرفض بالعربية')
             ->and($otherChannel->context['body'])->not->toContain('English rejection reason')
-            ->and($otherChannel->context)->not->toHaveKeys(['title_translations', 'body_translations']);
+            ->and(collect(array_keys($otherChannel->context))
+                ->filter(fn (string $key): bool => str_ends_with($key, '_translations'))
+                ->all())->toBe([]);
     }
 
     $this->actingAs($customer)

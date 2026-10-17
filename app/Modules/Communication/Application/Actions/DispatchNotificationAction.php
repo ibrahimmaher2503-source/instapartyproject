@@ -94,6 +94,12 @@ class DispatchNotificationAction implements NotificationDispatcher
                         $translations,
                     )),
                 ]);
+            } else {
+                foreach (array_keys($context) as $key) {
+                    if (str_ends_with((string) $key, '_translations')) {
+                        unset($context[$key]);
+                    }
+                }
             }
             $templateId = $resolved->templateId;
         }
