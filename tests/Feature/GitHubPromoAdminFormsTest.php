@@ -64,7 +64,9 @@ it('shows server validation feedback for an empty promotion form', function (str
         ->assertHasFormErrors([
             'code' => 'required',
             'type' => 'required',
-        ]);
+        ])
+        ->assertSeeText('The code field is required.')
+        ->assertSeeText('The discount Type field is required.');
 
     expect(PromoCode::query()->count())->toBe(0);
 })->with(['en', 'ar']);
