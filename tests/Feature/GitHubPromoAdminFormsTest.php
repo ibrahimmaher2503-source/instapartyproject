@@ -44,6 +44,33 @@ it('creates a promotion through its authorized reactive form', function (string 
     expect($promo->code)->toBe('QA-'.$type)->and($promo->type->value)->toBe($type);
 })->with(['percentage', 'fixed']);
 
+it('shows server validation feedback for an empty promotion form', function (string $locale): void {
+    app()->setLocale($locale);
+
+    $component = Livewire::test(CreatePromoCode::class);
+    $fields = collect($component->instance()->form->getFlatComponents());
+    $code = $fields->first(fn ($field): bool => method_exists($field, 'getName') && $field->getName() === 'code');
+    $type = $fields->first(fn ($field): bool => method_exists($field, 'getName') && $field->getName() === 'type');
+
+    expect($code)->not->toBeNull()
+        ->and($code->isRequired())->toBeFalse()
+        ->and($code->isMarkedAsRequired())->toBeTrue()
+        ->and($type)->not->toBeNull()
+        ->and($type->isRequired())->toBeFalse()
+        ->and($type->isMarkedAsRequired())->toBeTrue();
+
+    $component
+        ->call('create')
+        ->assertHasFormErrors([
+            'code' => 'required',
+            'type' => 'required',
+        ])
+        ->assertSeeText('The code field is required.')
+        ->assertSeeText('The discount Type field is required.');
+
+    expect(PromoCode::query()->count())->toBe(0);
+})->with(['en', 'ar']);
+
 it('edits an existing promotion through its authorized form', function (): void {
     $promo = PromoCode::query()->create(['code' => 'QA-OLD', 'type' => 'percentage', 'scope' => 'platform', 'discount_percent' => 10, 'is_active' => true]);
     $this->get(PromoCodeResource::getUrl('edit', ['record' => $promo]))->assertOk();
