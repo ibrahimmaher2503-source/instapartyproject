@@ -15,6 +15,27 @@ it('labels the rating filter below vendor without changing its submitted value',
     $response->assertSee('value="4" selected', false);
 })->with(['en', 'ar']);
 
+it('applies a maximum price to storefront results and returns none below all prices', function (): void {
+    config(['scout.driver' => 'database']);
+
+    Service::factory()->sale()->published()->create([
+        'name' => ['en' => 'Budget Celebration Service', 'ar' => 'خدمة احتفال اقتصادية'],
+        'base_price_minor' => 5000,
+    ]);
+    Service::factory()->sale()->published()->create([
+        'name' => ['en' => 'Premium Celebration Service', 'ar' => 'خدمة احتفال مميزة'],
+        'base_price_minor' => 15000,
+    ]);
+
+    $response = $this->get('/en/search?price_max=100')->assertOk();
+
+    expect($response->viewData('services')->total())->toBe(1);
+    $response->assertSee('Budget Celebration Service')
+        ->assertDontSee('Premium Celebration Service');
+
+    expect($this->get('/en/search?price_max=10')->assertOk()->viewData('services')->total())->toBe(0);
+});
+
 it('searches both languages and never drops unknown filters', function (): void {
     config(['scout.driver' => 'database']);
 

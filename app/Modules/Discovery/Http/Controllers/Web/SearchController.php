@@ -51,7 +51,7 @@ class SearchController
                 'event_starts_at' => [$planner ? 'required' : 'nullable', 'date', 'after:now'],
                 'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
                 'price_min' => ['nullable', 'integer', 'min:0'],
-                'price_max' => ['nullable', 'integer', 'min:0', 'gte:price_min'],
+                'price_max' => ['nullable', 'integer', 'min:0', Rule::when($request->filled('price_min'), ['gte:price_min'])],
                 'guest_count' => ['nullable', 'integer', 'min:1', 'max:10000'],
                 'min_rating' => ['nullable', 'numeric', 'min:1', 'max:5'],
                 'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'rating_desc', 'newest'])],
