@@ -63,7 +63,9 @@ it('shows the authoritative estimate and carries selected inputs into the bookin
     $response = $this->get(route('storefront.services.show', $query));
     $response
         ->assertOk()
-        ->assertSee(__('storefront.service.estimate_title', [], $locale))
+        ->assertSee(__($type === ProductType::Sale
+            ? 'storefront.service.estimate_amount'
+            : 'storefront.service.estimate_title', [], $locale))
         ->assertSee(Money::ofMinor(1234, 'EGP')->multipliedBy((string) $quantity)->formatTo($locale))
         ->assertSee('/'.$locale.'/wizard?service='.$service->public_id, false)
         ->assertSee('event_starts_at='.rawurlencode($startsAt), false)
