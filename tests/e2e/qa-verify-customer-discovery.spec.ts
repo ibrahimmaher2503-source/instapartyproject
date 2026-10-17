@@ -169,7 +169,7 @@ function addHours(value: string, hours: number): string {
 test.beforeAll(() => readFixtureIds());
 test.afterAll(() => cleanupFixtures());
 
-test('checks estimates and availability for rental, sale, and digital services in English and Arabic', async ({ browser }) => {
+test('checks estimates and type-specific availability for rental, sale, and digital services in both storefront locales', async ({ browser }) => {
     test.setTimeout(180_000);
     const context = await browser.newContext({
         baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:8139',
@@ -212,10 +212,12 @@ test('checks estimates and availability for rental, sale, and digital services i
                     await expect(page.locator('[data-service-wizard-link]')).toHaveAttribute('aria-disabled', 'false');
                 }
 
-                const form = page.locator('[data-service-estimate]');
-                const expectedAvailability = await form.getAttribute(`data-availability-available-${type}`);
-                await page.locator('[data-service-check-availability]').click();
-                await expect(page.locator('[data-service-availability-status]')).toHaveText(expectedAvailability ?? '');
+                if (type !== 'sale') {
+                    const form = page.locator('[data-service-estimate]');
+                    const expectedAvailability = await form.getAttribute(`data-availability-available-${type}`);
+                    await page.locator('[data-service-check-availability]').click();
+                    await expect(page.locator('[data-service-availability-status]')).toHaveText(expectedAvailability ?? '');
+                }
             }
         }
 

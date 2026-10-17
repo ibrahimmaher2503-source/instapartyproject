@@ -28,6 +28,25 @@ it('estimates the booking unit price for each product and locale without creatin
     expect(ServiceInventoryReservation::query()->count())->toBe(0);
 })->with(['rental', 'sale', 'digital'])->with(['en', 'ar']);
 
+it('keeps sale service details free of rental availability UI in both storefront locales', function (string $locale): void {
+    $service = Service::factory()->sale()->published()->create();
+
+    $this->get(route('storefront.services.show', [
+        'locale' => $locale,
+        'servicePublicId' => $service->public_id,
+    ]))
+        ->assertOk()
+        ->assertSee(__('storefront.service.estimate_amount', [], $locale))
+        ->assertDontSee(__('storefront.service.estimate_title', [], $locale))
+        ->assertDontSee(__('storefront.service.estimate_note', [], $locale))
+        ->assertDontSee(__('storefront.service.rental_estimate_note', [], $locale))
+        ->assertDontSee(__('storefront.service.availability_available_rental', [], $locale))
+        ->assertDontSee(__('storefront.service.availability_available_sale', [], $locale))
+        ->assertDontSee('data-service-check-availability', false)
+        ->assertDontSee('data-service-availability-status', false)
+        ->assertDontSee('data-availability-endpoint', false);
+})->with(['en', 'ar']);
+
 it('shows unavailable rental windows and insufficient sale stock without reserving inventory', function (): void {
     $rental = Service::factory()->rental()->published()->create();
     ServiceRentalDetail::factory()->create(['service_id' => $rental->id, 'default_rental_duration_hours' => 4]);
