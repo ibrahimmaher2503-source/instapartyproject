@@ -13,6 +13,7 @@ use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Domain\Models\NotificationTemplate;
 use App\Modules\Communication\Filament\Resources\NotificationTemplateResource;
+use App\Modules\Communication\Filament\Resources\NotificationTemplateResource\Pages\CreateNotificationTemplate;
 use App\Modules\Communication\Filament\Resources\NotificationTemplateResource\Pages\EditNotificationTemplate;
 use App\Modules\Identity\Domain\Models\User;
 use Filament\Facades\Filament;
@@ -27,6 +28,7 @@ function qaVerifyTemplateAdmin(): User
     $admin->givePermissionTo(
         Permission::findOrCreate('view_any_notification::template', 'web'),
         Permission::findOrCreate('view_notification::template', 'web'),
+        Permission::findOrCreate('create_notification::template', 'web'),
         Permission::findOrCreate('update_notification::template', 'web'),
     );
 
@@ -106,6 +108,49 @@ it('edits bilingual template content and renders a local test dispatch from the 
         ->toBe('Booking QA fallback is confirmed.');
 
     Queue::assertPushed(DispatchNotificationJob::class, fn (DispatchNotificationJob $job): bool => $job->dispatchId === $dispatch->id);
+});
+
+it('renders required feedback on the visible create form and creates a valid template', function (): void {
+    app()->setLocale('en');
+    $this->actingAs(qaVerifyTemplateAdmin());
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $create = Livewire::test(CreateNotificationTemplate::class);
+    $fields = collect($create->instance()->form->getFlatComponents())
+        ->filter(fn ($field): bool => method_exists($field, 'getName'))
+        ->keyBy(fn ($field): string => $field->getName());
+
+    foreach (['event_key', 'channel', 'audience', 'body'] as $name) {
+        expect($fields)->toHaveKey($name)
+            ->and($fields[$name]->isRequired())->toBeFalse()
+            ->and($fields[$name]->isMarkedAsRequired())->toBeTrue();
+    }
+
+    $create
+        ->call('create')
+        ->assertHasFormErrors([
+            'event_key' => 'required',
+            'channel' => 'required',
+            'audience' => 'required',
+            'body' => 'required',
+        ]);
+    $create
+        ->assertSeeText('The event Key field is required.')
+        ->assertSeeText('The delivery Channel field is required.')
+        ->assertSeeText('The target Audience field is required.')
+        ->assertSeeText('The message Body field is required.');
+
+    $create->fillForm([
+        'event_key' => 'booking.create_qa',
+        'channel' => NotificationChannel::InApp->value,
+        'audience' => NotificationAudience::Customer->value,
+        'body' => 'Booking created.',
+    ])->call('create')->assertHasNoFormErrors();
+
+    $template = NotificationTemplate::query()->where('event_key', 'booking.create_qa')->sole();
+    expect($template->channel)->toBe(NotificationChannel::InApp)
+        ->and($template->audience)->toBe(NotificationAudience::Customer)
+        ->and($template->getTranslation('body', 'en'))->toBe('Booking created.');
 });
 
 it('rejects edited template bodies with undocumented placeholders', function (): void {

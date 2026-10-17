@@ -77,7 +77,9 @@ class NotificationTemplateResource extends Resource
                 ->schema([
                     TextInput::make('event_key')
                         ->label(__('communication.resource.event_key'))
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->maxLength(100)
                         ->columnSpan(1),
 
@@ -86,7 +88,9 @@ class NotificationTemplateResource extends Resource
                         ->options(collect(NotificationChannel::cases())->mapWithKeys(
                             fn (NotificationChannel $c) => [$c->value => $c->label()]
                         ))
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->columnSpan(1),
 
                     Select::make('audience')
@@ -94,7 +98,9 @@ class NotificationTemplateResource extends Resource
                         ->options(collect(NotificationAudience::cases())->mapWithKeys(
                             fn (NotificationAudience $a) => [$a->value => $a->label()]
                         ))
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->columnSpan(1),
 
                     Toggle::make('is_active')
@@ -117,7 +123,9 @@ class NotificationTemplateResource extends Resource
                         ->label(__('communication.resource.body'))
                         ->rows(5)
                         ->live(onBlur: true)
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->columnSpanFull(),
 
                     KeyValue::make('variables')
