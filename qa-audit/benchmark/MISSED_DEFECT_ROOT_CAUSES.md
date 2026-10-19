@@ -1,0 +1,46 @@
+# Detection failures and causal limits — five-case pilot
+
+Date: 2026-10-12. This analysis compares the prior tests with five independently attempted historical triggers. [Results](DETECTION_RESULTS.csv), [reproduction plans](KNOWN_DEFECT_BENCHMARK.md) and [source inventory](DEFECT_INVENTORY_AND_PLANS.md) distinguish historical reports from current observations.
+
+## What the evidence actually establishes
+
+The passing normal suite omitted the decisive oracles for two defects that still exist. However, the previous campaign's **separate failing repro tests already detected and documented both TA-SYS-001 and TA-SYS-002**. Calling the whole previous campaign a failure to detect them would contradict its own [confirmed findings](../../docs/qa/tester-army-system/confirmed-findings.md).
+
+The pilot returned two DETECTED, two NOT_REPRODUCIBLE in limited branches, and one BLOCKED. There is no independently established current defect that the new pilot detector missed. Consequently, there are no NOT_DETECTED pilot classifications, and no defensible sensitivity or comprehensive-coverage percentage. Historical closure labels, test counts and scenario names are not substitutes for business-outcome evidence.
+
+## Case-by-case comparison
+
+| Case | Prior test and actual oracle | Missing condition/oracle | New evidence | Supported cause and limit |
+| --- | --- | --- | --- | --- |
+| B01 / TA-SYS-001 | [Wishlist normal test](../../tests/tester-army/customer-lifecycle.e2e.ts#L5) checks 201, retry count, ownership, role denial and removal. | Published service must be represented as available in the returned saved item. Row count and a visible product heading cannot establish this. | [B01](evidence/B01.json): saved count 1, service remains published, API 201 but `is_available=false`; exact boolean assertion fails. | **Weak assertions / missing semantic coverage in the normal suite.** Its fixtures are sufficient for this sale case; incorrect data or permissions are not supported explanations. Previous separate repro already detected it. |
+| B02 / TA-SYS-002 | [TrustSafety normal test](../../tests/tester-army/module-contracts.e2e.ts#L45) POSTs `{}` and expects 422. | Allowed `chat_thread` input must progress beyond request validation and fail safely when unsupported or missing. | [B02](evidence/B02.json): valid-format nonexistent ULID and accepted type return 500; report count stays zero. | **Missing accepted-type branch and workflow depth.** The old request intentionally fails too early to test Action type mapping. Not an authentication or browser-tool failure. Previous separate repro already detected it. |
+| B03 / VTSE-001 | Normal panel navigation checks indexes; [native ownership regression](../../tests/Feature/CatalogSecurityRegressionTest.php#L17) already checks rejection and persistence. | A distinct approved attacker vendor, foreign service in changes-requested state, pending request item and malicious changed fields. | [B03](evidence/B03.json): 404, unchanged owner/price/state/request/item, zero attack idempotency writes. | **Adversarial API coverage absent from normal e2e, but no missed current bug established.** Current guard is corroborated for the cross-vendor branch. Owner allowlist/mass-assignment variants remain untested. |
+| B04 / VTSE-007 | [Connected normal flow](../../tests/tester-army/customer-lifecycle.e2e.ts#L42) stops at fake pending payment initiation; [native mismatch test](../../tests/Feature/PaymentsIntegrityRegressionTest.php#L117) mocks capture and idempotency. | Verified callback through real HTTP/idempotency/persistence, with mismatched amount or currency, then exact booking/payment/ledger state. | [B04](evidence/B04.json): real route returns 500 on MySQL interval SQL in SQLite before the amount guard; pending/unpaid/zero ledger delta do not prove the guard. | **Missing capture workflow, testing-layer boundary and environment difference.** Native mock hides the real SQL dependency. Financial defect persistence is UNKNOWN; currency variant was not reached. |
+| B05 / bank exposure | [Panel normal test](../../tests/tester-army/panel-navigation.e2e.ts#L5) opens indexes and checks table visibility/no server error. [Native security test](../../tests/Feature/VendorBankDataSecurityTest.php#L9) checks audit-property masking, a different surface. | Populated synthetic bank value, explicit record view/update permissions, opening the edit form, inspecting input and DOM before reveal/save. | [B05](evidence/B05.json): exact default mask, raw fake IBAN absent from DOM, stored value unchanged. | **Missing edit workflow and controlled sensitive-field fixture in the normal browser suite.** Record-edit permissions were not exercised there; this does not establish a permissions defect or a current exposure. Only the admin edit/default-IBAN branch was reproduced. |
+
+## Why a green campaign could coexist with known defects
+
+1. **An action succeeded, but its business meaning was unasserted.** B01 is the direct example: adding and removing a saved row passed while its availability representation was wrong. Correct transport status and count are useful assertions, but insufficient for the availability contract.
+2. **Negative validation replaced downstream exploration.** B02's empty request verifies the validator. It never reaches the accepted-type-to-action mapping where the exception occurs. A scenario reference to report submission does not prove that every accepted type was exercised.
+3. **The connected workflow ended before the financial outcome.** Pending payment creation and retry correctness are not capture reconciliation. B04 requires a trusted callback plus persisted accounting state, not a successful redirect URL or pending status.
+4. **Mocks narrowed what a native pass meant.** The previous mismatch test is useful evidence about Action behavior with a stubbed idempotency result. It cannot establish route/database compatibility. The pilot retained real downstream services and exposed that boundary instead of replacing them to obtain a pass.
+5. **Navigation coverage omitted populated record detail.** Index rendering cannot establish default bank confidentiality in an edit form. The new fixture made a raw-value leak detectable and gave the actor explicit access to the intended surface.
+6. **Historical inventory and executable coverage were conflated if treated as interchangeable.** The source inventory contains reports, decisions, requested changes and verification blockers; scenario discovery contains static flow descriptions. Neither implies runtime detection. Duplicate aliases and missing original observations are retained rather than turned into additional confirmed bugs.
+
+These are evidence-supported gaps for the specified tests. This pilot does not establish that every historical defect was missed for the same reasons, nor that the prior agent lacked all exploration. The prior separate repros are evidence of successful detection.
+
+## Tool and investigator controls
+
+- The initial B01 run hit `LOCATOR_AMBIGUOUS`, not a business assertion. Scoping the favorites heading allowed the same availability expectation to execute. Its final classification uses the rerun, not the tool error.
+- B05's first diagnostic sampled an HTML attribute that was null even though the runtime input value assertion passed. The final run recorded the actual input property and asserted the exact existing mask. No expected result was changed to accept a leak.
+- tester.army traces show real browser interaction for B01/B05. B02/B03 appropriately use deterministic API calls through its runner. B04 uses the real HTTP integration layer because a browser screen cannot establish capture ledger correctness.
+- No model-quality or subscription-configuration cause is established by these five results. Deterministic assertions, rather than agent impressions, decide outcomes. Earlier generic explorations are not evidence that these exact triggers were covered.
+- Separate benchmark selection preserves intentional failing repros outside the passing normal suite. A failing assertion on a confirmed defect remains failing; the SQLite blocker remains BLOCKED. Product code was not changed.
+
+## Remaining evidence gates — no expansion executed
+
+For a later B04 continuation, use an isolated database compatible with the real idempotency query and retain the real route/services, then verify both amount and currency mismatch effects. Do not mock away that dependency and label the result full integration proof. Real gateway signature correctness remains a separate gate.
+
+B03 requires owner allowlist and other type variants before closing its compound original finding. B05 requires its other originally reported surfaces before a whole-record security conclusion. Non-pilot source plans explicitly retain missing fixture, authority, selector and side-effect details. FR-2 versus later WIZ-01 expectations require product-authority reconciliation; the historical expected result was not rewritten.
+
+**Stopped after five distinct cases.** No application defect was fixed. This pilot establishes two persisting defects and bounded negative evidence for two branches; the payment defect remains unknown because execution was blocked.

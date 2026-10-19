@@ -1,0 +1,8 @@
+{
+  "engine": "8.4.11-0ubuntu0.26.04.1",
+  "database": "instaparty_qa_iqamysqlwu3cy1td",
+  "command": "migrate:fresh --force --no-interaction",
+  "expected_exit": 0,
+  "actual_exit": 1,
+  "exception": "SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'IF EXISTS ltg_balanced_check' at line 1 (Connection: mysql, Socket: /tmp/iqa-mysql-wU3Cy1td/mysql.sock, Database: instaparty_qa_iqamysqlwu3cy1td, SQL: ALTER TABLE ledger_transaction_groups DROP CONSTRAINT IF EXISTS ltg_balanced_check)"
+}

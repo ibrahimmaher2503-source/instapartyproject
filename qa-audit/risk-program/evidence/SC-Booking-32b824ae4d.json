@@ -1,0 +1,124 @@
+{
+  "response": {
+    "status": 404,
+    "body": {
+      "data": null,
+      "meta": null,
+      "errors": [
+        {
+          "code": "http_error",
+          "message": "Not Found"
+        }
+      ]
+    }
+  },
+  "before": {
+    "booking": {
+      "id": 2,
+      "public_id": "01M4RSS4CKF1QKGMTMXWFETYKH",
+      "customer_id": 5,
+      "lifecycle_status": "draft",
+      "payment_status": "unpaid",
+      "total_minor": 12500,
+      "total_currency": "EGP",
+      "total_vat_minor": 0
+    },
+    "items": [
+      {
+        "public_id": "01M4RSS4NPA5RCAQS8DW3Z63WS",
+        "service_id": 2,
+        "quantity": 1,
+        "unit_price_minor": 12500,
+        "line_total_minor": 12500,
+        "vat_rate_bps": 0,
+        "vat_amount_minor": 0,
+        "name_snapshot": "{\"en\":\"E2E Party Decorations\",\"ar\":\"\\u0632\\u064a\\u0646\\u0629 \\u062d\\u0641\\u0644\\u0627\\u062a \\u062a\\u062c\\u0631\\u064a\\u0628\\u064a\\u0629\"}",
+        "type_snapshot": null
+      }
+    ],
+    "vendors": [
+      {
+        "public_id": "01M4RSS4NH5YGQEAKWST0RN53J",
+        "vendor_profile_id": 1,
+        "sub_status": "pending",
+        "response_deadline": null
+      }
+    ],
+    "holds": [
+      {
+        "quantity": 1,
+        "status": "held",
+        "expires_at": "2026-10-12 19:50:07"
+      }
+    ],
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "draft",
+        "trigger_kind": "system"
+      }
+    ],
+    "notes": [
+      {
+        "body": "Risk pilot isolated event note"
+      }
+    ],
+    "notifications_count": 0,
+    "idempotency_count": 0
+  },
+  "after": {
+    "booking": {
+      "id": 2,
+      "public_id": "01M4RSS4CKF1QKGMTMXWFETYKH",
+      "customer_id": 5,
+      "lifecycle_status": "draft",
+      "payment_status": "unpaid",
+      "total_minor": 12500,
+      "total_currency": "EGP",
+      "total_vat_minor": 0
+    },
+    "items": [
+      {
+        "public_id": "01M4RSS4NPA5RCAQS8DW3Z63WS",
+        "service_id": 2,
+        "quantity": 1,
+        "unit_price_minor": 12500,
+        "line_total_minor": 12500,
+        "vat_rate_bps": 0,
+        "vat_amount_minor": 0,
+        "name_snapshot": "{\"en\":\"E2E Party Decorations\",\"ar\":\"\\u0632\\u064a\\u0646\\u0629 \\u062d\\u0641\\u0644\\u0627\\u062a \\u062a\\u062c\\u0631\\u064a\\u0628\\u064a\\u0629\"}",
+        "type_snapshot": null
+      }
+    ],
+    "vendors": [
+      {
+        "public_id": "01M4RSS4NH5YGQEAKWST0RN53J",
+        "vendor_profile_id": 1,
+        "sub_status": "pending",
+        "response_deadline": null
+      }
+    ],
+    "holds": [
+      {
+        "quantity": 1,
+        "status": "held",
+        "expires_at": "2026-10-12 19:50:07"
+      }
+    ],
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "draft",
+        "trigger_kind": "system"
+      }
+    ],
+    "notes": [
+      {
+        "body": "Risk pilot isolated event note"
+      }
+    ],
+    "notifications_count": 0,
+    "idempotency_count": 0
+  },
+  "expected": "404 and no foreign booking mutation"
+}

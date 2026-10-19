@@ -1,0 +1,34 @@
+meta {
+  name: Send customer phone OTP
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{baseUrl}}/api/v1/phone/otp/send
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone_e164": "{{customerPhone}}"
+  }
+}
+
+tests {
+  test("delivery status matches debug configuration", function() {
+    expect(res.getStatus()).to.equal(202);
+    expect(res.getBody().data.sent).to.equal(bru.getEnvVar("appDebug") !== "true");
+  });
+}
+
+docs {
+  Set appDebug=true in the Bruno environment when the target has APP_DEBUG=true.
+  Debug skips delivery and the phone attempt counter. The HTTP throttle remains active.
+}

@@ -12,6 +12,8 @@ Verify filenames with `rg --files` when working; update affected rows when entry
 | Admin panel | [AdminPanelProvider](../../app/Providers/Filament/AdminPanelProvider.php) | Module `Filament/`, [shared views](../../resources/views/filament/) |
 | Vendor panel | [VendorPanelProvider](../../app/Providers/Filament/VendorPanelProvider.php) | Module `Filament/`, [vendor views](../../resources/views/vendor-portal/) |
 | Public storefront | [web routes](../../routes/web.php) | Module `Routes/storefront.php`, [storefront views](../../resources/views/storefront/) |
+| Public occasions index | [Catalog storefront routes](../../app/Modules/Catalog/Routes/storefront.php) | `/{locale}/occasions` → `TaxonomyController::occasions` → `ListPublicOccasionsAction` → `storefront.occasions.index` |
+| Public crawler metadata | [web routes](../../routes/web.php), [RobotsTxtController](../../app/Modules/Shared/Http/Controllers/RobotsTxtController.php), [SitemapController](../../app/Modules/Shared/Http/Controllers/SitemapController.php) | Localized public entry routes only; robots directives do not enforce access control |
 | Homepage / CMS | [Shared](../../app/Modules/Shared/), [home view](../../resources/views/storefront/home.blade.php) | [Home components](../../resources/views/components/home/), [PRODUCT](../../PRODUCT.md), [DESIGN](../../DESIGN.md) |
 | Schedule / jobs | [console routes](../../routes/console.php) | Module Console/Commands or Application/Commands and listeners |
 | API locale / envelope | [SetLocaleMiddleware](../../app/Modules/Identity/Http/Middleware/SetLocaleMiddleware.php), [ApiResponse](../../app/Modules/Shared/Http/ApiResponse.php) | Module Resources/lang/{en,ar}, Requests and Resources |
@@ -40,7 +42,7 @@ Each module link leads to its actual directory. Inspect its provider for binding
 | [Reviews](../../app/Modules/Reviews/) | service/vendor reviews, moderation, rating | customer, vendor, public |
 | [Geography](../../app/Modules/Geography/) | countries, governorates, cities, regions | customer |
 | [Loyalty](../../app/Modules/Loyalty/) | points, rewards, loyalty ledger | customer, vendor, admin |
-| [Shared](../../app/Modules/Shared/) | CMS, branding, settings, money, media, timeline | customer, vendor, storefront |
+| [Shared](../../app/Modules/Shared/) | CMS, branding, settings, money, media, timeline, public crawler metadata | customer, vendor, storefront |
 | [Subscriptions](../../app/Modules/Subscriptions/) | subscription implementation; scope conflict recorded | customer, vendor, admin |
 | [Tax](../../app/Modules/Tax/) | tax implementation; scope conflict recorded | none |
 | [Advertising](../../app/Modules/Advertising/) | advertising implementation; approval unverified | none |
@@ -49,6 +51,8 @@ Each module link leads to its actual directory. Inspect its provider for binding
 | [Promotions](../../app/Modules/Promotions/) | promo codes | customer |
 
 There are no standalone Negotiation or Reporting module directories here. Negotiation entry points are in Booking; locate reporting by page/export symbol rather than inventing a module path.
+
+Vendor document requirements are managed at `/admin/vendor-document-types` through Identity's `VendorDocumentTypeResource`. `RequiredVendorDocumentTypesResolver` reads the same catalog for vendor upload options, approval, onboarding and expiry enforcement. Removed types retain their historical labels and uploaded files.
 
 ## A concrete trace: submit booking
 

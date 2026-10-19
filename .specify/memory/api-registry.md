@@ -1,5 +1,9 @@
 # API Registry
 
+Debug phone/email verification behavior: [contact verification contract](../../docs/api/debug-contact-verification.md). `APP_DEBUG=true` skips phone OTP sends and contact verification gates; the existing phone verification endpoint accepts an omitted code. Vendor registration sets `meta.verification_pending=false` in debug mode. Normal requirements apply with debug disabled. No new routes.
+
+Public vendor presentation update (2026-10-12): [contract details](../../docs/api/vendor-public-presentation.md). Existing vendor profile/index responses add localized unique `governorates`; existing `city` remains compatible. Portfolio combines vendor-owned and displayable service media, adds `thumb`, and permits nullable `service_public_id` for vendor-owned images. Service summary `area_hint` uses governorates. Bruno requests: `customer-vendor-profile`, `customer-vendor-portfolio`, `customer-vendor-services`. No new API routes.
+
 | Method | Endpoint | Module | Phase | Auth | Roles | Request Body | Response | Documented |
 |---|---|---|---|---|---|---|---|---|
 | POST | /api/v1/register/vendor | Identity | Phase 1 | Public, throttled | Guest | name, email, phone_e164, password + confirmation, bilingual business_name, business_type, governorate, locale; optional legacy city validated against governorate; optional valid facebook_url, website_url, instagram_url | 201 VendorProfile including optional URLs and nullable primary_city_id; meta registration_successful and verification_pending | Scribe + Bruno |

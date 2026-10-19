@@ -1,0 +1,83 @@
+{
+  "assertions": [
+    {
+      "assertion": "one group",
+      "expected": 1,
+      "actual": 1
+    },
+    {
+      "assertion": "two entries",
+      "expected": 2,
+      "actual": 2
+    },
+    {
+      "assertion": "balanced minor units",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "debit wallet projection",
+      "expected": -10000,
+      "actual": -10000
+    },
+    {
+      "assertion": "credit wallet projection",
+      "expected": 10000,
+      "actual": 10000
+    },
+    {
+      "assertion": "after commit event",
+      "expected": [
+        "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted"
+      ],
+      "actual": [
+        "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted"
+      ]
+    }
+  ],
+  "events": [
+    "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted"
+  ],
+  "persistence": {
+    "payments": [],
+    "refunds": [],
+    "ledger": [
+      {
+        "id": 1,
+        "transaction_group_id": 1,
+        "direction": "debit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      },
+      {
+        "id": 2,
+        "transaction_group_id": 1,
+        "direction": "credit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      }
+    ],
+    "wallets": [
+      {
+        "id": 1,
+        "currency": "EGP",
+        "balance_minor": -10000,
+        "pending_withdrawal_minor": 0
+      },
+      {
+        "id": 2,
+        "currency": "EGP",
+        "balance_minor": 10000,
+        "pending_withdrawal_minor": 0
+      }
+    ],
+    "webhook_errors": [],
+    "idempotency_count": 0,
+    "idempotency_rows": [],
+    "inventory": [],
+    "sale_stock": [],
+    "database_now": "2026-10-12 19:42:29",
+    "application_now": "2026-10-12 19:42:29",
+    "database_engine": "11.8.6-MariaDB-5ubuntu0.1 from Ubuntu"
+  }
+}

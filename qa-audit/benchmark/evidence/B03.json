@@ -1,0 +1,27 @@
+{
+  "status": 404,
+  "before": {
+    "foreign_service": {
+      "vendor_profile_id": 2,
+      "status": "changes_requested",
+      "base_price_minor": 23456
+    },
+    "change_status": "open",
+    "foreign_change_items": [
+      "pending"
+    ],
+    "attack_idempotency_count": 0
+  },
+  "after": {
+    "foreign_service": {
+      "vendor_profile_id": 2,
+      "status": "changes_requested",
+      "base_price_minor": 23456
+    },
+    "change_status": "open",
+    "foreign_change_items": [
+      "pending"
+    ],
+    "attack_idempotency_count": 0
+  }
+}

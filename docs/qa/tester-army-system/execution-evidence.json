@@ -1,0 +1,3900 @@
+{
+  "discovery_scenarios": 1292,
+  "scenario_statuses": {
+    "not-run": 1258,
+    "partially-tested": 3,
+    "needs-business-confirmation": 31
+  },
+  "runs": [
+    {
+      "report": ".e2e/system-audit/final/junit.xml",
+      "counts": {
+        "passed": 77
+      },
+      "tests": [
+        {
+          "test": "app opens [instaparty-local]",
+          "file": "tests/example.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "SC-Discovery-01fcf4441a / SC-Discovery-db85346a80 wishlist add, retry, ownership and removal [instaparty-local]",
+          "file": "tests/tester-army/customer-lifecycle.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "SC-Booking-d23fdddb0e draft validation, ownership and discard [instaparty-local]",
+          "file": "tests/tester-army/customer-lifecycle.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "connected sale draft → review → vendor acceptance → idempotent fake payment [instaparty-local]",
+          "file": "tests/tester-army/customer-lifecycle.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "a guest discovers a service and reaches the planning sign-in gate in EN and AR [instaparty-local]",
+          "file": "tests/tester-army/discovery.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/profile [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/addresses [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/loyalty/balances [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/reviews [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/promotions/active [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/notification-preferences [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/notifications [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer reads own module contract /api/v1/customer/notifications/unread-count [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/wallet [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/wallet/ledger [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/withdrawals [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/wallet/settlements [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/bank-accounts [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/pricing/commission-rates [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/subscription [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/booking-vendors [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/reports/bookings [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/reports/revenue [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor reads own module contract /api/v1/vendor/reports/services-performance [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "settlement API denies a customer access to vendor wallet [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "Support ticket validation and same-request deduplication [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "TrustSafety public escrow, vendor badges and report validation [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "Shared CMS missing page and invalid navigation slot reject invalid requests [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "Promotions rejects a missing code and notification inbox read is idempotent [instaparty-local]",
+          "file": "tests/tester-army/module-contracts.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "admin resource indexes render with explicit fixture read permissions [instaparty-local]",
+          "file": "tests/tester-army/panel-navigation.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor resource indexes render with explicit fixture read permissions [instaparty-local]",
+          "file": "tests/tester-army/panel-navigation.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "en planner rejects invalid dates and loads the selected governorate city [instaparty-local]",
+          "file": "tests/tester-army/planner-and-price.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "en sale search excludes prices above its maximum [instaparty-local]",
+          "file": "tests/tester-army/planner-and-price.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "ar planner rejects invalid dates and loads the selected governorate city [instaparty-local]",
+          "file": "tests/tester-army/planner-and-price.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "ar sale search excludes prices above its maximum [instaparty-local]",
+          "file": "tests/tester-army/planner-and-price.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/ renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/search renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/vendors renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/join-us renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/auth/login renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/auth/register renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/wizard renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface en/cart renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "rental service details en preserve identity and localized title [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "sale service details en preserve identity and localized title [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "digital service details en preserve identity and localized title [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer signs in and opens all account sections en [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/ renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/search renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/vendors renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/join-us renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/auth/login renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/auth/register renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/wizard renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public surface ar/cart renders [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "rental service details ar preserve identity and localized title [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "sale service details ar preserve identity and localized title [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "digital service details ar preserve identity and localized title [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "customer signs in and opens all account sections ar [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "admin authenticates into its panel [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "vendor authenticates into its panel [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/governorates returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/cities returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/now returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/services returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/vendors returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/theme/branding returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/theme/tokens returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/theme/menus?slot=header returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/feature-flags/public returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/cms/homepage returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/faq/categories returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "public API /api/v1/customer/faq/search?q=party returns a JSON contract [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "guest is rejected by /api/v1/customer/profile [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "guest is rejected by /api/v1/customer/bookings [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "guest is rejected by /api/v1/customer/wishlist [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        },
+        {
+          "test": "guest is rejected by /api/v1/customer/addresses [instaparty-local]",
+          "file": "tests/tester-army/system-surfaces.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/final/junit.xml"
+        }
+      ]
+    },
+    {
+      "report": ".e2e/system-audit/mobile/junit.xml",
+      "counts": {
+        "passed": 1
+      },
+      "tests": [
+        {
+          "test": "390px RTL menu closes and permits search without horizontal page overflow [instaparty-local]",
+          "file": "tests/tester-army/mobile/navigation.e2e.ts",
+          "status": "passed",
+          "report": ".e2e/system-audit/mobile/junit.xml"
+        }
+      ]
+    },
+    {
+      "report": ".e2e/system-audit/repros/junit.xml",
+      "counts": {
+        "failed": 2
+      },
+      "tests": [
+        {
+          "test": "unknown chat report target returns a client error rather than a server error [instaparty-local]",
+          "file": "tests/tester-army/bugs/report-type.e2e.ts",
+          "status": "failed",
+          "report": ".e2e/system-audit/repros/junit.xml"
+        },
+        {
+          "test": "published displayable service remains available when saved to wishlist [instaparty-local]",
+          "file": "tests/tester-army/bugs/wishlist-availability.e2e.ts",
+          "status": "failed",
+          "report": ".e2e/system-audit/repros/junit.xml"
+        }
+      ]
+    },
+    {
+      "report": ".e2e/system-audit/phpunit.xml",
+      "counts": {
+        "passed": 563
+      },
+      "tests": [
+        {
+          "test": "it masks every vendor banking value before display or audit storage",
+          "file": "Tests.Unit.Identity.MaskBankDataTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides vendor banking attributes from model serialization",
+          "file": "Tests.Unit.Identity.MaskBankDataTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it normalizes browser-local booking times to UTC",
+          "file": "Tests.Unit.StorefrontBookingRequestTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it falls back to a usable English translation when the storefront locale is corrupted",
+          "file": "Tests.Unit.StorefrontTextTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps a valid storefront translation in the active locale",
+          "file": "Tests.Unit.StorefrontTextTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it maps primary and coverage governorates once and falls back to the city relationship",
+          "file": "Tests.Unit.VendorGovernoratePresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it protects the activity log and avoids legacy internal identifiers",
+          "file": "Tests.Feature.ActivityAuditPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it localizes the legacy activity label",
+          "file": "Tests.Feature.ActivityAuditPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies activity log access without the view permission",
+          "file": "Tests.Feature.ActivityAuditPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates occasions categories and loyalty programs with independent translations",
+          "file": "Tests.Feature.AdminCriticalCreateFlowsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it resolves admin records by public or natural keys and rejects numeric ids",
+          "file": "Tests.Feature.AdminPublicRouteBindingsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps service translations separate and searches both locales for every product type",
+          "file": "Tests.Feature.AdminServiceTranslationAndSearchTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it localizes lifecycle states in the Arabic intervention table",
+          "file": "Tests.Feature.BookingInterventionLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders a printable bilingual invoice breakdown with transport lines with data set \"('en')\"",
+          "file": "Tests.Feature.BookingInvoiceTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders a printable bilingual invoice breakdown with transport lines with data set \"('ar')\"",
+          "file": "Tests.Feature.BookingInvoiceTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it snapshots the resolved commission and allows unlimited sale stock",
+          "file": "Tests.Feature.BookingItemCommercialSnapshotTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it counts distinct review bookings for late and open negotiation scopes",
+          "file": "Tests.Feature.BookingNegotiationAdminFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses the policy permission for the late responses widget",
+          "file": "Tests.Feature.BookingNegotiationAdminFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders the booking intervention detail page for an authorized admin",
+          "file": "Tests.Feature.BookingNegotiationAdminFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects no-op state transitions and assigns a correlation id",
+          "file": "Tests.Feature.BookingNegotiationAdminFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not duplicate a confirmed alternative suggestion",
+          "file": "Tests.Feature.BookingNegotiationAdminFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rebuilds the booking payment projection when a capture event is retried",
+          "file": "Tests.Feature.BookingStateFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses both old and new quantities when previewing a modification delta",
+          "file": "Tests.Feature.BookingStateFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it applies an added published vendor service with trusted snapshots and a reservation",
+          "file": "Tests.Feature.BookingStateFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it releases inventory when a customer accepts an item removal",
+          "file": "Tests.Feature.BookingStateFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it completes the parent booking once every vendor allocation is complete",
+          "file": "Tests.Feature.BookingStateFixesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it snapshots governorate transport pricing and reconciles an auditable invoice line",
+          "file": "Tests.Feature.BookingTransportPricingTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it records sanitized failure state for parser or worker errors across product types",
+          "file": "Tests.Feature.CatalogExcelImportTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it marks empty files as failed instead of completing zero rows",
+          "file": "Tests.Feature.CatalogExcelImportTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores bilingual row errors and leaves invalid imports without services",
+          "file": "Tests.Feature.CatalogExcelImportTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it records a sanitized failure when service creation fails after parsing",
+          "file": "Tests.Feature.CatalogExcelImportTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it imports a valid rental row and commits completed counters",
+          "file": "Tests.Feature.CatalogExcelImportTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders every import product type and malformed error rows in admin detail",
+          "file": "Tests.Feature.CatalogExcelImportTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns a non-enumerating 404 when a vendor resubmits a foreign service",
+          "file": "Tests.Feature.CatalogSecurityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects service resubmission fields outside the requested safe allowlist",
+          "file": "Tests.Feature.CatalogSecurityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts only active categories matching the requested product type",
+          "file": "Tests.Feature.CatalogSecurityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it lists categories scoped to vendor approvals and requested product type",
+          "file": "Tests.Feature.CatalogSecurityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it inherits shared parent fields with nearest child overrides and type isolation with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it inherits shared parent fields with nearest child overrides and type isolation with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it inherits shared parent fields with nearest child overrides and type isolation with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"text\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"text\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"text\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"number\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"number\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"number\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"boolean\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"boolean\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"boolean\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"select\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"select\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"select\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"multiselect\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"multiselect\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"multiselect\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"date\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"date\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates all six native field types even when optional and without custom rules with data set \"dataset \"date\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts localized seeded and legacy option formats without accepting unknown choices with data set \"('en')\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts localized seeded and legacy option formats without accepting unknown choices with data set \"('ar')\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it supports the admin KeyValue rule format and refreshes definitions in a new validator",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not repeat schema queries for every row of a bulk import with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not repeat schema queries for every row of a bulk import with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not repeat schema queries for every row of a bulk import with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not let nullable sometimes or exclusion rules bypass a required schema",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects fields belonging to another category or type using localized errors with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects fields belonging to another category or type using localized errors with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects fields belonging to another category or type using localized errors with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects fields belonging to another category or type using localized errors with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects fields belonging to another category or type using localized errors with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects fields belonging to another category or type using localized errors with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stops cyclic ancestry and returns no schemas for a missing or deleted category",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it enforces shared numeric and select schemas in the real Excel import before service creation with data set \"dataset \"numeric bounds\"\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it enforces shared numeric and select schemas in the real Excel import before service creation with data set \"dataset \"numeric type\"\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it enforces shared numeric and select schemas in the real Excel import before service creation with data set \"dataset \"select option\"\"",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it exposes inherited filterable schemas and applicable customer attributes",
+          "file": "Tests.Feature.CategoryFieldValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it allocates a payment-level refund across commissions once",
+          "file": "Tests.Feature.CommissionRefundAllocationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it caps a commission reversal at the original accrued amounts",
+          "file": "Tests.Feature.CommissionRefundAllocationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it masks moderation patterns according to their type",
+          "file": "Tests.Feature.CommunicationSecurityAndDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders communication and trust safety detail pages",
+          "file": "Tests.Feature.CommunicationSecurityAndDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders message log and spreadsheet import detail pages",
+          "file": "Tests.Feature.CommunicationSecurityAndDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses clear bilingual empty-state copy for the admin inbox",
+          "file": "Tests.Feature.CommunicationSecurityAndDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders payment and refund detail pages for finance review",
+          "file": "Tests.Feature.CommunicationSecurityAndDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not expose full bank data or idempotency keys in admin lists",
+          "file": "Tests.Feature.CommunicationSecurityAndDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders sale provider booking and modification admin pages",
+          "file": "Tests.Feature.CriticalAdminPageRenderTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects an expired customer modification decision under the row lock",
+          "file": "Tests.Feature.CriticalAdminPageRenderTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies critical admin detail routes to an unauthorized user",
+          "file": "Tests.Feature.CriticalAdminPageRenderTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it expires pending modifications at the UTC boundary exactly once",
+          "file": "Tests.Feature.CriticalAdminPageRenderTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it removes the planning account link while keeping the public wizard and legacy plans route with data set \"('en')\"",
+          "file": "Tests.Feature.CustomerAccountHandoffTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it removes the planning account link while keeping the public wizard and legacy plans route with data set \"('ar')\"",
+          "file": "Tests.Feature.CustomerAccountHandoffTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves the two allowed gender values on web and API and rejects new legacy values with data set \"('en')\"",
+          "file": "Tests.Feature.CustomerAccountHandoffTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves the two allowed gender values on web and API and rejects new legacy values with data set \"('ar')\"",
+          "file": "Tests.Feature.CustomerAccountHandoffTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps a legacy gender readable and unchanged when saving unrelated profile fields with data set \"('en')\"",
+          "file": "Tests.Feature.CustomerAccountHandoffTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps a legacy gender readable and unchanged when saving unrelated profile fields with data set \"('ar')\"",
+          "file": "Tests.Feature.CustomerAccountHandoffTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it initiates one deterministic payment and replays the same idempotent response",
+          "file": "Tests.Feature.CustomerPurchasePaymentContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects payment initiation for an unconfirmed booking before the gateway",
+          "file": "Tests.Feature.CustomerPurchasePaymentContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it confirms a single-vendor booking through the existing vendor accept route",
+          "file": "Tests.Feature.CustomerPurchasePaymentContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses the localized cart as the storefront purchase entry point",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it serves a published service before the customer enters the cart flow",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides the four removed customer detail properties without changing stored service data with data set \"('en') / ('rental')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides the four removed customer detail properties without changing stored service data with data set \"('en') / ('sale')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides the four removed customer detail properties without changing stored service data with data set \"('en') / ('digital')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides the four removed customer detail properties without changing stored service data with data set \"('ar') / ('rental')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides the four removed customer detail properties without changing stored service data with data set \"('ar') / ('sale')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides the four removed customer detail properties without changing stored service data with data set \"('ar') / ('digital')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it omits empty detail groups but still blocks an out-of-stock purchase with data set \"('en')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it omits empty detail groups but still blocks an out-of-stock purchase with data set \"('ar')\"",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders only the attributes supported by each service type",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders the wizard payload for the cart setup contract",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires checkout review while the booking is still a customer draft",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps payment initiation on the existing customer booking API contract",
+          "file": "Tests.Feature.CustomerPurchaseRouteContractTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers a customer from the public storefront without a server error",
+          "file": "Tests.Feature.CustomerRegistrationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns validation errors for duplicate customer contact values",
+          "file": "Tests.Feature.CustomerRegistrationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks suspended customer mutations while keeping history readable",
+          "file": "Tests.Feature.CustomerRouteAccessPolicyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it restricts customer payment endpoints to customer accounts",
+          "file": "Tests.Feature.CustomerRouteAccessPolicyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it removes disabled digital services from customer entry points while preserving rows",
+          "file": "Tests.Feature.DigitalServiceAvailabilityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks disabled digital vendor operations without deleting existing data",
+          "file": "Tests.Feature.DigitalServiceAvailabilityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it localizes every enum rendered directly by Filament",
+          "file": "Tests.Feature.FilamentEnumLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps guest entry routes inside their panel in both locales with data set \"('en')\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps guest entry routes inside their panel in both locales with data set \"('ar')\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it discards an intended URL belonging to the other panel with data set \"dataset \"admin after vendor request\"\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it discards an intended URL belonging to the other panel with data set \"dataset \"vendor after admin request\"\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it authenticates each role only in its own panel and redirects to that panel",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps simultaneous admin and vendor sessions on their own login routes",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it removes a legacy cross-panel guard session without logging out the other panel with data set \"dataset \"vendor stored in admin web guard\"\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it removes a legacy cross-panel guard session without logging out the other panel with data set \"dataset \"admin stored in vendor guard\"\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects credentials from the other panel with data set \"dataset \"vendor credentials on admin\"\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects credentials from the other panel with data set \"dataset \"admin credentials on vendor\"\"",
+          "file": "Tests.Feature.FilamentPanelAuthenticationIsolationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it has English and Arabic values for static Filament translation keys",
+          "file": "Tests.Feature.FilamentTranslationCoverageTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders the admin vendor profile detail page for an authorized user",
+          "file": "Tests.Feature.FilamentVendorProfileDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders the approval checklist for an incomplete pending vendor",
+          "file": "Tests.Feature.FilamentVendorProfileDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies the admin vendor profile detail page without permission",
+          "file": "Tests.Feature.FilamentVendorProfileDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it presents a public financial identity with a localized type and no internal id",
+          "file": "Tests.Feature.FinanceIdentityPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses a safe localized fallback for a missing or legacy identity",
+          "file": "Tests.Feature.FinanceIdentityPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it exposes refund payment and booking public ids without internal foreign keys",
+          "file": "Tests.Feature.FinanceIdentityPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not serialize a reconciliation finding internal resource id",
+          "file": "Tests.Feature.FinanceIdentityPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it localizes review moderation values in Arabic",
+          "file": "Tests.Feature.FinanceUiLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it localizes dispute statuses and reason codes without raw financial values",
+          "file": "Tests.Feature.FinanceUiLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it completes registration, approval, sale publication, booking, and payment for one marketplace pair",
+          "file": "Tests.Feature.FullMarketplaceJourneyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it completes the approved sale service purchase chain with idempotent payment",
+          "file": "Tests.Feature.FullPurchaseJourneyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it completes one vendor onboarding journey through the existing gates",
+          "file": "Tests.Feature.FullVendorOnboardingJourneyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders explicit webhook signature and processing states",
+          "file": "Tests.Feature.GatewayWebhookLogPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it normalizes legacy webhook event spelling for display without changing stored evidence",
+          "file": "Tests.Feature.GatewayWebhookLogPresentationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it edits transport prices in EGP while persisting integer minor units with data set \"('en')\"",
+          "file": "Tests.Feature.GovernorateTransportPriceFormTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it edits transport prices in EGP while persisting integer minor units with data set \"('ar')\"",
+          "file": "Tests.Feature.GovernorateTransportPriceFormTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it seeds editable localized informational pages and renders a safe document outline",
+          "file": "Tests.Feature.InformationalCmsPagesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not let a hold expiring now block rental availability or a new hold",
+          "file": "Tests.Feature.InventoryExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it reconciles exact expiry for rental sale and digital holds",
+          "file": "Tests.Feature.InventoryExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it releases only held reservations atomically and is idempotent",
+          "file": "Tests.Feature.InventoryExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not confirm a hold expiring now when a booking confirmation event is handled",
+          "file": "Tests.Feature.InventoryExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects a reused ledger key with different entries",
+          "file": "Tests.Feature.LedgerIdempotencyPayloadTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it dispatches due campaigns once and leaves future campaigns scheduled",
+          "file": "Tests.Feature.NotificationQueueRecoveryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it recovers stale queued dispatches through the existing retry path",
+          "file": "Tests.Feature.NotificationQueueRecoveryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it claims a queued dispatch only once when duplicate jobs run",
+          "file": "Tests.Feature.NotificationQueueRecoveryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders bilingual notification content literally and rejects missing variables",
+          "file": "Tests.Feature.NotificationTemplateRenderingTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it dispatches service published notifications to the owning vendor",
+          "file": "Tests.Feature.NotificationTemplateRenderingTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it dispatches service rejected notifications to the owning vendor",
+          "file": "Tests.Feature.NotificationTemplateRenderingTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires every placeholder to be documented before a template is saved",
+          "file": "Tests.Feature.NotificationTemplateRenderingTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it queues rendered content and records a failed dispatch instead of sending unresolved placeholders",
+          "file": "Tests.Feature.NotificationTemplateRenderingTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it hides another customer payment and exposes only the booking public id",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects payment initiation before the gateway for an invalid booking state",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects a second pending payment for a confirmed booking",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not call the gateway when a completed refund is replayed",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects captured webhook amounts that do not match the local payment",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it records invalid signatures with a sanitized reason and payload",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it records malformed webhook parsing without leaking exception details",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it records unknown webhook references with a sanitized error code",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it normalizes event spelling for sequential webhook idempotency",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores the webhook failure code instead of the previous payment value",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it scopes HTTP idempotency by actor and route and reserves the first request",
+          "file": "Tests.Feature.PaymentsIntegrityRegressionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it skips meaningless searches and keeps filter-only searches explicit",
+          "file": "Tests.Feature.SearchTelemetryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it localizes the three admin service import page titles",
+          "file": "Tests.Feature.ServiceUiLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps every service status label translated in both supported locales",
+          "file": "Tests.Feature.ServiceUiLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it refuses automatic payouts without transfer proof",
+          "file": "Tests.Feature.SettlementPayoutSafetyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it sends localized SMS and accepts only the current single-use phone code with data set \"('en', 1)\"",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it sends localized SMS and accepts only the current single-use phone code with data set \"('ar', 2)\"",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it expires without extending the lifetime after wrong guesses and caps verification attempts",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects provider failure without creating a challenge and preserves separate password reset tokens",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it binds real SMS outside local and testing environments with data set \"('local', 'App\\Modules\\Identity\\Infrastr…ateway')\"",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it binds real SMS outside local and testing environments with data set \"('testing', 'App\\Modules\\Identity\\Infrastr…ateway')\"",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it binds real SMS outside local and testing environments with data set \"('staging', 'App\\Modules\\Identity\\Infrastr…ateway')\"",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it binds real SMS outside local and testing environments with data set \"('production', 'App\\Modules\\Identity\\Infrastr…ateway')\"",
+          "file": "Tests.Feature.SmsOtpGatewayTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it expires a pending vendor exactly at the UTC deadline and escalates to customer review",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not expire a pending vendor before the UTC deadline",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it cancels vendor review when the event start boundary has arrived",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves partial vendor responses and waits for future pending allocations",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it moves a partial response booking to customer review after the final pending vendor times out",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it is idempotent across repeated worker runs",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the production command fail closed until explicitly enabled",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it configures queued timeout handling with bounded retries",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it schedules stale vendor review expiry every minute",
+          "file": "Tests.Feature.StaleVendorReviewExpiryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns only the first four published packages related to the selected category",
+          "file": "Tests.Feature.StorefrontCategoryPackagesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not mix global or unrelated packages into an occasion hero",
+          "file": "Tests.Feature.StorefrontCategoryPackagesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders matching packages inside the search results surface",
+          "file": "Tests.Feature.StorefrontCategoryPackagesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it persists one complete draft when save and continue succeeds",
+          "file": "Tests.Feature.StorefrontCheckoutSetupTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rolls back the draft when adding the requested service fails",
+          "file": "Tests.Feature.StorefrontCheckoutSetupTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it replaces the celebrant field and stores complete escaped multiline notes for the owning customer with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it replaces the celebrant field and stores complete escaped multiline notes for the owning customer with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps planner notes in the session without exposing or truncating them in search links with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps planner notes in the session without exposing or truncating them in search links with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns the same multiline notes on the existing draft API with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns the same multiline notes on the existing draft API with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects oversized notes without truncation or partial booking writes with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects oversized notes without truncation or partial booking writes with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it appends changed notes to an existing draft but preserves history and legacy celebrant data",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rolls notes back with a failed cart addition",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders event notes only to the owning approved vendor with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders event notes only to the owning approved vendor with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontEventNotesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders the homepage builder in the required dependent-field order without category",
+          "file": "Tests.Feature.StorefrontHomepagePartyBuilderTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts valid homepage builder selections on the search page",
+          "file": "Tests.Feature.StorefrontHomepagePartyBuilderTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('rental') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('rental') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('rental') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('sale') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('sale') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('sale') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('digital') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('digital') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('en') / ('digital') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('rental') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('rental') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('rental') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('sale') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('sale') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('sale') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('digital') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('digital') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves an unknown event end as null while maintaining type-aware item windows with data set \"('ar') / ('digital') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates an API draft with a nullable end and stores offset dates in UTC with data set \"('en') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates an API draft with a nullable end and stores offset dates in UTC with data set \"('en') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates an API draft with a nullable end and stores offset dates in UTC with data set \"('en') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates an API draft with a nullable end and stores offset dates in UTC with data set \"('ar') / ('omitted')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates an API draft with a nullable end and stores offset dates in UTC with data set \"('ar') / ('null')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates an API draft with a nullable end and stores offset dates in UTC with data set \"('ar') / ('empty')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('en') / ('missing-start')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('en') / ('malformed')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('en') / ('before')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('en') / ('same')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('ar') / ('missing-start')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('ar') / ('malformed')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('ar') / ('before')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing starts and malformed or nonpositive ends without creating a draft with data set \"('ar') / ('same')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it honors explicit ends instead of replacing them with the rental default with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it honors explicit ends instead of replacing them with the rental default with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it prevents conflicting rentals across the full default window and rolls back their drafts with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it prevents conflicting rentals across the full default window and rolls back their drafts with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent a duration for a rental without a valid default with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent a duration for a rental without a valid default with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves nullable event ends when accepting rental additions and checks their default window with data set \"(false)\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves nullable event ends when accepting rental additions and checks their default window with data set \"(true)\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it shows a late-window inventory conflict to the owning vendor when the event end is unknown",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts start-only planner searches and still rejects earlier supplied ends with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts start-only planner searches and still rejects earlier supplied ends with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontOptionalEventEndTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it formats equal package bounds as one fixed EGP amount on every public surface",
+          "file": "Tests.Feature.StorefrontPackageFixedPriceTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it filters package results through service occasion geography and exact availability",
+          "file": "Tests.Feature.StorefrontPackageSearchIntegrationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it opens a published package from its search result card",
+          "file": "Tests.Feature.StorefrontPackageSelectionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns to search with a visible error when a package cannot be loaded",
+          "file": "Tests.Feature.StorefrontPackageSelectionTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it labels the rating filter below vendor without changing its submitted value with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontSearchFallbackTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it labels the rating filter below vendor without changing its submitted value with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontSearchFallbackTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it searches both languages and never drops unknown filters",
+          "file": "Tests.Feature.StorefrontSearchFallbackTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires a matching governorate whenever a city filters storefront search",
+          "file": "Tests.Feature.StorefrontSearchGeographyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only matching cities and applies governorate and city filters",
+          "file": "Tests.Feature.StorefrontSearchGeographyTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it places the package filter immediately after occasion with only linked packages",
+          "file": "Tests.Feature.StorefrontSearchPackageFilterTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps only a package linked to the selected occasion and filters package cards",
+          "file": "Tests.Feature.StorefrontSearchPackageFilterTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it offers only vendors with a published service matching category and occasion together",
+          "file": "Tests.Feature.StorefrontSearchVendorOptionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it combines dependent subcategories with vendor type and pagination in both locales with data set \"('en')\"",
+          "file": "Tests.Feature.StorefrontSubcategoryFilterTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it combines dependent subcategories with vendor type and pagination in both locales with data set \"('ar')\"",
+          "file": "Tests.Feature.StorefrontSubcategoryFilterTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves old direct child category links and disables empty child selectors",
+          "file": "Tests.Feature.StorefrontSubcategoryFilterTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it replaces legacy footer placeholders with localized headings",
+          "file": "Tests.Feature.Storefront.NavigationMenuLocalizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires the planner context before showing discovery results",
+          "file": "Tests.Feature.Storefront.PlannerSearchValidationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it enrols a vendor at most once and serializes the lookup in a transaction",
+          "file": "Tests.Feature.SubscriptionIntegrityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not treat expired periods or overrides as current",
+          "file": "Tests.Feature.SubscriptionIntegrityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it expires a past due subscription through the allowed state transition and audit writer",
+          "file": "Tests.Feature.SubscriptionIntegrityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps a paid invoice explainable through its captured subscription payment",
+          "file": "Tests.Feature.SubscriptionIntegrityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires support update permission before changing a ticket status",
+          "file": "Tests.Feature.SupportTicketWorkflowTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects status transitions outside the existing support workflow",
+          "file": "Tests.Feature.SupportTicketWorkflowTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts a guest support request from the public contact form",
+          "file": "Tests.Feature.SupportTicketWorkflowTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it shows the existing assignee on the admin ticket detail page",
+          "file": "Tests.Feature.SupportTicketWorkflowTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it searches vendor administration by public references bilingual names contacts documents coverage and product type",
+          "file": "Tests.Feature.VendorAdminSearchTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies incomplete approval with a localized structured checklist with data set \"('en')\"",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies incomplete approval with a localized structured checklist with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts required documents through the end of the configured timezone day",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it approves once without requiring a product type and rejects unauthorized approval",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it allows admin approval before phone verification and leaves operations gated afterwards",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps grants separate and makes grant revoke suspend and reactivate idempotent",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it suspends once for an expired critical required document",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it records non-critical expiry once without suspending the vendor",
+          "file": "Tests.Feature.VendorApprovalLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks unapproved operations even with stale type grants while preserving onboarding with data set \"('en') / ('pending')\"",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks unapproved operations even with stale type grants while preserving onboarding with data set \"('en') / ('rejected')\"",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks unapproved operations even with stale type grants while preserving onboarding with data set \"('en') / ('changes_requested')\"",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks unapproved operations even with stale type grants while preserving onboarding with data set \"('ar') / ('pending')\"",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks unapproved operations even with stale type grants while preserving onboarding with data set \"('ar') / ('rejected')\"",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it blocks unapproved operations even with stale type grants while preserving onboarding with data set \"('ar') / ('changes_requested')\"",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps approved catalog access available",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires phone verification after approval before operational access",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps a resumable checklist visible for an approved vendor with unfinished setup",
+          "file": "Tests.Feature.VendorApprovalPortalAccessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it masks changed bank values in the audit while retaining ordinary changed values",
+          "file": "Tests.Feature.VendorBankDataSecurityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it opens an owned booking vendor from the generated detail URL",
+          "file": "Tests.Feature.VendorBookingDetailAuthorizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it returns forbidden rather than not found for another vendor booking",
+          "file": "Tests.Feature.VendorBookingDetailAuthorizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires changes requested resubmission before approval and preserves the review record",
+          "file": "Tests.Feature.VendorChangeRequestAndAuthorizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies every lifecycle URL to an unauthenticated caller",
+          "file": "Tests.Feature.VendorChangeRequestAndAuthorizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it searches names in both languages within this vendor and type and preserves search pagination with data set \"('en')\"",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it searches names in both languages within this vendor and type and preserves search pagination with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it filters only this vendors services and preserves type through pagination with data set \"('en')\"",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it filters only this vendors services and preserves type through pagination with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it presents unique localized service names governorates and an uncounted rental badge with data set \"('en')\"",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it presents unique localized service names governorates and an uncounted rental badge with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it combines existing portfolio and published service media and falls back from missing conversions",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders coverage governorates for a recommendation collection without extra relation queries",
+          "file": "Tests.Feature.VendorClientRequirementsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders translated service type cards and booking status labels without raw keys with data set \"('en')\"",
+          "file": "Tests.Feature.VendorDashboardLabelsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders translated service type cards and booking status labels without raw keys with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorDashboardLabelsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires document rejection reasons and Action authorization",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing and unsafe document paths before generating access URLs",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it generates a temporary URL for an authorized owner without exposing the storage path",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it updates expiry through the review action and records an audit event",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not serialize a private document storage path",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it approves a pending document exactly once and rejects competing decisions",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves rejected document history and creates one pending re-upload",
+          "file": "Tests.Feature.VendorDocumentLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores a vendor document through the Livewire temporary upload pipeline",
+          "file": "Tests.Feature.VendorDocumentLivewireUploadTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the temporary upload in the mounted action state before submit",
+          "file": "Tests.Feature.VendorDocumentLivewireUploadTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts the browser file key upload before the mounted action submit",
+          "file": "Tests.Feature.VendorDocumentLivewireUploadTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires vendor authentication for direct document page access",
+          "file": "Tests.Feature.VendorDocumentsNavigationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it opens the generated documents URL without reading files or showing another vendor records with data set \"('en')\"",
+          "file": "Tests.Feature.VendorDocumentsNavigationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it opens the generated documents URL without reading files or showing another vendor records with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorDocumentsNavigationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it reports an unavailable file only when opening it and keeps the document page usable with data set \"('en')\"",
+          "file": "Tests.Feature.VendorDocumentsNavigationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it reports an unavailable file only when opening it and keeps the document page usable with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorDocumentsNavigationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it opens an existing owned file on demand and audits only that explicit request",
+          "file": "Tests.Feature.VendorDocumentsNavigationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers the vendor email verification route used by Filament",
+          "file": "Tests.Feature.VendorEmailVerificationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it builds a signed vendor verification notification URL",
+          "file": "Tests.Feature.VendorEmailVerificationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it verifies the same authenticated vendor and redirects back into the vendor portal",
+          "file": "Tests.Feature.VendorEmailVerificationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects an invalid signature, email hash, or foreign vendor verification URL",
+          "file": "Tests.Feature.VendorEmailVerificationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it fails closed around external providers and creates every isolated QA principal",
+          "file": "Tests.Feature.VendorLifecycleQaHarnessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it cleanup selects only users carrying the current QA run identifier",
+          "file": "Tests.Feature.VendorLifecycleQaHarnessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it refuses a production-like database configuration",
+          "file": "Tests.Feature.VendorLifecycleQaHarnessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies admin lifecycle URLs to vendor support and finance roles",
+          "file": "Tests.Feature.VendorLifecycleQaHarnessTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies even an approved vendor access without deleting the existing program with data set \"('en')\"",
+          "file": "Tests.Feature.VendorLoyaltyVisibilityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies even an approved vendor access without deleting the existing program with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorLoyaltyVisibilityTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the phone page behind the existing vendor email verification gate",
+          "file": "Tests.Feature.VendorPhoneVerificationPageTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it sends and verifies the authenticated vendor phone through the existing OTP actions",
+          "file": "Tests.Feature.VendorPhoneVerificationPageTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it denies the phone page to non-vendor or profile-less vendor identities",
+          "file": "Tests.Feature.VendorPhoneVerificationPageTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the existing profile completion pages reachable after email verification",
+          "file": "Tests.Feature.VendorPhoneVerificationPageTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it lets an individual vendor complete the required identity fields from the profile page",
+          "file": "Tests.Feature.VendorProfileOnboardingUiTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it persists a complete bilingual address through the vendor profile API without exposing internals",
+          "file": "Tests.Feature.VendorProfileOnboardingUiTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it requires both nonempty address translations through the vendor profile API",
+          "file": "Tests.Feature.VendorProfileOnboardingUiTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it persists the browser onboarding profile and banking payload through the Livewire form",
+          "file": "Tests.Feature.VendorProfileOnboardingUiTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it lets an individual vendor save without company data and switch business type with conditional fields with data set \"('en')\"",
+          "file": "Tests.Feature.VendorProfileOnboardingUiTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it lets an individual vendor save without company data and switch business type with conditional fields with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorProfileOnboardingUiTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders only the active vendors portfolio images and hides empty gallery controls with data set \"('en')\"",
+          "file": "Tests.Feature.VendorPublicGalleryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders only the active vendors portfolio images and hides empty gallery controls with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorPublicGalleryTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves unique bounded public slugs for duplicate business names and redirects old links after a rename with data set \"('en') / ('Shared Events')\"",
+          "file": "Tests.Feature.VendorPublicSlugTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves unique bounded public slugs for duplicate business names and redirects old links after a rename with data set \"('en') / ('Long Long Long Long Long Long… Long ')\"",
+          "file": "Tests.Feature.VendorPublicSlugTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves unique bounded public slugs for duplicate business names and redirects old links after a rename with data set \"('ar') / ('Shared Events')\"",
+          "file": "Tests.Feature.VendorPublicSlugTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves unique bounded public slugs for duplicate business names and redirects old links after a rename with data set \"('ar') / ('Long Long Long Long Long Long… Long ')\"",
+          "file": "Tests.Feature.VendorPublicSlugTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not expose an unapproved or missing vendor through either identifier with data set \"('en')\"",
+          "file": "Tests.Feature.VendorPublicSlugTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not expose an unapproved or missing vendor through either identifier with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorPublicSlugTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers through the API atomically and returns verification pending",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers without a city and retains the initial governorate with data set \"('en') / (false)\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers without a city and retains the initial governorate with data set \"('en') / (true)\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers without a city and retains the initial governorate with data set \"('ar') / (false)\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers without a city and retains the initial governorate with data set \"('ar') / (true)\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it accepts a missing city through the direct registration action",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rolls back and localizes validation for confirmation and governorate-city failures with data set \"('en')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rolls back and localizes validation for confirmation and governorate-city failures with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects soft-deleted email and phone collisions without partial records",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps registration successful when an after-commit delivery listener fails",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it configures independent retryable after-commit email and OTP delivery",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it registers through the Filament Livewire page with the confirmed field mapped",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects weak passwords and active duplicate contact values without partial records",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it normalizes Filament contact values before validation and redirects to verification",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not create a second account when the normalized registration is submitted again",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"missing\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"blank\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"local without country code\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"zero country code\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"too short\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"too long\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('en') / dataset \"malformed input\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"missing\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"blank\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"local without country code\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"zero country code\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"too short\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"too long\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers through the vendor API with bilingual feedback with data set \"('ar') / dataset \"malformed input\"\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it enforces required and valid phone numbers when the registration action is called directly with data set \"('')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it enforces required and valid phone numbers when the registration action is called directly with data set \"('+001001234567')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers in the localized Filament form before registration with data set \"('en') / ('')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers in the localized Filament form before registration with data set \"('en') / ('+001001234567')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers in the localized Filament form before registration with data set \"('ar') / ('')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects missing or invalid phone numbers in the localized Filament form before registration with data set \"('ar') / ('+001001234567')\"",
+          "file": "Tests.Feature.VendorRegistrationLifecycleTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates edits clears and clones measured rentals through the native vendor form with data set \"('en')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates edits clears and clones measured rentals through the native vendor form with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps historical rental values intact and does not infer dimensions from floor space with data set \"('en')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps historical rental values intact and does not infer dimensions from floor space with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('length_m') / dataset \"negative\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('length_m') / dataset \"zero\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('length_m') / dataset \"precision\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('length_m') / dataset \"letters\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('length_m') / dataset \"exponent\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('length_m') / dataset \"overflow\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('width_m') / dataset \"negative\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('width_m') / dataset \"zero\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('width_m') / dataset \"precision\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('width_m') / dataset \"letters\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('width_m') / dataset \"exponent\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('width_m') / dataset \"overflow\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('height_m') / dataset \"negative\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('height_m') / dataset \"zero\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('height_m') / dataset \"precision\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('height_m') / dataset \"letters\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('height_m') / dataset \"exponent\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid dimensions during vendor create and edit with data set \"('height_m') / dataset \"overflow\"\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it roundtrips optional dimensions in existing vendor and customer APIs without changing money units with data set \"('en')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it roundtrips optional dimensions in existing vendor and customer APIs without changing money units with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('length_m') / ('-1')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('length_m') / ('0')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('length_m') / ('4.501')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('length_m') / ('wide')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('length_m') / ('1e2')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('length_m') / ('1000000')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('width_m') / ('-1')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('width_m') / ('0')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('width_m') / ('4.501')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('width_m') / ('wide')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('width_m') / ('1e2')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('width_m') / ('1000000')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('height_m') / ('-1')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('height_m') / ('0')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('height_m') / ('4.501')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('height_m') / ('wide')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('height_m') / ('1e2')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid API dimensions before persistence with data set \"('height_m') / ('1000000')\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it upgrades the historical rental schema without modifying legacy values",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps existing API clients without dimensions compatible",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent dimensions for historical rentals or expose them on other product types with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent dimensions for historical rentals or expose them on other product types with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent dimensions for historical rentals or expose them on other product types with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent dimensions for historical rentals or expose them on other product types with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent dimensions for historical rentals or expose them on other product types with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not invent dimensions for historical rentals or expose them on other product types with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorRentalDimensionsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it allows an approved sale vendor to open the sale service create page",
+          "file": "Tests.Feature.VendorSaleServiceAuthorizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the sale service create page forbidden without active sale approval",
+          "file": "Tests.Feature.VendorSaleServiceAuthorizationTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only root categories and matching children and clears stale child selections with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only root categories and matching children and clears stale child selections with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only root categories and matching children and clears stale child selections with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only root categories and matching children and clears stale child selections with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only root categories and matching children and clears stale child selections with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it loads only root categories and matching children and clears stale child selections with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and edits a service through a validated category pair with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and edits a service through a validated category pair with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and edits a service through a validated category pair with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and edits a service through a validated category pair with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and edits a service through a validated category pair with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and edits a service through a validated category pair with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('wrong_parent') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('wrong_parent') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('wrong_parent') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('root_as_child') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('root_as_child') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('root_as_child') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('inactive') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('inactive') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('inactive') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('wrong_type') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('wrong_type') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('wrong_type') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('deleted') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('deleted') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects tampered or unavailable category relationships on create and edit without changing records with data set \"('deleted') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not silently reclassify a historical root-category service when opening its edit form with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not silently reclassify a historical root-category service when opening its edit form with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not silently reclassify a historical root-category service when opening its edit form with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('inactive') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('inactive') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('inactive') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('wrong_type') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('wrong_type') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('wrong_type') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('deleted') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('deleted') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('deleted') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('missing') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('missing') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('missing') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('nested') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('nested') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it validates the form-only main category even though it is not persisted with data set \"('nested') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps foreign services inaccessible even with an own-service update permission with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps foreign services inaccessible even with an own-service update permission with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps foreign services inaccessible even with an own-service update permission with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps edit forbidden without a service update permission with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps edit forbidden without a service update permission with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps edit forbidden without a service update permission with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServiceCategoryPairTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it creates and submits all three service types then applies each moderation outcome",
+          "file": "Tests.Feature.VendorServiceLifecycleQaTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores major EGP input as minor units and roundtrips create edit tables and the catalog reader with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores major EGP input as minor units and roundtrips create edit tables and the catalog reader with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores major EGP input as minor units and roundtrips create edit tables and the catalog reader with data set \"('en') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores major EGP input as minor units and roundtrips create edit tables and the catalog reader with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores major EGP input as minor units and roundtrips create edit tables and the catalog reader with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it stores major EGP input as minor units and roundtrips create edit tables and the catalog reader with data set \"('ar') / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"negative\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"negative\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"negative\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"excess_precision\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"excess_precision\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"excess_precision\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"empty\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"empty\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"empty\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"letters\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"letters\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"letters\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"thousands_separator\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"thousands_separator\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"thousands_separator\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"exponent\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"exponent\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"exponent\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"overflow\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"overflow\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"overflow\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"float\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"float\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid prices on create and edit without rounding or changing stored amounts with data set \"dataset \"float\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the major amount intact after validation failure and retry with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the major amount intact after validation failure and retry with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps the major amount intact after validation failure and retry with data set \"(App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"one_cent\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"one_cent\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"one_cent\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"zero\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"zero\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"zero\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"fraction\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"fraction\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"fraction\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"large_exact\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Rental, 'rental'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"large_exact\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Sale, 'sale'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it preserves historical cents without converting them again on repeated saves with data set \"dataset \"large_exact\" / (App\\Modules\\Catalog\\Domain\\Enums\\ProductType Enum (Digital, 'digital'))\"",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not silently convert a historical foreign-currency record to EGP",
+          "file": "Tests.Feature.VendorServicePriceUnitsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it counts only the vendors displayable service types across all pages and removes the last type with data set \"('en') / (true)\"",
+          "file": "Tests.Feature.VendorServiceTypesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it counts only the vendors displayable service types across all pages and removes the last type with data set \"('en') / (false)\"",
+          "file": "Tests.Feature.VendorServiceTypesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it counts only the vendors displayable service types across all pages and removes the last type with data set \"('ar') / (true)\"",
+          "file": "Tests.Feature.VendorServiceTypesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it counts only the vendors displayable service types across all pages and removes the last type with data set \"('ar') / (false)\"",
+          "file": "Tests.Feature.VendorServiceTypesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it shows an empty vendor without approved-only type badges with data set \"('en')\"",
+          "file": "Tests.Feature.VendorServiceTypesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it shows an empty vendor without approved-only type badges with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorServiceTypesTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it persists optional social URLs through registration and profile updates in both locales with data set \"('en')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it persists optional social URLs through registration and profile updates in both locales with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it keeps empty links optional when the registration action is called directly",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid registration links atomically with localized feedback with data set \"('en')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid registration links atomically with localized feedback with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects an invalid link in the direct registration action before creating records",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid update links without saving other fields in both locales with data set \"('en')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it rejects invalid update links without saving other fields in both locales with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves registration links and edits them through the localized Filament forms with data set \"('en')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it saves registration links and edits them through the localized Filament forms with data set \"('ar')\"",
+          "file": "Tests.Feature.VendorSocialUrlsTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it round trips Arabic vendor names through JSON storage, update, and the API resource",
+          "file": "Tests.Feature.VendorUnicodeDataTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses the authoritative English translation when a legacy Arabic value is only question marks",
+          "file": "Tests.Feature.VendorUnicodeDataTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it uses the English fallback on the admin vendor detail for a corrupted Arabic value",
+          "file": "Tests.Feature.VendorUnicodeDataTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it shows an owned wallet statement with a reconciled running balance",
+          "file": "Tests.Feature.VendorWalletStatementTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it does not expose another vendor wallet statement",
+          "file": "Tests.Feature.VendorWalletStatementTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders a rejected withdrawal audit detail without ledger links",
+          "file": "Tests.Feature.WithdrawalAuditDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        },
+        {
+          "test": "it renders malformed payment notes as a safe placeholder",
+          "file": "Tests.Feature.WithdrawalAuditDetailTest",
+          "status": "passed",
+          "report": ".e2e/system-audit/phpunit.xml"
+        }
+      ]
+    }
+  ]
+}

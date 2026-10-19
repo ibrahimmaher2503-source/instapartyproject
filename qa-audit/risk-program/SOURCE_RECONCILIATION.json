@@ -1,0 +1,288 @@
+{
+  "sources": [
+    {
+      "file": "docs/qa-discovery/Master_Scenario_Flow_Catalog.xlsx",
+      "sha256": "af07a8ea0c5918e921878d118cb48b57f0ce37d69847eb21801c7e3d63392633",
+      "bytes": 977747
+    },
+    {
+      "file": "docs/qa-discovery/catalog_data.json",
+      "sha256": "a9ab4cc35cac3ee56e6137995546d9da2367226e835bc76975ec3ed98d8669a7",
+      "bytes": 6128761
+    },
+    {
+      "file": "docs/qa/tester-army-system/scenario-execution.csv",
+      "sha256": "13b7a0a1cf85ac8710dbfbb3c8bc62b676ddbd5b50bfc884114293e821ae5dfe",
+      "bytes": 324245
+    },
+    {
+      "file": "docs/qa-discovery/Architecture_and_CodeGraph.md",
+      "sha256": "f7cfc8a7f613fa81d0f2c2542934f220fcf64a905ee98ed09d3da54e059f685d",
+      "bytes": 257875
+    },
+    {
+      "file": "docs/qa-discovery/Discovery_Gaps.md",
+      "sha256": "8ea9658fcdf8d17507ecd2636763cdb638c0b0b216e73409f2cf1646ea81565d",
+      "bytes": 127069
+    },
+    {
+      "file": "docs/qa-discovery/Discovery_Summary.md",
+      "sha256": "d767c16b278a6a2e6054f22910b0970cec8945e8e2b13eaa549d50fcd9f3e713",
+      "bytes": 8688
+    },
+    {
+      "file": "docs/qa-discovery/artifact_verification.json",
+      "sha256": "6a3dcf78c440e3160c824ca02dfd7909df3b575a157b48b58adbdc402f2abd50",
+      "bytes": 2209
+    },
+    {
+      "file": "docs/qa-discovery/booking_catalog.json",
+      "sha256": "0ec7747390c5597e0342f0aa25751d003ea58f9617903b1041428f554687a56c",
+      "bytes": 1045133
+    },
+    {
+      "file": "docs/qa-discovery/catalog_validation.json",
+      "sha256": "f4eb8fd240cf90e8add209cfd729bdcfcfdcd9bd750f5977e8827cd1d8170ac3",
+      "bytes": 5662
+    },
+    {
+      "file": "docs/qa-discovery/docs_shared_inventory.json",
+      "sha256": "b5cc958a35e580f4064ba27a2df397233e8c171023ecdc2c68bc1a1df320a5dc",
+      "bytes": 224202
+    },
+    {
+      "file": "docs/qa-discovery/finance.json",
+      "sha256": "c852d5e444f70a71e38d43f94a8fdcc164cea3dea332715237e11fa90667c477",
+      "bytes": 454915
+    },
+    {
+      "file": "docs/qa-discovery/identity_communications.json",
+      "sha256": "488c5ee85db26bb1b7e34e010145b9c01d7c8078c4df263ecb1fa0d7caff3f3b",
+      "bytes": 3796673
+    },
+    {
+      "file": "docs/qa-discovery/independent_review.json",
+      "sha256": "424b4a4250c0f9eb18cdc1968c5636cdb52524b565698505ca7fc1bd62f404e0",
+      "bytes": 2975155
+    },
+    {
+      "file": "docs/qa-discovery/operation_reconciliation.json",
+      "sha256": "b276bf30d4ec84987b6519141272acf1d1309f36a569911389b8367c4c1771a4",
+      "bytes": 572350
+    },
+    {
+      "file": "docs/qa-discovery/source_inventory.json",
+      "sha256": "1b04a8f710ef1ed272058185ab3a6b5ee031cab63c012c8bcd59057c61db722d",
+      "bytes": 13830
+    },
+    {
+      "file": "docs/qa-discovery/source_snapshot.json",
+      "sha256": "6eb44e9c875940425133b68892a0b861afaedbbb90ea71adbebbb7582391bc79",
+      "bytes": 526777
+    },
+    {
+      "file": "docs/qa-discovery/stable_id_map.json",
+      "sha256": "9600e03afd2e252d42f5cfa187fc123027d37e16aea511725f46db3841800ca0",
+      "bytes": 334235
+    },
+    {
+      "file": "qa-audit/benchmark/DEFECT_INVENTORY_AND_PLANS.md",
+      "sha256": "b33aa1ca5626e869aa33b2dde8e9b569e435407a80fdc8dc25c0f87594515a58",
+      "bytes": 1037782
+    },
+    {
+      "file": "qa-audit/benchmark/KNOWN_DEFECT_BENCHMARK.md",
+      "sha256": "4ed8e793479501a846d76f636c584d0a701c08ffbe5a68ed4da242133dc15b35",
+      "bytes": 22163
+    },
+    {
+      "file": "qa-audit/benchmark/MISSED_DEFECT_ROOT_CAUSES.md",
+      "sha256": "15a5585b2b7dcf6906fcff1742306e68e38329630cebf68c30a1b9881a021941",
+      "bytes": 9236
+    },
+    {
+      "file": "qa-audit/benchmark/inventory-data.json",
+      "sha256": "23d2b7701e84b97ebb35d5b530bbcce4f5e4074a916f606ef5d77bcb029ca449",
+      "bytes": 231488
+    },
+    {
+      "file": "docs/qa/admin-audit-closure-2026-09-10.md",
+      "sha256": "075a8e16ac12108b3f0bd2334ec6d07e96ccedb467d9bcaeb3417163d05703cb",
+      "bytes": 4552
+    },
+    {
+      "file": "docs/qa/client-seven-requirements-2026-10-12.md",
+      "sha256": "70f3ab67212fb8955cddd45a853df659098a32ba650071afaba03cb77c9ef41d",
+      "bytes": 24835
+    },
+    {
+      "file": "docs/qa/full-marketplace-e2e-results.md",
+      "sha256": "780a0f0c6cd1e4462949b4c00823ecee9048d4a6767a0c1412380ee78c0ad1d4",
+      "bytes": 9209
+    },
+    {
+      "file": "docs/qa/instaparty-developer-handoff-backlog-2026-10-04.md",
+      "sha256": "3b5ceac34f3ae36e90914d181c0c376dca2e730ab7ed1943e601b94899958bdd",
+      "bytes": 58284
+    },
+    {
+      "file": "docs/qa/instaparty-issues-2026-09-12.md",
+      "sha256": "381c7631691387192e7d38fdc4d0347869a500af2230335126cc0b3a1fce0208",
+      "bytes": 115003
+    },
+    {
+      "file": "docs/qa/instaparty-issues-remediation-2026-09-12.md",
+      "sha256": "488c71c42c05787a15ae2986b63bc01819760a98b69f055887aad7679b8c1e7c",
+      "bytes": 27016
+    },
+    {
+      "file": "docs/qa/tester-army-e2e-setup-2026-10-12.md",
+      "sha256": "7a4f62df94b374e0188a4933fd01ee30cb0a47d032d112eb02f44cc5dfa7e18b",
+      "bytes": 8603
+    },
+    {
+      "file": "docs/qa/tester-army-system-execution-2026-10-12.md",
+      "sha256": "4d13575d646d5e1ba510e26bafdbadb52e812c225486e7ae652885187f0504e3",
+      "bytes": 8097
+    },
+    {
+      "file": "docs/qa/vendor-to-settlement-e2e-audit-2026-09-12.md",
+      "sha256": "4a2b6ad723337bb640c4bc533a106e7440cca460d9e02168413166f32052aa73",
+      "bytes": 28641
+    },
+    {
+      "file": "docs/qa/wave4-import-results.md",
+      "sha256": "a2fc4e4fca50c2da799ed094e0231acbce759ab29fc77c42ae271606bb918966",
+      "bytes": 4307
+    },
+    {
+      "file": "docs/qa/wave4-support-results.md",
+      "sha256": "336041956867db11b0a3d3abe258f4ed82bf7b6388eab11f993a9a0407f39797",
+      "bytes": 3609
+    },
+    {
+      "file": "docs/qa/wave4-webhook-results.md",
+      "sha256": "152b496af7bb585d8a9df1fb415a2176517210b6c83c7984afbbcb6b9d697c87",
+      "bytes": 2647
+    },
+    {
+      "file": "docs/qa/wave5-activity-results.md",
+      "sha256": "5f5eacab5a41f0bd1faf0dfefdfe68c53755eb1c925938b3c1474c6fe49571c8",
+      "bytes": 3837
+    },
+    {
+      "file": "docs/qa/wave5-data-results.md",
+      "sha256": "710abd9bb431c6bb838432a0e9be0bac0b11308798396a2fab96d061861eacc4",
+      "bytes": 6179
+    },
+    {
+      "file": "docs/qa/wave5-withdrawal-results.md",
+      "sha256": "069f6b43c8aa3e4cd5c8f1ab6e48e0bba3d8b22db55833d3c8f4a4acd12ad6af",
+      "bytes": 4009
+    },
+    {
+      "file": "docs/qa/wave6-finance-identity-results.md",
+      "sha256": "38ab35d4858daa9805dfc8c6c0397909bfc4796f3f54c11420b8f26fde2308f0",
+      "bytes": 5213
+    },
+    {
+      "file": "docs/qa/wave6-service-results.md",
+      "sha256": "fa3776487fe548f56c596384a7160ffb81326cf85dea77797b8b351ebc380354",
+      "bytes": 4188
+    },
+    {
+      "file": "docs/qa/wave6-subscription-results.md",
+      "sha256": "b5cbc6d74cbfae97fe6345133db06470778dde80371064e005491b5605e878e0",
+      "bytes": 4242
+    },
+    {
+      "file": "docs/qa/wave6-ui-finance-results.md",
+      "sha256": "e841c02325d6795b51b6db0b41d7e436f835e241e1611295a320d88b29906868",
+      "bytes": 3825
+    },
+    {
+      "file": "docs/qa/wave7-customer-purchase-results.md",
+      "sha256": "52aa234a97e49f8dc27b989885462652f5ce9d63c9b0690c03e47f4a26112843",
+      "bytes": 10987
+    },
+    {
+      "file": "docs/qa/wave7-vendor-onboarding-results.md",
+      "sha256": "541dfb3ae36ef33972cc508698fe80665586616396cfa94d203be9668fb8c920",
+      "bytes": 9916
+    },
+    {
+      "file": "docs/qa/wave8-full-chain-results.md",
+      "sha256": "739aff1bfce181ef2764010a9e75a93c1fd07c7002f936da3ca566b473be2abf",
+      "bytes": 7814
+    },
+    {
+      "file": "docs/qa/wave8-purchase-chain-results.md",
+      "sha256": "b492680a9724da490107998523db098dcd9740f2b379001832fa84014d2f191e",
+      "bytes": 4563
+    },
+    {
+      "file": "docs/qa/tester-army-system/confirmed-findings.md",
+      "sha256": "bf2413038be85bd1146228544b2cf3c309f02f0ed78770d44f3fd35217c4f545",
+      "bytes": 3363
+    },
+    {
+      "file": "docs/qa/tester-army-system/coverage-boundaries.md",
+      "sha256": "27b0e46c5a4d20a93f3c8784c9325c40d0410316b915e0d89aaca669602c70d4",
+      "bytes": 3005
+    }
+  ],
+  "workbook_scenario_ids_verified": 1292,
+  "modules": {
+    "Booking": 100,
+    "Catalog": 61,
+    "Discovery": 21,
+    "Advertising": 11,
+    "Settlement": 81,
+    "Payments": 79,
+    "Loyalty": 42,
+    "Promotions": 23,
+    "Subscriptions": 21,
+    "Tax": 8,
+    "Communication": 327,
+    "Firebase": 17,
+    "Geography": 6,
+    "Identity": 296,
+    "Reviews": 53,
+    "Support": 9,
+    "TrustSafety": 15,
+    "Shared": 122
+  },
+  "previous_statuses": {
+    "not-run": 1258,
+    "partially-tested": 3,
+    "needs-business-confirmation": 31
+  },
+  "priorities": {
+    "P1": 639,
+    "P2": 592,
+    "P0": 61
+  },
+  "blank_preconditions": 690,
+  "selected": [
+    "SC-Booking-d23fdddb0e",
+    "SC-Booking-159b4bcd53",
+    "SC-Booking-96dc5a0c0e",
+    "SC-Booking-ff6a2c0c84",
+    "SC-Booking-1806e15c31",
+    "SC-Booking-32b824ae4d",
+    "SC-Booking-e8e7c96608",
+    "SC-Payments-3436fcba08",
+    "SC-Payments-db31a76816",
+    "SC-Payments-db566d3009",
+    "SC-Payments-199cb154e1",
+    "SC-Payments-83d4a64c4f",
+    "SC-Payments-e7d1c7c10f",
+    "SC-Payments-ecf87b2d24",
+    "SC-Settlement-f0a715e615",
+    "SC-Settlement-b02f55e5d5",
+    "SC-Settlement-25a3403605",
+    "SC-Settlement-71a4330a50",
+    "SC-Settlement-fc80457948",
+    "SC-Booking-320197067b"
+  ]
+}

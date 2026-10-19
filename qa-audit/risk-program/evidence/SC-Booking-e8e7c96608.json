@@ -1,0 +1,74 @@
+{
+  "response": {
+    "status": 422,
+    "body": {
+      "data": null,
+      "meta": null,
+      "errors": [
+        {
+          "code": "http_error",
+          "message": "Booking has no items"
+        }
+      ]
+    }
+  },
+  "before": {
+    "booking": {
+      "id": 3,
+      "public_id": "01M4RSS5MXRB3TTAYMBP87JDZR",
+      "customer_id": 5,
+      "lifecycle_status": "draft",
+      "payment_status": "unpaid",
+      "total_minor": 0,
+      "total_currency": "EGP",
+      "total_vat_minor": 0
+    },
+    "items": [],
+    "vendors": [],
+    "holds": [],
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "draft",
+        "trigger_kind": "system"
+      }
+    ],
+    "notes": [
+      {
+        "body": "Risk pilot isolated event note"
+      }
+    ],
+    "notifications_count": 0,
+    "idempotency_count": 0
+  },
+  "after": {
+    "booking": {
+      "id": 3,
+      "public_id": "01M4RSS5MXRB3TTAYMBP87JDZR",
+      "customer_id": 5,
+      "lifecycle_status": "draft",
+      "payment_status": "unpaid",
+      "total_minor": 0,
+      "total_currency": "EGP",
+      "total_vat_minor": 0
+    },
+    "items": [],
+    "vendors": [],
+    "holds": [],
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "draft",
+        "trigger_kind": "system"
+      }
+    ],
+    "notes": [
+      {
+        "body": "Risk pilot isolated event note"
+      }
+    ],
+    "notifications_count": 0,
+    "idempotency_count": 0
+  },
+  "expected": "422, draft retained, no transition/notification/idempotency mutation"
+}

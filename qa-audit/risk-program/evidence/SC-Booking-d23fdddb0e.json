@@ -1,0 +1,99 @@
+{
+  "response": {
+    "status": 201,
+    "body": {
+      "data": {
+        "public_id": "01M4RSYP2XMWNQ8FGM13TBYNT0",
+        "reference_no": "IP-2026-000001",
+        "lifecycle_status": "draft",
+        "display_status": "draft",
+        "rejection_reason": null,
+        "vendors_summary": {
+          "total": 0,
+          "pending": 0,
+          "accepted": 0,
+          "modified": 0,
+          "rejected": 0,
+          "cancelled": 0,
+          "in_progress": 0,
+          "completed": 0,
+          "timed_out": 0
+        },
+        "payment_status": "unpaid",
+        "fulfillment_status": "not_started",
+        "event_starts_at": "2026-10-28T22:38:08+03:00",
+        "event_ends_at": null,
+        "guest_count": 2,
+        "notes": "Risk pilot isolated event note",
+        "subtotal_minor": 0,
+        "delivery_total_minor": 0,
+        "transport_base_minor": 0,
+        "transportation_adjustment_minor": 0,
+        "discount_total_minor": 0,
+        "discount_promo_minor": 0,
+        "discount_loyalty_minor": 0,
+        "applied_wallet_minor": 0,
+        "total_minor": 0,
+        "due_minor": 0,
+        "currency": "EGP",
+        "invoice_breakdown": {
+          "services_minor": 0,
+          "vendor_delivery_minor": 0,
+          "transport_base_minor": 0,
+          "transportation_adjustment_minor": 0,
+          "total_minor": 0,
+          "currency": "EGP"
+        },
+        "payment_method_options": [
+          "paymob_card",
+          "paymob_wallet"
+        ],
+        "hold_expires_at": null,
+        "requires_customer_approval": false,
+        "vendors": [],
+        "address": {
+          "city_id": 1,
+          "address_line": "Disposable test street",
+          "building": null,
+          "floor": null,
+          "apartment": null,
+          "landmark": null,
+          "recipient_name": "Fixture Customer",
+          "recipient_phone_e164": "+201000000001"
+        }
+      },
+      "meta": {},
+      "errors": null
+    }
+  },
+  "persisted": {
+    "booking": {
+      "id": 1,
+      "public_id": "01M4RSYP2XMWNQ8FGM13TBYNT0",
+      "customer_id": 5,
+      "lifecycle_status": "draft",
+      "payment_status": "unpaid",
+      "total_minor": 0,
+      "total_currency": "EGP",
+      "total_vat_minor": 0
+    },
+    "items": [],
+    "vendors": [],
+    "holds": [],
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "draft",
+        "trigger_kind": "system"
+      }
+    ],
+    "notes": [
+      {
+        "body": "Risk pilot isolated event note"
+      }
+    ],
+    "notifications_count": 0,
+    "idempotency_count": 0
+  },
+  "expected": "Owned draft, optional note persisted once"
+}

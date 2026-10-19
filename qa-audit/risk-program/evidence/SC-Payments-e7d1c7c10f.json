@@ -1,0 +1,132 @@
+{
+  "assertions": [
+    {
+      "assertion": "refund completed",
+      "expected": "completed",
+      "actual": "completed"
+    },
+    {
+      "assertion": "payment refunded",
+      "expected": "refunded",
+      "actual": "refunded"
+    },
+    {
+      "assertion": "booking amount returned to zero",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "booking refunded",
+      "expected": "refunded",
+      "actual": "refunded"
+    },
+    {
+      "assertion": "all groups balanced",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "refund event after commit",
+      "expected": 1,
+      "actual": 1
+    },
+    {
+      "assertion": "full refund ledger debit",
+      "expected": 10000,
+      "actual": 10000
+    }
+  ],
+  "events": [
+    "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted",
+    "App\\Modules\\Payments\\Domain\\Events\\PaymentCaptured",
+    "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted",
+    "App\\Modules\\Payments\\Domain\\Events\\RefundCompleted"
+  ],
+  "persistence": {
+    "payments": [
+      {
+        "public_id": "01M4RT6KZYP8FDSR3HN35KSNYJ",
+        "status": "refunded",
+        "amount_minor": 10000,
+        "amount_currency": "EGP",
+        "capture_ledger_group_id": 1
+      }
+    ],
+    "refunds": [
+      {
+        "public_id": "01M4RT6M0VAQB7NE7CBYHW7GRR",
+        "status": "completed",
+        "amount_minor": 10000,
+        "amount_currency": "EGP"
+      }
+    ],
+    "ledger": [
+      {
+        "id": 1,
+        "transaction_group_id": 1,
+        "direction": "debit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      },
+      {
+        "id": 2,
+        "transaction_group_id": 1,
+        "direction": "credit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      },
+      {
+        "id": 3,
+        "transaction_group_id": 2,
+        "direction": "debit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      },
+      {
+        "id": 4,
+        "transaction_group_id": 2,
+        "direction": "credit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      }
+    ],
+    "wallets": [
+      {
+        "id": 1,
+        "currency": "EGP",
+        "balance_minor": -10000,
+        "pending_withdrawal_minor": 0
+      },
+      {
+        "id": 2,
+        "currency": "EGP",
+        "balance_minor": 0,
+        "pending_withdrawal_minor": 0
+      },
+      {
+        "id": 3,
+        "currency": "EGP",
+        "balance_minor": 10000,
+        "pending_withdrawal_minor": 0
+      }
+    ],
+    "webhook_errors": [
+      null
+    ],
+    "idempotency_count": 1,
+    "idempotency_rows": [
+      {
+        "key": "paymob:PURCHASE:1:PAY-5945890:true",
+        "scope": "",
+        "ttl_seconds": 2592000,
+        "created_at": "2026-10-12 19:42:28",
+        "expires_at": "2026-11-11 19:42:28"
+      }
+    ],
+    "inventory": [],
+    "sale_stock": [],
+    "database_now": "2026-10-12 19:42:28",
+    "application_now": "2026-10-12 19:42:28",
+    "database_engine": "11.8.6-MariaDB-5ubuntu0.1 from Ubuntu"
+  }
+}

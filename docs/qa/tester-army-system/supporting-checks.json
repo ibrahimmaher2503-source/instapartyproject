@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-12",
+  "scope": "local-only; separate from tester.army browser results",
+  "checks": [
+    { "command": "php vendor/bin/pest --bail --log-junit .e2e/system-audit/phpunit.xml", "exit_code": 0, "passed": 563, "assertions": 5061, "duration_seconds": 619.33, "database": "SQLite :memory:", "report": ".e2e/system-audit/phpunit.xml" },
+    { "command": "npm --prefix functions test", "exit_code": 0, "passed": 9, "duration_seconds": 1.66 },
+    { "command": "npm --prefix functions run build", "exit_code": 0 },
+    { "command": "firebase emulators:exec --only firestore --project demo-instaparty-e2e \"npm --prefix functions run test:rules\"", "exit_code": 0, "passed": 7, "duration_seconds": 8.04, "java": "Existing Android Studio JBR 21.0.10", "node": "24.15.0; deployed functions declare Node 20" },
+    { "command": "npm --prefix functions audit --json", "exit_code": 1, "advisories": { "moderate": 17, "high": 9, "critical": 2, "total": 28 }, "report": ".e2e/system-audit/functions-audit.json", "limit": "Declared dependencies were installed and locked; no audit fix or dependency upgrade was applied." },
+    { "command": "php -l tests/tester-army/seed.php; node --check tests/tester-army/serve.mjs; bash -n scripts/tester-army-system-charters.sh", "exit_code": 0 }
+  ]
+}

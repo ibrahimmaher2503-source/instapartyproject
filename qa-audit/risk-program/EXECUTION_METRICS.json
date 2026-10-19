@@ -1,0 +1,132 @@
+[
+  {
+    "run": "01a1319b-c84b-70d3-8bfa-26a0c430efce",
+    "kind": "browser-initial",
+    "status": "failed",
+    "duration_seconds": 49.856,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/browser-initial/report.json"
+  },
+  {
+    "run": "01a1319e-9e6e-7eed-8f6b-e53644c68a67",
+    "kind": "browser-connected",
+    "status": "passed",
+    "duration_seconds": 54.134,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/browser-connected/report.json"
+  },
+  {
+    "run": "01a131b0-f38a-74ca-9ebd-0fa1a10e17f6",
+    "kind": "known-controls",
+    "status": "failed",
+    "duration_seconds": 56.068,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2/risk-program/known-controls/report.json"
+  },
+  {
+    "run": "01a131a0-8c21-717c-8070-44cfde098791",
+    "kind": "explore-stale-context",
+    "status": "passed",
+    "duration_seconds": 174.038,
+    "model_calls": 45,
+    "model_tokens": 383274,
+    "retries": 0,
+    "report": ".e2e/risk-program/explore-stale-context/report.json"
+  },
+  {
+    "run": "01a131b2-7bf1-74b8-b55c-a871ad85ef3a",
+    "kind": "explore-profile-validation",
+    "status": "error",
+    "duration_seconds": 114.287,
+    "model_calls": 1,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/explore-profile-validation/report.json"
+  },
+  {
+    "run": "run-1791833538-597",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 112.75,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791833538-597/junit.xml"
+  },
+  {
+    "run": "run-1791833879-667",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 23.3,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791833879-667/junit.xml"
+  },
+  {
+    "run": "run-1791834021-649",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 5.07,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791834021-649/junit.xml"
+  },
+  {
+    "run": "run-1791834136-793",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 4.69,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791834136-793/junit.xml"
+  },
+  {
+    "run": "run-1791835006-361",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 3.05,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791835006-361/junit.xml"
+  },
+  {
+    "run": "run-1791835200-617",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 0.49,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791835200-617/junit.xml"
+  },
+  {
+    "run": "run-1791835287-379",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 7.99,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791835287-379/junit.xml"
+  },
+  {
+    "run": "run-1791835365-373",
+    "kind": "PHP isolated database attempt",
+    "status": "failed",
+    "duration_seconds": 3.76,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "retries": 0,
+    "report": ".e2e/risk-program/mysql/run-1791835365-373/junit.xml"
+  }
+]

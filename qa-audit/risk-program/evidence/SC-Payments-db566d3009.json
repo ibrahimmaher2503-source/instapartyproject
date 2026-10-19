@@ -1,0 +1,99 @@
+{
+  "assertions": [
+    {
+      "assertion": "replay status",
+      "expected": 200,
+      "actual": 200
+    },
+    {
+      "assertion": "no duplicate financial/event effects",
+      "expected": [
+        2,
+        1,
+        [
+          "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted",
+          "App\\Modules\\Payments\\Domain\\Events\\PaymentCaptured"
+        ]
+      ],
+      "actual": [
+        2,
+        1,
+        [
+          "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted",
+          "App\\Modules\\Payments\\Domain\\Events\\PaymentCaptured"
+        ]
+      ]
+    },
+    {
+      "assertion": "webhook key retrievable in its real scope",
+      "expected": true,
+      "actual": false
+    }
+  ],
+  "events": [
+    "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted",
+    "App\\Modules\\Payments\\Domain\\Events\\PaymentCaptured"
+  ],
+  "persistence": {
+    "payments": [
+      {
+        "public_id": "01M4RVC60X2Y0NK6K4G1KFRSXC",
+        "status": "captured",
+        "amount_minor": 10000,
+        "amount_currency": "EGP",
+        "capture_ledger_group_id": 1
+      }
+    ],
+    "refunds": [],
+    "ledger": [
+      {
+        "id": 1,
+        "transaction_group_id": 1,
+        "direction": "debit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      },
+      {
+        "id": 2,
+        "transaction_group_id": 1,
+        "direction": "credit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      }
+    ],
+    "wallets": [
+      {
+        "id": 1,
+        "currency": "EGP",
+        "balance_minor": -10000,
+        "pending_withdrawal_minor": 0
+      },
+      {
+        "id": 2,
+        "currency": "EGP",
+        "balance_minor": 10000,
+        "pending_withdrawal_minor": 0
+      }
+    ],
+    "webhook_errors": [
+      null,
+      null
+    ],
+    "idempotency_count": 1,
+    "idempotency_rows": [
+      {
+        "key": "paymob:PURCHASE:1:PAY-8461690:true",
+        "scope": "",
+        "ttl_seconds": 2592000,
+        "created_at": "2026-10-12 20:02:59",
+        "expires_at": "2026-11-11 20:02:59"
+      }
+    ],
+    "inventory": [],
+    "sale_stock": [],
+    "database_now": "2026-10-12 20:02:59",
+    "application_now": "2026-10-12 20:02:59",
+    "isolation": "REPEATABLE-READ",
+    "database_engine": "11.8.6-MariaDB-5ubuntu0.1 from Ubuntu"
+  }
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Verify customer phone
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{baseUrl}}/api/v1/phone/verify
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone_e164": "{{customerPhone}}",
+    "code": "{{customerOtp}}"
+  }
+}
+
+docs {
+  Use a registered customerPhone. With APP_DEBUG=false, supply the valid six-digit
+  customerOtp. With APP_DEBUG=true, omit the code field entirely to exercise the bypass.
+  A successful response contains data.user and data.token. Debug verification does
+  not update the stored phone_verified_at value.
+}

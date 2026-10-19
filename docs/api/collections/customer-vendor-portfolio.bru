@@ -1,0 +1,16 @@
+meta {
+  name: Public vendor portfolio
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{base_url}}/api/v1/customer/vendors/{{vendor_public_id}}/portfolio
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Accept-Language: en
+}

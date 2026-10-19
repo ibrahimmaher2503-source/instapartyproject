@@ -1,0 +1,9 @@
+{
+  "http_status": 201,
+  "is_available": false,
+  "saved_service": {
+    "status": "published",
+    "base_price_minor": 12500
+  },
+  "saved_item_count": 1
+}

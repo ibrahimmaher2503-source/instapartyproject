@@ -1,0 +1,73 @@
+{
+  "assertions": [
+    {
+      "assertion": "wallet currency rejected",
+      "expected": "App\\Modules\\Settlement\\Domain\\Exceptions\\WalletCurrencyMismatchException",
+      "actual": "App\\Modules\\Settlement\\Domain\\Exceptions\\WalletCurrencyMismatchException"
+    },
+    {
+      "assertion": "no mutations",
+      "expected": [
+        "[{\"id\":1,\"wallet_id\":1,\"entry_type\":\"manual_adjustment_debit\",\"direction\":\"debit\",\"amount_minor\":10000,\"running_balance_minor\":-10000,\"currency\":\"EGP\",\"transaction_group_id\":1,\"counter_account_type\":null,\"counter_account_id\":null,\"correlation_id\":\"risk-pilot\",\"causation_id\":null,\"idempotency_key\":\"egp\",\"description_key\":null,\"description_params\":null,\"related_entity_type\":null,\"related_entity_id\":null,\"posted_at\":\"2026-10-12 19:42:29\",\"created_at\":\"2026-10-12 19:42:29\"},{\"id\":2,\"wallet_id\":2,\"entry_type\":\"manual_adjustment_credit\",\"direction\":\"credit\",\"amount_minor\":10000,\"running_balance_minor\":10000,\"currency\":\"EGP\",\"transaction_group_id\":1,\"counter_account_type\":null,\"counter_account_id\":null,\"correlation_id\":\"risk-pilot\",\"causation_id\":null,\"idempotency_key\":\"egp\",\"description_key\":null,\"description_params\":null,\"related_entity_type\":null,\"related_entity_id\":null,\"posted_at\":\"2026-10-12 19:42:29\",\"created_at\":\"2026-10-12 19:42:29\"}]",
+        1,
+        "[{\"id\":1,\"balance_minor\":-10000,\"pending_withdrawal_minor\":0},{\"id\":2,\"balance_minor\":10000,\"pending_withdrawal_minor\":0}]",
+        [
+          "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted"
+        ]
+      ],
+      "actual": [
+        "[{\"id\":1,\"wallet_id\":1,\"entry_type\":\"manual_adjustment_debit\",\"direction\":\"debit\",\"amount_minor\":10000,\"running_balance_minor\":-10000,\"currency\":\"EGP\",\"transaction_group_id\":1,\"counter_account_type\":null,\"counter_account_id\":null,\"correlation_id\":\"risk-pilot\",\"causation_id\":null,\"idempotency_key\":\"egp\",\"description_key\":null,\"description_params\":null,\"related_entity_type\":null,\"related_entity_id\":null,\"posted_at\":\"2026-10-12 19:42:29\",\"created_at\":\"2026-10-12 19:42:29\"},{\"id\":2,\"wallet_id\":2,\"entry_type\":\"manual_adjustment_credit\",\"direction\":\"credit\",\"amount_minor\":10000,\"running_balance_minor\":10000,\"currency\":\"EGP\",\"transaction_group_id\":1,\"counter_account_type\":null,\"counter_account_id\":null,\"correlation_id\":\"risk-pilot\",\"causation_id\":null,\"idempotency_key\":\"egp\",\"description_key\":null,\"description_params\":null,\"related_entity_type\":null,\"related_entity_id\":null,\"posted_at\":\"2026-10-12 19:42:29\",\"created_at\":\"2026-10-12 19:42:29\"}]",
+        1,
+        "[{\"id\":1,\"balance_minor\":-10000,\"pending_withdrawal_minor\":0},{\"id\":2,\"balance_minor\":10000,\"pending_withdrawal_minor\":0}]",
+        [
+          "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    "App\\Modules\\Settlement\\Domain\\Events\\LedgerTransactionPosted"
+  ],
+  "persistence": {
+    "payments": [],
+    "refunds": [],
+    "ledger": [
+      {
+        "id": 1,
+        "transaction_group_id": 1,
+        "direction": "debit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      },
+      {
+        "id": 2,
+        "transaction_group_id": 1,
+        "direction": "credit",
+        "amount_minor": 10000,
+        "currency": "EGP"
+      }
+    ],
+    "wallets": [
+      {
+        "id": 1,
+        "currency": "EGP",
+        "balance_minor": -10000,
+        "pending_withdrawal_minor": 0
+      },
+      {
+        "id": 2,
+        "currency": "EGP",
+        "balance_minor": 10000,
+        "pending_withdrawal_minor": 0
+      }
+    ],
+    "webhook_errors": [],
+    "idempotency_count": 0,
+    "idempotency_rows": [],
+    "inventory": [],
+    "sale_stock": [],
+    "database_now": "2026-10-12 19:42:29",
+    "application_now": "2026-10-12 19:42:29",
+    "database_engine": "11.8.6-MariaDB-5ubuntu0.1 from Ubuntu"
+  }
+}

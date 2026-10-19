@@ -1,0 +1,22 @@
+check,engine,status,tests,assertions,evidence,scope
+native_full_before_atomic_refinement,SQLite,PASS,596,5197,.e2e/risk-program/remediation/native-final-junit.xml,Full configured native suite before final purchase transaction refinement
+scope_upgrade,MySQL 8.4.11,PASS,1,9,.e2e/risk-program/mysql/run-1791839059-2367/junit.xml,Legacy coerced scope preserved and replayable; unsafe rollback rejected
+scope_upgrade,MariaDB 11.8.6,PASS,1,9,.e2e/risk-program/mysql/run-1791839175-6986/junit.xml,Legacy coerced scope preserved and replayable; unsafe rollback rejected
+idempotency_process_concurrency,MySQL 8.4.11,PASS,1,25,.e2e/risk-program/mysql/run-1791839096-3904/junit.xml,HTTP and internal independent workers execute callback once
+idempotency_process_concurrency,MariaDB 11.8.6,PASS,1,25,.e2e/risk-program/mysql/run-1791839984-8591/junit.xml,HTTP and internal independent workers execute callback once
+tester_army_known_defect_controls,local web,PASS,2,,.e2e/risk-program/remediation/browser/junit.xml,Published wishlist availability and unsupported report rejection
+tester_army_booking,local web,PASS,3,,.e2e/risk-program/remediation/booking-browser/junit.xml,Connected booking and ownership and empty draft controls
+phpstan,configured native,PASS,,,.e2e/risk-program/remediation/phpstan-final.log,Full configured analysis before final purchase transaction refinement
+pint,scoped native,PASS,,,.e2e/risk-program/remediation/pint-final.log,Changed production code and owned regression files
+financial_inventory_final,MySQL 8.4.11,PASS,15,153,.e2e/risk-program/mysql/run-1791841477-1976/junit.xml,Post-atomicity and bounded retry source; real financial invariants plus3inventory concurrency cases
+financial_inventory_final,MariaDB 11.8.6,PASS,15,153,.e2e/risk-program/mysql/run-1791841581-6633/junit.xml,Post-atomicity and bounded retry source; real financial invariants plus3inventory concurrency cases
+webhook_process_concurrency_final,MySQL 8.4.11,PASS,1,14,.e2e/risk-program/mysql/run-1791841451-417/junit.xml,One failure event and exact email plus push channel set
+webhook_process_concurrency_final,MariaDB 11.8.6,PASS,1,14,.e2e/risk-program/mysql/run-1791841547-5067/junit.xml,One failure event and exact email plus push channel set
+original_defect_reproductions_final,MySQL 8.4.11,PASS,2,23,.e2e/risk-program/mysql/run-1791841523-3531/junit.xml,Original intended webhook replay and finite stock outcome preserved
+original_defect_reproductions_final,MariaDB 11.8.6,PASS,2,23,.e2e/risk-program/mysql/run-1791841617-8185/junit.xml,Original intended webhook replay and finite stock outcome preserved
+payment_locale_focused,SQLite,PASS,4,28,.e2e/risk-program/remediation/payment-locale-green.log,Explicit language under contrary configured default
+payment_atomicity_current_focused,SQLite,PASS,17,99,.e2e/risk-program/remediation/payment-current-junit.xml,Completion fault rollback and safe subsequent retry plus failure log
+native_current_full,SQLite,PASS,598,5217,.e2e/risk-program/remediation/native-current-junit.xml,Full suite before final Eloquent retry refresh and subsequent GitHub batches
+webhook_deadlock_retry_and_after_commit,SQLite,PASS,2,8,.e2e/risk-program/remediation/webhook-retry-junit.xml,Injected deadlock restores failed payment and log and claim with one event; throwing after-commit listener preserves committed processing classification
+webhook_process_post_refresh,MySQL 8.4.11,PASS,1,14,.e2e/risk-program/mysql/run-1791842174-417/junit.xml,Latest callback refresh and exact email plus push channel set
+webhook_process_post_refresh,MariaDB 11.8.6,PASS,1,14,.e2e/risk-program/mysql/run-1791842197-1951/junit.xml,Latest callback refresh and exact email plus push channel set

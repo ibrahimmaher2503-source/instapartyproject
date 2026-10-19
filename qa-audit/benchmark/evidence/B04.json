@@ -1,0 +1,14 @@
+{
+  "attempts": [
+    {
+      "received_minor": 9999,
+      "received_currency": "EGP",
+      "http_status": 500,
+      "payment_status": "pending",
+      "booking_payment_status": "unpaid",
+      "ledger_delta": 0,
+      "processing_error": null
+    }
+  ],
+  "blocker": "SQLite rejects MySQL interval expression in IdempotencyService::hasBeenUsed before amount/currency comparison; the USD variant was not reached."
+}

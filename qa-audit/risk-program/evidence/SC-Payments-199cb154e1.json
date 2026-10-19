@@ -1,0 +1,59 @@
+{
+  "assertions": [
+    {
+      "assertion": "unauthorized callback",
+      "expected": 401,
+      "actual": 401
+    },
+    {
+      "assertion": "invalid signature logged",
+      "expected": "invalid_signature",
+      "actual": "invalid_signature"
+    },
+    {
+      "assertion": "payment unchanged",
+      "expected": "pending",
+      "actual": "pending"
+    },
+    {
+      "assertion": "no ledger",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "no idempotency consumption",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "no financial events",
+      "expected": [],
+      "actual": []
+    }
+  ],
+  "events": [],
+  "persistence": {
+    "payments": [
+      {
+        "public_id": "01M4RT6KMNK0M8MJWJ9F611PT0",
+        "status": "pending",
+        "amount_minor": 10000,
+        "amount_currency": "EGP",
+        "capture_ledger_group_id": null
+      }
+    ],
+    "refunds": [],
+    "ledger": [],
+    "wallets": [],
+    "webhook_errors": [
+      "invalid_signature"
+    ],
+    "idempotency_count": 0,
+    "idempotency_rows": [],
+    "inventory": [],
+    "sale_stock": [],
+    "database_now": "2026-10-12 19:42:28",
+    "application_now": "2026-10-12 19:42:28",
+    "database_engine": "11.8.6-MariaDB-5ubuntu0.1 from Ubuntu"
+  }
+}

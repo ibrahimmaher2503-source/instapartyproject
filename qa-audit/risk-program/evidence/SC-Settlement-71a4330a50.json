@@ -1,0 +1,52 @@
+{
+  "assertions": [
+    {
+      "assertion": "unbalanced guard",
+      "expected": "App\\Modules\\Settlement\\Domain\\Exceptions\\UnbalancedTransactionException",
+      "actual": "App\\Modules\\Settlement\\Domain\\Exceptions\\UnbalancedTransactionException"
+    },
+    {
+      "assertion": "no group",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "no entries",
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "assertion": "no event",
+      "expected": [],
+      "actual": []
+    }
+  ],
+  "events": [],
+  "persistence": {
+    "payments": [],
+    "refunds": [],
+    "ledger": [],
+    "wallets": [
+      {
+        "id": 1,
+        "currency": "EGP",
+        "balance_minor": 0,
+        "pending_withdrawal_minor": 0
+      },
+      {
+        "id": 2,
+        "currency": "EGP",
+        "balance_minor": 0,
+        "pending_withdrawal_minor": 0
+      }
+    ],
+    "webhook_errors": [],
+    "idempotency_count": 0,
+    "idempotency_rows": [],
+    "inventory": [],
+    "sale_stock": [],
+    "database_now": "2026-10-12 19:42:29",
+    "application_now": "2026-10-12 19:42:29",
+    "database_engine": "11.8.6-MariaDB-5ubuntu0.1 from Ubuntu"
+  }
+}
