@@ -32,6 +32,8 @@ return [
         'deleted' => 'Saved search deleted successfully.',
     ],
     'account' => [
+        'add_favorite' => 'Add to favorites',
+        'remove_favorite' => 'Remove from favorites',
         'save_search' => 'Save this search',
         'search_label' => 'Name this search',
         'run_search' => 'Run search',

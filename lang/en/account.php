@@ -44,4 +44,5 @@ return [
         'no_payment' => 'No payment was captured, so no refund is currently recorded.',
     ],
     'addresses' => 'Addresses', 'saved_searches' => 'Saved searches', 'no_saved_searches' => 'You have no saved searches yet.', 'loyalty' => 'Loyalty',
+    'notification_mark_read' => 'Mark as read', 'notification_mark_unread' => 'Mark as unread',
 ];

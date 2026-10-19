@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Tax\Filament\Resources;
 
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Tax\Domain\Enums\TaxAppliesTo;
 use App\Modules\Tax\Domain\Models\TaxRate;
 use App\Modules\Tax\Filament\Resources\TaxRateResource\Pages\CreateTaxRate;
@@ -63,23 +64,27 @@ class TaxRateResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make('Translations')
+            BilingualTabErrorFeedback::tabs(Tabs::make('Translations'))
                 ->tabs([
-                    Tab::make('English')
+                    BilingualTabErrorFeedback::tab(Tab::make('English'), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->label('Name (EN)')
-                                ->required()
+                                ->required(false)
+                                ->rule('required')
+                                ->markAsRequired()
                                 ->maxLength(255),
                             Textarea::make('description.en')
                                 ->label('Description (EN)')
                                 ->rows(3),
                         ]),
-                    Tab::make('العربية')
+                    BilingualTabErrorFeedback::tab(Tab::make('العربية'), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->label('Name (AR)')
-                                ->required()
+                                ->required(false)
+                                ->rule('required')
+                                ->markAsRequired()
                                 ->maxLength(255),
                             Textarea::make('description.ar')
                                 ->label('Description (AR)')

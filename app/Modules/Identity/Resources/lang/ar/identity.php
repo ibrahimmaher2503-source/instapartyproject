@@ -552,7 +552,7 @@ return [
         'vendor_not_approved' => 'يجب الموافقة على الملف التجاري أولاً قبل منح صلاحيات نوع المنتج.',
         'type_approval_not_found' => 'اعتماد نوع المنتج غير موجود أو تم سحبه مسبقاً.',
         'document_already_reviewed' => 'تمت مراجعة هذا المستند مسبقاً.',
-        'document_not_reuploadable' => 'لا يمكن إعادة رفع إلا مستند مرفوض.',
+        'document_not_reuploadable' => 'يمكن إعادة رفع المستندات المرفوضة أو منتهية الصلاحية فقط.',
         'document_already_pending' => 'يوجد بالفعل مستند بديل قيد المراجعة.',
         'invalid_change_request_items' => 'عنصر واحد أو أكثر لا ينتمي إلى طلب التعديل الحالي.',
         'unsupported_change_request_field' => 'اختر حقلاً مدعوماً لكل تعديل مطلوب.',

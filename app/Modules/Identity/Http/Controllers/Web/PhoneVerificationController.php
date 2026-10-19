@@ -6,6 +6,7 @@ namespace App\Modules\Identity\Http\Controllers\Web;
 
 use App\Modules\Identity\Application\Actions\SendOtpAction;
 use App\Modules\Identity\Application\Actions\VerifyPhoneAction;
+use App\Modules\Identity\Application\Services\CustomerIntendedUrl;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,12 +18,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class PhoneVerificationController
 {
-    public function show(Request $request): View|RedirectResponse
+    public function show(Request $request, CustomerIntendedUrl $intendedUrl): View|RedirectResponse
     {
         $phone = $request->session()->get('auth.verify_phone');
 
         if (config('app.debug') && $phone !== null) {
-            return $this->verify($request, app(VerifyPhoneAction::class));
+            return $this->verify($request, app(VerifyPhoneAction::class), $intendedUrl);
         }
 
         return $phone === null
@@ -37,7 +38,7 @@ class PhoneVerificationController
         return back()->with('status', __('storefront.auth.verify.resent'));
     }
 
-    public function verify(Request $request, VerifyPhoneAction $action): RedirectResponse
+    public function verify(Request $request, VerifyPhoneAction $action, CustomerIntendedUrl $intendedUrl): RedirectResponse
     {
         $data = config('app.debug') ? [] : $request->validate(['code' => ['required', 'string', 'regex:/^\d{6}$/']]);
 
@@ -47,7 +48,7 @@ class PhoneVerificationController
         $request->session()->regenerate();
         $request->session()->forget('auth.verify_phone');
 
-        return redirect()->intended(route('storefront.home'));
+        return $intendedUrl->redirect($request, route('storefront.home'));
     }
 
     private function phone(Request $request): string

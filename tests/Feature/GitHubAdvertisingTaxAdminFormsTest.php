@@ -13,6 +13,7 @@ use App\Modules\Tax\Filament\Resources\TaxRateResource;
 use App\Modules\Tax\Filament\Resources\TaxRateResource\Pages\CreateTaxRate;
 use App\Modules\Tax\Filament\Resources\TaxRateResource\Pages\EditTaxRate;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Tabs;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
@@ -98,6 +99,82 @@ it('creates customer and all tax rates with the supplied percentages and transla
         ->and($allRate->getTranslations('name'))->toMatchArray(['en' => 'All tax', 'ar' => 'ضريبة الجميع'])
         ->and($customerRate->public_id)->toHaveLength(26)
         ->and($allRate->public_id)->toHaveLength(26);
+});
+
+it('shows required-field errors when a tax rate is submitted empty', function (): void {
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo([
+        Permission::findOrCreate('view_any_tax::rate', 'web'),
+        Permission::findOrCreate('create_tax::rate', 'web'),
+    ]);
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    Livewire::test(CreateTaxRate::class)
+        ->call('create')
+        ->assertHasFormErrors([
+            'name.en' => 'required',
+            'name.ar' => 'required',
+            'rate_bps' => 'required',
+            'applies_to' => 'required',
+            'effective_from' => 'required',
+        ]);
+
+    expect(TaxRate::query()->count())->toBe(0);
+});
+
+it('opens the Arabic tax-rate tab when its required translation is missing', function (): void {
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo([
+        Permission::findOrCreate('view_any_tax::rate', 'web'),
+        Permission::findOrCreate('create_tax::rate', 'web'),
+    ]);
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $page = Livewire::test(CreateTaxRate::class)
+        ->fillForm([
+            'name.en' => 'Tax name',
+            'name.ar' => '',
+            'rate_bps' => 500,
+            'applies_to' => TaxAppliesTo::Customer->value,
+            'effective_from' => now()->toDateString(),
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['name.ar' => 'required']);
+
+    $tabs = collect($page->instance()->getCachedForms()['form']->getFlatComponents(true))
+        ->first(fn ($component): bool => $component instanceof Tabs);
+
+    expect($tabs?->getActiveTab())->toBe(2)
+        ->and(TaxRate::query()->count())->toBe(0);
+});
+
+it('opens the Arabic advertisement-package tab when its required translation is missing', function (): void {
+    $admin = User::factory()->superAdmin()->create();
+    $admin->givePermissionTo([
+        Permission::findOrCreate('view_any_advertisement::package', 'web'),
+        Permission::findOrCreate('create_advertisement::package', 'web'),
+    ]);
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $page = Livewire::test(CreateAdvertisementPackage::class)
+        ->fillForm([
+            'name.en' => 'Campaign',
+            'name.ar' => '',
+            'placement_type' => PlacementType::HomepageBanner->value,
+            'duration_days' => 7,
+            'price_minor' => 1000,
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['name.ar' => 'required']);
+
+    $tabs = collect($page->instance()->getCachedForms()['form']->getFlatComponents(true))
+        ->first(fn ($component): bool => $component instanceof Tabs);
+
+    expect($tabs?->getActiveTab())->toBe(2)
+        ->and(AdvertisementPackage::query()->count())->toBe(0);
 });
 
 it('hydrates and saves both existing tax-rate translations', function (): void {

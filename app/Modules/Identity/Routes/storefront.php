@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Modules\Communication\Http\Controllers\Web\CustomerAccountNotificationController;
 use App\Modules\Identity\Http\Controllers\Web\CustomerAccountController;
 use App\Modules\Identity\Http\Controllers\Web\CustomerAddressPageController;
 use App\Modules\Identity\Http\Controllers\Web\LoginController;
 use App\Modules\Identity\Http\Controllers\Web\PasswordResetController;
 use App\Modules\Identity\Http\Controllers\Web\PhoneVerificationController;
 use App\Modules\Identity\Http\Controllers\Web\RegisterController;
+use App\Modules\Identity\Http\Middleware\RedirectGuestToStorefrontLogin;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -50,7 +52,7 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
         ->name('logout');
 });
 
-Route::middleware(['auth', 'role:customer'])->prefix('account')->name('account.')->group(function (): void {
+Route::middleware([RedirectGuestToStorefrontLogin::class, 'role:customer'])->prefix('account')->name('account.')->group(function (): void {
     Route::get('/', [CustomerAccountController::class, 'dashboard'])->name('dashboard');
     Route::get('addresses', [CustomerAddressPageController::class, 'index'])->name('addresses');
     Route::post('addresses', [CustomerAddressPageController::class, 'store'])->name('addresses.store');
@@ -62,7 +64,11 @@ Route::middleware(['auth', 'role:customer'])->prefix('account')->name('account.'
     Route::get('payments', [CustomerAccountController::class, 'payments'])->name('payments');
     Route::get('plans', [CustomerAccountController::class, 'plans'])->name('plans');
     Route::get('favorites', [CustomerAccountController::class, 'favorites'])->name('favorites');
-    Route::get('notifications', [CustomerAccountController::class, 'notifications'])->name('notifications');
+    Route::get('notifications', [CustomerAccountNotificationController::class, 'index'])->name('notifications');
+    Route::patch('notifications/{notificationId}/read', [CustomerAccountNotificationController::class, 'markRead'])
+        ->name('notifications.read');
+    Route::patch('notifications/{notificationId}/unread', [CustomerAccountNotificationController::class, 'markUnread'])
+        ->name('notifications.unread');
     Route::get('reviews', [CustomerAccountController::class, 'reviews'])->name('reviews');
     Route::get('profile', [CustomerAccountController::class, 'profile'])->name('profile');
     Route::put('profile', [CustomerAccountController::class, 'updateProfile'])->name('profile.update');

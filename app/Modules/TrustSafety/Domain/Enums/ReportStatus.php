@@ -13,6 +13,6 @@ enum ReportStatus: string
 
     public function label(): string
     {
-        return __('trust-safety::statuses.'.$this->value);
+        return __('trust-safety::trust-safety.statuses.'.$this->value);
     }
 }

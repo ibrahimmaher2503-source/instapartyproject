@@ -66,6 +66,7 @@ class ReportResource extends Resource
 
                 TextColumn::make('reportable_type')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => self::targetTypeLabel($state))
                     ->label('Target Type'),
 
                 TextColumn::make('reason')
@@ -196,6 +197,14 @@ class ReportResource extends Resource
             'index' => ListReports::route('/'),
             'view' => ViewReport::route('/{record}'),
         ];
+    }
+
+    public static function targetTypeLabel(string $type): string
+    {
+        return match ($type) {
+            'vendor_profile', 'vendor', 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile' => __('identity::identity.vendor_profile'),
+            default => str($type)->afterLast('\\')->headline()->toString(),
+        };
     }
 
     public static function canCreate(): bool

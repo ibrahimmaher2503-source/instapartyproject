@@ -20,5 +20,7 @@ final readonly class ServiceReadDTO
         public string $basePriceCurrency,
         public ?int $stockQuantity,
         public ?int $defaultRentalDurationHours = null,
+        public bool $isMadeToOrder = false,
+        public ?int $leadTimeHours = null,
     ) {}
 }

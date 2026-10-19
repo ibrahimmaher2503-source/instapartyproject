@@ -8,6 +8,7 @@ use App\Modules\Reviews\Application\Commands\SendDailyReviewSummaryCommand;
 use App\Modules\Reviews\Application\Listeners\RecomputeRatingOnApproval;
 use App\Modules\Reviews\Application\Timeline\ReviewTimelineDescriptors;
 use App\Modules\Reviews\Domain\Contracts\CustomerReviewReader;
+use App\Modules\Reviews\Domain\Contracts\PublicServiceReviewReader;
 use App\Modules\Reviews\Domain\Contracts\ReviewModerationLogRepository;
 use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
 use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
@@ -21,6 +22,7 @@ use App\Modules\Reviews\Domain\Models\VendorReview;
 use App\Modules\Reviews\Domain\Policies\ReviewResponsePolicy;
 use App\Modules\Reviews\Domain\Policies\ServiceReviewPolicy;
 use App\Modules\Reviews\Domain\Policies\VendorReviewPolicy;
+use App\Modules\Reviews\Infrastructure\Readers\EloquentPublicServiceReviewReader;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentCustomerReviewReader;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentReviewModerationLogRepository;
 use App\Modules\Reviews\Infrastructure\Repositories\EloquentServiceReviewRepository;
@@ -37,6 +39,7 @@ class ReviewsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CustomerReviewReader::class, EloquentCustomerReviewReader::class);
+        $this->app->singleton(PublicServiceReviewReader::class, EloquentPublicServiceReviewReader::class);
         $this->app->singleton(ServiceReviewRepository::class, EloquentServiceReviewRepository::class);
         $this->app->singleton(VendorReviewRepository::class, EloquentVendorReviewRepository::class);
         $this->app->singleton(ReviewModerationLogRepository::class, EloquentReviewModerationLogRepository::class);

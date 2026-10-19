@@ -8,6 +8,7 @@ use App\Modules\Shared\Application\Actions\PublishCmsPageAction;
 use App\Modules\Shared\Application\Actions\UnpublishCmsPageAction;
 use App\Modules\Shared\Domain\Enums\CmsSlug;
 use App\Modules\Shared\Domain\Models\CmsPage;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Shared\Filament\Resources\CmsPageResource\Pages\EditCmsPage;
 use App\Modules\Shared\Filament\Resources\CmsPageResource\Pages\ListCmsPages;
 use Filament\Forms\Components\Builder;
@@ -60,9 +61,9 @@ class CmsPageResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make('Translations')
+            BilingualTabErrorFeedback::tabs(Tabs::make('Translations'))
                 ->tabs([
-                    Tab::make('English')
+                    BilingualTabErrorFeedback::tab(Tab::make('English'), 'en')
                         ->schema([
                             TextInput::make('title.en')
                                 ->label('Title (English)')
@@ -76,7 +77,7 @@ class CmsPageResource extends Resource
                                 ->label('Meta Description (English)')
                                 ->maxLength(255),
                         ]),
-                    Tab::make('العربية')
+                    BilingualTabErrorFeedback::tab(Tab::make('العربية'), 'ar')
                         ->schema([
                             TextInput::make('title.ar')
                                 ->label('العنوان (عربي)')

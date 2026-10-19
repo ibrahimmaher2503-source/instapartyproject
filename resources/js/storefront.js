@@ -229,11 +229,13 @@ if (serviceEstimate instanceof HTMLFormElement) {
             }
 
             const payload = { quantity };
-            if (productType === 'rental' && startInput instanceof HTMLInputElement) {
+            if (startsAt !== '' && startInput instanceof HTMLInputElement) {
                 const start = new Date(startInput.value);
-                const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
                 payload.starts_at = start.toISOString();
-                payload.ends_at = end.toISOString();
+                if (productType === 'rental') {
+                    const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+                    payload.ends_at = end.toISOString();
+                }
             }
 
             checkButton.disabled = true;

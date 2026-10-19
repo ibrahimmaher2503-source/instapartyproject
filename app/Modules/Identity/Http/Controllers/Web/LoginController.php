@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Http\Controllers\Web;
 
 use App\Modules\Identity\Application\Actions\LoginAction;
+use App\Modules\Identity\Application\Services\CustomerIntendedUrl;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class LoginController
      * A failed login throws ValidationException from the Action, which Laravel turns
      * into a redirect-back-with-errors for web requests and JSON for the API.
      */
-    public function login(Request $request, LoginAction $action): RedirectResponse
+    public function login(Request $request, LoginAction $action, CustomerIntendedUrl $intendedUrl): RedirectResponse
     {
         $credentials = $request->validate([
             'login' => ['required', 'string'],
@@ -44,7 +45,7 @@ class LoginController
         // Rotate the session ID so a pre-login session cannot be fixated.
         $request->session()->regenerate();
 
-        return redirect()->intended(route('storefront.home'));
+        return $intendedUrl->redirect($request, route('storefront.home'));
     }
 
     /**
@@ -58,8 +59,7 @@ class LoginController
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->session()->regenerate(true);
 
         return redirect()->route('storefront.home');
     }

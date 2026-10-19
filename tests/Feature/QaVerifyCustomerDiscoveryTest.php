@@ -130,6 +130,7 @@ it('shows only active service packages and carries the selected package into boo
         ->assertSee('data-service-packages', false)
         ->assertSee(__('storefront.service.choose_package', [], $locale))
         ->assertSee($package->getTranslation('name', $locale))
+        ->assertSee(Money::ofMinor($package->price_minor, $package->currency)->formatTo($locale))
         ->assertDontSee($inactive->getTranslation('name', $locale))
         ->assertSee('package_public_id='.$package->public_id, false);
 
@@ -138,6 +139,7 @@ it('shows only active service packages and carries the selected package into boo
     ]))
         ->assertOk()
         ->assertSee('name="package_public_id" value="'.$package->public_id.'" checked', false)
+        ->assertSee(Money::ofMinor($package->price_minor, $package->currency)->formatTo($locale))
         ->assertDontSee('value="'.$inactive->public_id.'"', false);
 })->with(['en', 'ar']);
 

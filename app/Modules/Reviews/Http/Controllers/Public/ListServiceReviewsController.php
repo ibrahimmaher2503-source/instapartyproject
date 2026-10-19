@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Reviews\Http\Controllers\Public;
 
 use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
+use App\Modules\Reviews\Domain\ValueObjects\ReviewCursor;
 use App\Modules\Reviews\Http\Resources\PublicServiceReviewResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,15 @@ class ListServiceReviewsController
 
     public function index(Request $request, string $servicePublicId): JsonResponse
     {
+        $cursor = $request->query('cursor');
+        if ($cursor !== null && ReviewCursor::fromEncoded($cursor) === null) {
+            return response()->json([
+                'data' => null,
+                'meta' => (object) [],
+                'errors' => [['code' => 'validation_error', 'field' => 'cursor']],
+            ], 422);
+        }
+
         $serviceId = DB::table('services')
             ->where('public_id', $servicePublicId)
             ->value('id');
@@ -28,7 +38,7 @@ class ListServiceReviewsController
         }
 
         $result = $this->repo->listApprovedForService((int) $serviceId, [
-            'cursor' => $request->query('cursor'),
+            'cursor' => $cursor,
             'limit' => 15,
         ]);
 

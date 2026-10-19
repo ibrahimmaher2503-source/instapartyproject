@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Http\Controllers\Web;
 
 use App\Modules\Identity\Application\Actions\RegisterCustomerAction;
+use App\Modules\Identity\Application\Services\CustomerIntendedUrl;
 use App\Modules\Identity\Http\Requests\RegisterCustomerRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -27,8 +28,11 @@ class RegisterController
      * (VerifyPhoneAction is the step that mints one). Logging in here would also bounce
      * the user straight off the guest-only verify page.
      */
-    public function register(RegisterCustomerRequest $request, RegisterCustomerAction $action): RedirectResponse
-    {
+    public function register(
+        RegisterCustomerRequest $request,
+        RegisterCustomerAction $action,
+        CustomerIntendedUrl $intendedUrl,
+    ): RedirectResponse {
         $user = $action->execute($request->toDTO());
 
         if (config('app.debug')) {
@@ -36,7 +40,7 @@ class RegisterController
             $request->session()->regenerate();
             $request->session()->forget('auth.verify_phone');
 
-            return redirect()->intended(route('storefront.home'));
+            return $intendedUrl->redirect($request, route('storefront.home'));
         }
 
         // Kept in the session rather than the URL so the phone number is not logged

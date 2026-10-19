@@ -14,6 +14,7 @@ use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\DraftState;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Shared\Domain\Models\StateTransition;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -68,6 +69,22 @@ class SubmitBookingAction
                 if (! $this->catalogReader->isServiceEligibleForOccasion((int) $item->service_id, (int) $booking->occasion_id)) {
                     abort(Response::HTTP_UNPROCESSABLE_ENTITY, __('storefront.wizard.validation.service_occasion_mismatch'));
                 }
+
+                if ($item->product_type !== ProductType::Sale->value) {
+                    continue;
+                }
+
+                $service = $this->catalogReader->findBookingServiceById((int) $item->service_id);
+                if (! $service?->isMadeToOrder || $service->leadTimeHours === null || $service->leadTimeHours < 1) {
+                    continue;
+                }
+
+                $startsAt = $booking->event_starts_at;
+                abort_if(
+                    $startsAt === null || $startsAt->lessThan(now()->addHours($service->leadTimeHours)),
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    __('catalog::catalog.availability.lead_time_not_met', ['hours' => $service->leadTimeHours]),
+                );
             }
 
             $this->enforceMinimumOrder->execute($booking->id);

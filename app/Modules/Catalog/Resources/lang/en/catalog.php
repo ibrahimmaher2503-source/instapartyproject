@@ -7,6 +7,7 @@ return [
     'overdue_by' => 'Overdue by :duration',
     'availability' => [
         'window_required' => 'A rental availability check requires starts_at and ends_at.',
+        'lead_time_not_met' => 'This made-to-order service requires at least :hours hours of lead time before the event.',
     ],
 
     // Navigation groups

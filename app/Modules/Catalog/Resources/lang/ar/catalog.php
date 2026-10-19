@@ -7,6 +7,7 @@ return [
     'overdue_by' => 'متأخر منذ :duration',
     'availability' => [
         'window_required' => 'يتطلب فحص توفر الإيجار تحديد starts_at و ends_at.',
+        'lead_time_not_met' => 'تتطلب هذه الخدمة المُعدة حسب الطلب مهلة لا تقل عن :hours ساعة قبل المناسبة.',
     ],
 
     // Navigation groups

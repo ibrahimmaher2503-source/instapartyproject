@@ -75,8 +75,59 @@ class AddServiceToEventAction
 
             if ($booking === null) {
                 $booking = $this->createDraft->execute($draft);
-            } elseif ($themeSnapshot !== null) {
-                $booking->update(['theme' => $themeSnapshot]);
+            } else {
+                $hasItems = $booking->items()->exists();
+                $address = $booking->address()->first();
+                $contextMatches = $booking->event_starts_at?->equalTo($draft->eventStartsAt)
+                    && (($booking->event_ends_at === null && $draft->eventEndsAt === null)
+                        || ($booking->event_ends_at !== null && $draft->eventEndsAt !== null
+                            && $booking->event_ends_at->equalTo($draft->eventEndsAt)))
+                    && ($booking->guest_count === null ? $draft->guestCount === null : (int) $booking->guest_count === $draft->guestCount)
+                    && $booking->theme === $themeSnapshot
+                    && $booking->celebrant_name === $draft->celebrantName
+                    && $booking->celebrant_dob === $draft->celebrantDob
+                    && $booking->celebrant_gender === $draft->celebrantGender
+                    && $address !== null
+                    && (int) $address->city_id === $draft->addressCityId
+                    && $address->address_line === $draft->addressLine
+                    && $address->building === $draft->addressBuilding
+                    && $address->floor === $draft->addressFloor
+                    && $address->apartment === $draft->addressApartment
+                    && $address->landmark === $draft->addressLandmark
+                    && ($address->latitude === null ? $draft->addressLatitude === null : $draft->addressLatitude !== null && round((float) $address->latitude, 7) === round($draft->addressLatitude, 7))
+                    && ($address->longitude === null ? $draft->addressLongitude === null : $draft->addressLongitude !== null && round((float) $address->longitude, 7) === round($draft->addressLongitude, 7))
+                    && $address->recipient_name === $draft->recipientName
+                    && $address->recipient_phone_e164 === $draft->recipientPhoneE164;
+
+                if ($hasItems && ! $contextMatches) {
+                    throw ValidationException::withMessages([
+                        'service_id' => __('storefront.wizard.validation.draft_context_mismatch'),
+                    ]);
+                }
+
+                if (! $hasItems) {
+                    $booking->update([
+                        'event_starts_at' => $draft->eventStartsAt,
+                        'event_ends_at' => $draft->eventEndsAt,
+                        'guest_count' => $draft->guestCount,
+                        'theme' => $themeSnapshot,
+                        'celebrant_name' => $draft->celebrantName,
+                        'celebrant_dob' => $draft->celebrantDob,
+                        'celebrant_gender' => $draft->celebrantGender,
+                    ]);
+                    $booking->address()->updateOrCreate([], [
+                        'city_id' => $draft->addressCityId,
+                        'address_line' => $draft->addressLine,
+                        'building' => $draft->addressBuilding,
+                        'floor' => $draft->addressFloor,
+                        'apartment' => $draft->addressApartment,
+                        'landmark' => $draft->addressLandmark,
+                        'latitude' => $draft->addressLatitude,
+                        'longitude' => $draft->addressLongitude,
+                        'recipient_name' => $draft->recipientName,
+                        'recipient_phone_e164' => $draft->recipientPhoneE164,
+                    ]);
+                }
             }
 
             try {

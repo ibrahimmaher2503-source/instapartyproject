@@ -193,6 +193,7 @@ return [
         'commission_bps_label' => 'العمولة (نقاط أساسية)',
         'commission_bps_helper' => '100 = 1%،  1500 = 15%،  10000 = 100%',
         'effective_from_label' => 'ساري من',
+        'duplicate_scope' => 'توجد قاعدة عمولة بالفعل لهذه الفئة ونوع المنتج. يرجى تعديل القاعدة الحالية.',
         'category_any' => 'أي',
         'bps_format' => ':bps نقطة (:percent%)',
     ],

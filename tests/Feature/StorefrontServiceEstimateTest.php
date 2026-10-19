@@ -17,7 +17,12 @@ it('estimates the booking unit price for each product and locale without creatin
     if ($type === 'rental') {
         ServiceRentalDetail::factory()->create(['service_id' => $service->id, 'default_rental_duration_hours' => 4]);
     } elseif ($type === 'sale') {
-        ServiceSaleDetail::factory()->create(['service_id' => $service->id, 'stock_quantity' => 10]);
+        ServiceSaleDetail::factory()->create([
+            'service_id' => $service->id,
+            'is_made_to_order' => false,
+            'lead_time_hours' => null,
+            'stock_quantity' => 10,
+        ]);
     }
     $quantity = $type === 'rental' ? 1 : 3;
     $query = ['quantity' => $quantity, 'event_starts_at' => now()->addDays(5)->format('Y-m-d\TH:i'), 'timezone' => 'Africa/Cairo'];
@@ -41,6 +46,27 @@ it('shows unavailable rental windows and insufficient sale stock without reservi
     $this->get('/en/services/'.$sale->public_id.'?quantity=3')
         ->assertOk()->assertViewHas('availability', fn ($availability): bool => ! $availability->available);
     expect(ServiceInventoryReservation::query()->count())->toBe(1);
+});
+
+it('applies configured made-to-order lead time to the customer availability check', function (): void {
+    $service = Service::factory()->sale()->published()->create();
+    ServiceSaleDetail::factory()->create([
+        'service_id' => $service->id,
+        'is_made_to_order' => true,
+        'lead_time_hours' => 24,
+        'stock_quantity' => null,
+    ]);
+
+    $this->postJson('/api/v1/customer/services/'.$service->public_id.'/check-availability', [
+        'starts_at' => now()->addHour()->toIso8601String(),
+        'quantity' => 1,
+    ])->assertOk()->assertJsonPath('data.available', false)
+        ->assertJsonPath('data.reason_code', 'lead_time_not_met');
+
+    $this->postJson('/api/v1/customer/services/'.$service->public_id.'/check-availability', [
+        'starts_at' => now()->addHours(25)->toIso8601String(),
+        'quantity' => 1,
+    ])->assertOk()->assertJsonPath('data.available', true);
 });
 
 it('rejects invalid estimate inputs before showing a quote', function (array $query, string $field): void {

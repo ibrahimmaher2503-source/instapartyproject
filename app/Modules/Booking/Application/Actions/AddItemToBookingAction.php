@@ -107,6 +107,17 @@ class AddItemToBookingAction
                 }
                 $reservationId = $this->reserveRental($service, $dto, $effectiveStart, $effectiveEnd);
             } else {
+                if ($service->productType === ProductType::Sale
+                    && $service->isMadeToOrder
+                    && $service->leadTimeHours !== null
+                    && $service->leadTimeHours > 0
+                    && ($effectiveStart === null || $effectiveStart->lessThan(now()->addHours($service->leadTimeHours)))) {
+                    $this->abortWith(
+                        Response::HTTP_UNPROCESSABLE_ENTITY,
+                        __('catalog::catalog.availability.lead_time_not_met', ['hours' => $service->leadTimeHours]),
+                    );
+                }
+
                 $reservationId = match ($service->productType) {
                     ProductType::Sale => $this->reserveSale($service, $dto),
                     ProductType::Digital => null,

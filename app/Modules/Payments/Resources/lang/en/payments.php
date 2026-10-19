@@ -42,6 +42,19 @@ return [
         ],
     ],
 
+    'sections' => [
+        'payment_details' => 'Payment details',
+        'tax_breakdown' => 'Booking tax breakdown',
+    ],
+
+    'gateway_reference' => 'Gateway transaction reference',
+    'booking_public_id' => 'Booking public ID',
+    'customer' => 'Customer',
+    'tax_collected' => 'VAT collected',
+    'booking_item' => 'Booking item',
+    'vat_rate_bps' => 'VAT rate',
+    'vat_amount' => 'VAT amount',
+
     'columns' => [
         'public_id' => 'Public ID',
         'booking' => 'Booking',

@@ -56,6 +56,18 @@ it('discards an intended URL belonging to the other panel', function (string $lo
     'vendor after admin request' => ['/vendor-portal/login', '/admin'],
 ]);
 
+it('discards panel intended URLs that do not share the current origin', function (string $intendedUrl): void {
+    $this->withSession(['url.intended' => $intendedUrl])
+        ->get('/admin/login')
+        ->assertOk()
+        ->assertSessionMissing('url.intended');
+})->with([
+    'external host' => 'https://attacker.example/admin/users',
+    'protocol-relative host' => '//attacker.example/admin/users',
+    'different port' => 'http://localhost:8443/admin/users',
+    'embedded credentials' => 'http://user@localhost/admin/users',
+]);
+
 it('authenticates each role only in its own panel and redirects to that panel', function (): void {
     $password = 'SafePassword123!';
     $admin = User::factory()->create(['email' => 'qa-admin@example.test', 'password' => $password]);

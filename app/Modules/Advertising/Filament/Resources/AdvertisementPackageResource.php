@@ -9,6 +9,7 @@ use App\Modules\Advertising\Domain\Models\AdvertisementPackage;
 use App\Modules\Advertising\Filament\Resources\AdvertisementPackageResource\Pages\CreateAdvertisementPackage;
 use App\Modules\Advertising\Filament\Resources\AdvertisementPackageResource\Pages\EditAdvertisementPackage;
 use App\Modules\Advertising\Filament\Resources\AdvertisementPackageResource\Pages\ListAdvertisementPackages;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -62,23 +63,27 @@ class AdvertisementPackageResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Tabs::make('Translations')
+            BilingualTabErrorFeedback::tabs(Tabs::make('Translations'))
                 ->tabs([
-                    Tab::make('English')
+                    BilingualTabErrorFeedback::tab(Tab::make('English'), 'en')
                         ->schema([
                             TextInput::make('name.en')
                                 ->label('Name (EN)')
-                                ->required()
+                                ->required(false)
+                                ->rule('required')
+                                ->markAsRequired()
                                 ->maxLength(255),
                             Textarea::make('description.en')
                                 ->label('Description (EN)')
                                 ->rows(3),
                         ]),
-                    Tab::make('العربية')
+                    BilingualTabErrorFeedback::tab(Tab::make('العربية'), 'ar')
                         ->schema([
                             TextInput::make('name.ar')
                                 ->label('Name (AR)')
-                                ->required()
+                                ->required(false)
+                                ->rule('required')
+                                ->markAsRequired()
                                 ->maxLength(255),
                             Textarea::make('description.ar')
                                 ->label('Description (AR)')
