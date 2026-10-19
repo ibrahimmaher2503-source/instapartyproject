@@ -1,3 +1,66 @@
+import './booking-actions';
+
+document.querySelectorAll('[data-home-vendors]').forEach((section) => {
+    const rail = section.querySelector('.sf-vendor-rail');
+    const pagination = section.querySelector('[data-vendor-pages]');
+    if (!(rail instanceof HTMLElement) || !(pagination instanceof HTMLElement)) return;
+    const rtl = getComputedStyle(rail).direction === 'rtl';
+    let distance = 0;
+    let perPage = 1;
+    const sync = () => {
+        const position = Math.abs(rail.scrollLeft);
+        const atEnd = position >= rail.scrollWidth - rail.clientWidth - 2;
+        const active = atEnd ? pagination.childElementCount - 1 : Math.round(position / (distance * perPage));
+        [...pagination.children].forEach((button, index) => button.setAttribute('aria-pressed', String(index === active)));
+    };
+    const resize = () => {
+        distance = rail.firstElementChild.getBoundingClientRect().width + parseFloat(getComputedStyle(rail).columnGap);
+        perPage = Math.max(1, Math.floor((rail.clientWidth + parseFloat(getComputedStyle(rail).columnGap) + 1) / distance));
+        const count = Math.ceil(rail.childElementCount / perPage);
+        if (pagination.childElementCount !== count) {
+            pagination.replaceChildren();
+            for (let index = 0; index < count; index++) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.setAttribute('aria-controls', rail.id);
+                button.setAttribute('aria-label', pagination.dataset.pageLabel.replace(':number', String(index + 1)));
+                button.addEventListener('click', () => rail.scrollTo({
+                    left: Math.min(index * perPage * distance, rail.scrollWidth - rail.clientWidth) * (rtl ? -1 : 1),
+                    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+                }));
+                pagination.append(button);
+            }
+        }
+        sync();
+    };
+    rail.addEventListener('scroll', sync, { passive: true });
+    new ResizeObserver(resize).observe(rail);
+    resize();
+});
+
+document.querySelectorAll('[data-home-services]').forEach((section) => {
+    const cards = [...section.querySelectorAll('[data-service-category]')];
+    const filters = [...section.querySelectorAll('[data-service-filter]')];
+    const pages = [...section.querySelectorAll('[data-service-page]')];
+    let category = '';
+    const showPage = (page) => {
+        const matches = cards.filter((card) => !category || card.dataset.serviceCategory === category);
+        cards.forEach((card) => { card.hidden = !matches.slice(page * 8, page * 8 + 8).includes(card); });
+        section.querySelector('.sf-service-rail').scrollLeft = 0;
+        pages.forEach((button, index) => {
+            button.hidden = index >= Math.ceil(matches.length / 8);
+            button.setAttribute('aria-pressed', String(index === page));
+        });
+    };
+    filters.forEach((button) => button.addEventListener('click', () => {
+        category = button.dataset.serviceFilter;
+        filters.forEach((filter) => filter.setAttribute('aria-pressed', String(filter === button)));
+        showPage(0);
+    }));
+    pages.forEach((button) => button.addEventListener('click', () => showPage(Number(button.dataset.servicePage))));
+    showPage(0);
+});
+
 const dialog = document.querySelector('[data-storefront-nav-dialog]');
 const openButton = document.querySelector('[data-storefront-nav-open]');
 const closeButton = document.querySelector('[data-storefront-nav-close]');
@@ -6,10 +69,14 @@ const storefrontHeader = document.querySelector('[data-storefront-header]');
 document.querySelectorAll('[data-service-gallery]').forEach((gallery) => {
     const image = gallery.querySelector('[data-service-gallery-main]');
     if (!(image instanceof HTMLImageElement)) return;
-    const buttons = gallery.querySelectorAll('[data-service-gallery-image]');
+    let buttons = Array.from(gallery.querySelectorAll('[data-service-gallery-image]'));
     buttons.forEach((button) => button.addEventListener('click', () => {
         image.src = button.dataset.serviceGalleryImage;
         buttons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        const position = gallery.querySelector('[data-gallery-position]');
+        if (position instanceof HTMLElement) {
+            position.textContent = `${buttons.indexOf(button) + 1} / ${buttons.length}`;
+        }
     }));
     gallery.querySelectorAll('[data-gallery-step]').forEach((control) => control.addEventListener('click', () => {
         if (buttons.length === 0) return;
@@ -17,6 +84,32 @@ document.querySelectorAll('[data-service-gallery]').forEach((gallery) => {
         const next = (current + Number(control.dataset.galleryStep) + buttons.length) % buttons.length;
         buttons[next].click();
     }));
+    if (gallery.hasAttribute('data-vendor-gallery')) {
+        const skipBrokenImage = () => {
+            buttons = buttons.filter((button) => {
+                if (button.dataset.serviceGalleryImage === image.getAttribute('src')) {
+                    button.remove();
+                    return false;
+                }
+                return true;
+            });
+            if (buttons.length > 0) {
+                buttons[0].click();
+            } else {
+                gallery.hidden = true;
+                const empty = gallery.parentElement.querySelector('[data-vendor-gallery-empty]');
+                if (empty) empty.hidden = false;
+            }
+        };
+        image.addEventListener('error', skipBrokenImage);
+        if (image.complete && image.naturalWidth === 0) skipBrokenImage();
+        buttons.forEach((button) => {
+            const thumbnail = button.querySelector('img');
+            if (!(thumbnail instanceof HTMLImageElement)) return;
+            thumbnail.addEventListener('error', () => { thumbnail.hidden = true; });
+            if (thumbnail.complete && thumbnail.naturalWidth === 0) thumbnail.hidden = true;
+        });
+    }
 });
 
 document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
@@ -29,7 +122,7 @@ document.querySelectorAll('[data-localized-date]').forEach((wrapper) => {
 });
 
 document.querySelectorAll('[data-browser-timezone]').forEach((input) => {
-    if (input instanceof HTMLInputElement) input.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
+    if (input instanceof HTMLInputElement && !input.hasAttribute('data-explicit-timezone')) input.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
 });
 
 const searchGeography = document.querySelector('[data-search-geography]');
@@ -63,6 +156,19 @@ if (searchGeography instanceof HTMLFormElement) {
     }
 
     const categorySelect = searchGeography.querySelector('[data-search-category]');
+    const subcategorySelect = searchGeography.querySelector('[data-search-subcategory]');
+    const subcategoryOptionsNode = searchGeography.querySelector('[data-search-subcategory-options]');
+    if (categorySelect instanceof HTMLSelectElement && subcategorySelect instanceof HTMLSelectElement
+        && subcategoryOptionsNode instanceof HTMLScriptElement) {
+        const placeholder = subcategorySelect.options[0]?.text ?? '';
+        const options = JSON.parse(subcategoryOptionsNode.textContent || '[]');
+        categorySelect.addEventListener('change', () => {
+            subcategorySelect.replaceChildren(new Option(placeholder, ''));
+            const children = options.filter((option) => option.parent === categorySelect.value);
+            children.forEach((option) => subcategorySelect.add(new Option(option.name, option.code)));
+            subcategorySelect.disabled = children.length === 0;
+        });
+    }
     const occasionSelect = searchGeography.querySelector('[data-search-occasion]');
     const packageSelect = searchGeography.querySelector('[data-search-package]');
     const packageOptionsNode = searchGeography.querySelector('[data-search-package-options]');
@@ -78,7 +184,7 @@ if (searchGeography instanceof HTMLFormElement) {
 
         const refreshVendors = () => {
             const selectedVendor = vendorSelect.value;
-            const category = categorySelect.value;
+            const category = subcategorySelect?.value || categorySelect.value;
             const occasion = occasionSelect.value;
             const matching = vendorOptions.filter((vendor) => vendor.combinations.some((combination) => (
                 (category === '' || combination.categories.includes(category))
@@ -91,6 +197,7 @@ if (searchGeography instanceof HTMLFormElement) {
         };
 
         categorySelect.addEventListener('change', refreshVendors);
+        subcategorySelect?.addEventListener('change', refreshVendors);
         occasionSelect.addEventListener('change', refreshVendors);
     }
 
@@ -499,6 +606,29 @@ if (contactForm instanceof HTMLFormElement) {
         }
     });
 }
+
+document.querySelectorAll('[data-occasion-packages]').forEach((section) => {
+    const buttons = [...section.querySelectorAll('[data-package-filter]')];
+    const cards = [...section.querySelectorAll('[data-package-occasion]')];
+    const count = section.querySelector('[data-package-count]');
+    const empty = section.querySelector('[data-package-empty]');
+
+    const selectOccasion = (selected) => {
+        let visible = 0;
+        cards.forEach((card) => {
+            const matches = selected === '*' || card.dataset.packageOccasion === selected;
+            card.hidden = !matches || visible >= 10;
+            if (!card.hidden) visible += 1;
+        });
+        buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.packageFilter === selected)));
+        if (count) count.textContent = (count.dataset.countLabel ?? ':count').replace(':count', String(visible));
+        if (empty) empty.hidden = visible > 0;
+    };
+
+    buttons.forEach((button) => button.addEventListener('click', () => selectOccasion(button.dataset.packageFilter)));
+    const selected = buttons.find((button) => button.getAttribute('aria-pressed') === 'true');
+    if (selected) selectOccasion(selected.dataset.packageFilter);
+});
 
 document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
     if (!(toggle instanceof HTMLButtonElement)) return;

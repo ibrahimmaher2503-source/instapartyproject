@@ -134,6 +134,14 @@
         --ip-muted: oklch(0.48 0.02 235);
     }
 
+    .dark {
+        --ip-canvas: oklch(0.19 0.025 267);
+        --ip-surface: oklch(0.23 0.028 267);
+        --ip-border: oklch(0.36 0.025 267);
+        --ip-ink: oklch(0.94 0.012 87);
+        --ip-muted: oklch(0.72 0.018 87);
+    }
+
     html[lang='ar'] { font-family: 'Cairo', system-ui, sans-serif; }
     html[lang='en'] { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
     :where(a, button, input, select, textarea, [tabindex]):focus-visible {
@@ -378,4 +386,28 @@
     .fi-panel-admin .fi-ta-header-cell { position: static; }
     .fi-panel-admin .fi-sidebar { width: min(20rem, calc(100vw - 2.5rem)); }
     .ip-import-table { min-width: 38rem; }
+}
+
+@layer components {
+    .fi-sidebar-item:has(.ip-navigation-favorite) { position: relative; padding-inline-end: 2rem; }
+    .ip-navigation-favorite { position: absolute; inset-inline-end: 0; top: 0; min-height: 2.75rem; width: 2rem; color: var(--ip-muted); }
+    .ip-navigation-favorite[aria-pressed='true'] { color: rgb(var(--warning-600)); }
+    .ip-navigation-shortcuts { padding-block-end: 1rem; border-block-end: 1px solid var(--ip-border); }
+    .ip-navigation-shortcuts h2 { font-size: .75rem; font-weight: 700; margin-block: .75rem .25rem; color: var(--ip-muted); }
+    .ip-navigation-shortcut { display: flex; gap: .5rem; align-items: center; padding: .5rem; font-size: .875rem; border-radius: .5rem; }
+    .ip-navigation-shortcut:hover { background: var(--ip-admin-subtle); }
+    .ip-navigation-shortcut svg { width: 1.25rem; height: 1.25rem; }
+    [dir='rtl'] :where(input[type='tel'], a[href^='tel:'], .fi-ta-col-phone, .fi-in-entry-wrp:has(a[href^='tel:'])) { direction: ltr; unicode-bidi: isolate; }
+}
+
+@media (max-width: 639px) {
+    .fi-panel-admin .fi-ta-table { display: block; width: 100%; }
+    .fi-panel-admin .fi-ta-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .fi-panel-admin .fi-ta-table tbody { display: block; padding: .75rem; }
+    .fi-panel-admin .fi-ta-table tr.fi-ta-row { display: grid; margin-block-end: .75rem; border: 1px solid var(--ip-admin-border); border-radius: .75rem; padding: .5rem; background: var(--ip-admin-surface); }
+    .fi-panel-admin .fi-ta-table tr.fi-ta-row td:not(.hidden) { display: grid; grid-template-columns: minmax(6rem, 35%) minmax(0, 1fr); align-items: center; gap: .5rem; position: static; width: auto; }
+    .fi-panel-admin .fi-ta-table tr.fi-ta-row td::before { content: attr(data-mobile-label); color: var(--ip-admin-muted); font-size: .75rem; font-weight: 600; }
+    .fi-panel-admin .fi-ta-table tr.fi-ta-row td > * { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+    .fi-panel-admin .fi-ta-table tr.fi-ta-row td .fi-ta-actions { flex-wrap: wrap; justify-content: flex-start; }
+    .fi-panel-admin .fi-ta-table tr.fi-ta-row td .fi-ta-text { padding: .5rem; }
 }

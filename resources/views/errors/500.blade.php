@@ -1,70 +1,26 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('vendor-portal.errors.server_error_title') }} — InstaParty</title>
+    <title>{{ __('panel.failure_title') }} — InstaParty</title>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            background: #fafaf8;
-            color: #2e2c28;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-        .container {
-            text-align: center;
-            max-width: 480px;
-            width: 100%;
-        }
-        .code {
-            display: block;
-            font-size: 6rem;
-            font-weight: 800;
-            line-height: 1;
-            color: #f96b0e;
-            letter-spacing: -0.05em;
-            margin-bottom: 1rem;
-        }
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            color: #2e2c28;
-        }
-        p {
-            font-size: 1rem;
-            color: #6b6860;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
-        a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #f96b0e;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9375rem;
-            padding: 0.625rem 1.5rem;
-            border-radius: 0.5rem;
-            transition: background 0.15s;
-        }
-        a:hover { background: #e05c00; }
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f8fafc; color: #0f172a; font: 1rem/1.7 system-ui, sans-serif; }
+        main { max-width: 36rem; padding: 2rem; }
+        h1 { font-size: 1.75rem; line-height: 1.4; }
+        p { color: #475569; }
+        code { display: block; overflow-wrap: anywhere; direction: ltr; unicode-bidi: isolate; }
+        a { display: inline-block; padding: .75rem 1rem; background: #1c2b54; border-radius: .5rem; color: white; text-decoration: none; }
+        a:focus-visible { outline: 3px solid #0f766e; outline-offset: 3px; }
+        @media (prefers-color-scheme: dark) { body { background: #111827; color: #f8fafc; } p { color: #cbd5e1; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <span class="code">500</span>
-        <h1>{{ __('vendor-portal.errors.server_error_title') }}</h1>
-        <p>{{ __('vendor-portal.errors.server_error_message') }}</p>
-        <a href="{{ request()->is('admin*') ? '/admin' : (request()->is('vendor-portal*') ? '/vendor-portal' : '/') }}">{{ __('vendor-portal.errors.back_to_dashboard') }}</a>
-    </div>
+    <main>
+        <h1>{{ __('panel.failure_title') }}</h1>
+        <p>{{ __('panel.failure_help') }}</p>
+        <p>{{ __('panel.reference') }} <code>{{ $referenceId ?? \Illuminate\Support\Facades\Context::get('trace_id') }}</code></p>
+        <a href="{{ request()->is('admin*') ? '/admin' : (request()->is('vendor-portal*') ? '/vendor-portal' : '/') }}">{{ __('panel.back') }}</a>
+    </main>
 </body>
 </html>

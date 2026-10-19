@@ -11,6 +11,9 @@
     $isRtl = app()->getLocale() === 'ar';
     $nextIcon = $isRtl ? '←' : '→';
     $backIcon = $isRtl ? '→' : '←';
+    $initialQuantity = old('quantity', request('quantity', 1));
+    $requestedTimezone = old('timezone', request('timezone'));
+    $hasExplicitTimezone = is_string($requestedTimezone) && in_array($requestedTimezone, timezone_identifiers_list(), true);
 @endphp
 
 @section('title', __('storefront.wizard.title').' · '.__('storefront.common.site_name'))
@@ -63,7 +66,8 @@
                     @csrf
                     @if ($bookingMode)
                         <input type="hidden" name="service_id" value="{{ request('service') }}">
-                        <input type="hidden" name="timezone" value="Africa/Cairo" data-browser-timezone>
+                        <input type="hidden" name="quantity" value="{{ is_scalar($initialQuantity) ? $initialQuantity : 1 }}">
+                        <input type="hidden" name="timezone" value="{{ $hasExplicitTimezone ? $requestedTimezone : 'Africa/Cairo' }}" data-browser-timezone @if ($hasExplicitTimezone) data-explicit-timezone @endif>
                     @endif
                     <input type="hidden" name="occasion" value="{{ old('occasion', request('occasion')) }}" data-planner-occasion>
                     <input type="hidden" name="city_public_id" value="{{ old('city_public_id', request('city_public_id')) }}" data-planner-city>
@@ -98,13 +102,16 @@
                                     class="sf-wizard-occasion-card"
                                     data-planner-occasion-option="{{ $occasion->code }}"
                                 >
-                                    <span class="sf-wizard-occasion-card__top">
-                                        <span class="sf-wizard-occasion-card__title">{{ $storefrontText->translation($occasion, 'name') }}</span>
-                                        <span class="sf-wizard-occasion-card__check" aria-hidden="true" data-planner-occasion-check>✓</span>
+                                    <span class="sf-wizard-occasion-card__icon" aria-hidden="true">
+                                        <x-home.occasion-icon :code="$occasion->code" />
                                     </span>
-                                    @if ($storefrontText->translation($occasion, 'description'))
-                                        <span class="sf-wizard-occasion-card__description">{{ $storefrontText->translation($occasion, 'description') }}</span>
-                                    @endif
+                                    <span class="sf-wizard-occasion-card__copy">
+                                        <span class="sf-wizard-occasion-card__title">{{ $storefrontText->translation($occasion, 'name') }}</span>
+                                        @if ($storefrontText->translation($occasion, 'description'))
+                                            <span class="sf-wizard-occasion-card__description">{{ $storefrontText->translation($occasion, 'description') }}</span>
+                                        @endif
+                                    </span>
+                                    <span class="sf-wizard-occasion-card__check" aria-hidden="true" data-planner-occasion-check>✓</span>
                                 </button>
                             @empty
                                 <p class="sf-wizard-empty">{{ __('storefront.wizard.step1.no_occasions') }}</p>
@@ -120,6 +127,7 @@
                                 <label class="sf-wizard-field-card">
                                     <span class="sf-wizard-field-label">{{ __('storefront.checkout.event.starts_at') }}</span>
                                     <span class="sf-localized-date sf-wizard-date-control" data-localized-date>
+                                        <svg class="sf-wizard-date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/></svg>
                                         <input
                                             type="datetime-local"
                                             lang="{{ app()->getLocale() }}"
@@ -135,6 +143,7 @@
                                 <label class="sf-wizard-field-card">
                                     <span class="sf-wizard-field-label">{{ __('storefront.wizard.step1.ends_at_optional') }}</span>
                                     <span class="sf-localized-date sf-wizard-date-control" data-localized-date>
+                                        <svg class="sf-wizard-date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/></svg>
                                         <input
                                             type="datetime-local"
                                             lang="{{ app()->getLocale() }}"
@@ -207,10 +216,14 @@
                                     type="number"
                                     name="guest_count"
                                     min="1"
+                                    max="10000"
+                                    step="1"
+                                    aria-describedby="planner-guest-count-hint"
                                     value="{{ old('guest_count', request('guest_count')) }}"
                                     placeholder="{{ __('storefront.wizard.step3.guests_placeholder') }}"
                                     class="sf-field sf-wizard-field"
                                 >
+                                <small id="planner-guest-count-hint">{{ __('storefront.wizard.step3.guests_max_hint') }}</small>
                             </label>
                             <label class="sf-wizard-field-card">
                                 <span class="sf-wizard-field-label">{{ __('storefront.wizard.step3.notes_label') }}</span>

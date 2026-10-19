@@ -174,6 +174,7 @@ return [
         'notification.in_app.bounced' => 'ارتدّ الإشعار داخل التطبيق',
 
         // سجل التدقيق (احتياطي)
+        'audit.force_cancel_booking' => 'ألغى المسؤول الحجز إجباريًا',
         'audit.entry' => 'تم تسجيل حدث تدقيق',
         'audit.unknown' => 'تم تسجيل حدث تدقيق',
     ],

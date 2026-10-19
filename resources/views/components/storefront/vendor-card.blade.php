@@ -1,17 +1,18 @@
-@props(['vendor'])
+@props(['vendor', 'reviewSummary' => null])
 
 @php
     $text = app(App\Modules\Shared\Application\Services\StorefrontText::class);
     $name = $text->translation($vendor, 'business_name');
-    $city = $vendor->primaryCity ? $text->translation($vendor->primaryCity, 'name') : '';
+    $city = $text->vendorGovernorates($vendor)->pluck('name')->join(' · ');
     $bio = $text->translation($vendor, 'bio');
-    $cover = $vendor->cover_path ? Illuminate\Support\Facades\Storage::disk('public')->url($vendor->cover_path) : null;
-    $logo = $vendor->logo_path ? Illuminate\Support\Facades\Storage::disk('public')->url($vendor->logo_path) : null;
+    $mediaUrls = app(App\Modules\Shared\Application\Services\PublicMediaUrl::class);
+    $cover = $mediaUrls->publicPath($vendor->cover_path);
+    $logo = $mediaUrls->publicPath($vendor->logo_path);
     $initial = mb_substr((string) $name, 0, 1);
 @endphp
 
 <article class="group overflow-hidden rounded-[1.25rem] border border-ink-200 bg-white transition hover:-translate-y-0.5 hover:shadow-surface">
-    <a href="{{ route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="block focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-secondary-200" aria-label="{{ __('storefront.vendor.view_profile') }}: {{ $name }}">
+    <a href="{{ route('storefront.vendors.show', ['locale' => app()->getLocale(), 'publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="block focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-secondary-200" aria-label="{{ __('storefront.vendor.view_profile') }}: {{ $name }}">
         <div class="relative aspect-[16/9] bg-secondary-900">
             @if ($cover)
                 <img src="{{ $cover }}" alt="" class="h-full w-full object-cover" loading="lazy" onerror="this.hidden=true">
@@ -37,7 +38,7 @@
             @if ($city)
                 <p class="text-sm text-ink-600">{{ $city }}</p>
             @endif
-            <x-storefront.vendor-rating :vendor="$vendor" class="text-accent-600" />
+            <x-storefront.vendor-public-reviews :summary="$reviewSummary" class="text-accent-600" />
             @if ($bio)
                 <p class="line-clamp-2 text-sm leading-6 text-ink-600">{{ $bio }}</p>
             @endif

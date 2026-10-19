@@ -174,6 +174,7 @@ return [
         'notification.in_app.bounced' => 'In-app notification bounced',
 
         // Audit log fallbacks
+        'audit.force_cancel_booking' => 'Booking force-cancelled by an administrator',
         'audit.entry' => 'Audit entry recorded',
         'audit.unknown' => 'Audit event recorded',
     ],

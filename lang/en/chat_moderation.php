@@ -22,7 +22,13 @@ return array_replace_recursive(
             'marked_off_platform' => 'Message marked as off-platform.',
             'flag_resolved' => 'Flag resolved.', 'flag_escalated' => 'Flag escalated.',
         ],
-        'sections' => ['message_details' => 'Message details', 'flag_details' => 'Flag details'],
+        'sections' => ['message_details' => 'Message details', 'flag_details' => 'Flag details', 'context' => 'Conversation context'],
+        'audit' => [
+            'actions' => [
+                'chat_thread_viewed' => 'Restricted chat opened for moderation',
+                'chat_moderation_flag_viewed' => 'Moderation flag opened',
+            ],
+        ],
         'filters' => ['reviewed' => 'Reviewed', 'created_from' => 'Created from', 'created_to' => 'Created to'],
         'unresolved' => 'Unresolved',
     ],

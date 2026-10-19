@@ -10,6 +10,7 @@
     $shortDescription = $storefrontText->translation($service, 'short_description');
     $vendor = $service->vendor;
     $vendorName = $vendor ? $storefrontText->translation($vendor, 'business_name') : '';
+    $vendorLogo = app(App\Modules\Shared\Application\Services\PublicMediaUrl::class)->publicPath($vendor?->logo_path);
     $categoryName = $service->category ? $storefrontText->translation($service->category, 'name') : '';
     $ratingCount = (int) ($service->rating_count ?? 0);
     $isOutOfStock = $service->product_type === ProductType::Sale
@@ -96,10 +97,30 @@
                         </dl>
                         @endif
 
+                        <form method="GET" action="{{ route('storefront.services.show', ['servicePublicId' => $service->public_id]) }}" class="mt-6 space-y-3">
+                            <h2 class="font-bold">{{ __('catalog::estimate.title') }}</h2>
+                            <label class="block text-sm" for="estimate-quantity">{{ __('catalog::estimate.quantity') }}</label>
+                            <input class="sf-field w-full text-ink-900" id="estimate-quantity" type="number" name="quantity" min="1" max="100" required value="{{ $selection['quantity'] }}">
+                            <label class="block text-sm" for="estimate-start">{{ __('catalog::estimate.start') }}</label>
+                            <input class="sf-field w-full text-ink-900" id="estimate-start" type="datetime-local" name="event_starts_at" value="{{ $selection['event_starts_at'] }}">
+                            <label class="block text-sm" for="estimate-end">{{ __('catalog::estimate.end') }}</label>
+                            <input class="sf-field w-full text-ink-900" id="estimate-end" type="datetime-local" name="event_ends_at" value="{{ $selection['event_ends_at'] }}">
+                            <label class="block text-sm" for="estimate-timezone">{{ __('catalog::estimate.timezone') }}</label>
+                            <select class="sf-field w-full text-ink-900" id="estimate-timezone" name="timezone">
+                                @foreach (array_unique(['Africa/Cairo', 'UTC', $selection['timezone']]) as $zone)
+                                    <option value="{{ $zone }}" @selected($selection['timezone'] === $zone)>{{ $zone }}</option>
+                                @endforeach
+                            </select>
+                            <button class="sf-button sf-button--light w-full justify-center" type="submit">{{ __('catalog::estimate.check') }}</button>
+                        </form>
+                        <p class="mt-4 text-sm">{{ __('catalog::estimate.total') }}: <strong><x-storefront.price :minor="$estimate->getMinorAmount()->toInt()" :currency="$service->base_price_currency" /></strong></p>
+                        <p class="mt-2 text-xs leading-5 text-white/80">{{ __('catalog::estimate.help') }}</p>
+                        <p class="mt-3 text-sm" role="status">{{ $availability === null ? __('catalog::estimate.choose_date') : ($availability->available ? __('catalog::estimate.available') : __('catalog::estimate.unavailable')) }}</p>
+
                         @if ($isOutOfStock)
                             <button type="button" class="sf-button mt-7 min-h-12 w-full cursor-not-allowed justify-center bg-white/10 text-white/55" disabled>{{ __('storefront.service.out_of_stock') }}</button>
                         @else
-                            <a href="{{ url('/'.$locale.'/wizard?service='.$service->public_id) }}" class="sf-button sf-button--light mt-7 min-h-12 w-full justify-center" aria-describedby="service-cart-hint">
+                            <a href="{{ url('/'.$locale.'/wizard').'?'.http_build_query(['service' => $service->public_id, ...array_filter($selection, fn ($value) => $value !== null)]) }}" class="sf-button sf-button--light mt-7 min-h-12 w-full justify-center" aria-describedby="service-cart-hint">
                                 {{ __('storefront.service.add_to_cart') }}
                                 <span aria-hidden="true">{{ $locale === 'ar' ? '←' : '→' }}</span>
                             </a>
@@ -111,8 +132,8 @@
 
                     @if ($vendor)
                         <a href="{{ route('storefront.vendors.show', ['publicId' => $vendor->slug ?: $vendor->public_id]) }}" class="sf-service-vendor mt-5 flex items-center gap-4 rounded-[1.35rem] border border-ink-200 bg-white p-5 transition hover:border-secondary-300 hover:shadow-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-600">
-                            @if ($vendor->logo_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($vendor->logo_path) }}" alt="" width="52" height="52" class="size-13 rounded-full object-cover" loading="lazy" onerror="this.onerror=null;this.hidden=true;this.nextElementSibling.hidden=false;">
+                            @if ($vendorLogo)
+                                <img src="{{ $vendorLogo }}" alt="" width="52" height="52" class="size-13 rounded-full object-cover" loading="lazy" onerror="this.onerror=null;this.hidden=true;this.nextElementSibling.hidden=false;">
                                 <span hidden class="flex size-13 items-center justify-center rounded-full bg-secondary-50 text-lg font-extrabold text-secondary-700">{{ mb_substr((string) $vendorName, 0, 1) }}</span>
                             @else
                                 <span class="flex size-13 items-center justify-center rounded-full bg-secondary-50 text-lg font-extrabold text-secondary-700">{{ mb_substr((string) $vendorName, 0, 1) }}</span>

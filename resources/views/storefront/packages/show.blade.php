@@ -15,7 +15,9 @@
 
             <div class="mt-7 overflow-hidden rounded-[1.75rem] border border-secondary-100 bg-white shadow-surface lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
                 <div class="min-h-72 bg-secondary-50">
-                    @if ($package['hero_url'])
+                    @if ($package['reference_card'] ?? [])
+                        <x-home.package-photo :package="$package" />
+                    @elseif ($package['hero_url'])
                         <img src="{{ $package['hero_url'] }}" alt="{{ $package['name'] }}" class="h-full min-h-72 w-full object-cover" fetchpriority="high">
                     @else
                         <div class="flex h-full min-h-72 items-center justify-center px-8 text-center">

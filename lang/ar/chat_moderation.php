@@ -23,7 +23,13 @@ return array_replace_recursive(
             'marked_off_platform' => 'تم تعليم الرسالة كتواصل خارج المنصة.',
             'flag_resolved' => 'تم حسم البلاغ.', 'flag_escalated' => 'تم تصعيد البلاغ.',
         ],
-        'sections' => ['message_details' => 'تفاصيل الرسالة', 'flag_details' => 'تفاصيل البلاغ'],
+        'sections' => ['message_details' => 'تفاصيل الرسالة', 'flag_details' => 'تفاصيل البلاغ', 'context' => 'سياق المحادثة'],
+        'audit' => [
+            'actions' => [
+                'chat_thread_viewed' => 'فُتحت المحادثة المقيدة للإشراف',
+                'chat_moderation_flag_viewed' => 'فُتح بلاغ الإشراف',
+            ],
+        ],
         'filters' => ['reviewed' => 'تمت مراجعته', 'created_from' => 'أُنشئ من', 'created_to' => 'أُنشئ حتى'],
         'unresolved' => 'غير محسوم',
     ],
