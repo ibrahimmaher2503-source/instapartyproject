@@ -1,0 +1,1393 @@
+{
+  "schemaVersion": "report-1",
+  "run": {
+    "id": "01a13155-9de7-73fc-9fd6-72aff1f4bd90",
+    "specVersion": "0.1",
+    "runner": {
+      "name": "e2e",
+      "version": "0.19.0"
+    },
+    "status": "passed",
+    "exitCode": 0,
+    "startedAt": "2026-10-12T18:17:38.157Z",
+    "finishedAt": "2026-10-12T18:19:31.912Z",
+    "project": {
+      "id": "unportable-3716bcbfc92c81af0f7e89b120d49b8b",
+      "configDigest": "7180b9d46c73c9f680813798a174c3cae551b43375d0aa7752edef24b9366a15"
+    },
+    "environment": {
+      "ci": false,
+      "trustNoticeShown": false,
+      "os": "linux 6.6.114.1-microsoft-standard-WSL2",
+      "arch": "x64",
+      "runtime": "node v24.15.0"
+    },
+    "vcs": {
+      "commit": "c8882e45f895fe31245fd4e7e57147129d3ec544",
+      "branch": "fix/instaparty-client-reported-issues"
+    },
+    "targets": [
+      {
+        "id": "desktop",
+        "index": 0,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      },
+      {
+        "id": "mobile",
+        "index": 1,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      }
+    ],
+    "serialGroups": [],
+    "results": [
+      {
+        "id": "2fc49d2587ab666df1b49f03a206fb7851e92e2873f25fcc54870e5665065c4d",
+        "testId": "explore::Starting%20at%20%2Fen%2Fwizard%2C%20exercise%20the%20event%20planner%20occasion%2C%20future%20dates%20and%20location%20steps%2C%20test%20an%20end%20before%20the%20start%20and%20a%20past%20start%2C%20and%20inspect%20Arabic%20equivalents%20without%20submitting%20a%20booking%3B%20report%20invalid%20transitions%20or%20missing%20validation.",
+        "kind": "test",
+        "declarationIndex": 0,
+        "titlePath": [
+          "Starting at /en/wizard, exercise the event planner occasion, future dates and location steps, test an end before the start and a past start, and inspect Arabic equivalents without submitting a booking; report invalid transitions or missing validation."
+        ],
+        "file": "explore",
+        "source": {
+          "file": "explore",
+          "line": 1,
+          "column": 1
+        },
+        "targetId": "desktop",
+        "platform": "web",
+        "agent": "default",
+        "repeat": 0,
+        "tags": [],
+        "selected": true,
+        "status": "passed",
+        "attempts": [
+          {
+            "id": "01a13155-a27c-7961-b89b-a04584c51e33",
+            "index": 0,
+            "status": "passed",
+            "startedAt": "2026-10-12T18:17:38.172Z",
+            "durationMs": 113692,
+            "artifacts": [
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:artifact:0",
+                "kind": "screenshot",
+                "mediaType": "image/png",
+                "redaction": "complete",
+                "producer": {
+                  "kind": "step",
+                  "stepId": "01a13155-a27c-7961-b89b-a04584c51e33:2"
+                },
+                "path": "explore-starting-at-en-wizard-exercise-2fc49d2587ab666d/attempt-1/finding-1.png",
+                "size": 41846,
+                "sha256": "cf1534dee4484482687dfc12f82b0942137cc87e0fc0ebcf9937eb13d094cbb1"
+              }
+            ],
+            "secondaryErrors": [],
+            "cleanup": "complete",
+            "environment": {
+              "browser": "chromium 153.0.8010.12",
+              "user agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+            },
+            "steps": [
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:0",
+                "index": 0,
+                "kind": "app",
+                "api": "app.open",
+                "label": "/",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:38.687Z",
+                "durationMs": 7604,
+                "events": [],
+                "artifacts": [],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 126,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:1",
+                "index": 1,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /en/wizard, exercise the event planner occasion, future dates and location steps, test an end before the start and a past start, and inspect Arabic equivalents without submitting a booking; report invalid transitions or missing validation.\nBudget: 0 of 3 steps used, about 5 minute(s) left.\n\nSteps so far:\n(none yet: this is the first step)\n\nFindings so far:\n(none yet)\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:46.313Z",
+                "durationMs": 3824,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:46.781Z",
+                    "durationMs": 236,
+                    "status": "passed",
+                    "bytes": 6207,
+                    "count": 126
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:47.018Z",
+                    "durationMs": 3118,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 3316,
+                    "inputTokens": 3189,
+                    "outputTokens": 127
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 6207,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 3189,
+                  "outputTokens": 127,
+                  "peakTokensPerCall": 3316,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b1",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 126,
+                  "since": 0,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:2",
+                "index": 2,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Open /en/wizard and exercise the event planner without submitting a booking. Select the available occasion, set a future start and end date, choose a governorate and location, and proceed through the location step. Then try an end date before the start and a past start date; check whether the planner blocks each invalid transition or shows validation. Record the visible controls, transitions, and any missing validation. Do not sign in or submit a booking.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:50.144Z",
+                "durationMs": 65094,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:50.158Z",
+                    "durationMs": 293,
+                    "status": "passed",
+                    "bytes": 6207,
+                    "count": 126
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:17:52.007Z",
+                    "durationMs": 3688,
+                    "status": "passed",
+                    "name": "navigate",
+                    "detail": "navigate to \"/en/wizard\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:55.697Z",
+                    "durationMs": 356,
+                    "status": "passed",
+                    "bytes": 2496,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:50.466Z",
+                    "durationMs": 5592,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7057,
+                    "inputTokens": 7037,
+                    "outputTokens": 20
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:17:57.967Z",
+                    "durationMs": 132,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap node \"Location\" in \"2\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:58.099Z",
+                    "durationMs": 2319,
+                    "status": "passed",
+                    "bytes": 2496,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:56.068Z",
+                    "durationMs": 4353,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7895,
+                    "inputTokens": 7877,
+                    "outputTokens": 18
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:02.292Z",
+                    "durationMs": 428,
+                    "status": "passed",
+                    "bytes": 2496,
+                    "count": 63
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:18:03.132Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "vision.pixels",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:00.439Z",
+                    "durationMs": 2695,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7974,
+                    "inputTokens": 7960,
+                    "outputTokens": 14
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:05.325Z",
+                    "durationMs": 122,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap radio \"Party Dolorem aut quibusdam architecto …\" in \"Occasion\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:05.447Z",
+                    "durationMs": 545,
+                    "status": "passed",
+                    "bytes": 2514,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:03.139Z",
+                    "durationMs": 3392,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8520,
+                    "inputTokens": 8498,
+                    "outputTokens": 22
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:09.859Z",
+                    "durationMs": 146,
+                    "status": "passed",
+                    "name": "scroll",
+                    "detail": "scroll down"
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:10.005Z",
+                    "durationMs": 842,
+                    "status": "passed",
+                    "bytes": 2514,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:06.535Z",
+                    "durationMs": 4572,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9144,
+                    "inputTokens": 9123,
+                    "outputTokens": 21
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:14.144Z",
+                    "durationMs": 65,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"2027-08-15T18:00\" into textbox \"Starts at\" in \"Occasion\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:14.209Z",
+                    "durationMs": 327,
+                    "status": "passed",
+                    "bytes": 2541,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:11.112Z",
+                    "durationMs": 3720,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9726,
+                    "inputTokens": 9691,
+                    "outputTokens": 35
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:18.131Z",
+                    "durationMs": 85,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"2027-08-16T18:00\" into textbox \"Ends at (optional)\" in \"Occasion\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:18.217Z",
+                    "durationMs": 299,
+                    "status": "passed",
+                    "bytes": 2566,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:14.837Z",
+                    "durationMs": 3942,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 10354,
+                    "inputTokens": 10319,
+                    "outputTokens": 35
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:24.953Z",
+                    "durationMs": 123,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"Next\" in \"Occasion\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:25.077Z",
+                    "durationMs": 287,
+                    "status": "passed",
+                    "bytes": 2223,
+                    "count": 61
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:18.783Z",
+                    "durationMs": 6727,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9716,
+                    "inputTokens": 9697,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:28.769Z",
+                    "durationMs": 140,
+                    "status": "passed",
+                    "name": "selectOption",
+                    "detail": "select \"Cairo\" in combobox \"Governorate\" in \"Location\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:28.909Z",
+                    "durationMs": 382,
+                    "status": "passed",
+                    "bytes": 2298,
+                    "count": 62
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:25.513Z",
+                    "durationMs": 4057,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 10981,
+                    "inputTokens": 10957,
+                    "outputTokens": 24
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:32.399Z",
+                    "durationMs": 434,
+                    "status": "passed",
+                    "bytes": 2258,
+                    "count": 61
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:29.573Z",
+                    "durationMs": 3504,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11684,
+                    "inputTokens": 11671,
+                    "outputTokens": 13
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:36.628Z",
+                    "durationMs": 70,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"Next\" in \"Location\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:36.698Z",
+                    "durationMs": 558,
+                    "status": "passed",
+                    "bytes": 2336,
+                    "count": 62
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:33.081Z",
+                    "durationMs": 4392,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11026,
+                    "inputTokens": 11007,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:42.080Z",
+                    "durationMs": 647,
+                    "status": "passed",
+                    "bytes": 2336,
+                    "count": 62
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:42.070Z",
+                    "durationMs": 1003,
+                    "status": "passed",
+                    "name": "tool:report_finding"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:37.477Z",
+                    "durationMs": 5599,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11703,
+                    "inputTokens": 11585,
+                    "outputTokens": 118
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:45.507Z",
+                    "durationMs": 980,
+                    "status": "passed",
+                    "name": "navigate",
+                    "detail": "navigate to \"/ar/wizard\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:46.488Z",
+                    "durationMs": 600,
+                    "status": "passed",
+                    "bytes": 3024,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:43.082Z",
+                    "durationMs": 4250,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11771,
+                    "inputTokens": 11751,
+                    "outputTokens": 20
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:50.648Z",
+                    "durationMs": 89,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap radio \"حفلة Quis aut dicta suscipit ipsum.\" in \"المناسبة\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:50.738Z",
+                    "durationMs": 371,
+                    "status": "passed",
+                    "bytes": 3042,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:47.335Z",
+                    "durationMs": 3965,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 13156,
+                    "inputTokens": 13137,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:51.303Z",
+                    "durationMs": 3925,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 12571,
+                    "inputTokens": 12479,
+                    "outputTokens": 92
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [
+                  "01a13155-a27c-7961-b89b-a04584c51e33:artifact:0"
+                ],
+                "metrics": {
+                  "modelCalls": 15,
+                  "actionSteps": 11,
+                  "observationBytes": 6207,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 307,
+                  "pixelBytes": 42931
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 15,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 152789,
+                  "outputTokens": 489,
+                  "peakTokensPerCall": 13156,
+                  "cacheReadTokens": 54912,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b45",
+                "explanation": "English planner accepted Party and future start/end dates and advanced to Location. Cairo loaded no selectable city, and Next displayed “Choose a governorate and city before continuing”; Arabic wizard also showed the Party occasion and corresponding occasion/date controls. Date validations for end-before-start and past-start were not reachable because the location step could not be completed; no booking submitted.",
+                "visionInput": true,
+                "turns": [
+                  {
+                    "index": 4,
+                    "calls": [
+                      "tap_at({\"x\":207,\"y\":333})"
+                    ],
+                    "outcome": "[tap_at] Tapped #n12030 radio \"Party Dolorem aut quibusdam architecto qui.\", the control at (388, 624).\n\nScreen changes since revision b20 (now revision b22, path /en/wizard, 63 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n12030 radio \"Party Dolorem aut quibusdam architecto qui.\" [checked] (was: #n12030 radio \"Party Dolorem aut quibusdam architecto qui.\")\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from t…[truncated]"
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "scroll({\"direction\":\"down\",\"times\":1})"
+                    ],
+                    "outcome": "[scroll] Scrolled down.\n\nSince revision b22 (re-observed as revision b26, path /en/wizard): listed nodes unchanged; the screenshot changed. Read the effect off the image (a focus ring alone is no effect); the ids you have stay valid.\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 36398 bytes]"
+                  },
+                  {
+                    "index": 6,
+                    "calls": [
+                      "type_at({\"x\":256,\"y\":154,\"value\":\"2027-08-15T18:00\"})"
+                    ],
+                    "outcome": "[type_at] Typed into #n12036 textbox \"Starts at\", the control at (480, 289).\n\nScreen changes since revision b26 (now revision b28, path /en/wizard, 63 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n12036 textbox \"Starts at\" value=\"2027-08-15T18:00\" (was: #n12036 textbox \"Starts at\")\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 37319 bytes]"
+                  },
+                  {
+                    "index": 7,
+                    "calls": [
+                      "type_at({\"x\":486,\"y\":154,\"value\":\"2027-08-16T18:00\"})"
+                    ],
+                    "outcome": "[type_at] Typed into #n12038 textbox \"Ends at (optional)\", the control at (911, 289).\n\nScreen changes since revision b28 (now revision b30, path /en/wizard, 63 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n12038 textbox \"Ends at (optional)\" value=\"2027-08-16T18:00\" (was: #n12038 textbox \"Ends at (optional)\")\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 37143 bytes]"
+                  },
+                  {
+                    "index": 8,
+                    "calls": [
+                      "tap({\"target\":\"n12039\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n12039.\n\nThe screen changed substantially since revision b30. Current screen (revision b32, path /en/wizard, 61 nodes):\n#root document \"Plan your event · InstaParty\"\n #n12002 link \"Skip to main content\" href=\"/en/wizard#…\"\n #n12003 banner\n  #n12004 link \"InstaParty\" href=\"/en\"\n  #n12005 navigation \"العربية\"\n   #n12006 link \"English\" href=\"/en/wizard\"\n   #n12007 link \"العربية\" href=\"/ar/wizard\"\n  #n12008 link \"Search\" href=\"/en/search\"\n  #n12009 link \"Cart\" href=\"/en/cart\"\n  #n12010 link \"Sign in\" href=\"/en/auth/login\"\n #n12011 main\n  #n12012 text=\"Plan the details\"\n  #n12013 head…[truncated]"
+                  },
+                  {
+                    "index": 9,
+                    "calls": [
+                      "select({\"target\":\"n111006\",\"value\":\"Cairo\"})"
+                    ],
+                    "outcome": "[select] Selected \"Cairo\" in #n111006.\n\nScreen changes since revision b32 (now revision b34, path /en/wizard, 62 nodes): 2 added, 3 changed, 1 removed. Every node not listed as removed is still on screen under the id you have.\nchanged #n111006 combobox \"Governorate\" value=\"01M4RNA4FXAS0BSCH0VG7B7Y6N\" (was: #n111006 combobox \"Governorate\")\nchanged #n111007 option \"Select governorate\" (was: #n111007 option \"Select governorate\" [selected])\nchanged #n111009 option \"Cairo\" [selected] (was: #n111009 option \"Cairo\")\nadded #n120001 option \"Select city\" [selected]\nadded #n120002 text=\"Loading locations…[truncated]"
+                  },
+                  {
+                    "index": 10,
+                    "calls": [
+                      "observe({})"
+                    ],
+                    "outcome": "[observe] Observed.\n\nScreen changes since revision b34 (now revision b36, path /en/wizard, 61 nodes): 1 added, 2 removed. Every node not listed as removed is still on screen under the id you have.\nadded #n129001 option \"Select city\" [selected]\nremoved #n120001 option \"Select city\" [selected]\nremoved #n120002 text=\"Loading locations…\"\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 36538 bytes]"
+                  },
+                  {
+                    "index": 11,
+                    "calls": [
+                      "tap({\"target\":\"n111014\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n111014.\n\nScreen changes since revision b36 (now revision b39, path /en/wizard, 62 nodes): 1 added. Every node not listed as removed is still on screen under the id you have.\nadded #n135001 alert \"Choose a governorate and city before continuing.\"\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 41846 bytes]"
+                  },
+                  {
+                    "index": 12,
+                    "calls": [
+                      "report_finding({\"title\":\"Location step allows proceeding without required selections only via alert\",\"kind\":\"warning\",\"severity\":1,\"expected\":\"Location controls should offer a governorate and its avai…[truncated]"
+                    ],
+                    "outcome": "[report_finding] Finding 1 recorded (warning, severity 1): Location step allows proceeding without required selections only via alert. Do not report it again; continue the charter or conclude the step."
+                  },
+                  {
+                    "index": 13,
+                    "calls": [
+                      "navigate({\"url\":\"/ar/wizard\"})"
+                    ],
+                    "outcome": "[navigate] Navigated to /ar/wizard.\n\nThe screen changed substantially since revision b39. Current screen (revision b43, path /ar/wizard, 63 nodes):\n#root document \"خطّط لمناسبتك · إنستابارتي\"\n #n153002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/wizard#…\"\n #n153003 banner\n  #n153004 link \"InstaParty\" href=\"/ar\"\n  #n153005 navigation \"English\"\n   #n153006 link \"English\" href=\"/en/wizard\"\n   #n153007 link \"العربية\" href=\"/ar/wizard\"\n  #n153008 link \"بحث\" href=\"/ar/search\"\n  #n153009 link \"السلة\" href=\"/ar/cart\"\n  #n153010 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n153011 main\n  #n153012 text=\"خ…[truncated]"
+                  },
+                  {
+                    "index": 14,
+                    "calls": [
+                      "tap({\"target\":\"n153030\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n153030.\n\nScreen changes since revision b43 (now revision b45, path /ar/wizard, 63 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n153030 radio \"حفلة Quis aut dicta suscipit ipsum.\" [checked] (was: #n153030 radio \"حفلة Quis aut dicta suscipit ipsum.\")\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 41565 bytes]"
+                  },
+                  {
+                    "index": 15,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"English planner accepted Party and future start/end dates and advanced to Location. Cairo loaded no selectable city, and Next displayed “Choose a governorat…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/wizard",
+                  "nodes": 63,
+                  "since": 1,
+                  "changes": [
+                    "changed document \"خطّط لمناسبتك · إنستابارتي\" (was: document \"InstaParty · Find vendors for your next celebration, all in one place.\")",
+                    "added link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/wizard#…\"",
+                    "added link \"InstaParty\" href=\"/ar\"",
+                    "added navigation \"English\"",
+                    "added link \"English\" href=\"/en/wizard\"",
+                    "added link \"العربية\" href=\"/ar/wizard\"",
+                    "added link \"بحث\" href=\"/ar/search\"",
+                    "added link \"السلة\" href=\"/ar/cart\"",
+                    "added link \"تسجيل الدخول\" href=\"/ar/auth/login\"",
+                    "added text=\"خطّط لتفاصيل مناسبتك\"",
+                    "added heading \"خطّط لمناسبتك\"",
+                    "added text=\"أجب عن بعض الأسئلة وسنريك ما هو متاح.\""
+                  ],
+                  "more": 164
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:3",
+                "index": 3,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /en/wizard, exercise the event planner occasion, future dates and location steps, test an end before the start and a past start, and inspect Arabic equivalents without submitting a booking; report invalid transitions or missing validation.\nBudget: 1 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] English event planner — English planner accepted Party and future start/end dates and advanced to Location. Cairo loaded no selectable city, and Next displayed “Choose a governorate and city before continuing”; Arabic wizard also showed the Party occasion and corresponding occasion/date controls. Date validations for end-before-start and past-start were not reachable because the location step could not be completed; no booking submitted.\n\nFindings so far:\n- [warning, severity 1] Location step allows proceeding without required selections only via alert\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:55.306Z",
+                "durationMs": 4397,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:55.308Z",
+                    "durationMs": 169,
+                    "status": "passed",
+                    "bytes": 3042,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:55.478Z",
+                    "durationMs": 4226,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2679,
+                    "inputTokens": 2386,
+                    "outputTokens": 293
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 3042,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2386,
+                  "outputTokens": 293,
+                  "peakTokensPerCall": 2679,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b46",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/wizard",
+                  "nodes": 63,
+                  "since": 2,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:4",
+                "index": 4,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "On the Arabic wizard occasion step, use the date controls to test validation without submitting a booking. Enter a future start date and an end date earlier than that start, then activate التالي and record whether the wizard advances or shows a validation message. Return to the occasion step if needed, enter a past start date with the end left blank, activate التالي, and record the result. If either case advances to الموقع, note the transition and stop before submitting anything; do not repeat the previously observed location-selection alert.",
+                "status": "failed",
+                "startedAt": "2026-10-12T18:18:59.713Z",
+                "durationMs": 17345,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:59.747Z",
+                    "durationMs": 323,
+                    "status": "passed",
+                    "bytes": 3042,
+                    "count": 63
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:02.181Z",
+                    "durationMs": 28,
+                    "status": "failed",
+                    "name": "type",
+                    "code": "ENGINE_FAILURE",
+                    "detail": "type: elementHandle.fill: Error: Malformed value"
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:02.209Z",
+                    "durationMs": 321,
+                    "status": "passed",
+                    "bytes": 3044,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:00.075Z",
+                    "durationMs": 2456,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 6400,
+                    "inputTokens": 6372,
+                    "outputTokens": 28
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:04.150Z",
+                    "durationMs": 623,
+                    "status": "passed",
+                    "bytes": 3044,
+                    "count": 63
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:19:05.178Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "vision.pixels",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:02.543Z",
+                    "durationMs": 2636,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 6508,
+                    "inputTokens": 6494,
+                    "outputTokens": 14
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:07.430Z",
+                    "durationMs": 17,
+                    "status": "failed",
+                    "name": "type",
+                    "code": "ENGINE_FAILURE",
+                    "detail": "type: elementHandle.fill: Error: Malformed value"
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:07.447Z",
+                    "durationMs": 593,
+                    "status": "passed",
+                    "bytes": 3044,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:05.182Z",
+                    "durationMs": 3207,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7067,
+                    "inputTokens": 7032,
+                    "outputTokens": 35
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:10.793Z",
+                    "durationMs": 89,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap textbox \"تبدأ في\" in \"المناسبة\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:10.882Z",
+                    "durationMs": 2274,
+                    "status": "passed",
+                    "bytes": 3044,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:08.395Z",
+                    "durationMs": 5175,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7669,
+                    "inputTokens": 7650,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:13.575Z",
+                    "durationMs": 3483,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8312,
+                    "inputTokens": 8226,
+                    "outputTokens": 86
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 5,
+                  "actionSteps": 3,
+                  "observationBytes": 3044,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 1306,
+                  "pixelBytes": 39338
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 5,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 35774,
+                  "outputTokens": 182,
+                  "peakTokensPerCall": 8312,
+                  "cacheReadTokens": 23424,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b62",
+                "explanation": "Arabic occasion step is visible, but the date inputs would not accept either an ISO date or a locale-formatted date, returning a malformed-value action error and leaving the fields unchanged. I could not test end-before-start or past-start transitions; the wizard did not advance and no booking was submitted.",
+                "visionInput": true,
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "type({\"target\":\"n153036\",\"value\":\"2027-08-20\"})"
+                    ],
+                    "outcome": "[type] type #n153036 failed: APP_UNREACHABLE: elementHandle.fill: Error: Malformed value\nCall log:\n    - fill(\"2027-08-20\")\n  - attempting fill action\n    - waiting for element to be visible, enabled and editable\n\n\nScreen unchanged since revision b48 (re-observed as revision b50, path /ar/wizard); the ids you have stay valid."
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "screenshot({})"
+                    ],
+                    "outcome": "[screenshot] Screen unchanged since revision b50 (re-observed as revision b52, path /ar/wizard); the ids you have stay valid.\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 39338 bytes]"
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "type_at({\"x\":506,\"y\":242,\"value\":\"08/20/2027\",\"replace\":true})"
+                    ],
+                    "outcome": "[type_at] type_at (506, 242) failed: APP_UNREACHABLE: elementHandle.fill: Error: Malformed value\nCall log:\n    - fill(\"08/20/2027\")\n  - attempting fill action\n    - waiting for element to be visible, enabled and editable\n\n\nScreen unchanged since revision b52 (re-observed as revision b54, path /ar/wizard); the ids you have stay valid.\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 39338 bytes]"
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "tap({\"target\":\"n153036\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n153036.\n\nThe screen did not change within the wait after this action (re-observed as revision b62, path /ar/wizard); the ids you have stay valid. If a change was expected, the control had no visible effect here: look for another way rather than repeating it.\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 39338 bytes]"
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "complete_step({\"status\":\"failed\",\"summary\":\"Arabic occasion step is visible, but the date inputs would not accept either an ISO date or a locale-formatted date, returning a malformed-value action erro…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/wizard",
+                  "nodes": 63,
+                  "since": 3,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                },
+                "error": {
+                  "category": "test",
+                  "code": "ACTION_FAILED",
+                  "message": "agent.act failed: Arabic occasion step is visible, but the date inputs would not accept either an ISO date or a locale-formatted date, returning a malformed-value action error and leaving the fields unchanged. I could not test end-before-start or past-start transitions; the wizard did not advance and no booking was submitted.",
+                  "retryable": false
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:5",
+                "index": 5,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /en/wizard, exercise the event planner occasion, future dates and location steps, test an end before the start and a past start, and inspect Arabic equivalents without submitting a booking; report invalid transitions or missing validation.\nBudget: 2 of 3 steps used, about 3 minute(s) left.\n\nSteps so far:\n1. [passed] English event planner — English planner accepted Party and future start/end dates and advanced to Location. Cairo loaded no selectable city, and Next displayed “Choose a governorate and city before continuing”; Arabic wizard also showed the Party occasion and corresponding occasion/date controls. Date validations for end-before-start and past-start were not reachable because the location step could not be completed; no booking submitted.\n2. [FAILED] Arabic date validation — agent.act failed: Arabic occasion step is visible, but the date inputs would not accept either an ISO date or a locale-formatted date, returning a malformed-value action error and leaving the fields unchanged. I could not test end-before-start or past-start transitions; the wizard did not advance and no booking was submitted.\n\nFindings so far:\n- [warning, severity 1] Location step allows proceeding without required selections only via alert\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:19:17.063Z",
+                "durationMs": 5326,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:17.063Z",
+                    "durationMs": 51,
+                    "status": "passed",
+                    "bytes": 3044,
+                    "count": 63
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:17.114Z",
+                    "durationMs": 5275,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2732,
+                    "inputTokens": 2460,
+                    "outputTokens": 272
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 3044,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2460,
+                  "outputTokens": 272,
+                  "peakTokensPerCall": 2732,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b63",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/wizard",
+                  "nodes": 63,
+                  "since": 4,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:6",
+                "index": 6,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Continue the Arabic wizard from the occasion screen. Keep the existing Party selection, leave the date fields unchanged because date entry was rejected, and activate التالي. Inspect the Arabic location controls, try selecting a governorate and city if available, and check whether continuing without selections is blocked or produces an alert. Do not submit a booking; report whether the Arabic location step can proceed and any validation shown.",
+                "status": "failed",
+                "startedAt": "2026-10-12T18:19:22.390Z",
+                "durationMs": 5577,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:22.396Z",
+                    "durationMs": 200,
+                    "status": "passed",
+                    "bytes": 3044,
+                    "count": 63
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:24.361Z",
+                    "durationMs": 74,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"التالي\" in \"المناسبة\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:24.435Z",
+                    "durationMs": 215,
+                    "status": "passed",
+                    "bytes": 3106,
+                    "count": 64
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:22.604Z",
+                    "durationMs": 2047,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 6546,
+                    "inputTokens": 6527,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:24.656Z",
+                    "durationMs": 3311,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 6706,
+                    "inputTokens": 6618,
+                    "outputTokens": 88
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 2,
+                  "actionSteps": 1,
+                  "observationBytes": 3106,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 2193
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 2,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 13145,
+                  "outputTokens": 107,
+                  "peakTokensPerCall": 6706,
+                  "cacheReadTokens": 4480,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b67",
+                "explanation": "Activated التالي on the Arabic occasion screen while keeping Party selected and date fields unchanged. The wizard did not reach location; it showed the alert «أضف وقت بداية المناسبة.» (add an event start time), so Arabic location controls and their validation could not be inspected here. No booking was submitted.",
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "tap({\"target\":\"n153039\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n153039.\n\nScreen changes since revision b65 (now revision b67, path /ar/wizard, 64 nodes): 1 added. Every node not listed as removed is still on screen under the id you have.\nadded #n234001 alert \"أضف وقت بداية المناسبة.\""
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "complete_step({\"status\":\"failed\",\"summary\":\"Activated التالي on the Arabic occasion screen while keeping Party selected and date fields unchanged. The wizard did not reach location; it showed the aler…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/wizard",
+                  "nodes": 64,
+                  "since": 5,
+                  "changes": [
+                    "added alert \"أضف وقت بداية المناسبة.\""
+                  ]
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                },
+                "error": {
+                  "category": "test",
+                  "code": "ASSERTION_FAILED",
+                  "message": "agent.act failed: Activated التالي on the Arabic occasion screen while keeping Party selected and date fields unchanged. The wizard did not reach location; it showed the alert «أضف وقت بداية المناسبة.» (add an event start time), so Arabic location controls and their validation could not be inspected here. No booking was submitted.",
+                  "retryable": false
+                }
+              },
+              {
+                "id": "01a13155-a27c-7961-b89b-a04584c51e33:7",
+                "index": 7,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Finish an exploratory test run with your overall assessment.\n\nGoal: Starting at /en/wizard, exercise the event planner occasion, future dates and location steps, test an end before the start and a past start, and inspect Arabic equivalents without submitting a booking; report invalid transitions or missing validation.\nBudget: 3 of 3 steps used, about 3 minute(s) left.\n\nSteps so far:\n1. [passed] English event planner — English planner accepted Party and future start/end dates and advanced to Location. Cairo loaded no selectable city, and Next displayed “Choose a governorate and city before continuing”; Arabic wizard also showed the Party occasion and corresponding occasion/date controls. Date validations for end-before-start and past-start were not reachable because the location step could not be completed; no booking submitted.\n2. [FAILED] Arabic date validation — agent.act failed: Arabic occasion step is visible, but the date inputs would not accept either an ISO date or a locale-formatted date, returning a malformed-value action error and leaving the fields unchanged. I could not test end-before-start or past-start transitions; the wizard did not advance and no booking was submitted.\n3. [FAILED] Arabic location step — agent.act failed: Activated التالي on the Arabic occasion screen while keeping Party selected and date fields unchanged. The wizard did not reach location; it showed the alert «أضف وقت بداية المناسبة.» (add an event start time), so Arabic location controls and their validation could not be inspected here. No booking was submitted.\n\nFindings so far:\n- [warning, severity 1] Location step allows proceeding without required selections only via alert\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nThe run must end now: the step limit of 3 is reached.\nRespond with {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}: the closing assessment.\nThe assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\nare already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\nwhat the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\nturning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:19:27.970Z",
+                "durationMs": 3857,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:27.971Z",
+                    "durationMs": 62,
+                    "status": "passed",
+                    "bytes": 3106,
+                    "count": 64
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:28.033Z",
+                    "durationMs": 3794,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2502,
+                    "inputTokens": 2276,
+                    "outputTokens": 226
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 3106,
+                  "contextBytes": 1068,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2276,
+                  "outputTokens": 226,
+                  "peakTokensPerCall": 2502,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b68",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/wizard",
+                  "nodes": 64,
+                  "since": 6,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              }
+            ],
+            "appLog": [
+              {
+                "source": "console",
+                "level": "warning",
+                "text": "The specified value \"2027-08-20\" does not conform to the required format. The format is \"yyyy-MM-ddThh:mm\" followed by optional \":ss\" or \":ss.SSS\".",
+                "at": "2026-10-12T18:19:02.198Z",
+                "step": 4
+              },
+              {
+                "source": "console",
+                "level": "warning",
+                "text": "The specified value \"08/20/2027\" does not conform to the required format. The format is \"yyyy-MM-ddThh:mm\" followed by optional \":ss\" or \":ss.SSS\".",
+                "at": "2026-10-12T18:19:07.445Z",
+                "step": 4
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "summary": {
+      "discovered": 1,
+      "selected": 1,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "limits": {
+      "maxAgentContextBytes": 16384,
+      "maxLedgerBytes": 8192,
+      "maxObservationBytes": 262144,
+      "maxEventsPerStep": 1000,
+      "maxModelTokensPerCall": 64000
+    },
+    "usage": {
+      "discoveredResults": 1,
+      "maxAgentContextBytes": 1068,
+      "maxLedgerBytes": 2193,
+      "maxObservationBytes": 6207,
+      "artifactBytes": 41846,
+      "downloads": 0,
+      "events": 70,
+      "modelTokens": 213715,
+      "maxModelCallsInStep": 15,
+      "maxActionStepsInStep": 11,
+      "modelCachedTokens": 82816
+    },
+    "explore": {
+      "goal": "Starting at /en/wizard, exercise the event planner occasion, future dates and location steps, test an end before the start and a past start, and inspect Arabic equivalents without submitting a booking; report invalid transitions or missing validation.",
+      "budgets": {
+        "maxSteps": 3,
+        "timeoutMs": 300000
+      },
+      "ended": "step-limit",
+      "summary": "The goal was only partially achieved: the English planner accepted a Party occasion and future dates, but date validation and Arabic location behavior remain unverified. The end-before-start and past-start cases were not reached because Arabic date inputs rejected attempted values and the Arabic «التالي» control reported a missing start time; the English Location step also lacked a selectable city. The most valuable scripted tests are the English occasion-to-Location flow, including governorate and city validation, and Arabic occasion date entry with the «التالي» transition.",
+      "steps": [
+        {
+          "index": 1,
+          "title": "English event planner",
+          "instruction": "Open /en/wizard and exercise the event planner without submitting a booking. Select the available occasion, set a future start and end date, choose a governorate and location, and proceed through the location step. Then try an end date before the start and a past start date; check whether the planner blocks each invalid transition or shows validation. Record the visible controls, transitions, and any missing validation. Do not sign in or submit a booking.",
+          "status": "passed",
+          "summary": "English planner accepted Party and future start/end dates and advanced to Location. Cairo loaded no selectable city, and Next displayed “Choose a governorate and city before continuing”; Arabic wizard also showed the Party occasion and corresponding occasion/date controls. Date validations for end-before-start and past-start were not reachable because the location step could not be completed; no booking submitted.",
+          "startedAt": "2026-10-12T18:17:50.141Z",
+          "durationMs": 65100
+        },
+        {
+          "index": 2,
+          "title": "Arabic date validation",
+          "instruction": "On the Arabic wizard occasion step, use the date controls to test validation without submitting a booking. Enter a future start date and an end date earlier than that start, then activate التالي and record whether the wizard advances or shows a validation message. Return to the occasion step if needed, enter a past start date with the end left blank, activate التالي, and record the result. If either case advances to الموقع, note the transition and stop before submitting anything; do not repeat the previously observed location-selection alert.",
+          "status": "failed",
+          "summary": "agent.act failed: Arabic occasion step is visible, but the date inputs would not accept either an ISO date or a locale-formatted date, returning a malformed-value action error and leaving the fields unchanged. I could not test end-before-start or past-start transitions; the wizard did not advance and no booking was submitted.",
+          "errorCode": "ACTION_FAILED",
+          "startedAt": "2026-10-12T18:18:59.705Z",
+          "durationMs": 17355
+        },
+        {
+          "index": 3,
+          "title": "Arabic location step",
+          "instruction": "Continue the Arabic wizard from the occasion screen. Keep the existing Party selection, leave the date fields unchanged because date entry was rejected, and activate التالي. Inspect the Arabic location controls, try selecting a governorate and city if available, and check whether continuing without selections is blocked or produces an alert. Do not submit a booking; report whether the Arabic location step can proceed and any validation shown.",
+          "status": "failed",
+          "summary": "agent.act failed: Activated التالي on the Arabic occasion screen while keeping Party selected and date fields unchanged. The wizard did not reach location; it showed the alert «أضف وقت بداية المناسبة.» (add an event start time), so Arabic location controls and their validation could not be inspected here. No booking was submitted.",
+          "errorCode": "ASSERTION_FAILED",
+          "startedAt": "2026-10-12T18:19:22.390Z",
+          "durationMs": 5579
+        }
+      ],
+      "findings": [
+        {
+          "id": "01a13156-9fff-71a2-9a57-2518ea05a2f0",
+          "index": 0,
+          "step": 1,
+          "kind": "warning",
+          "severity": 1,
+          "title": "Location step allows proceeding without required selections only via alert",
+          "expected": "Location controls should offer a governorate and its available city before the user proceeds.",
+          "actual": "After selecting Cairo, the City field contains only “Select city”; clicking Next shows “Choose a governorate and city before continuing.”",
+          "reproduction": [
+            "Open /en/wizard",
+            "Select Party and enter future start and end dates",
+            "Click Next",
+            "Select Cairo as governorate",
+            "Wait for locations to load"
+          ],
+          "path": "/en/wizard",
+          "observationRevision": "b41",
+          "artifactId": "01a13155-a27c-7961-b89b-a04584c51e33:artifact:0",
+          "reportedAt": "2026-10-12T18:18:43.071Z"
+        }
+      ]
+    }
+  }
+}

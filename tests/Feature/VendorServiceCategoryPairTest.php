@@ -28,6 +28,7 @@ function serviceCategoryPairFixture(ProductType $type): array
     $child = Category::factory()->create(['parent_id' => $root->id, 'allowed_product_types' => [$type->value]]);
     $otherRoot = Category::factory()->create(['parent_id' => null, 'allowed_product_types' => [$type->value], 'sort_order' => 2]);
     $otherChild = Category::factory()->create(['parent_id' => $otherRoot->id, 'allowed_product_types' => [$type->value]]);
+    Category::factory()->create(['parent_id' => null, 'allowed_product_types' => [$type->value], 'sort_order' => 3]);
     $classType = ucfirst($type->value);
     $base = "App\\Modules\\Catalog\\Filament\\Vendor\\Resources\\Vendor{$classType}ServiceResource\\Pages\\";
     $policy = Mockery::mock(SubscriptionPolicyContract::class);
@@ -37,7 +38,7 @@ function serviceCategoryPairFixture(ProductType $type): array
     return [$profile, $root, $child, $otherRoot, $otherChild, $base."CreateVendor{$classType}Service", $base."EditVendor{$classType}Service"];
 }
 
-it('loads only root categories and matching children and clears stale child selections', function (string $locale, ProductType $type): void {
+it('lists only root categories with eligible children and clears stale child selections', function (string $locale, ProductType $type): void {
     app()->setLocale($locale);
     [$profile, $root, $child, $otherRoot, $otherChild, $create] = serviceCategoryPairFixture($type);
     $this->actingAs($profile->user, 'vendor');

@@ -131,12 +131,12 @@ it('completes one vendor onboarding journey through the existing gates', functio
     $documentAction = app(UploadVendorDocumentAction::class);
     $nationalId = $documentAction->execute(
         $profile,
-        UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('national-id.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')),
         DocumentType::NationalId,
     );
     $ibanProof = $documentAction->execute(
         $profile,
-        UploadedFile::fake()->create('iban-proof.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('iban-proof.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')),
         DocumentType::IbanProof,
     );
 

@@ -1,0 +1,1195 @@
+{
+  "schemaVersion": "report-1",
+  "run": {
+    "id": "01a13158-8383-7288-b5b3-ef57670c5560",
+    "specVersion": "0.1",
+    "runner": {
+      "name": "e2e",
+      "version": "0.19.0"
+    },
+    "status": "failed",
+    "exitCode": 1,
+    "startedAt": "2026-10-12T18:20:48.075Z",
+    "finishedAt": "2026-10-12T18:22:29.554Z",
+    "project": {
+      "id": "unportable-3716bcbfc92c81af0f7e89b120d49b8b",
+      "configDigest": "7180b9d46c73c9f680813798a174c3cae551b43375d0aa7752edef24b9366a15"
+    },
+    "environment": {
+      "ci": false,
+      "trustNoticeShown": false,
+      "os": "linux 6.6.114.1-microsoft-standard-WSL2",
+      "arch": "x64",
+      "runtime": "node v24.15.0"
+    },
+    "vcs": {
+      "commit": "c8882e45f895fe31245fd4e7e57147129d3ec544",
+      "branch": "fix/instaparty-client-reported-issues"
+    },
+    "targets": [
+      {
+        "id": "desktop",
+        "index": 0,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      },
+      {
+        "id": "mobile",
+        "index": 1,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      }
+    ],
+    "serialGroups": [],
+    "results": [
+      {
+        "id": "b289e87b16344ba950e46501c834f86ca5c4d071a59e3da6b21835fba678eef9",
+        "testId": "explore::At%20390px%20width%20starting%20at%20%2Far%2C%20exercise%20navigation%2C%20search%20and%20vendor%2Fservice%20details%2C%20check%20readable%20RTL%20text%2C%20usable%20controls%20and%20horizontal%20overflow%2C%20then%20switch%20to%20English%3B%20report%20reproducible%20responsive%20or%20navigation%20problems.",
+        "kind": "test",
+        "declarationIndex": 0,
+        "titlePath": [
+          "At 390px width starting at /ar, exercise navigation, search and vendor/service details, check readable RTL text, usable controls and horizontal overflow, then switch to English; report reproducible responsive or navigation problems."
+        ],
+        "file": "explore",
+        "source": {
+          "file": "explore",
+          "line": 1,
+          "column": 1
+        },
+        "targetId": "mobile",
+        "platform": "web",
+        "agent": "default",
+        "repeat": 0,
+        "tags": [],
+        "selected": true,
+        "status": "failed",
+        "attempts": [
+          {
+            "id": "01a13158-8858-7557-bef7-fcafa015c992",
+            "index": 0,
+            "status": "failed",
+            "startedAt": "2026-10-12T18:20:48.089Z",
+            "durationMs": 101258,
+            "artifacts": [
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:artifact:0",
+                "kind": "screenshot",
+                "mediaType": "image/png",
+                "redaction": "complete",
+                "producer": {
+                  "kind": "step",
+                  "stepId": "01a13158-8858-7557-bef7-fcafa015c992:2"
+                },
+                "path": "explore-at-390px-width-starting-at-ar-b289e87b16344ba9/attempt-1/finding-1.png",
+                "size": 239490,
+                "sha256": "f6f6b497e6b12ef87f1c5f81525846bd48f2ca649a52eefa1ee392187f0d5591"
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:artifact:1",
+                "kind": "log",
+                "mediaType": "text/plain",
+                "redaction": "complete",
+                "producer": {
+                  "kind": "attempt"
+                },
+                "path": "explore-at-390px-width-starting-at-ar-b289e87b16344ba9/attempt-1/screen-at-failure.txt",
+                "size": 3511,
+                "sha256": "626ea1df128ceba8e33aedb9483a57e899bbea16121d40bc68d6bb6e6620b3d9"
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:artifact:2",
+                "kind": "screenshot",
+                "mediaType": "image/png",
+                "redaction": "complete",
+                "producer": {
+                  "kind": "attempt"
+                },
+                "path": "explore-at-390px-width-starting-at-ar-b289e87b16344ba9/attempt-1/screenshots/001-failure.png",
+                "size": 144030,
+                "sha256": "a92b01a6b1e01fbde8b9605ee7e89ef188fec9f728430c3b91308fa301686a6f"
+              }
+            ],
+            "error": {
+              "category": "test",
+              "code": "ASSERTION_FAILED",
+              "message": "exploration found 1 issue(s): [severity 3] Menu drawer blocks the header Search control",
+              "retryable": false,
+              "phase": "body"
+            },
+            "secondaryErrors": [],
+            "cleanup": "complete",
+            "environment": {
+              "browser": "chromium 153.0.8010.12",
+              "user agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+            },
+            "failure": {
+              "url": "http://127.0.0.1:18090/en/vendors/feest-ltd-sony3b",
+              "viewport": {
+                "width": 390,
+                "height": 844
+              },
+              "nodes": 82,
+              "screen": "01a13158-8858-7557-bef7-fcafa015c992:artifact:1",
+              "screenshot": "01a13158-8858-7557-bef7-fcafa015c992:artifact:2"
+            },
+            "steps": [
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:0",
+                "index": 0,
+                "kind": "app",
+                "api": "app.open",
+                "label": "/",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:20:48.237Z",
+                "durationMs": 1126,
+                "events": [],
+                "artifacts": [],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 124,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:1",
+                "index": 1,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: At 390px width starting at /ar, exercise navigation, search and vendor/service details, check readable RTL text, usable controls and horizontal overflow, then switch to English; report reproducible responsive or navigation problems.\nBudget: 0 of 3 steps used, about 5 minute(s) left.\n\nSteps so far:\n(none yet: this is the first step)\n\nFindings so far:\n(none yet)\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:20:49.369Z",
+                "durationMs": 4227,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:20:49.769Z",
+                    "durationMs": 160,
+                    "status": "passed",
+                    "bytes": 6116,
+                    "count": 124
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:20:49.931Z",
+                    "durationMs": 3663,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 3284,
+                    "inputTokens": 3156,
+                    "outputTokens": 128
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 6116,
+                  "contextBytes": 1049,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 3156,
+                  "outputTokens": 128,
+                  "peakTokensPerCall": 3284,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b1",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 124,
+                  "since": 0,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:2",
+                "index": 2,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Starting at /ar at 390px width, use the Menu control to inspect and exercise navigation, then open Search and try a query or available filters. Check that Arabic RTL text is readable, controls usable, and the page has no horizontal overflow. Open the E2E Celebration Vendor profile and inspect a non-first service if available; record reproducible issues with exact steps. Switch to English using the language control and confirm the page changes language.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:20:53.601Z",
+                "durationMs": 60667,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:20:53.615Z",
+                    "durationMs": 309,
+                    "status": "passed",
+                    "bytes": 6116,
+                    "count": 124
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:20:56.238Z",
+                    "durationMs": 885,
+                    "status": "passed",
+                    "name": "navigate",
+                    "detail": "navigate to \"/ar\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:20:57.124Z",
+                    "durationMs": 416,
+                    "status": "passed",
+                    "bytes": 8230,
+                    "count": 124
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:20:53.940Z",
+                    "durationMs": 3604,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7025,
+                    "inputTokens": 7007,
+                    "outputTokens": 18
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:20:59.745Z",
+                    "durationMs": 170,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"القائمة\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:20:59.915Z",
+                    "durationMs": 274,
+                    "status": "passed",
+                    "bytes": 8522,
+                    "count": 131
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:20:57.561Z",
+                    "durationMs": 2629,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9225,
+                    "inputTokens": 9206,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:02.047Z",
+                    "durationMs": 273,
+                    "status": "passed",
+                    "bytes": 8522,
+                    "count": 131
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:00.194Z",
+                    "durationMs": 2127,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9383,
+                    "inputTokens": 9370,
+                    "outputTokens": 13
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:04.392Z",
+                    "durationMs": 14757,
+                    "status": "failed",
+                    "name": "tap",
+                    "code": "NOT_ACTIONABLE",
+                    "detail": "tap: tap did not become actionable in time: elementHandle.click: Timeout 14750ms exceeded. <div class=\"flex items-center justify-between gap-4 border-b border-ink-200 pb-5\">…</div> from <dialog open=\"\" aria-label=\"القائمة\" class=\"sf-nav-drawer\" data-storefront-nav-dialog=\"\" id=\"storefront-navigatio…"
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:19.150Z",
+                    "durationMs": 282,
+                    "status": "passed",
+                    "bytes": 8522,
+                    "count": 131
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:02.325Z",
+                    "durationMs": 17108,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9440,
+                    "inputTokens": 9421,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:21.933Z",
+                    "durationMs": 114,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"إغلاق\" in \"InstaParty\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:22.047Z",
+                    "durationMs": 284,
+                    "status": "passed",
+                    "bytes": 8240,
+                    "count": 124
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:19.437Z",
+                    "durationMs": 2895,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9593,
+                    "inputTokens": 9574,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:24.959Z",
+                    "durationMs": 413,
+                    "status": "passed",
+                    "bytes": 8240,
+                    "count": 124
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:21:25.582Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "vision.pixels",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:24.958Z",
+                    "durationMs": 667,
+                    "status": "passed",
+                    "name": "tool:report_finding"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:22.335Z",
+                    "durationMs": 3290,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9856,
+                    "inputTokens": 9738,
+                    "outputTokens": 118
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:21:28.405Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/search"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:27.866Z",
+                    "durationMs": 689,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"بحث\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:28.556Z",
+                    "durationMs": 264,
+                    "status": "passed",
+                    "bytes": 4635,
+                    "count": 85
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:25.629Z",
+                    "durationMs": 3192,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9920,
+                    "inputTokens": 9901,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:32.088Z",
+                    "durationMs": 186,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"الفلاتر\" in \"تم العثور على 3 خدمة\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:32.274Z",
+                    "durationMs": 278,
+                    "status": "passed",
+                    "bytes": 6957,
+                    "count": 139
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:28.823Z",
+                    "durationMs": 3731,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11305,
+                    "inputTokens": 11286,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:34.592Z",
+                    "durationMs": 115,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"زينة\" into searchbox \"ما الذي تبحث عنه؟\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:34.707Z",
+                    "durationMs": 277,
+                    "status": "passed",
+                    "bytes": 6974,
+                    "count": 139
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:32.556Z",
+                    "durationMs": 2429,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 12071,
+                    "inputTokens": 12047,
+                    "outputTokens": 24
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:21:36.558Z",
+                    "durationMs": 14761,
+                    "status": "failed",
+                    "name": "tap",
+                    "code": "NOT_ACTIONABLE",
+                    "detail": "tap: tap did not become actionable in time: elementHandle.click: Timeout 14750ms exceeded. <select class=\"sf-field\" id=\"category_slug\" name=\"category_slug\" data-search-category=\"\">…</select> from <div class=\"sf-marketplace-shell mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[17rem_min…"
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:51.319Z",
+                    "durationMs": 269,
+                    "status": "passed",
+                    "bytes": 6974,
+                    "count": 139
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:34.989Z",
+                    "durationMs": 16600,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 12183,
+                    "inputTokens": 12164,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:51.591Z",
+                    "durationMs": 2676,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 12442,
+                    "inputTokens": 12343,
+                    "outputTokens": 99
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [
+                  "01a13158-8858-7557-bef7-fcafa015c992:artifact:0"
+                ],
+                "metrics": {
+                  "modelCalls": 11,
+                  "actionSteps": 8,
+                  "observationBytes": 8522,
+                  "contextBytes": 1049,
+                  "ledgerBytes": 307,
+                  "pixelBytes": 239490
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 11,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 112057,
+                  "outputTokens": 386,
+                  "peakTokensPerCall": 12442,
+                  "cacheReadTokens": 50944,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b23",
+                "explanation": "At /ar, opened Menu and encountered the reported overlay interception when trying header Search; closed it, reached Search, viewed all 3 seeded services and opened Filters, entered «زينة» in the query. Reported the menu/search interception. Next: dismiss filters, submit the query, inspect vendor profile/service, then switch to English; 390px overflow could not be visually confirmed.",
+                "visionInput": true,
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "navigate({\"url\":\"/ar\"})"
+                    ],
+                    "outcome": "[navigate] Navigated to /ar.\n\nThe screen changed substantially since revision b3. Current screen (revision b5, path /ar, 124 nodes):\n#root document \"إنستابارتي · اعثر على بائعين لمناسبتك القادمة من مكان واحد.\"\n #n12002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar#…\"\n #n12003 banner\n  #n12004 button \"القائمة\"\n  #n12005 link \"InstaParty\" href=\"/ar\"\n  #n12006 link \"بحث\" href=\"/ar/search\"\n  #n12007 link \"السلة\" href=\"/ar/cart\"\n  #n12008 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n12009 main\n  #n12010 region \"لافتة ترويجية\"\n   #n12011 article\n    #n12012 text=\"منصة تخطيط المناسبات الموثوقة\"\n    #n12…[truncated]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "tap({\"target\":\"n12004\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n12004.\n\nScreen changes since revision b5 (now revision b7, path /ar, 131 nodes): 7 added. Every node not listed as removed is still on screen under the id you have.\nadded #n21001 dialog \"القائمة\"\nadded #n21002 link \"InstaParty\" href=\"/ar\"\nadded #n21003 button \"إغلاق\"\nadded #n21004 navigation \"القائمة\"\nadded #n21005 link \"English\" href=\"/en\"\nadded #n21006 link \"العربية\" href=\"/ar\"\nadded #n21007 link \"تسجيل الدخول\" href=\"/ar/auth/login\""
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "observe({})"
+                    ],
+                    "outcome": "[observe] Observed.\n\nScreen unchanged since revision b7 (re-observed as revision b9, path /ar); the ids you have stay valid."
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "tap({\"target\":\"n12006\"})"
+                    ],
+                    "outcome": "[tap] tap #n12006 failed: ACTION_FAILED: tap did not become actionable in time: elementHandle.click: Timeout 14750ms exceeded. <div class=\"flex items-center justify-between gap-4 border-b border-ink-200 pb-5\">…</div> from <dialog open=\"\" aria-label=\"القائمة\" class=\"sf-nav-drawer\" data-storefront-nav-dialog=\"\" id=\"storefront-navigation-drawer\">…</dialog> subtree intercepts pointer events\n\nScreen unchanged since revision b9 (re-observed as revision b11, path /ar); the ids you have stay valid."
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "tap({\"target\":\"n21003\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n21003.\n\nScreen changes since revision b11 (now revision b13, path /ar, 124 nodes): 7 removed. Every node not listed as removed is still on screen under the id you have.\nremoved #n21001 dialog \"القائمة\"\nremoved #n21002 link \"InstaParty\" href=\"/ar\"\nremoved #n21003 button \"إغلاق\"\nremoved #n21004 navigation \"القائمة\"\nremoved #n21005 link \"English\" href=\"/en\"\nremoved #n21006 link \"العربية\" href=\"/ar\"\nremoved #n21007 link \"تسجيل الدخول\" href=\"/ar/auth/login\""
+                  },
+                  {
+                    "index": 6,
+                    "calls": [
+                      "report_finding({\"title\":\"Menu drawer blocks the header Search control\",\"kind\":\"issue\",\"severity\":3,\"expected\":\"Tapping Search should navigate to search, including after closing the menu drawer.\",\"actu…[truncated]"
+                    ],
+                    "outcome": "[report_finding] Finding 1 recorded (issue, severity 3): Menu drawer blocks the header Search control. Do not report it again; continue the charter or conclude the step."
+                  },
+                  {
+                    "index": 7,
+                    "calls": [
+                      "tap({\"target\":\"n12006\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n12006.\n\nThe screen changed substantially since revision b13. Current screen (revision b17, path /ar/search, 85 nodes):\n#root document \"تصفح الخدمات · إنستابارتي\"\n #n57002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/search#…\"\n #n57003 banner\n  #n57004 button \"القائمة\"\n  #n57005 link \"InstaParty\" href=\"/ar\"\n  #n57006 link \"بحث\" href=\"/ar/search\"\n  #n57007 link \"السلة\" href=\"/ar/cart\"\n  #n57008 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n57009 main\n  #n57010 text=\"تصفح\"\n  #n57011 heading \"تصفح الخدمات\"\n  #n57012 text=\"بائعون موثّقون في مصر للتورتات، الديكور، الضيافة، التصوير، القاع…[truncated]"
+                  },
+                  {
+                    "index": 8,
+                    "calls": [
+                      "tap({\"target\":\"n57020\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n57020.\n\nScreen changes since revision b17 (now revision b19, path /ar/search, 139 nodes): 54 added. Every node not listed as removed is still on screen under the id you have.\nadded #n66001 complementary \"الفلاتر\"\nadded #n66002 heading \"الفلاتر\"\nadded #n66003 link \"مسح جميع الفلاتر\" href=\"/ar/search\"\nadded #n66004 button \"إغلاق\" text=\"×\"\nadded #n66005 text=\"نوع الخدمة\"\nadded #n66006 combobox \"نوع الخدمة\"\nadded #n66007 option \"كل الأنواع\" [selected]\nadded #n66008 option \"إيجار\"\nadded #n66009 option \"للبيع\"\nadded #n66010 option \"رقمي\"\nadded #n66011 text=\"الفئة\"\nadded #n66012 combob…[truncated]"
+                  },
+                  {
+                    "index": 9,
+                    "calls": [
+                      "type({\"target\":\"n57015\",\"value\":\"زينة\"})"
+                    ],
+                    "outcome": "[type] Typed into #n57015.\n\nScreen changes since revision b19 (now revision b21, path /ar/search, 139 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n57015 searchbox \"ما الذي تبحث عنه؟\" value=\"زينة\" (was: #n57015 searchbox \"ما الذي تبحث عنه؟\")"
+                  },
+                  {
+                    "index": 10,
+                    "calls": [
+                      "tap({\"target\":\"n57016\"})"
+                    ],
+                    "outcome": "[tap] tap #n57016 failed: ACTION_FAILED: tap did not become actionable in time: elementHandle.click: Timeout 14750ms exceeded. <select class=\"sf-field\" id=\"category_slug\" name=\"category_slug\" data-search-category=\"\">…</select> from <div class=\"sf-marketplace-shell mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-10\">…</div> subtree intercepts pointer events\n\nScreen unchanged since revision b21 (re-observed as revision b23, path /ar/search); the ids you have stay valid."
+                  },
+                  {
+                    "index": 11,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"At /ar, opened Menu and encountered the reported overlay interception when trying header Search; closed it, reached Search, viewed all 3 seeded services and…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/search",
+                  "nodes": 139,
+                  "since": 1,
+                  "changes": [
+                    "changed document \"تصفح الخدمات · إنستابارتي\" (was: document \"InstaParty · Find vendors for your next celebration, all in one place.\")",
+                    "added link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/search#…\"",
+                    "added button \"القائمة\"",
+                    "added link \"InstaParty\" href=\"/ar\"",
+                    "added link \"بحث\" href=\"/ar/search\"",
+                    "added link \"السلة\" href=\"/ar/cart\"",
+                    "added link \"تسجيل الدخول\" href=\"/ar/auth/login\"",
+                    "added text=\"تصفح\"",
+                    "added heading \"تصفح الخدمات\"",
+                    "added text=\"بائعون موثّقون في مصر للتورتات، الديكور، الضيافة، التصوير، القاعات، وغيرها. قارن، تواصل، واحجز بأمان.\"",
+                    "added search",
+                    "added text=\"ما الذي تبحث عنه؟\""
+                  ],
+                  "more": 234
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:3",
+                "index": 3,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: At 390px width starting at /ar, exercise navigation, search and vendor/service details, check readable RTL text, usable controls and horizontal overflow, then switch to English; report reproducible responsive or navigation problems.\nBudget: 1 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] Arabic navigation and search — At /ar, opened Menu and encountered the reported overlay interception when trying header Search; closed it, reached Search, viewed all 3 seeded services and opened Filters, entered «زينة» in the query. Reported the menu/search interception. Next: dismiss filters, submit the query, inspect vendor profile/service, then switch to English; 390px overflow could not be visually confirmed.\n\nFindings so far:\n- [issue, severity 3] Menu drawer blocks the header Search control\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:21:54.272Z",
+                "durationMs": 3934,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:54.273Z",
+                    "durationMs": 83,
+                    "status": "passed",
+                    "bytes": 6974,
+                    "count": 139
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:54.357Z",
+                    "durationMs": 3848,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 3810,
+                    "inputTokens": 3561,
+                    "outputTokens": 249
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 6974,
+                  "contextBytes": 1049,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 3561,
+                  "outputTokens": 249,
+                  "peakTokensPerCall": 3810,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b24",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/search",
+                  "nodes": 139,
+                  "since": 2,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:4",
+                "index": 4,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Continue from the open Filters panel: apply or close the filters, submit the search query «زينة», and check whether results update and remain usable at 390px. Open the matching E2E Party Decorations service, inspect its details and any vendor profile link, checking readable RTL text, controls, and horizontal overflow. Do not book or submit a transaction. If time permits, switch to English using the language link and verify that the English page loads.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:21:58.208Z",
+                "durationMs": 25839,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:21:58.217Z",
+                    "durationMs": 249,
+                    "status": "passed",
+                    "bytes": 6974,
+                    "count": 139
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:22:00.161Z",
+                    "durationMs": 107,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"إغلاق\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:22:00.269Z",
+                    "durationMs": 235,
+                    "status": "passed",
+                    "bytes": 4662,
+                    "count": 85
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:21:58.470Z",
+                    "durationMs": 2034,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7561,
+                    "inputTokens": 7542,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:22:02.967Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/search?q=%D8%B2%D9%8A%D9%86%D8%A9"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:22:02.450Z",
+                    "durationMs": 627,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"بحث\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:22:03.077Z",
+                    "durationMs": 214,
+                    "status": "passed",
+                    "bytes": 3534,
+                    "count": 68
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:22:00.507Z",
+                    "durationMs": 2785,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8954,
+                    "inputTokens": 8935,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:22:05.520Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/services/01M4RNA5V9VDVSK5K10YK3FT35"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:22:05.006Z",
+                    "durationMs": 624,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"زينة حفلات تجريبية بيع et molestiae زين…\" in \"بيع\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:22:05.630Z",
+                    "durationMs": 260,
+                    "status": "passed",
+                    "bytes": 3232,
+                    "count": 64
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:22:03.293Z",
+                    "durationMs": 2597,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 10027,
+                    "inputTokens": 10008,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:22:08.280Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:22:07.718Z",
+                    "durationMs": 679,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"م بائع موثّق مورد احتفالات تجريبي لا تو…\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:22:08.397Z",
+                    "durationMs": 314,
+                    "status": "passed",
+                    "bytes": 4294,
+                    "count": 82
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:22:05.894Z",
+                    "durationMs": 2818,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11057,
+                    "inputTokens": 11038,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:22:15.741Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/en/vendors/feest-ltd-sony3b"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:22:10.556Z",
+                    "durationMs": 5448,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"English\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:22:16.004Z",
+                    "durationMs": 381,
+                    "status": "passed",
+                    "bytes": 3510,
+                    "count": 82
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:22:08.717Z",
+                    "durationMs": 7670,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 12413,
+                    "inputTokens": 12394,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:22:16.396Z",
+                    "durationMs": 7650,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 13694,
+                    "inputTokens": 13603,
+                    "outputTokens": 91
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 6,
+                  "actionSteps": 5,
+                  "observationBytes": 6974,
+                  "contextBytes": 1049,
+                  "ledgerBytes": 1276
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 6,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 63520,
+                  "outputTokens": 186,
+                  "peakTokensPerCall": 13694,
+                  "cacheReadTokens": 22400,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b36",
+                "explanation": "Closed the filters panel and submitted «زينة»; results updated from 3 services to 1 matching decorations service. Inspected service details and opened its vendor profile, then switched to English and verified the vendor page loaded. RTL text and controls were readable in the tree; pixel-level 390px overflow was not independently verified. No transaction submitted.",
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "tap({\"target\":\"n66004\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n66004.\n\nThe screen changed substantially since revision b26. Current screen (revision b28, path /ar/search, 85 nodes):\n#root document \"تصفح الخدمات · إنستابارتي\"\n #n57002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/search#…\"\n #n57003 banner\n  #n57004 button \"القائمة\"\n  #n57005 link \"InstaParty\" href=\"/ar\"\n  #n57006 link \"بحث\" href=\"/ar/search\"\n  #n57007 link \"السلة\" href=\"/ar/cart\"\n  #n57008 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n57009 main\n  #n57010 text=\"تصفح\"\n  #n57011 heading \"تصفح الخدمات\"\n  #n57012 text=\"بائعون موثّقون في مصر للتورتات، الديكور، الضيافة، التصوير، القاع…[truncated]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "tap({\"target\":\"n57016\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n57016.\n\nThe screen changed substantially since revision b28. Current screen (revision b30, path /ar/search?q=%D8%B2%D9%8A%D9%86%D8%A9, 68 nodes):\n#root document \"تصفح الخدمات · إنستابارتي\"\n #n108002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/search?…#…\"\n #n108003 banner\n  #n108004 button \"القائمة\"\n  #n108005 link \"InstaParty\" href=\"/ar\"\n  #n108006 link \"بحث\" href=\"/ar/search\"\n  #n108007 link \"السلة\" href=\"/ar/cart\"\n  #n108008 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n108009 main\n  #n108010 text=\"تصفح\"\n  #n108011 heading \"تصفح الخدمات\"\n  #n108012 text=\"بائعون موثّقون في مصر لل…[truncated]"
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "tap({\"target\":\"n108035\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n108035.\n\nThe screen changed substantially since revision b30. Current screen (revision b32, path /ar/services/01M4RNA5V9VDVSK5K10YK3FT35, 64 nodes):\n#root document \"زينة حفلات تجريبية · إنستابارتي\"\n #n117002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/services/01M4RNA5V9VDVSK5K10YK3FT35#…\"\n #n117003 banner\n  #n117004 button \"القائمة\"\n  #n117005 link \"InstaParty\" href=\"/ar\"\n  #n117006 link \"بحث\" href=\"/ar/search\"\n  #n117007 link \"السلة\" href=\"/ar/cart\"\n  #n117008 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n117009 main\n  #n117010 navigation \"مسار التنقل\"\n   #n117011 link \"الرئيسية…[truncated]"
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "tap({\"target\":\"n117029\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n117029.\n\nThe screen changed substantially since revision b32. Current screen (revision b34, path /ar/vendors/feest-ltd-sony3b, 82 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n126002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b#…\"\n #n126003 banner\n  #n126004 button \"القائمة\"\n  #n126005 link \"InstaParty\" href=\"/ar\"\n  #n126006 link \"بحث\" href=\"/ar/search\"\n  #n126007 link \"السلة\" href=\"/ar/cart\"\n  #n126008 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n126009 main\n  #n126010 box\n  #n126011 link \"تصفّح كل البائعين\" href=\"/ar/vendors\"\n  #n126012 t…[truncated]"
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "tap({\"target\":\"n126081\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n126081.\n\nThe screen changed substantially since revision b34. Current screen (revision b36, path /en/vendors/feest-ltd-sony3b, 82 nodes):\n#root document \"E2E Celebration Vendor · InstaParty\"\n #n135002 link \"Skip to main content\" href=\"/en/vendors/feest-ltd-sony3b#…\"\n #n135003 banner\n  #n135004 button \"Menu\"\n  #n135005 link \"InstaParty\" href=\"/en\"\n  #n135006 link \"Search\" href=\"/en/search\"\n  #n135007 link \"Cart\" href=\"/en/cart\"\n  #n135008 link \"Sign in\" href=\"/en/auth/login\"\n #n135009 main\n  #n135010 box\n  #n135011 link \"Browse all vendors\" href=\"/en/vendors\"\n  #n135012 text=\"E\"\n…[truncated]"
+                  },
+                  {
+                    "index": 6,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"Closed the filters panel and submitted «زينة»; results updated from 3 services to 1 matching decorations service. Inspected service details and opened its v…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en/vendors/feest-ltd-sony3b",
+                  "nodes": 82,
+                  "since": 3,
+                  "changes": [
+                    "changed document \"E2E Celebration Vendor · InstaParty\" (was: document \"تصفح الخدمات · إنستابارتي\")",
+                    "added link \"Skip to main content\" href=\"/en/vendors/feest-ltd-sony3b#…\"",
+                    "added button \"Menu\"",
+                    "added link \"InstaParty\" href=\"/en\"",
+                    "added link \"Search\" href=\"/en/search\"",
+                    "added link \"Cart\" href=\"/en/cart\"",
+                    "added link \"Sign in\" href=\"/en/auth/login\"",
+                    "added box",
+                    "added link \"Browse all vendors\" href=\"/en/vendors\"",
+                    "added text=\"E\"",
+                    "added text=\"Verified vendor\"",
+                    "added text=\"No reviews yet\""
+                  ],
+                  "more": 188
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13158-8858-7557-bef7-fcafa015c992:5",
+                "index": 5,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: At 390px width starting at /ar, exercise navigation, search and vendor/service details, check readable RTL text, usable controls and horizontal overflow, then switch to English; report reproducible responsive or navigation problems.\nBudget: 2 of 3 steps used, about 3 minute(s) left.\n\nSteps so far:\n1. [passed] Arabic navigation and search — At /ar, opened Menu and encountered the reported overlay interception when trying header Search; closed it, reached Search, viewed all 3 seeded services and opened Filters, entered «زينة» in the query. Reported the menu/search interception. Next: dismiss filters, submit the query, inspect vendor profile/service, then switch to English; 390px overflow could not be visually confirmed.\n2. [passed] Search and service details — Closed the filters panel and submitted «زينة»; results updated from 3 services to 1 matching decorations service. Inspected service details and opened its vendor profile, then switched to English and verified the vendor page loaded. RTL text and controls were readable in the tree; pixel-level 390px overflow was not independently verified. No transaction submitted.\n\nFindings so far:\n- [issue, severity 3] Menu drawer blocks the header Search control\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:22:24.050Z",
+                "durationMs": 3942,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:22:24.051Z",
+                    "durationMs": 97,
+                    "status": "passed",
+                    "bytes": 3510,
+                    "count": 82
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:22:24.150Z",
+                    "durationMs": 3843,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2881,
+                    "inputTokens": 2764,
+                    "outputTokens": 117
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 3510,
+                  "contextBytes": 1049,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2764,
+                  "outputTokens": 117,
+                  "peakTokensPerCall": 2881,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b37",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en/vendors/feest-ltd-sony3b",
+                  "nodes": 82,
+                  "since": 4,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "summary": {
+      "discovered": 1,
+      "selected": 1,
+      "executed": 1,
+      "passed": 0,
+      "failed": 1,
+      "interrupted": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "limits": {
+      "maxAgentContextBytes": 16384,
+      "maxLedgerBytes": 8192,
+      "maxObservationBytes": 262144,
+      "maxEventsPerStep": 1000,
+      "maxModelTokensPerCall": 64000
+    },
+    "usage": {
+      "discoveredResults": 1,
+      "maxAgentContextBytes": 1049,
+      "maxLedgerBytes": 1276,
+      "maxObservationBytes": 8522,
+      "artifactBytes": 387031,
+      "downloads": 0,
+      "events": 60,
+      "modelTokens": 186124,
+      "maxModelCallsInStep": 11,
+      "maxActionStepsInStep": 8,
+      "modelCachedTokens": 73344
+    },
+    "explore": {
+      "goal": "At 390px width starting at /ar, exercise navigation, search and vendor/service details, check readable RTL text, usable controls and horizontal overflow, then switch to English; report reproducible responsive or navigation problems.",
+      "budgets": {
+        "maxSteps": 3,
+        "timeoutMs": 300000
+      },
+      "ended": "finished",
+      "summary": "The main goal was substantially covered: Arabic navigation and search, matching results, service and vendor details, and switching to the English vendor page were exercised at 390px. Pixel-level horizontal overflow was not independently verified, and deeper English navigation was not explored; the reported Menu drawer interception remains the reproducible navigation issue. The Search flow and the Menu-to-Search interaction are the most worthwhile flows to turn into scripted tests.",
+      "steps": [
+        {
+          "index": 1,
+          "title": "Arabic navigation and search",
+          "instruction": "Starting at /ar at 390px width, use the Menu control to inspect and exercise navigation, then open Search and try a query or available filters. Check that Arabic RTL text is readable, controls usable, and the page has no horizontal overflow. Open the E2E Celebration Vendor profile and inspect a non-first service if available; record reproducible issues with exact steps. Switch to English using the language control and confirm the page changes language.",
+          "status": "passed",
+          "summary": "At /ar, opened Menu and encountered the reported overlay interception when trying header Search; closed it, reached Search, viewed all 3 seeded services and opened Filters, entered «زينة» in the query. Reported the menu/search interception. Next: dismiss filters, submit the query, inspect vendor profile/service, then switch to English; 390px overflow could not be visually confirmed.",
+          "startedAt": "2026-10-12T18:20:53.599Z",
+          "durationMs": 60671
+        },
+        {
+          "index": 2,
+          "title": "Search and service details",
+          "instruction": "Continue from the open Filters panel: apply or close the filters, submit the search query «زينة», and check whether results update and remain usable at 390px. Open the matching E2E Party Decorations service, inspect its details and any vendor profile link, checking readable RTL text, controls, and horizontal overflow. Do not book or submit a transaction. If time permits, switch to English using the language link and verify that the English page loads.",
+          "status": "passed",
+          "summary": "Closed the filters panel and submitted «زينة»; results updated from 3 services to 1 matching decorations service. Inspected service details and opened its vendor profile, then switched to English and verified the vendor page loaded. RTL text and controls were readable in the tree; pixel-level 390px overflow was not independently verified. No transaction submitted.",
+          "startedAt": "2026-10-12T18:21:58.207Z",
+          "durationMs": 25842
+        }
+      ],
+      "findings": [
+        {
+          "id": "01a13159-1af7-77fe-b229-342255547fb7",
+          "index": 0,
+          "step": 1,
+          "kind": "issue",
+          "severity": 3,
+          "title": "Menu drawer blocks the header Search control",
+          "expected": "Tapping Search should navigate to search, including after closing the menu drawer.",
+          "actual": "With the menu drawer open, tapping the header «بحث» control times out because the dialog intercepts pointer events; the control cannot be used until the drawer is closed.",
+          "reproduction": [
+            "Open /ar at 390px width.",
+            "Tap «القائمة» to open the menu.",
+            "Tap the header «بحث» control."
+          ],
+          "path": "/ar",
+          "observationRevision": "b15",
+          "artifactId": "01a13158-8858-7557-bef7-fcafa015c992:artifact:0",
+          "reportedAt": "2026-10-12T18:21:25.623Z"
+        }
+      ]
+    }
+  }
+}

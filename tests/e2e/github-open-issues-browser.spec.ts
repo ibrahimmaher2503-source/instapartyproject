@@ -1,0 +1,24 @@
+import { expect, test } from '@playwright/test';
+test('issue 124 occasion icon remains FilePond after create, edit and reload', async ({ page }) => {
+  test.setTimeout(90000);
+  const code = `qa-browser-${Date.now()}`;
+  await page.goto('/admin/login');
+  await page.locator('[wire\\:model="data.email"]').fill('uat-admin@example.test');
+  await page.locator('[wire\\:model="data.password"]').fill('UatTest123!');
+  await page.getByRole('button', { name: /sign in/i }).click();
+  await expect(page).toHaveURL(/\/admin$/, { timeout: 15000 });
+  await page.goto('/admin/occasions/create?lang=en', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  const uploader = page.locator('.fi-fo-file-upload');
+  await expect(uploader.locator('.filepond--root')).toBeVisible();
+  await page.locator('input[id="data.code"]').fill(code);
+  await page.locator('input[id="data.name.en"]').fill('Browser QA occasion');
+  await page.getByRole('tab', { name: 'العربية', exact: true }).click();
+  await page.locator('input[id="data.name.ar"]').fill('مناسبة اختبار');
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/occasions\/[A-Za-z0-9]+\/edit/);
+  await expect(uploader.locator('.filepond--root')).toBeVisible();
+  await page.reload(); await expect(uploader.locator('.filepond--root')).toBeVisible();
+  await page.getByRole('button', { name: 'Delete', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/occasions(?:\?.*)?$/);
+});

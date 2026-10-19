@@ -29,11 +29,11 @@ it('requires a matching governorate whenever a city filters storefront search', 
 
     $this->get('/en/search?city_public_id='.$otherCity->public_id)
         ->assertRedirect()
-        ->assertSessionHasErrors('governorate_public_id');
+        ->assertSessionHasErrors('search');
 
     $this->get('/en/search?governorate_public_id='.$governorate->public_id.'&city_public_id='.$otherCity->public_id)
         ->assertRedirect()
-        ->assertSessionHasErrors('city_public_id');
+        ->assertSessionHasErrors('search');
 });
 
 it('loads only matching cities and applies governorate and city filters', function (): void {

@@ -144,8 +144,8 @@ it('completes registration, approval, sale publication, booking, and payment for
 
     Livewire::test(VendorDocumentsPage::class)->assertActionExists('upload');
     $upload = app(UploadVendorDocumentAction::class);
-    $nationalId = $upload->execute($vendor, UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'), DocumentType::NationalId);
-    $ibanProof = $upload->execute($vendor, UploadedFile::fake()->create('iban-proof.pdf', 40, 'application/pdf'), DocumentType::IbanProof);
+    $nationalId = $upload->execute($vendor, UploadedFile::fake()->createWithContent('national-id.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')), DocumentType::NationalId);
+    $ibanProof = $upload->execute($vendor, UploadedFile::fake()->createWithContent('iban-proof.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')), DocumentType::IbanProof);
     expect($nationalId->public_id)->not->toBeEmpty()
         ->and($ibanProof->public_id)->not->toBeEmpty()
         ->and($nationalId->status)->toBe(DocumentStatus::Pending)

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Domain\Models\BookingItem;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Filament\Vendor\Pages\VendorBookingDetailPage;
 use App\Modules\Identity\Domain\Models\User;
@@ -52,3 +54,23 @@ it('returns forbidden rather than not found for another vendor booking', functio
         ->get($url)
         ->assertForbidden();
 });
+
+it('hides fulfillment controls until the vendor allocation is accepted', function (VendorSubStatus $status): void {
+    [$user, , $bookingVendor] = createApprovedBookingVendor();
+    $bookingVendor->update([
+        'sub_status' => $status,
+        'response_deadline' => now()->subSecond(),
+        'responded_at' => $status === VendorSubStatus::Pending ? null : now()->subMinute(),
+    ]);
+    BookingItem::factory()->sale()->create(['booking_vendor_id' => $bookingVendor->id]);
+
+    $url = VendorBookingDetailPage::getUrl(['bookingVendor' => $bookingVendor->public_id]);
+
+    $this->actingAs($user, 'vendor')
+        ->get($url)
+        ->assertOk()
+        ->assertDontSee('Mark Preparing');
+})->with([
+    'pending after the deadline' => VendorSubStatus::Pending,
+    'timed out' => VendorSubStatus::TimedOut,
+]);

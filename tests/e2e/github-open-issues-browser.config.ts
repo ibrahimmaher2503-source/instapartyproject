@@ -1,0 +1,16 @@
+import { defineConfig, devices } from '@playwright/test';
+import path from 'node:path';
+const root = process.cwd();
+const env = { ...process.env, APP_ENV:'testing', APP_KEY:'base64:VWzDtB90J9Mw/mAe8whXpbJND+ivsyFAszzCe2OFaxg=', TELESCOPE_ENABLED:'false', PULSE_ENABLED:'false', NIGHTWATCH_ENABLED:'false', DB_URL:'', VIEW_COMPILED_PATH:path.resolve('storage/task-browser-verify/views'), APP_DEBUG:'true', APP_URL:'http://127.0.0.1:8154', DB_CONNECTION:'sqlite', DB_DATABASE:path.resolve('storage/task-browser-verify.sqlite'), CACHE_STORE:'array', SESSION_DRIVER:'database', SESSION_COOKIE:'task_browser_verify_session', SESSION_SECURE_COOKIE:'false', SESSION_DOMAIN:'', SESSION_PATH:'/', QUEUE_CONNECTION:'sync', MAIL_MAILER:'array', LOG_CHANNEL:'errorlog', SCOUT_DRIVER:'null', FILESYSTEM_DISK:'local' };
+export default defineConfig({ testDir:'.', testMatch:'github-open-issues-browser.spec.ts', fullyParallel:false, workers:1, reporter:[['list']], use:{ baseURL:'http://127.0.0.1:8154', trace:'retain-on-failure', screenshot:'only-on-failure', locale:'en-GB', timezoneId:'Africa/Cairo' }, webServer:{ command:'php -d display_errors=0 -S 127.0.0.1:8154 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php', cwd:path.resolve('public'), url:'http://127.0.0.1:8154/admin/login', env, reuseExistingServer:false, timeout:60000 }, projects:[{name:'setup',testMatch:'**/auth/task-browser-verify.setup.ts'},{name:'chromium',use:{...devices['Desktop Chrome']},}], outputDir:'storage/task-browser-verify/results' });
+
+
+
+
+
+
+
+
+
+
+

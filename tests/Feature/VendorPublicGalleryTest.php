@@ -8,7 +8,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 function publicGalleryFixture(VendorProfile $vendor, string $name): Media
 {
-    return $vendor->media()->create([
+    $media = $vendor->media()->create([
         'collection_name' => 'portfolio',
         'name' => $name,
         'file_name' => $name.'.png',
@@ -20,6 +20,9 @@ function publicGalleryFixture(VendorProfile $vendor, string $name): Media
         'generated_conversions' => [],
         'responsive_images' => [],
     ]);
+    Storage::disk('public')->put($media->getPathRelativeToRoot(), 'fixture');
+
+    return $media;
 }
 
 it('renders only the active vendors portfolio images and hides empty gallery controls', function (string $locale): void {
@@ -40,5 +43,5 @@ it('renders only the active vendors portfolio images and hides empty gallery con
     $this->get("/{$locale}/vendors/{$vendor->slug}")->assertOk()
         ->assertSee('data-vendor-gallery', false)->assertDontSee('data-gallery-step', false);
     $first->delete();
-    $this->get("/{$locale}/vendors/{$vendor->slug}")->assertOk()->assertDontSee('data-vendor-gallery', false);
+    $this->get("/{$locale}/vendors/{$vendor->slug}")->assertOk()->assertDontSee('data-vendor-gallery data-service-gallery', false)->assertSee('data-vendor-gallery-empty', false);
 })->with(['en', 'ar']);

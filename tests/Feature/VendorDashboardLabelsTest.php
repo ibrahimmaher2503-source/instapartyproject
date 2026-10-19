@@ -6,6 +6,7 @@ use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Identity\Domain\Models\VendorApprovedProductType;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Shared\Filament\Vendor\Widgets\VendorRecentBookingsWidget;
 use App\Modules\Shared\Filament\Vendor\Widgets\VendorStatsOverviewWidget;
@@ -17,6 +18,12 @@ it('renders translated service type cards and booking status labels without raw 
     Filament::setCurrentPanel(Filament::getPanel('vendor'));
     $user = User::factory()->phoneVerified()->asVendor()->create();
     $profile = VendorProfile::factory()->approved()->create(['user_id' => $user->id]);
+    foreach (ProductType::cases() as $type) {
+        VendorApprovedProductType::factory()
+            ->for($profile, 'vendorProfile')
+            ->forType($type)
+            ->create();
+    }
     $allocation = BookingVendor::factory()->create(['vendor_profile_id' => $profile->id, 'sub_status' => VendorSubStatus::TimedOut]);
     $this->actingAs($user, 'vendor');
     $stats = Livewire::withoutLazyLoading()->test(VendorStatsOverviewWidget::class);

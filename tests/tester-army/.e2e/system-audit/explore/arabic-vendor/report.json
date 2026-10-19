@@ -1,0 +1,966 @@
+{
+  "schemaVersion": "report-1",
+  "run": {
+    "id": "01a13155-9dd9-70af-9734-664df4a37a38",
+    "specVersion": "0.1",
+    "runner": {
+      "name": "e2e",
+      "version": "0.19.0"
+    },
+    "status": "passed",
+    "exitCode": 0,
+    "startedAt": "2026-10-12T18:17:38.152Z",
+    "finishedAt": "2026-10-12T18:18:59.456Z",
+    "project": {
+      "id": "unportable-3716bcbfc92c81af0f7e89b120d49b8b",
+      "configDigest": "7180b9d46c73c9f680813798a174c3cae551b43375d0aa7752edef24b9366a15"
+    },
+    "environment": {
+      "ci": false,
+      "trustNoticeShown": false,
+      "os": "linux 6.6.114.1-microsoft-standard-WSL2",
+      "arch": "x64",
+      "runtime": "node v24.15.0"
+    },
+    "vcs": {
+      "commit": "c8882e45f895fe31245fd4e7e57147129d3ec544",
+      "branch": "fix/instaparty-client-reported-issues"
+    },
+    "targets": [
+      {
+        "id": "desktop",
+        "index": 0,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      },
+      {
+        "id": "mobile",
+        "index": 1,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      }
+    ],
+    "serialGroups": [],
+    "results": [
+      {
+        "id": "c31cc99915c9874bc726bd6f2de1d955aa997e10208698b7351f2bd788170306",
+        "testId": "explore::Starting%20at%20%2Far%2Fvendors%2C%20find%20the%20seeded%20vendor%2C%20open%20its%20profile%2C%20inspect%20governorate%20labels%20and%20the%20rental%2Fsale%2Fdigital%20filter%3B%20verify%20each%20result%20belongs%20to%20this%20vendor%20and%20Arabic%20direction%20and%20labels%20work%3B%20report%20reproducible%20inconsistencies.",
+        "kind": "test",
+        "declarationIndex": 0,
+        "titlePath": [
+          "Starting at /ar/vendors, find the seeded vendor, open its profile, inspect governorate labels and the rental/sale/digital filter; verify each result belongs to this vendor and Arabic direction and labels work; report reproducible inconsistencies."
+        ],
+        "file": "explore",
+        "source": {
+          "file": "explore",
+          "line": 1,
+          "column": 1
+        },
+        "targetId": "desktop",
+        "platform": "web",
+        "agent": "default",
+        "repeat": 0,
+        "tags": [],
+        "selected": true,
+        "status": "passed",
+        "attempts": [
+          {
+            "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd",
+            "index": 0,
+            "status": "passed",
+            "startedAt": "2026-10-12T18:17:38.163Z",
+            "durationMs": 81238,
+            "artifacts": [],
+            "secondaryErrors": [],
+            "cleanup": "complete",
+            "environment": {
+              "browser": "chromium 153.0.8010.12",
+              "user agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+            },
+            "steps": [
+              {
+                "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd:0",
+                "index": 0,
+                "kind": "app",
+                "api": "app.open",
+                "label": "/",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:38.707Z",
+                "durationMs": 7564,
+                "events": [],
+                "artifacts": [],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 126,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd:1",
+                "index": 1,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /ar/vendors, find the seeded vendor, open its profile, inspect governorate labels and the rental/sale/digital filter; verify each result belongs to this vendor and Arabic direction and labels work; report reproducible inconsistencies.\nBudget: 0 of 3 steps used, about 5 minute(s) left.\n\nSteps so far:\n(none yet: this is the first step)\n\nFindings so far:\n(none yet)\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:46.292Z",
+                "durationMs": 4785,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:46.780Z",
+                    "durationMs": 214,
+                    "status": "passed",
+                    "bytes": 6207,
+                    "count": 126
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:46.996Z",
+                    "durationMs": 4077,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 3416,
+                    "inputTokens": 3193,
+                    "outputTokens": 223
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 6207,
+                  "contextBytes": 1063,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 3193,
+                  "outputTokens": 223,
+                  "peakTokensPerCall": 3416,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b1",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 126,
+                  "since": 0,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd:2",
+                "index": 2,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Switch to Arabic using the العربية link, then open the vendors directory at /ar/vendors. Find E2E Celebration Vendor and open its profile. Inspect the governorate labels and rental/sale/digital filter; interact with each filter option, checking that every displayed result belongs to this vendor and that the Arabic direction and labels behave correctly. Record any reproducible inconsistencies with the relevant control and result.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:51.083Z",
+                "durationMs": 33844,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:51.100Z",
+                    "durationMs": 330,
+                    "status": "passed",
+                    "bytes": 6207,
+                    "count": 126
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:17:56.650Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:17:53.973Z",
+                    "durationMs": 3443,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"العربية\" (1 of 2)"
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:57.416Z",
+                    "durationMs": 3039,
+                    "status": "passed",
+                    "bytes": 8308,
+                    "count": 126
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:51.448Z",
+                    "durationMs": 9022,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7049,
+                    "inputTokens": 7031,
+                    "outputTokens": 18
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:03.259Z",
+                    "durationMs": 1749,
+                    "status": "passed",
+                    "name": "navigate",
+                    "detail": "navigate to \"/ar/vendors\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:05.009Z",
+                    "durationMs": 317,
+                    "status": "passed",
+                    "bytes": 2680,
+                    "count": 59
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:00.483Z",
+                    "durationMs": 4844,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9274,
+                    "inputTokens": 9255,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:08.730Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:06.746Z",
+                    "durationMs": 2231,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"عرض الملف: مورد احتفالات تجريبي\" in \"م\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:08.977Z",
+                    "durationMs": 347,
+                    "status": "passed",
+                    "bytes": 4341,
+                    "count": 84
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:05.336Z",
+                    "durationMs": 3989,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 10124,
+                    "inputTokens": 10105,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:12.278Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b?type=rental#vendor-services"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:11.757Z",
+                    "durationMs": 639,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"تأجير\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:12.396Z",
+                    "durationMs": 228,
+                    "status": "passed",
+                    "bytes": 3403,
+                    "count": 68
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:09.330Z",
+                    "durationMs": 3297,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11524,
+                    "inputTokens": 11505,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:17.234Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b?type=sale#vendor-services"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:16.630Z",
+                    "durationMs": 764,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"بيع\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:17.394Z",
+                    "durationMs": 299,
+                    "status": "passed",
+                    "bytes": 3361,
+                    "count": 68
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:12.631Z",
+                    "durationMs": 5064,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 12644,
+                    "inputTokens": 12625,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:21.060Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b?type=digital#vendor-services"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:20.531Z",
+                    "durationMs": 1253,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"رقمي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:21.784Z",
+                    "durationMs": 329,
+                    "status": "passed",
+                    "bytes": 3381,
+                    "count": 68
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:17.705Z",
+                    "durationMs": 4409,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 13750,
+                    "inputTokens": 13731,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:22.117Z",
+                    "durationMs": 2808,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 14950,
+                    "inputTokens": 14845,
+                    "outputTokens": 105
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 7,
+                  "actionSteps": 6,
+                  "observationBytes": 8308,
+                  "contextBytes": 1063,
+                  "ledgerBytes": 307
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 7,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 79097,
+                  "outputTokens": 218,
+                  "peakTokensPerCall": 14950,
+                  "cacheReadTokens": 20736,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b15",
+                "explanation": "Switched to Arabic, opened /ar/vendors, found E2E Celebration Vendor (shown translated as مورد احتفالات تجريبي), and inspected its profile. Profile governorate reads القاهرة; filters worked: تأجير showed only the party lights rental, بيع only decorations, and رقمي only the digital invitation. Results were consistent with the vendor’s three listed services and Arabic labels; worth exploring Arabic page direction visually.",
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "tap({\"target\":\"n7\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n7.\n\nThe screen changed substantially since revision b3. Current screen (revision b5, path /ar, 126 nodes):\n#root document \"إنستابارتي · اعثر على بائعين لمناسبتك القادمة من مكان واحد.\"\n #n12002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar#…\"\n #n12003 banner\n  #n12004 link \"InstaParty\" href=\"/ar\"\n  #n12005 navigation \"English\"\n   #n12006 link \"English\" href=\"/en\"\n   #n12007 link \"العربية\" href=\"/ar\"\n  #n12008 link \"بحث\" href=\"/ar/search\"\n  #n12009 link \"السلة\" href=\"/ar/cart\"\n  #n12010 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n12011 main\n  #n12012 region \"لافتة ترويجية\"\n   #n1201…[truncated]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "navigate({\"url\":\"/ar/vendors\"})"
+                    ],
+                    "outcome": "[navigate] Navigated to /ar/vendors.\n\nThe screen changed substantially since revision b5. Current screen (revision b7, path /ar/vendors, 59 nodes):\n#root document \"أشخاص متخصّصون في عملهم · إنستابارتي\"\n #n18002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors#…\"\n #n18003 banner\n  #n18004 link \"InstaParty\" href=\"/ar\"\n  #n18005 navigation \"English\"\n   #n18006 link \"English\" href=\"/en/vendors\"\n   #n18007 link \"العربية\" href=\"/ar/vendors\"\n  #n18008 link \"بحث\" href=\"/ar/search\"\n  #n18009 link \"السلة\" href=\"/ar/cart\"\n  #n18010 link \"تسجيل الدخول\" href=\"/ar/auth/login\"\n #n18011 main\n  #n18012 text=…[truncated]"
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "tap({\"target\":\"n18027\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n18027.\n\nThe screen changed substantially since revision b7. Current screen (revision b9, path /ar/vendors/feest-ltd-sony3b, 84 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n27002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b#…\"\n #n27003 banner\n  #n27004 link \"InstaParty\" href=\"/ar\"\n  #n27005 navigation \"English\"\n   #n27006 link \"English\" href=\"/en/vendors/feest-ltd-sony3b\"\n   #n27007 link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b\"\n  #n27008 link \"بحث\" href=\"/ar/search\"\n  #n27009 link \"السلة\" href=\"/ar/cart\"\n  #n27010 link \"تسجيل الدخول\" h…[truncated]"
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "tap({\"target\":\"n27032\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n27032.\n\nThe screen changed substantially since revision b9. Current screen (revision b11, path /ar/vendors/feest-ltd-sony3b?type=rental#vendor-services, 68 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n36002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b?…#…\"\n #n36003 banner\n  #n36004 link \"InstaParty\" href=\"/ar\"\n  #n36005 navigation \"English\"\n   #n36006 link \"English\" href=\"/en/vendors/feest-ltd-sony3b?…\"\n   #n36007 link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b?…\"\n  #n36008 link \"بحث\" href=\"/ar/search\"\n  #n36009 link \"السلة\" href=\"/ar/ca…[truncated]"
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "tap({\"target\":\"n36034\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n36034.\n\nThe screen changed substantially since revision b11. Current screen (revision b13, path /ar/vendors/feest-ltd-sony3b?type=sale#vendor-services, 68 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n45002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b?…#…\"\n #n45003 banner\n  #n45004 link \"InstaParty\" href=\"/ar\"\n  #n45005 navigation \"English\"\n   #n45006 link \"English\" href=\"/en/vendors/feest-ltd-sony3b?…\"\n   #n45007 link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b?…\"\n  #n45008 link \"بحث\" href=\"/ar/search\"\n  #n45009 link \"السلة\" href=\"/ar/car…[truncated]"
+                  },
+                  {
+                    "index": 6,
+                    "calls": [
+                      "tap({\"target\":\"n45036\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n45036.\n\nThe screen changed substantially since revision b13. Current screen (revision b15, path /ar/vendors/feest-ltd-sony3b?type=digital#vendor-services, 68 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n54002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b?…#…\"\n #n54003 banner\n  #n54004 link \"InstaParty\" href=\"/ar\"\n  #n54005 navigation \"English\"\n   #n54006 link \"English\" href=\"/en/vendors/feest-ltd-sony3b?…\"\n   #n54007 link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b?…\"\n  #n54008 link \"بحث\" href=\"/ar/search\"\n  #n54009 link \"السلة\" href=\"/ar/…[truncated]"
+                  },
+                  {
+                    "index": 7,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"Switched to Arabic, opened /ar/vendors, found E2E Celebration Vendor (shown translated as مورد احتفالات تجريبي), and inspected its profile. Profile governor…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b?type=digital#vendor-services",
+                  "nodes": 68,
+                  "since": 1,
+                  "changes": [
+                    "changed document \"مورد احتفالات تجريبي · إنستابارتي\" (was: document \"InstaParty · Find vendors for your next celebration, all in one place.\")",
+                    "added link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b?…#…\"",
+                    "added link \"InstaParty\" href=\"/ar\"",
+                    "added navigation \"English\"",
+                    "added link \"English\" href=\"/en/vendors/feest-ltd-sony3b?…\"",
+                    "added link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b?…\"",
+                    "added link \"بحث\" href=\"/ar/search\"",
+                    "added link \"السلة\" href=\"/ar/cart\"",
+                    "added link \"تسجيل الدخول\" href=\"/ar/auth/login\"",
+                    "added box",
+                    "added link \"تصفّح كل البائعين\" href=\"/ar/vendors\"",
+                    "added text=\"م\""
+                  ],
+                  "more": 165
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd:3",
+                "index": 3,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /ar/vendors, find the seeded vendor, open its profile, inspect governorate labels and the rental/sale/digital filter; verify each result belongs to this vendor and Arabic direction and labels work; report reproducible inconsistencies.\nBudget: 1 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] Vendor profile filters — Switched to Arabic, opened /ar/vendors, found E2E Celebration Vendor (shown translated as مورد احتفالات تجريبي), and inspected its profile. Profile governorate reads القاهرة; filters worked: تأجير showed only the party lights rental, بيع only decorations, and رقمي only the digital invitation. Results were consistent with the vendor’s three listed services and Arabic labels; worth exploring Arabic page direction visually.\n\nFindings so far:\n(none yet)\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:24.930Z",
+                "durationMs": 7214,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:24.932Z",
+                    "durationMs": 67,
+                    "status": "passed",
+                    "bytes": 3381,
+                    "count": 68
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:25.000Z",
+                    "durationMs": 7137,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2892,
+                    "inputTokens": 2587,
+                    "outputTokens": 305
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 3381,
+                  "contextBytes": 1063,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2587,
+                  "outputTokens": 305,
+                  "peakTokensPerCall": 2892,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b16",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b?type=digital#vendor-services",
+                  "nodes": 68,
+                  "since": 2,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd:4",
+                "index": 4,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "On the current Arabic vendor profile, inspect the screenshot for RTL layout issues in the profile heading, governorate label, service search, and service card; report only reproducible visual inconsistencies. Interact with the vendor service search by entering a distinctive Arabic word from the digital invitation title, submit it, then clear the query and confirm the result list recovers. Do not re-test the rental/sale/digital filters already covered.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:32.149Z",
+                "durationMs": 23206,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:32.168Z",
+                    "durationMs": 266,
+                    "status": "passed",
+                    "bytes": 3381,
+                    "count": 68
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:33.997Z",
+                    "durationMs": 440,
+                    "status": "passed",
+                    "bytes": 3381,
+                    "count": 68
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:18:34.892Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "vision.pixels",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:32.452Z",
+                    "durationMs": 2442,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 6583,
+                    "inputTokens": 6569,
+                    "outputTokens": 14
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:37.970Z",
+                    "durationMs": 82,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"دعوة\" into searchbox \"ابحث في خدمات هذا البائع…\" in \"خدمات هذا البائع\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:38.052Z",
+                    "durationMs": 384,
+                    "status": "passed",
+                    "bytes": 3408,
+                    "count": 68
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:34.921Z",
+                    "durationMs": 3793,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7145,
+                    "inputTokens": 7121,
+                    "outputTokens": 24
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:43.467Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b?type=digital&q=%D8%AF%D8%B9%D9%88%D8%A9#vendor-services"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:41.963Z",
+                    "durationMs": 2255,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"بحث\" in \"خدمات هذا البائع\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:44.218Z",
+                    "durationMs": 798,
+                    "status": "passed",
+                    "bytes": 3492,
+                    "count": 69
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:38.718Z",
+                    "durationMs": 6549,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7762,
+                    "inputTokens": 7743,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:49.112Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b#vendor-services"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:48.613Z",
+                    "durationMs": 644,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap link \"مسح جميع الفلاتر\" in \"خدمات هذا البائع\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:49.257Z",
+                    "durationMs": 452,
+                    "status": "passed",
+                    "bytes": 4341,
+                    "count": 84
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:45.270Z",
+                    "durationMs": 4632,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 9415,
+                    "inputTokens": 9396,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:49.905Z",
+                    "durationMs": 5451,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 11370,
+                    "inputTokens": 11284,
+                    "outputTokens": 86
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 5,
+                  "actionSteps": 3,
+                  "observationBytes": 4341,
+                  "contextBytes": 1063,
+                  "ledgerBytes": 1348,
+                  "pixelBytes": 110278
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 5,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 42113,
+                  "outputTokens": 162,
+                  "peakTokensPerCall": 11370,
+                  "cacheReadTokens": 14848,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b26",
+                "explanation": "Inspected the profile screenshot: heading and governorate read right-aligned, search and cards appear consistently RTL; no reproducible visual inconsistency found. Searched for «دعوة», which retained the digital invitation result, then cleared filters and confirmed all three vendor services returned. No rental/sale/digital filters retested.",
+                "visionInput": true,
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "screenshot({})"
+                    ],
+                    "outcome": "[screenshot] Screen unchanged since revision b18 (re-observed as revision b20, path /ar/vendors/feest-ltd-sony3b?type=digital#vendor-services); the ids you have stay valid.\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 53161 bytes]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "type({\"target\":\"n54025\",\"value\":\"دعوة\"})"
+                    ],
+                    "outcome": "[type] Typed into #n54025.\n\nScreen changes since revision b20 (now revision b22, path /ar/vendors/feest-ltd-sony3b?type=digital#vendor-services, 68 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n54025 searchbox \"ابحث في خدمات هذا البائع…\" value=\"دعوة\" (was: #n54025 searchbox \"ابحث في خدمات هذا البائع…\")\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 51727 bytes]"
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "tap({\"target\":\"n54026\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n54026.\n\nThe screen changed substantially since revision b22. Current screen (revision b24, path /ar/vendors/feest-ltd-sony3b?type=digital&q=%D8%AF%D8%B9%D9%88%D8%A9#vendor-services, 69 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n87002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b?…#…\"\n #n87003 banner\n  #n87004 link \"InstaParty\" href=\"/ar\"\n  #n87005 navigation \"English\"\n   #n87006 link \"English\" href=\"/en/vendors/feest-ltd-sony3b?…\"\n   #n87007 link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b?…\"\n  #n87008 link \"بحث\" href=\"/ar/search\"\n  #n87…[truncated]"
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "tap({\"target\":\"n87027\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n87027.\n\nThe screen changed substantially since revision b24. Current screen (revision b26, path /ar/vendors/feest-ltd-sony3b#vendor-services, 84 nodes):\n#root document \"مورد احتفالات تجريبي · إنستابارتي\"\n #n93002 link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b#…\"\n #n93003 banner\n  #n93004 link \"InstaParty\" href=\"/ar\"\n  #n93005 navigation \"English\"\n   #n93006 link \"English\" href=\"/en/vendors/feest-ltd-sony3b\"\n   #n93007 link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b\"\n  #n93008 link \"بحث\" href=\"/ar/search\"\n  #n93009 link \"السلة\" href=\"/ar/cart\"\n  #n93010 lin…[truncated]"
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"Inspected the profile screenshot: heading and governorate read right-aligned, search and cards appear consistently RTL; no reproducible visual inconsistency…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b#vendor-services",
+                  "nodes": 84,
+                  "since": 3,
+                  "changes": [
+                    "added link \"انتقل إلى المحتوى الرئيسي\" href=\"/ar/vendors/feest-ltd-sony3b#…\"",
+                    "added link \"English\" href=\"/en/vendors/feest-ltd-sony3b\"",
+                    "added link \"العربية\" href=\"/ar/vendors/feest-ltd-sony3b\"",
+                    "added article",
+                    "added link \"زينة حفلات تجريبية بيع et molestiae زينة حفلات تجريبية ابتداءً من ‏125.00 ج.م.‏\" href=\"/ar/services/01M4RNA5V9VDVSK5K10YK3FT35\"",
+                    "added image \"زينة حفلات تجريبية\"",
+                    "added text=\"بيع\"",
+                    "added text=\"et molestiae\"",
+                    "added heading \"زينة حفلات تجريبية\"",
+                    "added text=\"ابتداءً من\"",
+                    "added text=\"‏125.00 ج.م.‏\"",
+                    "added article"
+                  ],
+                  "more": 14
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-a272-7ac4-b82e-ea056c4a69cd:5",
+                "index": 5,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /ar/vendors, find the seeded vendor, open its profile, inspect governorate labels and the rental/sale/digital filter; verify each result belongs to this vendor and Arabic direction and labels work; report reproducible inconsistencies.\nBudget: 2 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] Vendor profile filters — Switched to Arabic, opened /ar/vendors, found E2E Celebration Vendor (shown translated as مورد احتفالات تجريبي), and inspected its profile. Profile governorate reads القاهرة; filters worked: تأجير showed only the party lights rental, بيع only decorations, and رقمي only the digital invitation. Results were consistent with the vendor’s three listed services and Arabic labels; worth exploring Arabic page direction visually.\n2. [passed] Arabic profile direction — Inspected the profile screenshot: heading and governorate read right-aligned, search and cards appear consistently RTL; no reproducible visual inconsistency found. Searched for «دعوة», which retained the digital invitation result, then cleared filters and confirmed all three vendor services returned. No rental/sale/digital filters retested.\n\nFindings so far:\n(none yet)\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:55.400Z",
+                "durationMs": 3947,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:55.401Z",
+                    "durationMs": 209,
+                    "status": "passed",
+                    "bytes": 4341,
+                    "count": 84
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:55.610Z",
+                    "durationMs": 3738,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 3206,
+                    "inputTokens": 2953,
+                    "outputTokens": 253
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 4341,
+                  "contextBytes": 1063,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2953,
+                  "outputTokens": 253,
+                  "peakTokensPerCall": 3206,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b27",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/vendors/feest-ltd-sony3b#vendor-services",
+                  "nodes": 84,
+                  "since": 4,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "summary": {
+      "discovered": 1,
+      "selected": 1,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "limits": {
+      "maxAgentContextBytes": 16384,
+      "maxLedgerBytes": 8192,
+      "maxObservationBytes": 262144,
+      "maxEventsPerStep": 1000,
+      "maxModelTokensPerCall": 64000
+    },
+    "usage": {
+      "discoveredResults": 1,
+      "maxAgentContextBytes": 1063,
+      "maxLedgerBytes": 1348,
+      "maxObservationBytes": 8308,
+      "artifactBytes": 0,
+      "downloads": 0,
+      "events": 47,
+      "modelTokens": 131104,
+      "maxModelCallsInStep": 7,
+      "maxActionStepsInStep": 6,
+      "modelCachedTokens": 35584
+    },
+    "explore": {
+      "goal": "Starting at /ar/vendors, find the seeded vendor, open its profile, inspect governorate labels and the rental/sale/digital filter; verify each result belongs to this vendor and Arabic direction and labels work; report reproducible inconsistencies.",
+      "budgets": {
+        "maxSteps": 3,
+        "timeoutMs": 300000
+      },
+      "ended": "finished",
+      "summary": "The goal is covered: the seeded vendor’s profile showed القاهرة, its three service filters returned the matching services, and the Arabic profile appeared consistently right-to-left with working labels. No reproducible inconsistency was found; additional governorate labels were not present on this profile to inspect. The vendor service filters and the Arabic profile’s RTL layout are the strongest candidates for scripted tests.",
+      "steps": [
+        {
+          "index": 1,
+          "title": "Vendor profile filters",
+          "instruction": "Switch to Arabic using the العربية link, then open the vendors directory at /ar/vendors. Find E2E Celebration Vendor and open its profile. Inspect the governorate labels and rental/sale/digital filter; interact with each filter option, checking that every displayed result belongs to this vendor and that the Arabic direction and labels behave correctly. Record any reproducible inconsistencies with the relevant control and result.",
+          "status": "passed",
+          "summary": "Switched to Arabic, opened /ar/vendors, found E2E Celebration Vendor (shown translated as مورد احتفالات تجريبي), and inspected its profile. Profile governorate reads القاهرة; filters worked: تأجير showed only the party lights rental, بيع only decorations, and رقمي only the digital invitation. Results were consistent with the vendor’s three listed services and Arabic labels; worth exploring Arabic page direction visually.",
+          "startedAt": "2026-10-12T18:17:51.081Z",
+          "durationMs": 33847
+        },
+        {
+          "index": 2,
+          "title": "Arabic profile direction",
+          "instruction": "On the current Arabic vendor profile, inspect the screenshot for RTL layout issues in the profile heading, governorate label, service search, and service card; report only reproducible visual inconsistencies. Interact with the vendor service search by entering a distinctive Arabic word from the digital invitation title, submit it, then clear the query and confirm the result list recovers. Do not re-test the rental/sale/digital filters already covered.",
+          "status": "passed",
+          "summary": "Inspected the profile screenshot: heading and governorate read right-aligned, search and cards appear consistently RTL; no reproducible visual inconsistency found. Searched for «دعوة», which retained the digital invitation result, then cleared filters and confirmed all three vendor services returned. No rental/sale/digital filters retested.",
+          "startedAt": "2026-10-12T18:18:32.147Z",
+          "durationMs": 23211
+        }
+      ],
+      "findings": []
+    }
+  }
+}

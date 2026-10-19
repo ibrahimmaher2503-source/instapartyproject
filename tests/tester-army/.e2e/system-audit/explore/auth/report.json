@@ -1,0 +1,1270 @@
+{
+  "schemaVersion": "report-1",
+  "run": {
+    "id": "01a13155-bd38-7e70-989c-3c4c9f333edc",
+    "specVersion": "0.1",
+    "runner": {
+      "name": "e2e",
+      "version": "0.19.0"
+    },
+    "status": "passed",
+    "exitCode": 0,
+    "startedAt": "2026-10-12T18:17:46.383Z",
+    "finishedAt": "2026-10-12T18:19:12.288Z",
+    "project": {
+      "id": "unportable-3716bcbfc92c81af0f7e89b120d49b8b",
+      "configDigest": "7180b9d46c73c9f680813798a174c3cae551b43375d0aa7752edef24b9366a15"
+    },
+    "environment": {
+      "ci": false,
+      "trustNoticeShown": false,
+      "os": "linux 6.6.114.1-microsoft-standard-WSL2",
+      "arch": "x64",
+      "runtime": "node v24.15.0"
+    },
+    "vcs": {
+      "commit": "c8882e45f895fe31245fd4e7e57147129d3ec544",
+      "branch": "fix/instaparty-client-reported-issues"
+    },
+    "targets": [
+      {
+        "id": "desktop",
+        "index": 0,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      },
+      {
+        "id": "mobile",
+        "index": 1,
+        "platform": "web",
+        "baseOrigin": "http://127.0.0.1:18090",
+        "environment": "test",
+        "engine": {
+          "name": "web",
+          "version": "0.14.0",
+          "spiVersion": 1
+        },
+        "capabilities": [
+          "actions",
+          "artifacts",
+          "browser",
+          "keyboard",
+          "location",
+          "observation",
+          "pointer",
+          "state"
+        ],
+        "artifactCapabilities": [
+          "screenshot",
+          "video"
+        ],
+        "stateCapability": true
+      }
+    ],
+    "serialGroups": [],
+    "results": [
+      {
+        "id": "5f49392928ee8cf8b9355d2cce9a9d9448d8f57ea5a050d0a4e040792b376e57",
+        "testId": "explore::Starting%20at%20%2Fen%2Fauth%2Flogin%2C%20try%20submitting%20empty%20fields%20and%20one%20unknown%20account%20with%20an%20incorrect%20password%2C%20then%20inspect%20%2Far%2Fauth%2Fregister%20with%20empty%20and%20malformed%20fields%20without%20completing%20registration%3B%20check%20visible%20validation%2C%20localization%20and%20recovery%20links.",
+        "kind": "test",
+        "declarationIndex": 0,
+        "titlePath": [
+          "Starting at /en/auth/login, try submitting empty fields and one unknown account with an incorrect password, then inspect /ar/auth/register with empty and malformed fields without completing registration; check visible validation, localization and recovery links."
+        ],
+        "file": "explore",
+        "source": {
+          "file": "explore",
+          "line": 1,
+          "column": 1
+        },
+        "targetId": "desktop",
+        "platform": "web",
+        "agent": "default",
+        "repeat": 0,
+        "tags": [],
+        "selected": true,
+        "status": "passed",
+        "attempts": [
+          {
+            "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee",
+            "index": 0,
+            "status": "passed",
+            "startedAt": "2026-10-12T18:17:46.414Z",
+            "durationMs": 85702,
+            "artifacts": [],
+            "secondaryErrors": [],
+            "cleanup": "complete",
+            "environment": {
+              "browser": "chromium 153.0.8010.12",
+              "user agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+            },
+            "steps": [
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:0",
+                "index": 0,
+                "kind": "app",
+                "api": "app.open",
+                "label": "/",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:46.670Z",
+                "durationMs": 1581,
+                "events": [],
+                "artifacts": [],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 126,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:1",
+                "index": 1,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /en/auth/login, try submitting empty fields and one unknown account with an incorrect password, then inspect /ar/auth/register with empty and malformed fields without completing registration; check visible validation, localization and recovery links.\nBudget: 0 of 3 steps used, about 5 minute(s) left.\n\nSteps so far:\n(none yet: this is the first step)\n\nFindings so far:\n(none yet)\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:48.268Z",
+                "durationMs": 3582,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:48.638Z",
+                    "durationMs": 300,
+                    "status": "passed",
+                    "bytes": 6207,
+                    "count": 126
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:48.941Z",
+                    "durationMs": 2907,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 3286,
+                    "inputTokens": 3185,
+                    "outputTokens": 101
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 6207,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 3185,
+                  "outputTokens": 101,
+                  "peakTokensPerCall": 3286,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b1",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en",
+                  "nodes": 126,
+                  "since": 0,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:2",
+                "index": 2,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Open the Sign in page at /en/auth/login. Submit the login form with both fields empty and note any visible validation. Then enter a made-up email address for an unknown account and an incorrect password, submit, and check the response and any recovery links. Do not use a seeded account or proceed beyond sign-in.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:17:51.856Z",
+                "durationMs": 40207,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:51.899Z",
+                    "durationMs": 285,
+                    "status": "passed",
+                    "bytes": 6207,
+                    "count": 126
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:17:53.836Z",
+                    "durationMs": 5594,
+                    "status": "passed",
+                    "name": "navigate",
+                    "detail": "navigate to \"/en/auth/login\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:17:59.431Z",
+                    "durationMs": 501,
+                    "status": "passed",
+                    "bytes": 952,
+                    "count": 24
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:52.200Z",
+                    "durationMs": 7743,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7026,
+                    "inputTokens": 7006,
+                    "outputTokens": 20
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:02.011Z",
+                    "durationMs": 118,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"Sign in\" in \"InstaParty\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:02.130Z",
+                    "durationMs": 2258,
+                    "status": "passed",
+                    "bytes": 962,
+                    "count": 24
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:17:59.956Z",
+                    "durationMs": 4433,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7378,
+                    "inputTokens": 7359,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:05.720Z",
+                    "durationMs": 1571,
+                    "status": "passed",
+                    "bytes": 962,
+                    "count": 24
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:18:07.843Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "vision.pixels",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:04.395Z",
+                    "durationMs": 3453,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 7458,
+                    "inputTokens": 7444,
+                    "outputTokens": 14
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:18:11.562Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "secret.fill",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:11.561Z",
+                    "durationMs": 78,
+                    "status": "passed",
+                    "name": "typeSecret",
+                    "detail": "fill secret \"customer.password\" into textbox \"Password\" in \"InstaParty\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:11.639Z",
+                    "durationMs": 154,
+                    "status": "passed",
+                    "bytes": 960,
+                    "count": 24
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:18:11.793Z",
+                    "durationMs": 0,
+                    "status": "failed",
+                    "name": "vision.pixels",
+                    "decision": "denied",
+                    "code": "PIXEL_TAINTED"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:07.854Z",
+                    "durationMs": 3939,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8007,
+                    "inputTokens": 7982,
+                    "outputTokens": 25
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:16.583Z",
+                    "durationMs": 51,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"unknown-account-93842@example.test\" into textbox \"Phone or email\" in \"InstaParty\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:16.635Z",
+                    "durationMs": 179,
+                    "status": "passed",
+                    "bytes": 1005,
+                    "count": 24
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:11.797Z",
+                    "durationMs": 5019,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8134,
+                    "inputTokens": 8105,
+                    "outputTokens": 29
+                  },
+                  {
+                    "kind": "navigation",
+                    "startedAt": "2026-10-12T18:18:21.723Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "detail": "navigated to http://127.0.0.1:18090/en/auth/login"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:20.792Z",
+                    "durationMs": 1651,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"Sign in\" in \"InstaParty\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:22.443Z",
+                    "durationMs": 216,
+                    "status": "passed",
+                    "bytes": 1197,
+                    "count": 27
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:16.821Z",
+                    "durationMs": 5839,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8290,
+                    "inputTokens": 8271,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:27.404Z",
+                    "durationMs": 154,
+                    "status": "passed",
+                    "bytes": 1197,
+                    "count": 27
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:27.403Z",
+                    "durationMs": 158,
+                    "status": "passed",
+                    "name": "tool:report_finding"
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:22.664Z",
+                    "durationMs": 4898,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8819,
+                    "inputTokens": 8709,
+                    "outputTokens": 110
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:27.568Z",
+                    "durationMs": 4494,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 8951,
+                    "inputTokens": 8865,
+                    "outputTokens": 86
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 8,
+                  "actionSteps": 5,
+                  "observationBytes": 6207,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 307,
+                  "pixelBytes": 197020
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 8,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 63741,
+                  "outputTokens": 322,
+                  "peakTokensPerCall": 8951,
+                  "cacheReadTokens": 19456,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b34",
+                "explanation": "At /en/auth/login, submitting both empty fields triggered the browser-required prompt on the email field and no application validation. A made-up unknown email with a secure-filled incorrect password showed “The provided credentials are incorrect.” Recovery links remain visible: “Forgot your password?” and “Create account”; stopped at sign-in as requested.",
+                "visionInput": true,
+                "visionDegraded": "PIXEL_TAINTED",
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "navigate({\"url\":\"/en/auth/login\"})"
+                    ],
+                    "outcome": "[navigate] Navigated to /en/auth/login.\n\nThe screen changed substantially since revision b3. Current screen (revision b5, path /en/auth/login, 24 nodes):\n#root document \"Welcome back\"\n #n12002 banner\n  #n12003 link \"InstaParty\" href=\"/en\"\n  #n12004 link \"Back to marketplace\" href=\"/en\"\n  #n12005 navigation \"العربية\"\n   #n12006 link \"English\" href=\"/en/auth/login\"\n   #n12007 link \"العربية\" href=\"/ar/auth/login\"\n #n12008 main\n  #n12009 region \"Welcome back\"\n   #n12010 text=\"InstaParty\"\n   #n12011 heading \"Welcome back\"\n   #n12012 text=\"Sign in to continue.\"\n   #n12013 text=\"Phone or email\"\n   #n…[truncated]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "tap({\"target\":\"n12020\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n12020.\n\nNo listed node changed within the wait after this action (re-observed as revision b24, path /en/auth/login); the ids you have stay valid. The listing shows only what the tree describes: a drawn change needs a screenshot to see."
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "screenshot({})"
+                    ],
+                    "outcome": "[screenshot] Screen unchanged since revision b24 (re-observed as revision b26, path /en/auth/login); the ids you have stay valid.\n\nScreenshot attached: 768 by 480 pixels (0.5333333333333333 per CSS pixel). Point coordinates (tap_at and the other _at verbs) are pixels of this image: x from the left edge, y from the top edge.\n[screenshot, 197020 bytes]"
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "type_secret({\"target\":\"n12016\",\"name\":\"customer.password\"})"
+                    ],
+                    "outcome": "[type_secret] Filled secret \"customer.password\" into #n12016; its value is masked in every observation.\n\nScreen unchanged since revision b26 (re-observed as revision b28, path /en/auth/login); the ids you have stay valid.\n\nNo screenshot: a secret was filled in this attempt, so no pixels leave the runner until it ends (PIXEL_TAINTED). Work from the tree and tap listed nodes by id."
+                  },
+                  {
+                    "index": 5,
+                    "calls": [
+                      "type({\"target\":\"n12014\",\"value\":\"unknown-account-93842@example.test\"})"
+                    ],
+                    "outcome": "[type] Typed into #n12014.\n\nScreen changes since revision b28 (now revision b30, path /en/auth/login, 24 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n12014 textbox \"Phone or email\" value=\"unknown-account-93842@example.test\" purpose=username (was: #n12014 textbox \"Phone or email\" purpose=username)\n\nNo screenshot: a secret was filled in this attempt, so no pixels leave the runner until it ends (PIXEL_TAINTED). Work from the tree and tap listed nodes by id."
+                  },
+                  {
+                    "index": 6,
+                    "calls": [
+                      "tap({\"target\":\"n12020\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n12020.\n\nThe screen changed substantially since revision b30. Current screen (revision b32, path /en/auth/login, 27 nodes):\n#root document \"Welcome back\"\n #n105002 banner\n  #n105003 link \"InstaParty\" href=\"/en\"\n  #n105004 link \"Back to marketplace\" href=\"/en\"\n  #n105005 navigation \"العربية\"\n   #n105006 link \"English\" href=\"/en/auth/login\"\n   #n105007 link \"العربية\" href=\"/ar/auth/login\"\n #n105008 main\n  #n105009 region \"Welcome back\"\n   #n105010 text=\"InstaParty\"\n   #n105011 heading \"Welcome back\"\n   #n105012 text=\"Sign in to continue.\"\n   #n105013 alert \"The provided credentials…[truncated]"
+                  },
+                  {
+                    "index": 7,
+                    "calls": [
+                      "report_finding({\"title\":\"Empty login submission produces only browser-required validation\",\"kind\":\"warning\",\"severity\":1,\"expected\":\"Submitting both empty fields should show visible validation explain…[truncated]"
+                    ],
+                    "outcome": "[report_finding] Finding 1 recorded (warning, severity 1): Empty login submission produces only browser-required validation. Do not report it again; continue the charter or conclude the step."
+                  },
+                  {
+                    "index": 8,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"At /en/auth/login, submitting both empty fields triggered the browser-required prompt on the email field and no application validation. A made-up unknown em…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en/auth/login",
+                  "nodes": 27,
+                  "since": 1,
+                  "changes": [
+                    "changed document \"Welcome back\" (was: document \"InstaParty · Find vendors for your next celebration, all in one place.\")",
+                    "added link \"Back to marketplace\" href=\"/en\"",
+                    "added link \"English\" href=\"/en/auth/login\"",
+                    "added link \"العربية\" href=\"/ar/auth/login\"",
+                    "added region \"Welcome back\"",
+                    "added text=\"InstaParty\"",
+                    "added heading \"Welcome back\"",
+                    "added text=\"Sign in to continue.\"",
+                    "added alert \"The provided credentials are incorrect.\"",
+                    "added text=\"The provided credentials are incorrect.\"",
+                    "added text=\"Phone or email\"",
+                    "added textbox \"Phone or email\" value=\"unknown-account-93842@example.test\" purpose=username"
+                  ],
+                  "more": 132
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:3",
+                "index": 3,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /en/auth/login, try submitting empty fields and one unknown account with an incorrect password, then inspect /ar/auth/register with empty and malformed fields without completing registration; check visible validation, localization and recovery links.\nBudget: 1 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] Login validation — At /en/auth/login, submitting both empty fields triggered the browser-required prompt on the email field and no application validation. A made-up unknown email with a secure-filled incorrect password showed “The provided credentials are incorrect.” Recovery links remain visible: “Forgot your password?” and “Create account”; stopped at sign-in as requested.\n\nFindings so far:\n- [warning, severity 1] Empty login submission produces only browser-required validation\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:32.068Z",
+                "durationMs": 3124,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:32.074Z",
+                    "durationMs": 44,
+                    "status": "passed",
+                    "bytes": 1197,
+                    "count": 27
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:32.118Z",
+                    "durationMs": 3078,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2067,
+                    "inputTokens": 1870,
+                    "outputTokens": 197
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 1197,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 1870,
+                  "outputTokens": 197,
+                  "peakTokensPerCall": 2067,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b35",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/en/auth/login",
+                  "nodes": 27,
+                  "since": 2,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:4",
+                "index": 4,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Navigate to /ar/auth/register. Inspect the Arabic registration form and visible recovery or sign-in links. Submit it with all fields empty, then enter malformed test values in the relevant fields and submit again. Record the visible validation messages and whether the page and messages are localized in Arabic. Do not complete registration or submit plausible account details.",
+                "status": "failed",
+                "startedAt": "2026-10-12T18:18:35.197Z",
+                "durationMs": 15759,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:35.201Z",
+                    "durationMs": 136,
+                    "status": "passed",
+                    "bytes": 1197,
+                    "count": 27
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:37.999Z",
+                    "durationMs": 1231,
+                    "status": "passed",
+                    "name": "navigate",
+                    "detail": "navigate to \"/ar/auth/register\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:39.230Z",
+                    "durationMs": 199,
+                    "status": "passed",
+                    "bytes": 1767,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:35.343Z",
+                    "durationMs": 4087,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 5157,
+                    "inputTokens": 5137,
+                    "outputTokens": 20
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:41.803Z",
+                    "durationMs": 181,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"إنشاء الحساب\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:41.984Z",
+                    "durationMs": 2197,
+                    "status": "passed",
+                    "bytes": 1777,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:39.433Z",
+                    "durationMs": 4749,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 5678,
+                    "inputTokens": 5659,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:45.732Z",
+                    "durationMs": 95,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"إنشاء الحساب\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:45.827Z",
+                    "durationMs": 2161,
+                    "status": "passed",
+                    "bytes": 1777,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:44.187Z",
+                    "durationMs": 3801,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 5777,
+                    "inputTokens": 5758,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:47.992Z",
+                    "durationMs": 2964,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 5935,
+                    "inputTokens": 5857,
+                    "outputTokens": 78
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 4,
+                  "actionSteps": 3,
+                  "observationBytes": 1777,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 1255
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 4,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 22411,
+                  "outputTokens": 136,
+                  "peakTokensPerCall": 5935,
+                  "cacheReadTokens": 8704,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b72",
+                "explanation": "Reached the Arabic registration form; its labels and sign-in/terms links are in Arabic. Tapping “إنشاء الحساب” twice produced no validation message or visible change, so empty-submit validation could not be verified and malformed-value validation was not reached.",
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "navigate({\"url\":\"/ar/auth/register\"})"
+                    ],
+                    "outcome": "[navigate] Navigated to /ar/auth/register.\n\nThe screen changed substantially since revision b37. Current screen (revision b39, path /ar/auth/register, 33 nodes):\n#root document \"أنشئ حسابك\"\n #n129002 banner\n  #n129003 link \"InstaParty\" href=\"/ar\"\n  #n129004 link \"العودة للمنصة\" href=\"/ar\"\n  #n129005 navigation \"English\"\n   #n129006 link \"English\" href=\"/en/auth/register\"\n   #n129007 link \"العربية\" href=\"/ar/auth/register\"\n #n129008 main\n  #n129009 region \"أنشئ حسابك\"\n   #n129010 text=\"إنستابارتي\"\n   #n129011 heading \"أنشئ حسابك\"\n   #n129012 text=\"خطّط لمناسبتك القادمة في دقائق.\"\n   #n129013 te…[truncated]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "tap({\"target\":\"n129030\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n129030.\n\nNo listed node changed within the wait after this action (re-observed as revision b55, path /ar/auth/register); the ids you have stay valid. No screenshot can be taken in this step, so the listing is the only evidence: if a change was expected, look for another way rather than repeating it."
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "tap({\"target\":\"n129030\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n129030.\n\nNo listed node changed within the wait after this action (re-observed as revision b72, path /ar/auth/register); the ids you have stay valid. No screenshot can be taken in this step, so the listing is the only evidence: if a change was expected, look for another way rather than repeating it."
+                  },
+                  {
+                    "index": 4,
+                    "calls": [
+                      "complete_step({\"status\":\"failed\",\"summary\":\"Reached the Arabic registration form; its labels and sign-in/terms links are in Arabic. Tapping “إنشاء الحساب” twice produced no validation message or visib…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/auth/register",
+                  "nodes": 33,
+                  "since": 3,
+                  "changes": [
+                    "changed document \"أنشئ حسابك\" (was: document \"Welcome back\")",
+                    "added link \"InstaParty\" href=\"/ar\"",
+                    "added link \"العودة للمنصة\" href=\"/ar\"",
+                    "added navigation \"English\"",
+                    "added link \"English\" href=\"/en/auth/register\"",
+                    "added link \"العربية\" href=\"/ar/auth/register\"",
+                    "added region \"أنشئ حسابك\"",
+                    "added text=\"إنستابارتي\"",
+                    "added heading \"أنشئ حسابك\"",
+                    "added text=\"خطّط لمناسبتك القادمة في دقائق.\"",
+                    "added text=\"الاسم الكامل\"",
+                    "added textbox \"الاسم الكامل\""
+                  ],
+                  "more": 43
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                },
+                "error": {
+                  "category": "test",
+                  "code": "ASSERTION_FAILED",
+                  "message": "agent.act failed: Reached the Arabic registration form; its labels and sign-in/terms links are in Arabic. Tapping “إنشاء الحساب” twice produced no validation message or visible change, so empty-submit validation could not be verified and malformed-value validation was not reached.",
+                  "retryable": false
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:5",
+                "index": 5,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Plan the next step of an exploratory test run, or finish it.\n\nGoal: Starting at /en/auth/login, try submitting empty fields and one unknown account with an incorrect password, then inspect /ar/auth/register with empty and malformed fields without completing registration; check visible validation, localization and recovery links.\nBudget: 2 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] Login validation — At /en/auth/login, submitting both empty fields triggered the browser-required prompt on the email field and no application validation. A made-up unknown email with a secure-filled incorrect password showed “The provided credentials are incorrect.” Recovery links remain visible: “Forgot your password?” and “Create account”; stopped at sign-in as requested.\n2. [FAILED] Arabic registration validation — agent.act failed: Reached the Arabic registration form; its labels and sign-in/terms links are in Arabic. Tapping “إنشاء الحساب” twice produced no validation message or visible change, so empty-submit validation could not be verified and malformed-value validation was not reached.\n\nFindings so far:\n- [warning, severity 1] Empty login submission produces only browser-required validation\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nDecide from the goal, the steps so far, and the current screen:\n- \"step\": the next exploration charter. \"title\" names the area or flow in a few words. \"instruction\" is a concrete,\n  self-contained charter for an agent that sees only the screen and that text: which flow to exercise, what inputs\n  to try, what to check. One flow or screen per step, sized for five to fifteen actions; split anything bigger.\n  Ask the agent to interact, not only to look: submit forms with made-up test data, save and revisit,\n  sign in with the accounts listed above (or made-up credentials when none are configured), act on a non-first item of a list. Prefer breadth: touch the main\n  flows the goal names before drilling deeper into one. Do not re-test an area a passed step already covered, and\n  never plan a step to re-confirm a finding already recorded above. When a step ended at its limit, continue where\n  it stopped or move on. When a step summary mentions something odd that is not among the findings, spend the next\n  step confirming it.\n- \"finish\": the goal is covered, or nothing new is reachable. \"summary\" is the closing assessment.\n  The assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\n  are already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\n  what the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\n  turning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.\nRespond with every field present: {\"decision\": \"step\", \"title\": \"...\", \"instruction\": \"...\", \"summary\": \"\"} or {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:50.971Z",
+                "durationMs": 4632,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:50.972Z",
+                    "durationMs": 57,
+                    "status": "passed",
+                    "bytes": 1777,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:51.030Z",
+                    "durationMs": 4573,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2347,
+                    "inputTokens": 2057,
+                    "outputTokens": 290
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 1777,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 2057,
+                  "outputTokens": 290,
+                  "peakTokensPerCall": 2347,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b73",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/auth/register",
+                  "nodes": 33,
+                  "since": 4,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:6",
+                "index": 6,
+                "kind": "agent",
+                "api": "agent.act",
+                "label": "Continue on /ar/auth/register. Enter deliberately malformed values: an invalid phone number, malformed optional email, and mismatched or too-short passwords; leave the terms checkbox unchecked. Submit using “إنشاء الحساب” without completing registration. Check whether any inline or browser validation appears, whether the messages and controls remain localized in Arabic, and whether the sign-in link is still available. Do not use real personal data or proceed if the form appears ready to create an account.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:18:55.605Z",
+                "durationMs": 12302,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:55.609Z",
+                    "durationMs": 201,
+                    "status": "passed",
+                    "bytes": 1777,
+                    "count": 33
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:59.451Z",
+                    "durationMs": 62,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"Test User\" into textbox \"الاسم الكامل\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:59.513Z",
+                    "durationMs": 215,
+                    "status": "passed",
+                    "bytes": 1795,
+                    "count": 33
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:18:59.728Z",
+                    "durationMs": 131,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"abc-not-a-phone\" into textbox \"رقم الهاتف\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:18:59.869Z",
+                    "durationMs": 255,
+                    "status": "passed",
+                    "bytes": 1819,
+                    "count": 33
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:00.124Z",
+                    "durationMs": 143,
+                    "status": "passed",
+                    "name": "type",
+                    "detail": "type \"not-an-email\" into textbox \"البريد الإلكتروني (اختياري)\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:00.267Z",
+                    "durationMs": 238,
+                    "status": "passed",
+                    "bytes": 1840,
+                    "count": 33
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:19:00.506Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "secret.fill",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:00.506Z",
+                    "durationMs": 97,
+                    "status": "passed",
+                    "name": "typeSecret",
+                    "detail": "fill secret \"customer.password\" into textbox \"كلمة المرور\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:00.603Z",
+                    "durationMs": 214,
+                    "status": "passed",
+                    "bytes": 1838,
+                    "count": 33
+                  },
+                  {
+                    "kind": "policy",
+                    "startedAt": "2026-10-12T18:19:00.818Z",
+                    "durationMs": 0,
+                    "status": "passed",
+                    "name": "secret.fill",
+                    "decision": "allowed"
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:00.817Z",
+                    "durationMs": 76,
+                    "status": "passed",
+                    "name": "typeSecret",
+                    "detail": "fill secret \"customer.password\" into textbox \"تأكيد كلمة المرور\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:00.893Z",
+                    "durationMs": 191,
+                    "status": "passed",
+                    "bytes": 1838,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:18:55.814Z",
+                    "durationMs": 5271,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 5576,
+                    "inputTokens": 5451,
+                    "outputTokens": 125
+                  },
+                  {
+                    "kind": "engine",
+                    "startedAt": "2026-10-12T18:19:03.012Z",
+                    "durationMs": 91,
+                    "status": "passed",
+                    "name": "tap",
+                    "detail": "tap button \"إنشاء الحساب\" in \"إنستابارتي\""
+                  },
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:03.104Z",
+                    "durationMs": 2245,
+                    "status": "passed",
+                    "bytes": 1840,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:01.089Z",
+                    "durationMs": 4261,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 5980,
+                    "inputTokens": 5961,
+                    "outputTokens": 19
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:05.353Z",
+                    "durationMs": 2553,
+                    "status": "passed",
+                    "name": "executor",
+                    "count": 6152,
+                    "inputTokens": 6060,
+                    "outputTokens": 92
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 3,
+                  "actionSteps": 6,
+                  "observationBytes": 1840,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 2111
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "executor/e2e-default-agent@2",
+                  "policyVersion": "e2e-default-agent/2",
+                  "calls": 3,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 17472,
+                  "outputTokens": 236,
+                  "peakTokensPerCall": 6152,
+                  "cacheReadTokens": 2816,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b100",
+                "explanation": "Entered a made-up name, malformed phone and optional email, and the same securely filled password in both password fields; terms remained unchecked. Tapping “إنشاء الحساب” left the Arabic registration form unchanged with the Arabic sign-in link still available and no visible inline validation; no registration was completed. Passwords were masked; malformed validation could not be confirmed.",
+                "turns": [
+                  {
+                    "index": 1,
+                    "calls": [
+                      "type({\"target\":\"n129014\",\"value\":\"Test User\"})",
+                      "type({\"target\":\"n129016\",\"value\":\"abc-not-a-phone\"})",
+                      "type({\"target\":\"n129019\",\"value\":\"not-an-email\"})",
+                      "type_secret({\"target\":\"n129021\",\"name\":\"customer.password\"})",
+                      "type_secret({\"target\":\"n129025\",\"name\":\"customer.password\"})"
+                    ],
+                    "outcome": "[type] Typed into #n129014.\n\nScreen changes since revision b75 (now revision b77, path /ar/auth/register, 33 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n129014 textbox \"الاسم الكامل\" value=\"Test User\" (was: #n129014 textbox \"الاسم الكامل\")\n[type] Typed into #n129016.\n\nScreen changes since revision b77 (now revision b79, path /ar/auth/register, 33 nodes): 1 changed. Every node not listed as removed is still on screen under the id you have.\nchanged #n129016 textbox \"رقم الهاتف\" value=\"abc-not-a-phone\" (was: #n129016 textbox \"رقم الهاتف\"…[truncated]"
+                  },
+                  {
+                    "index": 2,
+                    "calls": [
+                      "tap({\"target\":\"n129030\"})"
+                    ],
+                    "outcome": "[tap] Tapped #n129030.\n\nNo listed node changed within the wait after this action (re-observed as revision b100, path /ar/auth/register); the ids you have stay valid. No screenshot can be taken in this step, so the listing is the only evidence: if a change was expected, look for another way rather than repeating it."
+                  },
+                  {
+                    "index": 3,
+                    "calls": [
+                      "complete_step({\"status\":\"passed\",\"summary\":\"Entered a made-up name, malformed phone and optional email, and the same securely filled password in both password fields; terms remained unchecked. Tapping…[truncated]"
+                    ],
+                    "outcome": "[complete_step] Step concluded."
+                  }
+                ],
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/auth/register",
+                  "nodes": 33,
+                  "since": 5,
+                  "changes": [
+                    "changed textbox \"الاسم الكامل\" value=\"Test User\" (was: textbox \"الاسم الكامل\")",
+                    "changed textbox \"رقم الهاتف\" value=\"abc-not-a-phone\" (was: textbox \"رقم الهاتف\")",
+                    "changed textbox \"البريد الإلكتروني (اختياري)\" value=\"not-an-email\" (was: textbox \"البريد الإلكتروني (اختياري)\")"
+                  ]
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              },
+              {
+                "id": "01a13155-c2ad-7fa3-90c2-ea2347588eee:7",
+                "index": 7,
+                "kind": "agent",
+                "api": "agent.extract",
+                "label": "Finish an exploratory test run with your overall assessment.\n\nGoal: Starting at /en/auth/login, try submitting empty fields and one unknown account with an incorrect password, then inspect /ar/auth/register with empty and malformed fields without completing registration; check visible validation, localization and recovery links.\nBudget: 3 of 3 steps used, about 4 minute(s) left.\n\nSteps so far:\n1. [passed] Login validation — At /en/auth/login, submitting both empty fields triggered the browser-required prompt on the email field and no application validation. A made-up unknown email with a secure-filled incorrect password showed “The provided credentials are incorrect.” Recovery links remain visible: “Forgot your password?” and “Create account”; stopped at sign-in as requested.\n2. [FAILED] Arabic registration validation — agent.act failed: Reached the Arabic registration form; its labels and sign-in/terms links are in Arabic. Tapping “إنشاء الحساب” twice produced no validation message or visible change, so empty-submit validation could not be verified and malformed-value validation was not reached.\n3. [passed] Arabic registration errors — Entered a made-up name, malformed phone and optional email, and the same securely filled password in both password fields; terms remained unchecked. Tapping “إنشاء الحساب” left the Arabic registration form unchanged with the Arabic sign-in link still available and no visible inline validation; no registration was completed. Passwords were masked; malformed validation could not be confirmed.\n\nFindings so far:\n- [warning, severity 1] Empty login submission produces only browser-required validation\n\nAccounts the agent can sign in with (it fills the password itself, by name):\n- customer (username: tester-army-customer@example.test)\n- other_customer (username: tester-army-other_customer@example.test)\n- admin (username: tester-army-admin@example.test)\n- vendor (username: tester-army-vendor@example.test)\n\nThe run must end now: the step limit of 3 is reached.\nRespond with {\"decision\": \"finish\", \"title\": \"\", \"instruction\": \"\", \"summary\": \"...\"}: the closing assessment.\nThe assessment is two to four plain sentences for the person reading the terminal, where the steps and the findings\nare already listed above it. Do not list or count the findings again. Say: your verdict on the goal in one sentence;\nwhat the goal names that was not reached or not fully exercised, and why; and which one or two flows are most worth\nturning into scripted tests. Name screens and controls as the app names them; no headings, bullets, or markdown.",
+                "status": "passed",
+                "startedAt": "2026-10-12T18:19:07.934Z",
+                "durationMs": 4031,
+                "events": [
+                  {
+                    "kind": "observation",
+                    "startedAt": "2026-10-12T18:19:07.938Z",
+                    "durationMs": 81,
+                    "status": "passed",
+                    "bytes": 1840,
+                    "count": 33
+                  },
+                  {
+                    "kind": "model",
+                    "startedAt": "2026-10-12T18:19:08.019Z",
+                    "durationMs": 3946,
+                    "status": "passed",
+                    "name": "agent-extract-2",
+                    "count": 2107,
+                    "inputTokens": 1885,
+                    "outputTokens": 222
+                  }
+                ],
+                "agent": "default",
+                "artifacts": [],
+                "metrics": {
+                  "modelCalls": 1,
+                  "actionSteps": 0,
+                  "observationBytes": 1840,
+                  "contextBytes": 1079,
+                  "ledgerBytes": 0
+                },
+                "model": {
+                  "provider": "chatgpt.responses",
+                  "model": "gpt-6-luna",
+                  "endpoint": "provider-default",
+                  "adapterVersion": "ai-sdk/0.19.0",
+                  "policyVersion": "policy-0.3",
+                  "calls": 1,
+                  "tokenAccounting": "provider",
+                  "inputTokens": 1885,
+                  "outputTokens": 222,
+                  "peakTokensPerCall": 2107,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "observationRevision": "b101",
+                "screen": {
+                  "location": "http://127.0.0.1:18090/ar/auth/register",
+                  "nodes": 33,
+                  "since": 6,
+                  "changes": []
+                },
+                "source": {
+                  "file": "unknown",
+                  "line": 1,
+                  "column": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "summary": {
+      "discovered": 1,
+      "selected": 1,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "limits": {
+      "maxAgentContextBytes": 16384,
+      "maxLedgerBytes": 8192,
+      "maxObservationBytes": 262144,
+      "maxEventsPerStep": 1000,
+      "maxModelTokensPerCall": 64000
+    },
+    "usage": {
+      "discoveredResults": 1,
+      "maxAgentContextBytes": 1079,
+      "maxLedgerBytes": 2111,
+      "maxObservationBytes": 6207,
+      "artifactBytes": 0,
+      "downloads": 0,
+      "events": 63,
+      "modelTokens": 114125,
+      "maxModelCallsInStep": 8,
+      "maxActionStepsInStep": 6,
+      "modelCachedTokens": 30976
+    },
+    "explore": {
+      "goal": "Starting at /en/auth/login, try submitting empty fields and one unknown account with an incorrect password, then inspect /ar/auth/register with empty and malformed fields without completing registration; check visible validation, localization and recovery links.",
+      "budgets": {
+        "maxSteps": 3,
+        "timeoutMs": 300000
+      },
+      "ended": "step-limit",
+      "summary": "The goal was partially completed: the English login checks and Arabic registration inspection were performed, but visible validation was not confirmed on registration. Empty and malformed Arabic registration submissions left the form unchanged, so malformed-value validation and behavior after agreeing to the terms were not fully exercised; registration was not completed. The most worthwhile flows to script are submitting empty fields on “Sign in” and submitting malformed values with “إنشاء الحساب” on “أنشئ حسابك,” including checking Arabic labels and recovery links.",
+      "steps": [
+        {
+          "index": 1,
+          "title": "Login validation",
+          "instruction": "Open the Sign in page at /en/auth/login. Submit the login form with both fields empty and note any visible validation. Then enter a made-up email address for an unknown account and an incorrect password, submit, and check the response and any recovery links. Do not use a seeded account or proceed beyond sign-in.",
+          "status": "passed",
+          "summary": "At /en/auth/login, submitting both empty fields triggered the browser-required prompt on the email field and no application validation. A made-up unknown email with a secure-filled incorrect password showed “The provided credentials are incorrect.” Recovery links remain visible: “Forgot your password?” and “Create account”; stopped at sign-in as requested.",
+          "startedAt": "2026-10-12T18:17:51.854Z",
+          "durationMs": 40211
+        },
+        {
+          "index": 2,
+          "title": "Arabic registration validation",
+          "instruction": "Navigate to /ar/auth/register. Inspect the Arabic registration form and visible recovery or sign-in links. Submit it with all fields empty, then enter malformed test values in the relevant fields and submit again. Record the visible validation messages and whether the page and messages are localized in Arabic. Do not complete registration or submit plausible account details.",
+          "status": "failed",
+          "summary": "agent.act failed: Reached the Arabic registration form; its labels and sign-in/terms links are in Arabic. Tapping “إنشاء الحساب” twice produced no validation message or visible change, so empty-submit validation could not be verified and malformed-value validation was not reached.",
+          "errorCode": "ASSERTION_FAILED",
+          "startedAt": "2026-10-12T18:18:35.197Z",
+          "durationMs": 15762
+        },
+        {
+          "index": 3,
+          "title": "Arabic registration errors",
+          "instruction": "Continue on /ar/auth/register. Enter deliberately malformed values: an invalid phone number, malformed optional email, and mismatched or too-short passwords; leave the terms checkbox unchecked. Submit using “إنشاء الحساب” without completing registration. Check whether any inline or browser validation appears, whether the messages and controls remain localized in Arabic, and whether the sign-in link is still available. Do not use real personal data or proceed if the form appears ready to create an account.",
+          "status": "passed",
+          "summary": "Entered a made-up name, malformed phone and optional email, and the same securely filled password in both password fields; terms remained unchecked. Tapping “إنشاء الحساب” left the Arabic registration form unchanged with the Arabic sign-in link still available and no visible inline validation; no registration was completed. Passwords were masked; malformed validation could not be confirmed.",
+          "startedAt": "2026-10-12T18:18:55.604Z",
+          "durationMs": 12304
+        }
+      ],
+      "findings": [
+        {
+          "id": "01a13156-6366-79ea-95e9-0f0b359c2dbb",
+          "index": 0,
+          "step": 1,
+          "kind": "warning",
+          "severity": 1,
+          "title": "Empty login submission produces only browser-required validation",
+          "expected": "Submitting both empty fields should show visible validation explaining both required fields are missing.",
+          "actual": "Submitting the empty form leaves the page unchanged; the browser screenshot showed a native “Please fill out this field.” prompt on the email input, with no app-level validation.",
+          "reproduction": [
+            "Open /en/auth/login.",
+            "Leave Phone or email and Password empty.",
+            "Click Sign in."
+          ],
+          "path": "/en/auth/login",
+          "observationRevision": "b34",
+          "reportedAt": "2026-10-12T18:18:27.559Z"
+        }
+      ]
+    }
+  }
+}

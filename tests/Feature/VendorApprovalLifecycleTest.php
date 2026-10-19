@@ -22,7 +22,10 @@ use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\SuspendedState;
+use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource;
 use Carbon\CarbonImmutable;
+use Filament\Facades\Filament;
+use Livewire\Livewire;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
@@ -79,6 +82,40 @@ function eligibleVendorProfile(): VendorProfile
 
     return $profile;
 }
+
+it('explains unavailable approval in the queue and review and clears it when requirements are complete', function (string $locale, bool $complete): void {
+    app()->setLocale($locale);
+    $admin = User::factory()->superAdmin()->create();
+    foreach (['view_any_vendor::profile', 'view_vendor::profile', 'approve_vendor_profile'] as $permission) {
+        $admin->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+    }
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $vendor = eligibleVendorProfile();
+    if (! $complete) {
+        $vendor->update(['bank_iban' => null]);
+    }
+    $message = $locale === 'ar' ? 'الموافقة متوقفة' : 'Approval is unavailable';
+
+    foreach (['index', 'view'] as $page) {
+        $response = $this->get(VendorApprovalQueueResource::getUrl($page, ['record' => $vendor, 'lang' => $locale]));
+        $response->assertOk();
+        if ($complete) {
+            $response->assertDontSee($message);
+        } else {
+            $response->assertSee($message)
+                ->assertSee(__('identity.approval_eligibility.requirements.banking'));
+        }
+    }
+    $queue = Livewire::test(VendorApprovalQueueResource::getPages()['index']->getPage());
+    if ($complete) {
+        $queue->assertTableActionHidden('approvalRequirements', $vendor);
+    } else {
+        $queue->assertTableActionVisible('approvalRequirements', $vendor)
+            ->mountTableAction('approvalRequirements', $vendor)
+            ->assertSee(__('identity.approval_eligibility.banking'));
+    }
+})->with(['en', 'ar'])->with([false, true]);
 
 it('denies incomplete approval with a localized structured checklist', function (string $locale): void {
     app()->setLocale($locale);

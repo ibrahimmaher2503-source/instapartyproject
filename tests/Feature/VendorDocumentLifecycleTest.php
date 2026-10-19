@@ -155,7 +155,7 @@ it('preserves rejected document history and creates one pending re-upload', func
 
     $replacement = app(ReuploadVendorDocumentAction::class)->execute(
         $rejected,
-        UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('national-id.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')),
         $owner,
     );
 
@@ -166,7 +166,7 @@ it('preserves rejected document history and creates one pending re-upload', func
 
     expect(fn () => app(ReuploadVendorDocumentAction::class)->execute(
         $rejected,
-        UploadedFile::fake()->create('again.pdf', 40, 'application/pdf'),
+        UploadedFile::fake()->createWithContent('again.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')),
         $owner,
     ))->toThrow(ConflictHttpException::class);
 });

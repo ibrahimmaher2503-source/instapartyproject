@@ -75,6 +75,35 @@ it('initiates one deterministic payment and replays the same idempotent response
         ->and($payment->capture_ledger_group_id)->toBeNull();
 });
 
+it('uses the requested locale for customer payment endpoints when the app defaults to Arabic', function (): void {
+    config(['app.locale' => 'ar']);
+
+    $customer = User::factory()->asCustomer()->create();
+    $booking = paymentReadyBooking($customer);
+
+    Sanctum::actingAs($customer);
+    $this->withHeaders([
+        'Accept' => 'application/json',
+        'Accept-Language' => 'en',
+        'Idempotency-Key' => 'e2e-payment-locale-0001',
+    ])
+        ->postJson('/api/v1/customer/bookings/'.$booking->public_id.'/payments', ['method' => 'card'])
+        ->assertCreated()
+        ->assertJsonPath('meta.locale', 'en')
+        ->assertJsonPath('meta.direction', 'ltr');
+
+    $payment = Payment::query()->where('booking_id', $booking->id)->firstOrFail();
+
+    $this->withHeaders([
+        'Accept' => 'application/json',
+        'Accept-Language' => 'ar',
+    ])
+        ->getJson('/api/v1/customer/payments/'.$payment->public_id)
+        ->assertOk()
+        ->assertJsonPath('meta.locale', 'ar')
+        ->assertJsonPath('meta.direction', 'rtl');
+});
+
 it('rejects payment initiation for an unconfirmed booking before the gateway', function (): void {
     $customer = User::factory()->asCustomer()->create();
     $booking = BookingFactory::new()->draft()->create([

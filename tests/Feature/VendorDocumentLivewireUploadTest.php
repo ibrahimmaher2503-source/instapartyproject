@@ -36,7 +36,7 @@ it('stores a vendor document through the Livewire temporary upload pipeline', fu
     Livewire::test(VendorDocumentsPage::class)
         ->callAction('upload', data: [
             'doc_type' => DocumentType::NationalId->value,
-            'file' => UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf'),
+            'file' => UploadedFile::fake()->createWithContent('national-id.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf')),
         ])
         ->assertHasNoActionErrors();
 
@@ -76,7 +76,7 @@ it('keeps the temporary upload in the mounted action state before submit', funct
         ->set('mountedActionsData.0.doc_type', DocumentType::NationalId->value)
         ->upload(
             'mountedActionsData.0.file',
-            [UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf')],
+            [UploadedFile::fake()->createWithContent('national-id.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf'))],
         );
 
     expect($component->instance()->mountedActionsData[0]['file'] ?? null)
@@ -112,7 +112,7 @@ it('accepts the browser file key upload before the mounted action submit', funct
         ->set('mountedActionsData.0.doc_type', DocumentType::NationalId->value)
         ->upload(
             'mountedActionsData.0.file.8d8a9f15-39af-4a66-9c1b-2f2f4db0d7b1',
-            [UploadedFile::fake()->create('national-id.pdf', 40, 'application/pdf')],
+            [UploadedFile::fake()->createWithContent('national-id.pdf', file_get_contents(__DIR__.'/../Fixtures/vendor-document.pdf'))],
         );
 
     $fileState = $component->instance()->mountedActionsData[0]['file'] ?? null;
