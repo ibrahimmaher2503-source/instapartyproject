@@ -30,6 +30,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\ValidationException;
 
 class HomeBlockResource extends Resource
 {
@@ -37,7 +38,7 @@ class HomeBlockResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -273,7 +274,21 @@ class HomeBlockResource extends Resource
 
     public static function persistViaAction(array $data, ?HomeBlock $record = null): HomeBlock
     {
-        return app(SaveHomeBlockAction::class)->execute($record, $data);
+        if ($record !== null) {
+            $data['block_type'] = $record->block_type->value;
+        }
+
+        try {
+            return app(SaveHomeBlockAction::class)->execute($record, $data);
+        } catch (ValidationException $exception) {
+            $errors = [];
+
+            foreach ($exception->errors() as $field => $messages) {
+                $errors["data.payload.{$field}"] = $messages;
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     public static function reorderViaAction(array $orderedPublicIds): void

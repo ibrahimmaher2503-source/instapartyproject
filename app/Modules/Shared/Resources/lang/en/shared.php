@@ -5,6 +5,13 @@ declare(strict_types=1);
 return [
     'created_at' => 'Created at',
     'updated_at' => 'Updated at',
+    'errors' => [
+        'unexpected_failure' => 'We could not complete your request. Please try again.',
+        'action_failed' => 'The action could not be completed.',
+        'validation_failed' => 'Please review the highlighted payment details.',
+        'not_found' => 'The requested resource could not be found.',
+        'reference_id' => 'Reference ID: :id',
+    ],
     'dashboard' => [
         'title' => 'Dashboard', 'console_label' => 'Operations console',
         'choose_area' => 'Choose an area to focus on the work that needs attention.',

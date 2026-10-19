@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'allocation_not_eligible' => 'لا يمكن تنفيذ الخدمة قبل قبول المورد للحجز أو بعد انتهاء مهلة الرد.',
     'sub_status' => 'حالة المورد',
     'vendor_total' => 'إجمالي المورد',
+    'display_timezone' => ':field (المنطقة الزمنية: :timezone)',
     'nav' => [
         'bookings' => 'الحجوزات',
         'negotiation_monitor' => 'متابعة التفاوض',
@@ -53,6 +55,7 @@ return [
         'amount_paid' => 'المبلغ المدفوع',
         'submitted_at' => 'تاريخ الإرسال',
         'vendor' => 'المورد',
+        'vendor_id' => 'المورد',
         'vendor_status' => 'حالة المورد',
         'service' => 'الخدمة',
         'product_type' => 'نوع المنتج',
@@ -143,6 +146,7 @@ return [
         'event_starts_at' => 'بداية الحدث',
         'event_ends_at' => 'نهاية الحدث',
         'guest_count' => 'عدد الضيوف',
+        'guest_count_helper' => 'اختياري. أدخل عددًا صحيحًا من 1 إلى 10,000.',
         'city' => 'المدينة',
         'address_line' => 'العنوان',
         'address_building' => 'المبنى',
@@ -159,7 +163,7 @@ return [
 
     'modals' => [
         'force_cancel_title' => 'إلغاء الحجز إجباريًا',
-        'force_cancel_description' => 'سيؤدي ذلك إلى إلغاء الحجز وتسجيل أثر تدقيقي.',
+        'force_cancel_description' => 'الحجز :reference حالته :status للعميل :customer بإجمالي :amount. يؤدي التأكيد إلى إلغاء الحجز والطلبات المعلقة والمعدلة والمقبولة لدى الموردين، وإخطار العميل والموردين المتأثرين. تظل الطلبات قيد التنفيذ وسجلات الدفع كما هي، ولا يبدأ أي استرداد.',
         'force_cancel_reason' => 'السبب',
         'admin_note_body' => 'الملاحظة الإدارية',
     ],
@@ -171,6 +175,10 @@ return [
         'transportation_line_added' => 'تمت إضافة بند النقل وإعادة حساب الإجمالي.',
     ],
     'invoice' => [
+        'item_subtotal' => 'مجموع البنود',
+        'recorded_subtotal_adjustment' => 'تسوية إجمالي البنود المسجلة (السبب غير محفوظ)',
+        'recorded_vat' => 'ضريبة القيمة المضافة المسجلة',
+        'tax_context' => 'تعرض الضرائب كما سجلت. مستند الحجز لا يحدد نسبة ضريبة ولا يعد اعتمادًا لفاتورة ضريبية.',
         'title' => 'فاتورة الحجز',
         'print' => 'طباعة الفاتورة',
         'customer' => 'العميل',
@@ -179,6 +187,15 @@ return [
         'item' => 'العنصر',
         'amount' => 'المبلغ',
         'vendor_delivery' => 'توصيل الموردين',
+        'discount' => 'خصم الحجز',
+        'loyalty_redemption' => 'استبدال نقاط الولاء',
+        'booking_reference' => 'مرجع الحجز',
+        'document_reference' => 'مرجع المستند (مرجع الحجز)',
+        'vendor' => 'المورد',
+        'invoice_name' => 'اسم مستلم الفاتورة',
+        'invoice_tax_id' => 'الرقم الضريبي',
+        'no_tax_details_recorded' => 'لا توجد بيانات ضريبية مسجلة لهذا الحجز',
+        'payment_status' => 'حالة الدفع',
     ],
 
     'empty_states' => [
@@ -317,6 +334,8 @@ return [
             'escalate_vendor_timeout' => 'تصعيد انتهاء المهلة',
             'extend_vendor_deadline' => 'تمديد موعد الاستجابة',
             'suggest_alternative_vendors' => 'اقتراح بدائل',
+            'admin_accept_vendor' => 'قبول بالنيابة عن المورد',
+            'admin_reject_vendor' => 'رفض بالنيابة عن المورد',
             'resume_customer_review' => 'استئناف المراجعة',
             'create_note' => 'إضافة ملاحظة',
             'freeze_chat' => 'تجميد المحادثة',
@@ -332,6 +351,7 @@ return [
             'resume_reason' => 'سبب الاستئناف',
             'suggest_vendors' => 'اقتراح موردين',
             'suggest_vendors_help' => 'راجع البدائل المحددة قبل التأكيد. يظل العميل صاحب القرار النهائي.',
+            'admin_decision_reason' => 'سبب قرار المسؤول',
             'review_summary' => 'مراجعة قبل الإرسال',
             'review_summary_body' => '{0} اختر بديلاً واحداً على الأقل. سيتلقى العميل الاقتراح، ولن يتم تعيين مورد أو تغيير حالة الحجز.|{1} سيتلقى العميل بديلاً مقترحاً واحداً. لن يتم تعيين مورد أو تغيير حالة الحجز.|[2,*] سيتلقى العميل :count بدائل مقترحة. لن يتم تعيين مورد أو تغيير حالة الحجز.',
             'extend_hours' => 'مدة التمديد (بالساعات)',
@@ -341,6 +361,8 @@ return [
             'escalate_vendor_timeout' => 'تصعيد انتهاء مهلة المورد؟ سيتم تحديد حالة المورد كمنتهية المهلة.',
             'extend_vendor_deadline' => 'تمديد موعد استجابة المورد؟ سيتم إعادة ضبط المهلة والسماح له بالقبول أو الرفض.',
             'suggest_alternative_vendors' => 'اقتراح هؤلاء الموردين للعميل؟',
+            'admin_accept_vendor' => 'قبول هذا الطلب المعلق بالنيابة عن المورد؟',
+            'admin_reject_vendor' => 'رفض هذا الطلب المعلق بالنيابة عن المورد؟',
             'resume_customer_review' => 'إرسال تذكير مراجعة للعميل؟',
             'create_note' => 'حفظ هذه الملاحظة؟',
             'freeze_chat' => 'تجميد محادثة الحجز؟ سيتم إخطار جميع الأطراف.',
@@ -351,6 +373,8 @@ return [
             'escalate_vendor_timeout' => 'تم تصعيد المورد إلى حالة انتهاء المهلة.',
             'extend_vendor_deadline' => 'تم تمديد موعد الاستجابة بنجاح.',
             'suggest_alternative_vendors' => 'تم اقتراح موردين بديلين للعميل.',
+            'admin_accept_vendor' => 'تم قبول طلب المورد بواسطة المسؤول.',
+            'admin_reject_vendor' => 'تم رفض طلب المورد بواسطة المسؤول.',
             'resume_customer_review' => 'تم إرسال تذكير مراجعة العميل.',
             'create_note' => 'تم حفظ الملاحظة.',
             'freeze_chat' => 'تم تجميد محادثة الحجز بنجاح.',
@@ -359,6 +383,7 @@ return [
         'error' => [
             'throttled' => 'تم تنفيذ هذا الإجراء مؤخراً. يرجى الانتظار قبل المحاولة مرة أخرى.',
             'vendor_not_pending' => 'المورد لم يعد في حالة الانتظار.',
+            'decision_reason' => 'أدخل سبباً يتراوح بين 10 و1000 حرف.',
             'deadline_not_passed' => 'لم ينقضِ الموعد النهائي للاستجابة بعد.',
             'no_open_modification' => 'لا يوجد تعديل مفتوح لهذا الحجز.',
             'chat_thread_not_found' => 'لم يتم العثور على محادثة لهذا الحجز.',
@@ -397,6 +422,7 @@ return [
         'action_failed' => 'فشل الإجراء.',
     ],
     'validation' => [
+        'guest_count_range' => 'أدخل عددًا صحيحًا من 1 إلى 10,000.',
         'transport_price_invalid' => 'أدخل مبلغًا بالجنيه المصري لا يقل عن صفر وبمنزلتين عشريتين كحد أقصى.',
         'lane_required' => 'خطوة التنفيذ مطلوبة.',
         'lane_invalid' => 'يجب أن تكون خطوة التنفيذ preparing أو ready أو in_progress أو completed.',
@@ -413,6 +439,9 @@ return [
         'booking_completed' => 'تم إكمال هذا الحجز ولا يمكن تعديله.',
         'fulfillment_in_progress' => 'التنفيذ جارٍ ولا يمكن تعديل الحجز.',
         'booking_not_modifiable' => 'لم يعد هذا الحجز قابلاً للتعديل.',
+        'submit_failed' => [
+            'message' => 'تعذر إرسال هذا الحجز. راجع تفاصيل المناسبة وحاول مرة أخرى.',
+        ],
         'below_coverage_minimum' => [
             'message' => 'بائع واحد أو أكثر يطلب حدًا أدنى أعلى لإجمالي الطلب في هذه المنطقة.',
         ],

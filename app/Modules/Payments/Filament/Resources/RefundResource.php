@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace App\Modules\Payments\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+
 use App\Modules\Payments\Domain\Models\Refund;
 use App\Modules\Payments\Filament\Resources\RefundResource\Pages\ListRefunds;
 use App\Modules\Payments\Filament\Resources\RefundResource\Pages\ViewRefund;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class RefundResource extends Resource
 {
@@ -26,7 +31,7 @@ class RefundResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {
@@ -61,8 +66,18 @@ class RefundResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'booking.public_id', 'status', 'amount_minor', 'amount_currency', 'created_at'])])
+            ->filters([OperationalDateFilter::make()])
             ->columns([
                 TextColumn::make('public_id')
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'gateway_ref'],
+                        'payment' => ['public_id'],
+                        'booking' => ['public_id', 'reference_no'],
+                        'booking.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'booking.vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'booking.vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->label(__('payments.refund.columns.public_id'))
                     ->copyable(),
                 TextColumn::make('booking.public_id')

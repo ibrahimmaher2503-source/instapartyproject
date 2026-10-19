@@ -54,6 +54,20 @@ class DatabaseSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         Role::where('name', 'super_admin')->first()?->syncPermissions(Permission::all());
 
+        // Shield generates these resource permissions after IdentityRolesSeeder has synced the admin role.
+        $adminRole = Role::where('name', 'admin')->where('guard_name', 'web')->first();
+        $adminRole?->givePermissionTo(
+            Permission::query()
+                ->where('guard_name', 'web')
+                ->whereIn('name', [
+                    'view_any_vendor::profile',
+                    'create_rental::service',
+                    'create_sale::service',
+                    'create_digital::service',
+                ])
+                ->get(),
+        );
+
         $this->call([
             AdminUserSeeder::class,
             EgyptGeographySeeder::class,
@@ -78,6 +92,7 @@ class DatabaseSeeder extends Seeder
             LoyaltyDevelopmentSeeder::class,
             DiscoveryDevelopmentSeeder::class,
             VendorPortalDevelopmentSeeder::class,
+            \App\Modules\Shared\Database\Seeders\OperationalPermissionsSeeder::class,
             InformationalCmsPagesSeeder::class,
             CmsPagesSeeder::class,
             AppSettingsSeeder::class,

@@ -22,6 +22,14 @@ class ViewChatMessageLog extends ViewRecord
 {
     protected static string $resource = ChatMessageLogResource::class;
 
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+        abort_unless($this->record instanceof ChatMessageLog, 404);
+        app(\App\Modules\Communication\Application\Actions\RecordChatModerationReadAction::class)
+            ->execute($this->record, auth()->id());
+    }
+
     protected function getHeaderActions(): array
     {
         return [

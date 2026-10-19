@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Booking\Application\Actions\ExpireStaleBookingModificationsAction;
+use App\Modules\Catalog\Application\Actions\FailStaleExcelImportsAction;
 use App\Modules\Payments\Application\Actions\ExpirePendingPaymentsAction;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentIdempotencyKeyRepository;
 use App\Modules\Shared\Infrastructure\Jobs\OrphanMediaCleanupJob;
@@ -26,6 +27,12 @@ Schedule::call(fn () => app(ExpireStaleBookingModificationsAction::class)->execu
 
 Schedule::call(fn () => app(ExpirePendingPaymentsAction::class)->execute())
     ->name('payments:expire-pending-holds')
+    ->everyFifteenMinutes()
+    ->onOneServer()
+    ->withoutOverlapping();
+
+Schedule::call(fn () => app(FailStaleExcelImportsAction::class)->execute())
+    ->name('catalog:fail-stale-excel-imports')
     ->everyFifteenMinutes()
     ->onOneServer()
     ->withoutOverlapping();

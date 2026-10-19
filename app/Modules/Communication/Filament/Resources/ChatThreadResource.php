@@ -43,11 +43,11 @@ class ChatThreadResource extends Resource
         return __('communication.chat.restricted_chats_label');
     }
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 80;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.communication');
+        return __('admin.nav.groups.support');
     }
 
     public static function getNavigationLabel(): string
@@ -221,9 +221,11 @@ class ChatThreadResource extends Resource
                                 $reasonEn = $changes['reason_en'] ?? $changes['note_en'] ?? $changes['summary_en'] ?? null;
                                 $reasonAr = $changes['reason_ar'] ?? $changes['note_ar'] ?? $changes['summary_ar'] ?? null;
                                 $reason = trim(($reasonEn ?? '').(($reasonEn && $reasonAr) ? ' / ' : '').($reasonAr ?? ''));
+                                $actionKey = 'chat_moderation.audit.actions.'.$row->action;
+                                $action = __($actionKey);
 
                                 return [
-                                    'action' => $row->action,
+                                    'action' => $action === $actionKey ? $row->action : $action,
                                     'actor' => $row->actor_name ?? '—',
                                     'reason' => $reason !== '' ? $reason : '—',
                                     'created_at' => $row->created_at,

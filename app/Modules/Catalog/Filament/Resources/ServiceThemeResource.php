@@ -36,7 +36,7 @@ class ServiceThemeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-swatch';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 70;
 
     public static function getNavigationLabel(): string
     {

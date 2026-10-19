@@ -48,7 +48,7 @@ class NotificationTemplateResource extends Resource
         return __('admin.nav.groups.communication');
     }
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {

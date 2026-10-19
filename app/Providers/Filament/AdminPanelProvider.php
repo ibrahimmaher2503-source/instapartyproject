@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
-use App\Modules\Identity\Filament\Auth\IsolatedPanelLogin;
+use App\Modules\Identity\Filament\Auth\AdminEditProfile;
+use App\Modules\Identity\Filament\Auth\AdminLogin;
+use App\Modules\Identity\Filament\Auth\AdminResetPassword;
+use App\Modules\Identity\Filament\Pages\AdminSecurityPage;
+use App\Modules\Identity\Http\Middleware\EnsureAdminMfa;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
-use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
 use App\Modules\Shared\Filament\RenderHooks\TutorialLauncherRenderHook;
 use App\Modules\Shared\Http\Middleware\SetHtmlDirectionMiddleware;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
@@ -37,13 +40,22 @@ class AdminPanelProvider extends PanelProvider
 {
     public function boot(): void
     {
-        Table::$defaultDateTimeDisplayFormat = 'j M Y, g:i A';
-        Infolist::$defaultDateTimeDisplayFormat = 'j M Y, g:i A';
+        \Filament\Forms\Components\DatePicker::configureUsing(fn (\Filament\Forms\Components\DatePicker $field) => $field->native(false)->displayFormat('Y-m-d'));
+        \Filament\Tables\Actions\DeleteAction::configureUsing(fn (\Filament\Tables\Actions\DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getRecordTitle() ?: $action->getRecord()?->getAttribute('public_id') ?: $action->getModelLabel()])));
+        \Filament\Actions\DeleteAction::configureUsing(fn (\Filament\Actions\DeleteAction $action) => $action->modalHeading(fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => $action->getRecordTitle() ?: $action->getRecord()?->getAttribute('public_id') ?: $action->getModelLabel()])));
+        Table::$defaultDateTimeDisplayFormat = 'Y-m-d H:i';
+        Infolist::$defaultDateTimeDisplayFormat = 'Y-m-d H:i';
+        \Filament\Tables\Columns\TextColumn::configureUsing(fn (\Filament\Tables\Columns\TextColumn $column) => $column->extraAttributes(fn (): array => str_contains($column->getName(), 'phone') ? ['dir' => 'ltr', 'style' => 'unicode-bidi:isolate'] : [], merge: true));
+        \Filament\Infolists\Components\TextEntry::configureUsing(fn (\Filament\Infolists\Components\TextEntry $entry) => $entry->extraAttributes(fn (): array => str_contains($entry->getName(), 'phone') ? ['dir' => 'ltr', 'style' => 'unicode-bidi:isolate'] : [], merge: true));
 
         Table::configureUsing(fn (Table $table): Table => $table
             ->paginationPageOptions([10, 25, 50, 100])
             ->defaultPaginationPageOption(25)
             ->searchDebounce('400ms')
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession()
+            ->persistSortInSession()
             ->emptyStateIcon('heroicon-o-inbox')
             ->emptyStateHeading(__('admin.empty_states.no_records'))
             ->emptyStateDescription(__('admin.empty_states.no_records_description')));
@@ -51,10 +63,13 @@ class AdminPanelProvider extends PanelProvider
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
             $switch
                 ->locales(['en', 'ar'])
+                ->labels([
+                    'en' => 'English',
+                    'ar' => 'العربية',
+                ])
                 ->visible(insidePanels: true);
         });
 
-        HtmlDirectionRenderHook::register();
         TutorialLauncherRenderHook::register();
     }
 
@@ -66,10 +81,13 @@ class AdminPanelProvider extends PanelProvider
                 ->id('admin')
                 ->path('admin')
                 ->brandName('InstaParty')
-                ->login(IsolatedPanelLogin::class)
+                ->login(AdminLogin::class)
+                ->passwordReset(resetAction: AdminResetPassword::class)
                 ->authGuard('web')
+                ->profile(AdminEditProfile::class)
                 ->pages([
                     Dashboard::class,
+                    AdminSecurityPage::class,
                 ])
                 ->widgets([
                     'App\\Modules\\Shared\\Filament\\Widgets\\AdminDashboardSectionsWidget',
@@ -104,7 +122,8 @@ class AdminPanelProvider extends PanelProvider
                 ])
                 ->authMiddleware([
                     Authenticate::class,
-                ]);
+                    EnsureAdminMfa::class,
+                ], isPersistent: true);
         }
 
         return $panel
@@ -112,8 +131,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('InstaParty')
-            ->login(IsolatedPanelLogin::class)
+            ->login(AdminLogin::class)
+            ->passwordReset(resetAction: AdminResetPassword::class)
             ->authGuard('web')
+            ->profile(AdminEditProfile::class)
             ->colors([
                 'primary' => Color::hex('#1C2B54'),
                 'success' => Color::hex('#087F5B'),
@@ -172,6 +193,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Modules/Subscriptions/Filament/Pages'), for: 'App\\Modules\\Subscriptions\Filament\Pages')
             ->pages([
                 Dashboard::class,
+                AdminSecurityPage::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->discoverWidgets(in: app_path('Modules/Booking/Filament/Widgets'), for: 'App\\Modules\\Booking\Filament\Widgets')
@@ -193,26 +215,34 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn (): string => __('admin.nav.groups.vendor_management'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.services'))
                     ->label(fn (): string => __('admin.nav.groups.services'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.packages_occasions'))
+                    ->label(fn (): string => __('admin.nav.groups.packages_occasions')),
+                NavigationGroup::make(__('admin.nav.groups.customers'))
+                    ->label(fn (): string => __('admin.nav.groups.customers'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.payments'))
                     ->label(fn (): string => __('admin.nav.groups.payments'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.support'))
                     ->label(fn (): string => __('admin.nav.groups.support'))->collapsed(),
-                NavigationGroup::make(__('admin.nav.groups.communication'))
-                    ->label(fn (): string => __('admin.nav.groups.communication'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.content'))
                     ->label(fn (): string => __('admin.nav.groups.content'))->collapsed(),
-                NavigationGroup::make(__('admin.nav.groups.security'))
-                    ->label(fn (): string => __('admin.nav.groups.security'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.growth'))
+                    ->label(fn (): string => __('admin.nav.groups.growth'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.communication'))
+                    ->label(fn (): string => __('admin.nav.groups.communication'))->collapsed(),
                 NavigationGroup::make(__('admin.nav.groups.settings'))
                     ->label(fn (): string => __('admin.nav.groups.settings'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.security'))
+                    ->label(fn (): string => __('admin.nav.groups.security'))->collapsed(),
+                NavigationGroup::make(__('admin.nav.groups.technical'))
+                    ->label(fn (): string => __('admin.nav.groups.technical'))->collapsed(),
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
                 ActivitylogPlugin::make()
                     ->label(fn (): string => __('admin.activity_log.singular'))
                     ->pluralLabel(fn (): string => __('admin.activity_log.plural'))
-                    ->navigationGroup(fn (): string => __('admin.nav.groups.operations'))
-                    ->navigationSort(80),
+                    ->navigationGroup(fn (): string => __('admin.nav.groups.technical'))
+                    ->navigationSort(190),
 
                 SpatieLaravelTranslatablePlugin::make()
                     ->defaultLocales(['en', 'ar']),
@@ -235,6 +265,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+                EnsureAdminMfa::class,
+            ], isPersistent: true);
     }
 }

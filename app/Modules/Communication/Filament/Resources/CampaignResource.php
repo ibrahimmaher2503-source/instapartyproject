@@ -15,6 +15,7 @@ use App\Modules\Communication\Domain\Models\Campaign;
 use App\Modules\Communication\Filament\Resources\CampaignResource\Pages\CreateCampaign;
 use App\Modules\Communication\Filament\Resources\CampaignResource\Pages\ListCampaigns;
 use App\Modules\Communication\Filament\Resources\CampaignResource\Pages\ViewCampaign;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -42,7 +43,7 @@ class CampaignResource extends Resource
         return __('admin.nav.groups.communication');
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationLabel(): string
     {
@@ -77,6 +78,13 @@ class CampaignResource extends Resource
                 ->label(__('communication.campaign.form.target_locale'))
                 ->options(collect(CampaignTargetLocale::cases())->mapWithKeys(fn ($c) => [$c->value => $c->label()]))
                 ->required(),
+
+            DateTimePicker::make('scheduled_at')
+                ->label(__('communication.campaign.form.scheduled_at'))
+                ->helperText(__('communication.campaign.form.scheduled_at_hint'))
+                ->timezone(fn () => auth()->user()?->timezone ?? config('app.timezone', 'UTC'))
+                ->seconds(false)
+                ->after('now'),
 
             KeyValue::make('segment_filters')
                 ->label(__('communication.campaign.form.segment_filters'))

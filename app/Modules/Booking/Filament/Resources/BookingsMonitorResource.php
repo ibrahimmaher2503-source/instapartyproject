@@ -17,6 +17,8 @@ use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CustomerReviewState
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\VendorReviewState;
 use App\Modules\Booking\Filament\Resources\BookingsMonitorResource\Pages\ListBookingsMonitor;
 use App\Modules\Catalog\Domain\Enums\ProductType;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
+use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -39,7 +41,7 @@ class BookingsMonitorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 40;
 
     protected static ?string $slug = 'bookings-monitor';
 
@@ -75,7 +77,12 @@ class BookingsMonitorResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('reference_no')
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'reference_no'],
+                        'customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->sortable()
                     ->label(__('booking.columns.reference_no')),
 
@@ -159,7 +166,12 @@ class BookingsMonitorResource extends Resource
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading(__('booking.modals.force_cancel_title'))
-                    ->modalDescription(__('booking.modals.force_cancel_description'))
+                    ->modalDescription(fn (Booking $record): string => __('booking.modals.force_cancel_description', [
+                        'reference' => $record->reference_no,
+                        'status' => $record->lifecycle_status->getValue(),
+                        'amount' => $record->total->formatTo(app()->getLocale()),
+                        'customer' => $record->customer?->name ?? '—',
+                    ]))
                     ->form([
                         Textarea::make('reason')
                             ->label(__('booking.modals.force_cancel_reason'))
@@ -214,11 +226,11 @@ class BookingsMonitorResource extends Resource
             ->whereNotNull('response_deadline')
             ->min('response_deadline');
 
-        if ($deadline === null || Carbon\Carbon::parse($deadline, 'UTC')->isFuture()) {
+        if ($deadline === null || Carbon::parse($deadline, 'UTC')->isFuture()) {
             return __('booking.urgency.on_time');
         }
 
-        $minutes = max(1, Carbon\Carbon::parse($deadline, 'UTC')->diffInMinutes(now('UTC')));
+        $minutes = max(1, Carbon::parse($deadline, 'UTC')->diffInMinutes(now('UTC')));
 
         return __('booking.urgency.overdue').' · '.CarbonInterval::minutes($minutes)->cascade()->forHumans();
     }

@@ -96,7 +96,16 @@ class CreateBooking extends CreateRecord
                         TextInput::make('guest_count')
                             ->label(__('booking.create.guest_count'))
                             ->numeric()
+                            ->rules(['integer'])
                             ->minValue(1)
+                            ->maxValue(CreateBookingDraftDTO::MAX_GUEST_COUNT)
+                            ->step(1)
+                            ->validationMessages([
+                                'integer' => __('booking.validation.guest_count_range'),
+                                'min' => __('booking.validation.guest_count_range'),
+                                'max' => __('booking.validation.guest_count_range'),
+                            ])
+                            ->helperText(__('booking.create.guest_count_helper'))
                             ->nullable(),
                     ])
                     ->columns(2),

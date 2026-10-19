@@ -9,6 +9,7 @@ use App\Modules\Communication\Application\Services\InvalidSegmentFilterException
 use App\Modules\Communication\Application\Services\SegmentResolver;
 use App\Modules\Communication\Domain\Enums\CampaignStatus;
 use App\Modules\Communication\Domain\Models\Campaign;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -22,8 +23,15 @@ class CreateCampaignAction
     public function execute(BuildCampaignDTO $dto): Campaign
     {
         $this->validate($dto);
+        $scheduledAt = $dto->scheduledAt === null
+            ? null
+            : Carbon::parse($dto->scheduledAt, config('app.timezone', 'UTC'))->utc();
 
-        return DB::transaction(function () use ($dto): Campaign {
+        if ($scheduledAt !== null && $scheduledAt->lessThanOrEqualTo(now())) {
+            throw new InvalidArgumentException('scheduled_at must be in the future.');
+        }
+
+        return DB::transaction(function () use ($dto, $scheduledAt): Campaign {
             return Campaign::create([
                 'public_id' => Str::ulid()->toBase32(),
                 'name' => $dto->name,
@@ -33,7 +41,8 @@ class CreateCampaignAction
                 'product_type_segment' => $dto->productTypeSegment,
                 'subject' => $dto->subject ?: null,
                 'body' => $dto->body,
-                'status' => CampaignStatus::Draft->value,
+                'scheduled_at' => $scheduledAt,
+                'status' => $scheduledAt === null ? CampaignStatus::Draft->value : CampaignStatus::Scheduled->value,
                 'created_by' => $dto->createdBy,
             ]);
         });

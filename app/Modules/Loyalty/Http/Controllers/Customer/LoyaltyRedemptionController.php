@@ -10,6 +10,7 @@ use App\Modules\Loyalty\Domain\Contracts\LoyaltyRedemptionRepository;
 use App\Modules\Loyalty\Http\Requests\Customer\ApplyRedemptionRequest;
 use App\Modules\Loyalty\Http\Resources\LoyaltyRedemptionResource;
 use App\Modules\Shared\Http\ApiResponse;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -26,11 +27,22 @@ class LoyaltyRedemptionController
 
     public function store(ApplyRedemptionRequest $request, string $bookingPublicId): JsonResponse
     {
-        $redemption = $this->apply->execute(
-            (int) $request->user()->id,
-            $bookingPublicId,
-            (int) $request->validated('points'),
-        );
+        try {
+            $redemption = $this->apply->execute(
+                (int) $request->user()->id,
+                $bookingPublicId,
+                (int) $request->validated('points'),
+            );
+        } catch (DomainException $e) {
+            if ($e->getMessage() !== 'loyalty.currency_mismatch') {
+                throw $e;
+            }
+
+            return ApiResponse::error([
+                'code' => 'currency_mismatch',
+                'message' => __('loyalty::loyalty.errors.currency_mismatch'),
+            ], 422);
+        }
 
         return ApiResponse::success(
             (new LoyaltyRedemptionResource($redemption))->resolve($request),

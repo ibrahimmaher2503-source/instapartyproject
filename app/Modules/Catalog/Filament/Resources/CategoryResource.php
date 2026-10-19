@@ -36,7 +36,7 @@ class CategoryResource extends Resource
         return __('admin.nav.groups.catalog');
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationLabel(): string
     {

@@ -55,6 +55,8 @@ class VendorNotificationPreferencesPage extends Page implements HasForms
         foreach (NotificationChannel::cases() as $channel) {
             foreach (EventCategory::cases() as $category) {
                 if (! $category->canBeDisabled()) {
+                    $formData[$channel->value.'_'.$category->value] = true;
+
                     continue;
                 }
                 $key = $channel->value.'_'.$category->value;
@@ -76,7 +78,9 @@ class VendorNotificationPreferencesPage extends Page implements HasForms
                 if (! $category->canBeDisabled()) {
                     $toggles[] = Toggle::make($channel->value.'_'.$category->value)
                         ->label($category->label())
+                        ->default(true)
                         ->disabled()
+                        ->dehydrated(false)
                         ->helperText(__('vendor-portal.notifications.system_locked'));
 
                     continue;

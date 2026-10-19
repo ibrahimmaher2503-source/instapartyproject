@@ -9,12 +9,15 @@ use App\Modules\Booking\Application\Actions\RemoveItemFromBookingAction;
 use App\Modules\Booking\Application\Actions\SubmitBookingAction;
 use App\Modules\Booking\Application\DTOs\SubmitBookingDTO;
 use App\Modules\Booking\Domain\Contracts\BookingRepository;
+use App\Modules\Booking\Domain\Exceptions\BelowCoverageMinimumException;
+use App\Modules\Booking\Domain\Exceptions\DeliveryCityRequiredException;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\DraftState;
 use App\Modules\Booking\Http\Requests\StorefrontBookingRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class CartController
 {
@@ -63,12 +66,23 @@ class CartController
         $booking = $bookings->findByPublicId($bookingPublicId);
         abort_if($booking === null || $booking->customer_id !== auth()->id(), 404);
 
-        $action->execute(new SubmitBookingDTO(
-            bookingId: $booking->id,
-            customerId: (int) auth()->id(),
-            idempotencyKey: (string) Str::uuid(),
-            requestContent: 'storefront-submit:'.$booking->public_id,
-        ));
+        try {
+            $action->execute(new SubmitBookingDTO(
+                bookingId: $booking->id,
+                customerId: (int) auth()->id(),
+                idempotencyKey: (string) Str::uuid(),
+                requestContent: 'storefront-submit:'.$booking->public_id,
+            ));
+        } catch (BelowCoverageMinimumException) {
+            return redirect()->route('storefront.cart')
+                ->withErrors(['cart' => __('booking.errors.below_coverage_minimum.message')]);
+        } catch (DeliveryCityRequiredException) {
+            return redirect()->route('storefront.cart')
+                ->withErrors(['cart' => __('booking.errors.delivery_city_required.message')]);
+        } catch (HttpExceptionInterface $exception) {
+            return redirect()->route('storefront.cart')
+                ->withErrors(['cart' => $exception->getMessage() !== '' ? $exception->getMessage() : __('booking.errors.submit_failed.message')]);
+        }
 
         return redirect()->route('storefront.cart')->with('booking_submitted', true);
     }

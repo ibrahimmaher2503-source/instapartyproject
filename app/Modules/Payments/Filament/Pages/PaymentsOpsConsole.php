@@ -39,7 +39,7 @@ class PaymentsOpsConsole extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {

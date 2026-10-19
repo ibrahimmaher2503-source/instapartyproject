@@ -6,6 +6,7 @@ namespace App\Modules\Identity\Filament\Resources;
 
 use App\Modules\Identity\Domain\Models\CustomerAddress;
 use App\Modules\Identity\Filament\Resources\CustomerAddressResource\Pages\ListCustomerAddresses;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -18,7 +19,7 @@ class CustomerAddressResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.vendor_management');
+        return __('admin.nav.groups.customers');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
@@ -70,7 +71,9 @@ class CustomerAddressResource extends Resource
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->label(__('identity.columns.user_id'))
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('city.name')
                     ->label(__('identity.columns.city_id'))
                     ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—')),
@@ -82,6 +85,7 @@ class CustomerAddressResource extends Resource
                     ->searchable(),
                 TextColumn::make('recipient_phone_e164')
                     ->label(__('identity.columns.recipient_phone'))
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->searchable(),
                 IconColumn::make('is_default')
                     ->label(__('identity.columns.is_default'))

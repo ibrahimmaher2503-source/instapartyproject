@@ -15,7 +15,7 @@ return [
 
     'nav' => [
         'categories' => 'Categories',
-        'occasions' => 'Occasions',
+        'occasions' => 'Manage Occasions',
         'rental_services' => 'Rental Services',
         'sale_services' => 'Sale Services',
         'digital_services' => 'Digital Services',
@@ -185,6 +185,10 @@ return [
     // Category field schema
     'category_field_schema_details' => 'Category Field Schema Details',
     'options' => 'Options',
+    'option_value' => 'Option Value',
+    'option_label_en' => 'Option Label in English',
+    'option_label_ar' => 'Option Label in Arabic',
+    'options_unsupported_format' => 'These stored options use a format this editor cannot safely preserve. No changes were made.',
     'validation_rules' => 'Validation Rules',
     'field_key' => 'Field Key',
     'field_type' => 'Field Type',

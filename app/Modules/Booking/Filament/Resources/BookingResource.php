@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Booking\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+
 use App\Modules\Booking\Domain\Enums\FulfillmentStatus;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\ActiveState;
@@ -33,6 +36,7 @@ use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\Book
 use App\Modules\Booking\Filament\Resources\BookingResource\RelationManagers\PaymentsRelationManager;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -57,7 +61,7 @@ class BookingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationLabel(): string
     {
@@ -109,11 +113,17 @@ class BookingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'reference_no', 'lifecycle_status', 'payment_status', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('booking.columns.public_id'))
                     ->copyable()
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'reference_no'],
+                        'customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('reference_no')
                     ->label(__('booking.columns.reference_no'))
@@ -130,6 +140,17 @@ class BookingResource extends Resource
                     ->label(__('booking.columns.occasion_id'))
                     ->sortable()
                     ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name') ?? '#'.$record->occasion_id),
+                TextColumn::make('vendors.business_names')
+                    ->label(__('booking.columns.vendor_id'))
+                    ->getStateUsing(fn (Booking $record): string => $record->vendors
+                        ->map(fn ($allocation): ?string => $allocation->vendor?->getTranslation('business_name', app()->getLocale()))
+                        ->filter()->unique()->implode('، '))
+                    ->wrap(),
+                TextColumn::make('event_starts_at')
+                    ->label(__('booking.columns.event_starts_at'))
+                    ->dateTime()
+                    ->timezone(fn (): string => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->sortable(),
                 TextColumn::make('lifecycle_status')
                     ->label(__('booking.columns.lifecycle_status'))
                     ->badge()
@@ -175,6 +196,12 @@ class BookingResource extends Resource
             ->actions([
                 ViewAction::make(),
             ])
+            ->filters([
+                OperationalDateFilter::make(),
+                \Filament\Tables\Filters\SelectFilter::make('lifecycle_status')
+                    ->label(__('booking.columns.status'))
+                    ->options(collect(\App\Modules\Booking\Domain\Enums\LifecycleStatus::cases())->mapWithKeys(fn ($status): array => [$status->value => __('booking.lifecycle_status.'.$status->value)])->all()),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 
@@ -207,6 +234,8 @@ class BookingResource extends Resource
                             ->money('EGP', divideBy: 100),
                         TextEntry::make('amount_paid_minor')
                             ->label(__('booking.columns.amount_paid'))
+                            ->state(fn (Booking $record): int => app(\App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader::class)
+                                ->forBooking($record->id, (string) $record->total_currency)['net_paid_minor'])
                             ->money('EGP', divideBy: 100)
                             ->icon('heroicon-m-credit-card')
                             ->size('lg')
@@ -214,6 +243,7 @@ class BookingResource extends Resource
                             ->color('info'),
                         TextEntry::make('guest_count')
                             ->label(__('booking.columns.guest_count'))
+                            ->placeholder('—')
                             ->icon('heroicon-m-user-group')
                             ->size('lg')
                             ->weight(FontWeight::SemiBold),
@@ -311,12 +341,20 @@ class BookingResource extends Resource
                             ->columnSpanFull()
                             ->getStateUsing(fn (Booking $record): string => self::resolveTranslatedLabel($record->occasion, 'name') ?? '#'.$record->occasion_id),
                         TextEntry::make('event_starts_at')
-                            ->label(__('booking.columns.event_starts_at'))
+                            ->label(fn (): string => __('booking.display_timezone', [
+                                'field' => __('booking.columns.event_starts_at'),
+                                'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                            ]))
                             ->icon('heroicon-m-calendar')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                             ->dateTime(),
                         TextEntry::make('event_ends_at')
-                            ->label(__('booking.columns.event_ends_at'))
+                            ->label(fn (): string => __('booking.display_timezone', [
+                                'field' => __('booking.columns.event_ends_at'),
+                                'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                            ]))
                             ->icon('heroicon-m-calendar-days')
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                             ->dateTime(),
                         TextEntry::make('submitted_at')
                             ->label(__('booking.columns.submitted_at'))

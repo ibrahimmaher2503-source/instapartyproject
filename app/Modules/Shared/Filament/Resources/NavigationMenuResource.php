@@ -31,7 +31,7 @@ class NavigationMenuResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bars-3';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationGroup(): ?string
     {
@@ -72,8 +72,6 @@ class NavigationMenuResource extends Resource
             Section::make(__('shared.nav_menu.section_items'))
                 ->schema([
                     Repeater::make('items')
-                        ->relationship('rootItems')
-                        ->orderColumn('position')
                         ->reorderable()
                         ->collapsible()
                         ->cloneable()
@@ -128,8 +126,6 @@ class NavigationMenuResource extends Resource
         }
 
         $base[] = Repeater::make('children')
-            ->relationship()
-            ->orderColumn('position')
             ->reorderable()
             ->collapsible()
             ->defaultItems(0)

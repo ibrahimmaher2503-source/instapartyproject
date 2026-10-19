@@ -17,6 +17,8 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class VendorPhoneVerificationPage extends Page implements HasForms
 {
@@ -56,7 +58,7 @@ class VendorPhoneVerificationPage extends Page implements HasForms
     public function mount(): void
     {
         $user = $this->getUser();
-        $this->isVerified = $user->phone_verified_at !== null;
+        $this->isVerified = $user->hasVerifiedPhone();
 
         $this->form->fill([
             'phone_e164' => $user->phone_e164,
@@ -119,7 +121,17 @@ class VendorPhoneVerificationPage extends Page implements HasForms
             return;
         }
 
-        app(SendOtpAction::class)->execute($user->phone_e164);
+        try {
+            app(SendOtpAction::class)->execute($user->phone_e164);
+        } catch (ValidationException $exception) {
+            Notification::make()->title($exception->getMessage())->danger()->send();
+
+            return;
+        } catch (TooManyRequestsHttpException) {
+            Notification::make()->title(__('identity::identity.validation.otp_throttled'))->danger()->send();
+
+            return;
+        }
 
         Notification::make()
             ->title(__('vendor-portal.phone_verification.code_sent'))

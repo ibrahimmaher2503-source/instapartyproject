@@ -8,10 +8,10 @@ use App\Modules\Payments\Domain\Contracts\PaymentGateway;
 use App\Modules\Payments\Domain\Events\PaymentFailed;
 use App\Modules\Payments\Domain\Models\GatewayWebhookLog;
 use App\Modules\Payments\Domain\Models\Payment;
-use App\Modules\Payments\Domain\Models\Refund;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentPaymentRepository;
 use App\Modules\Payments\Infrastructure\Support\MapPaymobFailureCode;
 use App\Modules\Payments\Infrastructure\Support\RedactPciFields;
+use App\Modules\Settlement\Domain\Exceptions\DuplicateIdempotencyKeyWithDifferentPayloadException;
 use App\Modules\Shared\Application\Services\IdempotencyService;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -61,10 +61,21 @@ class ProcessPaymobWebhookAction
         $orderId = (string) ($obj['order']['id'] ?? $obj['order_id'] ?? '');
         $transactionId = (string) ($obj['id'] ?? '');
         $success = $dto->success ? 'true' : 'false';
-        $idempotencyKey = "paymob:{$dto->transactionType}:{$orderId}:{$transactionId}:{$success}";
+        // The prior REFUND key could be stored before local confirmation. Give
+        // provider-state confirmation its own namespace so that cache cannot hide it.
+        $idempotencyKey = $dto->transactionType === 'REFUND'
+            ? "paymob:REFUND:confirmation-v2:{$orderId}:{$transactionId}:{$success}"
+            : "paymob:{$dto->transactionType}:{$orderId}:{$transactionId}:{$success}";
 
         // Short-circuit duplicate webhooks; the callback returns the stored result.
-        $alreadyProcessed = $this->idempotency->hasBeenUsed('internal_webhook', $idempotencyKey);
+        try {
+            $alreadyProcessed = $this->idempotency->hasBeenUsed('internal_webhook', $idempotencyKey);
+        } catch (DuplicateIdempotencyKeyWithDifferentPayloadException $exception) {
+            $log->update(['processing_error' => 'duplicate_idempotent_replay']);
+
+            throw $exception;
+        }
+
         if ($alreadyProcessed) {
             $log->update(['processing_error' => 'duplicate_idempotent_replay']);
 
@@ -84,41 +95,36 @@ class ProcessPaymobWebhookAction
             return;
         }
 
-        // Route refund callbacks to the refund processing path
         if ($dto->transactionType === 'REFUND') {
-            $refundIdempotencyKey = "paymob_refund:{$transactionId}";
+            if (! $dto->success) {
+                $log->update(['processing_error' => 'refund_confirmation_deferred']);
 
-            if (! $this->idempotency->hasBeenUsed('internal_webhook', $refundIdempotencyKey)) {
-                $refund = Refund::query()->where('gateway_ref', $dto->gatewayRef)->first()
-                    ?? Refund::query()
-                        ->where('payment_id', $payment->id)
-                        ->whereIn('status', ['pending', 'processing'])
-                        ->latest()
-                        ->first();
-
-                if ($refund !== null) {
-                    try {
-                        $this->processRefund->execute($refund->id);
-                    } catch (Throwable $exception) {
-                        $log->update(['processing_error' => 'processing_failed']);
-
-                        throw $exception;
-                    }
-                    $this->idempotency->remember('internal_webhook', $refundIdempotencyKey, $refundIdempotencyKey, fn () => true);
-                    $log->update(['processed_at' => now()]);
-                } else {
-                    $log->update(['processing_error' => 'refund_not_found']);
-                }
-            } else {
-                $log->update(['processing_error' => 'duplicate_refund_idempotent_replay']);
+                return;
             }
 
-            $this->idempotency->remember('internal_webhook', $idempotencyKey, $idempotencyKey, fn () => true);
+            try {
+                if (! $this->processRefund->confirmFromWebhook($payment->id, $dto->gatewayRef)) {
+                    $log->update(['processing_error' => 'refund_confirmation_deferred']);
+
+                    return;
+                }
+
+                $this->idempotency->remember('internal_webhook', $idempotencyKey, $idempotencyKey, fn () => true);
+                $log->update(['processed_at' => now()]);
+            } catch (DuplicateIdempotencyKeyWithDifferentPayloadException $exception) {
+                $log->update(['processing_error' => 'duplicate_refund_idempotent_replay']);
+
+                throw $exception;
+            } catch (Throwable $exception) {
+                $log->update(['processing_error' => 'processing_failed']);
+
+                throw $exception;
+            }
 
             return;
         }
 
-        if ($dto->success) {
+        if ($dto->transactionType !== 'REFUND' && $dto->success) {
             if ($dto->capturedAmount === null
                 || $dto->capturedAmount->getMinorAmount()->toInt() !== (int) $payment->amount_minor
                 || $dto->capturedAmount->getCurrency()->getCurrencyCode() !== (string) $payment->amount_currency) {
@@ -126,38 +132,74 @@ class ProcessPaymobWebhookAction
 
                 return;
             }
-
-            $payment->update(['metadata' => array_merge($payment->metadata ?? [], [
-                'paymob_transaction_id' => $dto->gatewayRef,
-                'paymob_order_id' => $dto->orderId ?? ($payment->metadata['paymob_order_id'] ?? null),
-            ])]);
-            try {
-                $this->capture->execute(
-                    paymentId: $payment->id,
-                    idempotencyKey: "capture:{$payment->id}",
-                    capturedAmount: $dto->capturedAmount,
-                );
-            } catch (Throwable $exception) {
-                $log->update(['processing_error' => 'processing_failed']);
-
-                throw $exception;
-            }
-            $log->update(['processed_at' => now()]);
-
-            // Record idempotency usage so replays short-circuit
-            $this->idempotency->remember('internal_webhook', $idempotencyKey, $idempotencyKey, fn () => true);
-
-            return;
         }
 
-        DB::transaction(function () use ($payment, $log, $dto): void {
-            $code = MapPaymobFailureCode::fromMessage($dto->failureCode);
-            $message = ['en' => __('payments::failures.'.$code, [], 'en'), 'ar' => __('payments::failures.'.$code, [], 'ar')];
-            $this->payments->markFailed($payment, $code, $message);
-            $log->update(['processed_at' => now()]);
-            DB::afterCommit(fn () => event(new PaymentFailed($payment->id, $payment->booking_id, $code, $message)));
-        });
+        $callbackExecuted = false;
+        $rememberWebhook = function () use ($dto, $idempotencyKey, $payment, $log, &$callbackExecuted): void {
+            $this->idempotency->remember('internal_webhook', $idempotencyKey, $idempotencyKey, function () use (
+                $dto,
+                $payment,
+                $log,
+                &$callbackExecuted,
+            ): bool {
+                $callbackExecuted = true;
+                // A rolled-back attempt leaves Eloquent originals ahead of persisted state.
+                $payment->refresh();
+                $log->refresh();
 
-        $this->idempotency->remember('internal_webhook', $idempotencyKey, $idempotencyKey, fn () => true);
+                if ($dto->success) {
+                    $payment->update(['metadata' => array_merge($payment->metadata ?? [], [
+                        'paymob_transaction_id' => $dto->gatewayRef,
+                        'paymob_order_id' => $dto->orderId ?? ($payment->metadata['paymob_order_id'] ?? null),
+                    ])]);
+                    try {
+                        $this->capture->execute(
+                            paymentId: $payment->id,
+                            idempotencyKey: "capture:{$payment->id}",
+                            capturedAmount: $dto->capturedAmount,
+                        );
+                    } catch (Throwable $exception) {
+                        $log->update(['processing_error' => 'processing_failed']);
+
+                        throw $exception;
+                    }
+                    $log->update(['processed_at' => now()]);
+
+                    return true;
+                }
+
+                DB::transaction(function () use ($payment, $log, $dto): void {
+                    $code = MapPaymobFailureCode::fromMessage($dto->failureCode);
+                    $message = ['en' => __('payments::failures.'.$code, [], 'en'), 'ar' => __('payments::failures.'.$code, [], 'ar')];
+                    $this->payments->markFailed($payment, $code, $message);
+                    $log->update(['processed_at' => now()]);
+                    DB::afterCommit(fn () => event(new PaymentFailed($payment->id, $payment->booking_id, $code, $message)));
+                });
+
+                return true;
+            });
+        };
+        try {
+            // REFUND callbacks return above after their own Payment → Refund confirmation transaction.
+            DB::transaction($rememberWebhook, 3);
+        } catch (DuplicateIdempotencyKeyWithDifferentPayloadException $exception) {
+            if ($log->processing_error === null) {
+                $log->update(['processing_error' => 'duplicate_idempotent_replay']);
+            }
+
+            throw $exception;
+        } catch (Throwable $exception) {
+            // Refresh after rollback; completed attempts can throw from after-commit listeners.
+            $log->refresh();
+            if ($log->processed_at === null && $log->processing_error === null) {
+                $log->update(['processing_error' => 'processing_failed']);
+            }
+
+            throw $exception;
+        }
+
+        if (! $callbackExecuted) {
+            $log->update(['processing_error' => 'duplicate_idempotent_replay']);
+        }
     }
 }

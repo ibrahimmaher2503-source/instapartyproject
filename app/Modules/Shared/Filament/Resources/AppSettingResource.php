@@ -12,8 +12,8 @@ use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Utilities\Get;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -26,7 +26,7 @@ class AppSettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationGroup(): ?string
     {
@@ -59,7 +59,6 @@ class AppSettingResource extends Resource
                     ->label(__('shared.settings.value'))
                     ->visible(fn (Get $get): bool => (bool) $get('_is_scalar'))
                     ->required(fn (Get $get): bool => (bool) $get('_is_scalar'))
-                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 KeyValue::make('value')

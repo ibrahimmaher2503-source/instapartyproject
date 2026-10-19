@@ -89,6 +89,8 @@ return [
 
     // Compliance / document expiry section
     'compliance' => [
+        'expiring_soon' => 'Expires in the next 30 days',
+        'expiring_alert' => ':count approved document(s) expire in the next 30 days. Use the expiry filter to review them.',
         'document_context' => 'Document context',
         'delete_document_warning' => 'Delete this document permanently? This cannot be undone.',
         'expiry_and_criticality' => 'Expiry & Criticality',
@@ -127,6 +129,8 @@ return [
         'force_logout_customer' => 'This will revoke all active sessions for :name.',
         'approve_vendor_heading' => 'Approve this vendor?',
         'approve_vendor_description' => 'This grants the vendor the approved status. You can grant per-product-type permissions afterwards.',
+        'suspend_vendor_heading' => 'Suspend this vendor?',
+        'suspend_vendor_description' => 'Vendor: :vendor (reference :reference). Current status: :status. Suspending blocks vendor portal access and operations until reinstated. The required reason is recorded in the audit log.',
     ],
 
     // Page titles
@@ -241,9 +245,13 @@ return [
         'edit_profile' => 'Edit Profile',
         'impersonate' => 'Impersonate Vendor (API Token)',
         'login_as_vendor' => 'Login as Vendor (Web)',
+        'edit_user_account' => 'Edit account details',
+        'manage_staff_roles' => 'Manage staff roles',
+        'send_password_reset' => 'Send password reset link',
         'replace_coverage' => 'Replace Coverage Areas',
         're_upload_document' => 'Re-upload Document',
         'request_changes' => 'Request Changes',
+        'add_requested_change' => 'Add another requested change',
         'approve_for_rental' => 'Approve for Rental',
         'approve_for_sale' => 'Approve for Sale',
         'approve_for_digital' => 'Approve for Digital',
@@ -268,6 +276,13 @@ return [
         'business_name_ar' => 'Business Name in Arabic',
         'bio_en' => 'Bio in English',
         'bio_ar' => 'Bio in Arabic',
+        'vendor_suspension_reason' => 'Reason for suspension',
+        'impersonation_reason_en' => 'Reason for acting as this vendor (English)',
+        'impersonation_reason_ar' => 'Reason for acting as this vendor (Arabic)',
+        'user_name' => 'Name',
+        'user_email' => 'Email',
+        'user_phone' => 'Phone number',
+        'staff_roles' => 'Staff roles',
     ],
 
     // Notification titles
@@ -277,6 +292,7 @@ return [
         'customer_logged_out' => 'Customer logged out',
         'profile_updated_by_admin' => 'Customer profile updated',
         'vendor_approved' => 'Vendor profile approved',
+        'vendor_approval_failed' => 'Vendor approval could not be completed',
         'vendor_rejected' => 'Vendor profile rejected',
         'vendor_suspended' => 'Vendor suspended',
         'vendor_unsuspended' => 'Vendor reactivated',
@@ -288,6 +304,8 @@ return [
         'coverage_updated' => 'Coverage areas updated successfully',
         'document_uploaded' => 'Document replaced successfully',
         'document_deleted' => 'Document deleted',
+        'user_account_updated' => 'Account details updated',
+        'user_roles_updated' => 'Staff roles updated',
         'document_upload_success' => 'Document uploaded successfully',
         'vendor_profile_updated' => 'Vendor profile updated',
         'change_request_created' => 'Change request submitted',
@@ -344,6 +362,10 @@ return [
         'day_of_week' => 'Day of Week',
         'label' => 'Label',
         'address_line' => 'Address',
+        'change_request_fields' => [
+            'address_line_en' => 'Address (English)',
+            'address_line_ar' => 'Address (Arabic)',
+        ],
         'recipient_name' => 'Recipient Name',
         'recipient_phone' => 'Recipient Phone',
         'is_default' => 'Set as Default',
@@ -457,6 +479,19 @@ return [
     ],
 
     'approval_eligibility' => [
+        'blocked_title' => 'Approval is unavailable',
+        'blocked_summary' => 'Approval is unavailable. Missing: :requirements.',
+        'blocked_description' => 'The approval button stays disabled until the vendor completes the items below and an admin approves the required documents. Complete requirements in the vendor portal, then return here to review and approve.',
+        'requirements' => [
+            'identity' => 'Vendor identity',
+            'contact' => 'Verified email and contact phone',
+            'profile' => 'Bilingual business and identity fields',
+            'geography' => 'City and governorate match',
+            'banking' => 'Banking information',
+            'hours' => 'Business hours',
+            'coverage' => 'Coverage areas',
+            'documents' => 'Approved and valid required documents',
+        ],
         'checklist' => 'Approval requirements',
         'checklist_description' => 'Every requirement must be complete before this vendor can be approved.',
         'complete' => 'Complete',
@@ -496,6 +531,7 @@ return [
         'document_not_reuploadable' => 'Only a rejected document can be re-uploaded.',
         'document_already_pending' => 'A replacement for this document is already pending review.',
         'invalid_change_request_items' => 'One or more change-request items do not belong to this request.',
+        'unsupported_change_request_field' => 'Select a supported profile field for each requested change.',
         'unresolved_change_request_items' => 'Resolve every requested item before resubmitting.',
         'idempotency_key_required' => 'The Idempotency-Key header is required.',
         'idempotency_key_conflict' => 'This Idempotency-Key was already used for a different request.',
@@ -513,6 +549,8 @@ return [
     // Success messages
     'messages' => [
         'registered' => 'Registration successful. Please verify your phone number.',
+        'registration_request_received_title' => 'Check your email',
+        'registration_request_received_body' => 'If this address is eligible for registration, we’ll email the next steps. Existing users can sign in or reset their password.',
         'phone_verified' => 'Phone number verified successfully.',
         'logged_in' => 'Logged in successfully.',
         'logged_out' => 'Logged out successfully.',
@@ -540,14 +578,31 @@ return [
     'account_suspended' => 'Your account has been suspended. Please contact support.',
     'account_suspended_title' => 'Account Suspended',
     'account_suspended_body' => 'Your vendor account has been suspended. Please contact InstaParty support to resolve this.',
+    'impersonation' => [
+        'not_allowed' => 'You are not authorized to start this vendor session.',
+        'reason_required' => 'Enter a reason in both languages, between 5 and 500 characters.',
+        'vendor_not_eligible' => 'Only active, verified, approved vendor accounts can be accessed.',
+    ],
+    'account_management' => [
+        'not_allowed' => 'Only an active super admin can manage existing accounts.',
+        'target_unavailable' => 'This account is not eligible for this management action.',
+        'invalid_roles' => 'Select only existing staff roles.',
+        'self_demotion_forbidden' => 'You cannot reduce your own administrator access.',
+        'last_admin_protected' => 'At least one active super admin must remain.',
+        'reset_unavailable' => 'A password reset link is unavailable for this account.',
+        'reset_link_requested' => 'A password reset link request was submitted.',
+        'reset_throttled' => 'A reset link was requested recently. Wait before trying again.',
+        'reset_confirmation' => 'A reset link will be requested through the account’s existing panel. No password is shown or changed here.',
+    ],
     'vendor_portal' => [
-        'impersonation_banner' => 'InstaParty Support is currently acting on your account. Started :time.',
+        'impersonation_banner' => 'Admin support session',
+        'impersonation_description' => 'Support is acting as :admin. Started :time. This session expires at :expires.',
         'impersonation_end' => 'End Session',
     ],
 
     'errors' => [
         'document_not_owned' => 'This document does not belong to your profile.',
-        'document_not_deletable' => 'Only rejected documents can be deleted.',
+        'document_not_deletable' => 'Only pending or rejected documents can be deleted.',
         'profile_not_approved' => 'Your profile must be approved before requesting product-type approval.',
         'type_already_approved' => 'You are already approved for this product type.',
         'vendor_suspended' => 'Your account is suspended. You can view your data but cannot make changes.',

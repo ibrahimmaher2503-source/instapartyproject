@@ -7,6 +7,7 @@ namespace App\Modules\Communication\Filament\Resources\ChatThreadResource\Pages;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Communication\Domain\Models\ChatThread;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Actions\ViewAction;
@@ -50,7 +51,13 @@ class ListChatThreads extends ListRecords
                     ->label(__('chat_moderation.columns.booking_ref'))
                     ->placeholder('—')
                     ->limit(20)
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'booking' => ['public_id'],
+                        'customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendorProfile' => ['public_id'],
+                        'vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
 
                 TextColumn::make('customer.name')
                     ->label(__('chat_moderation.columns.customer'))

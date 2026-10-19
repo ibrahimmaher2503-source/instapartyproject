@@ -16,6 +16,7 @@ use App\Modules\Payments\Application\Timeline\PaymentTimelineDescriptors;
 use App\Modules\Payments\Application\Timeline\RefundTimelineDescriptors;
 use App\Modules\Payments\Console\Commands\PingGatewayHealthCommand;
 use App\Modules\Payments\Domain\Contracts\PaymentGateway;
+use App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader;
 use App\Modules\Payments\Domain\Contracts\RefundPolicyResolver;
 use App\Modules\Payments\Domain\Contracts\RefundTimelineReader;
 use App\Modules\Payments\Domain\Events\ChargebackOpened;
@@ -28,6 +29,7 @@ use App\Modules\Payments\Domain\Events\RefundCompleted;
 use App\Modules\Payments\Http\Middleware\IdempotencyKeyMiddleware;
 use App\Modules\Payments\Infrastructure\Gateways\PaymobGateway;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentRefundTimelineReader;
+use App\Modules\Payments\Infrastructure\Repositories\EloquentBookingPaymentTotalsReader;
 use App\Modules\Payments\Infrastructure\Repositories\EloquentSettlementPaymentReader;
 use App\Modules\Settlement\Application\Listeners\HandleChargebackResolvedListener;
 use App\Modules\Settlement\Application\Listeners\ReverseWalletCreditOnChargebackOpenedListener;
@@ -52,6 +54,7 @@ class PaymentsServiceProvider extends ServiceProvider
         $this->app->bind(SettlementPaymentReader::class, EloquentSettlementPaymentReader::class);
         $this->app->bind(RefundTimelineReader::class, EloquentRefundTimelineReader::class);
         $this->app->bind(RefundPolicyResolver::class, RefundPolicyService::class);
+        $this->app->bind(BookingPaymentTotalsReader::class, EloquentBookingPaymentTotalsReader::class);
     }
 
     public function boot(): void

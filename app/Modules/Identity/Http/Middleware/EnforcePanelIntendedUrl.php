@@ -8,13 +8,14 @@ use App\Modules\Identity\Application\Services\PanelIntendedUrlGuard;
 use Closure;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
+use Livewire\Features\SupportRedirects\Redirector;
 use Symfony\Component\HttpFoundation\Response;
 
 final class EnforcePanelIntendedUrl
 {
     public function __construct(private readonly PanelIntendedUrlGuard $guard) {}
 
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next): Response|Redirector
     {
         $this->guard->forgetWhenOutsidePanel($request, Filament::getCurrentPanel());
 

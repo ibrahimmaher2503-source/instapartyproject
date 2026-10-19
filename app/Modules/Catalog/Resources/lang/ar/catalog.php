@@ -15,7 +15,7 @@ return [
 
     'nav' => [
         'categories' => 'التصنيفات',
-        'occasions' => 'المناسبات',
+        'occasions' => 'إدارة المناسبات',
         'rental_services' => 'خدمات التأجير',
         'sale_services' => 'خدمات البيع',
         'digital_services' => 'الخدمات الرقمية',
@@ -184,6 +184,10 @@ return [
 
     // Category field schema
     'field_key' => 'مفتاح الحقل',
+    'option_value' => 'قيمة الخيار',
+    'option_label_en' => 'عنوان الخيار بالإنجليزية',
+    'option_label_ar' => 'عنوان الخيار بالعربية',
+    'options_unsupported_format' => 'الخيارات المحفوظة بتنسيق لا يستطيع هذا المحرر الحفاظ عليه بأمان. لم يتم إجراء أي تغييرات.',
     'field_type' => 'نوع الحقل',
     'field_label' => 'عنوان الحقل',
     'field_label_en' => 'عنوان الحقل بالإنجليزية',

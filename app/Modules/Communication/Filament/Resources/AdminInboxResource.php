@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Filament\Resources;
 
+use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
+use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Filament\Resources\BookingResource;
 use App\Modules\Communication\Application\Actions\AcknowledgeInboxItemAction;
 use App\Modules\Communication\Application\Actions\BatchResolveInboxItemsAction;
 use App\Modules\Communication\Application\Actions\ReassignInboxItemAction;
@@ -14,6 +17,7 @@ use App\Modules\Communication\Domain\Enums\AdminInboxStatus;
 use App\Modules\Communication\Domain\Models\AdminInboxItem;
 use App\Modules\Communication\Filament\Resources\AdminInboxResource\Pages\ListAdminInboxItems;
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -50,7 +54,7 @@ class AdminInboxResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.operations');
+        return __('admin.nav.groups.support');
     }
 
     public static function getNavigationBadge(): ?string
@@ -82,13 +86,43 @@ class AdminInboxResource extends Resource
                     ->label(__('communication.inbox.severity')),
 
                 TextColumn::make('title')
-                    ->getStateUsing(fn (AdminInboxItem $record): string => $record->getTranslation('title', app()->getLocale()))
-                    ->searchable(query: fn (Builder $query, string $search) => $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(title, '$.en')) LIKE ?", ["%{$search}%"]))
+                    ->getStateUsing(function (AdminInboxItem $record): string {
+                        $title = $record->getTranslation('title', app()->getLocale());
+
+                        if ($record->source_type !== 'booking') {
+                            return $title;
+                        }
+
+                        $reference = app(BookingReferenceReader::class)->referenceNoFor((int) $record->source_id);
+
+                        if ($reference === null) {
+                            return preg_replace(
+                                '/(?<=#)[0-9A-HJKMNP-TV-Z]{26}(?![0-9A-HJKMNP-TV-Z])/i',
+                                '—',
+                                $title,
+                            ) ?? $title;
+                        }
+
+                        return preg_replace(
+                            '/(?<=#)[0-9A-HJKMNP-TV-Z]{26}(?![0-9A-HJKMNP-TV-Z])/i',
+                            $reference,
+                            $title,
+                        ) ?? $title;
+                    })
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, ['' => ['public_id', 'title->en', 'title->ar']]))
                     ->limit(60)
                     ->label(__('communication.inbox.title')),
 
                 TextColumn::make('source')
-                    ->getStateUsing(fn (AdminInboxItem $record): string => "{$record->source_type} #{$record->source_id}")
+                    ->getStateUsing(function (AdminInboxItem $record): string {
+                        if ($record->source_type === 'booking') {
+                            $reference = app(BookingReferenceReader::class)->referenceNoFor((int) $record->source_id);
+
+                            return $reference === null ? 'booking' : "booking #{$reference}";
+                        }
+
+                        return "{$record->source_type} #{$record->source_id}";
+                    })
                     ->label(__('communication.inbox.source')),
 
                 TextColumn::make('status')
@@ -114,6 +148,21 @@ class AdminInboxResource extends Resource
             ->emptyStateHeading(__('communication.inbox.empty_heading'))
             ->emptyStateDescription(__('communication.inbox.empty_description'))
             ->actions([
+                Action::make('viewBooking')
+                    ->label(__('communication.inbox.open_booking'))
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(function (AdminInboxItem $record): ?string {
+                        if ($record->source_type !== 'booking') {
+                            return null;
+                        }
+
+                        $booking = Booking::query()->find($record->source_id);
+
+                        return $booking === null ? null : BookingResource::getUrl('view', ['record' => $booking]);
+                    })
+                    ->visible(fn (AdminInboxItem $record): bool => $record->source_type === 'booking')
+                    ->openUrlInNewTab(),
+
                 Action::make('read')
                     ->label(__('communication.inbox.actions.mark_read'))
                     ->icon('heroicon-o-eye')

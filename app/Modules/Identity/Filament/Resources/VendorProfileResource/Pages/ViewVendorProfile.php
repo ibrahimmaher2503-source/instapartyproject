@@ -6,13 +6,16 @@ namespace App\Modules\Identity\Filament\Resources\VendorProfileResource\Pages;
 
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Identity\Application\Actions\ApproveVendorForTypeAction;
+use App\Modules\Identity\Application\Actions\ImpersonateVendorViaWebAction;
 use App\Modules\Identity\Application\Actions\RevokeVendorTypeAction;
 use App\Modules\Identity\Application\Actions\SuspendVendorAction;
 use App\Modules\Identity\Application\Actions\UnsuspendVendorAction;
+use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\SuspendedState;
 use App\Modules\Identity\Filament\Resources\VendorProfileResource;
+use App\Modules\Shared\Application\Services\StorefrontText;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -26,6 +29,46 @@ class ViewVendorProfile extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('loginAsVendor')
+                ->label(__('identity.actions.login_as_vendor'))
+                ->icon('heroicon-o-arrow-right-on-rectangle')
+                ->color('warning')
+                ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof ApprovedState
+                    && $record->user?->status === 'active'
+                    && $record->user?->hasRole('vendor') === true
+                    && $record->user?->hasVerifiedEmail() === true
+                    && $record->user?->hasVerifiedPhone() === true
+                    && auth()->guard('web')->user()?->can('impersonate_vendor') === true)
+                ->form([
+                    Textarea::make('reason_en')
+                        ->label(__('identity.forms.impersonation_reason_en'))
+                        ->required()
+                        ->minLength(5)
+                        ->maxLength(500)
+                        ->rows(3),
+                    Textarea::make('reason_ar')
+                        ->label(__('identity.forms.impersonation_reason_ar'))
+                        ->required()
+                        ->minLength(5)
+                        ->maxLength(500)
+                        ->rows(3)
+                        ->extraInputAttributes(['dir' => 'rtl']),
+                ])
+                ->requiresConfirmation()
+                ->action(function (VendorProfile $record, array $data): void {
+                    $admin = auth()->guard('web')->user();
+                    abort_unless($admin instanceof User, 403);
+
+                    app(ImpersonateVendorViaWebAction::class)->execute(
+                        $record,
+                        $admin,
+                        (string) $data['reason_en'],
+                        (string) $data['reason_ar'],
+                    );
+
+                    $this->redirect(filament()->getPanel('vendor')->getUrl(), navigate: false);
+                }),
+
             Action::make('approveForRental')
                 ->label(__('identity.actions.approve_for_rental'))
                 ->icon('heroicon-o-check-badge')
@@ -85,10 +128,24 @@ class ViewVendorProfile extends ViewRecord
                 ->icon('heroicon-o-no-symbol')
                 ->color('danger')
                 ->requiresConfirmation()
+                ->modalHeading(__('identity.modals.suspend_vendor_heading'))
+                ->modalDescription(fn (VendorProfile $record): string => __('identity.modals.suspend_vendor_description', [
+                    'vendor' => app(StorefrontText::class)->translation($record, 'business_name', app()->getLocale()) ?: __('identity.vendor_profile'),
+                    'reference' => $record->public_id,
+                    'status' => __('identity.status.'.$record->approval_status::getMorphClass()),
+                ]))
                 ->visible(fn (VendorProfile $record): bool => $record->approval_status instanceof ApprovedState
                     && (bool) auth()->user()?->can('suspend_vendor'))
-                ->action(function (VendorProfile $record): void {
-                    app(SuspendVendorAction::class)->execute($record);
+                ->form([
+                    Textarea::make('reason')
+                        ->label(__('identity.forms.vendor_suspension_reason'))
+                        ->required()
+                        ->minLength(5)
+                        ->maxLength(1000)
+                        ->rows(3),
+                ])
+                ->action(function (VendorProfile $record, array $data): void {
+                    app(SuspendVendorAction::class)->execute($record, $data['reason']);
                     Notification::make()->title(__('identity.notifications.vendor_suspended'))->danger()->send();
                 }),
 

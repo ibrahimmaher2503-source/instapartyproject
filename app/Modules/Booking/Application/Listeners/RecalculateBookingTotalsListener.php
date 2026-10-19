@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Booking\Application\Listeners;
 
+use App\Modules\Booking\Application\Actions\RecalculateBookingTotalsAction;
 use App\Modules\Booking\Domain\Events\BookingItemAdded;
 use App\Modules\Booking\Domain\Events\BookingItemRemoved;
+use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use Illuminate\Support\Facades\DB;
 
 class RecalculateBookingTotalsListener
 {
+    public function __construct(private readonly RecalculateBookingTotalsAction $recalculate) {}
+
     public function handle(BookingItemAdded|BookingItemRemoved $event): void
     {
         if ($event instanceof BookingItemAdded) {
@@ -23,51 +27,25 @@ class RecalculateBookingTotalsListener
             $bookingId = $event->bookingId;
         }
 
-        // Update booking_vendor subtotal
-        DB::statement('
-            UPDATE booking_vendors
-            SET subtotal_minor = (
-                SELECT COALESCE(SUM(line_total_minor), 0)
-                FROM booking_items
-                WHERE booking_vendor_id = booking_vendors.id
-            )
-            WHERE id = ?
-        ', [$bookingVendorId]);
+        DB::transaction(function () use ($bookingId, $bookingVendorId): void {
+            $booking = Booking::query()->whereKey($bookingId)->lockForUpdate()->first();
 
-        // Update booking totals, including the immutable transport snapshot and
-        // any auditable invoice adjustments.
-        DB::statement('
-            UPDATE bookings
-            SET subtotal_minor = (
-                    SELECT COALESCE(SUM(subtotal_minor), 0)
-                    FROM booking_vendors
-                    WHERE booking_id = bookings.id
-                ),
-                delivery_total_minor = (
-                    SELECT COALESCE(SUM(delivery_fee_minor), 0)
-                    FROM booking_vendors
-                    WHERE booking_id = bookings.id
-                ) + COALESCE(transport_base_minor, 0) + (
-                    SELECT COALESCE(SUM(amount_minor), 0)
-                    FROM booking_adjustments
-                    WHERE booking_id = bookings.id
-                      AND type = \'transportation\'
-                ),
-                total_minor = (
-                    SELECT COALESCE(SUM(subtotal_minor), 0)
-                    FROM booking_vendors
-                    WHERE booking_id = bookings.id
-                ) + (
-                    SELECT COALESCE(SUM(delivery_fee_minor), 0)
-                    FROM booking_vendors
-                    WHERE booking_id = bookings.id
-                ) + COALESCE(transport_base_minor, 0) + (
-                    SELECT COALESCE(SUM(amount_minor), 0)
-                    FROM booking_adjustments
-                    WHERE booking_id = bookings.id
-                      AND type = \'transportation\'
-                ) - discount_total_minor
-            WHERE id = ?
-        ', [$bookingId]);
+            if ($booking === null) {
+                return;
+            }
+
+            $vendorSubtotalMinor = (int) DB::table('booking_items')
+                ->where('booking_vendor_id', $bookingVendorId)
+                ->sum('line_total_minor');
+
+            DB::table('booking_vendors')
+                ->where('id', $bookingVendorId)
+                ->where('booking_id', $bookingId)
+                ->update(['subtotal_minor' => $vendorSubtotalMinor]);
+
+            // Keep item-driven and adjustment-driven recalculations on the same
+            // currency-safe formula, including an already-applied loyalty line.
+            $this->recalculate->execute($booking);
+        });
     }
 }

@@ -11,7 +11,10 @@ use App\Modules\Shared\Domain\Contracts\CdnCacheBuster;
 use App\Modules\Shared\Domain\Contracts\SignedUrlService;
 use App\Modules\Shared\Domain\Contracts\StateTransitionLogger;
 use App\Modules\Shared\Domain\Contracts\SvgSanitizer;
+use App\Modules\Shared\Domain\Contracts\VendorProfileChangeRequestReader;
 use App\Modules\Shared\Domain\Events\PublicThemeChanged;
+use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
+use App\Modules\Shared\Infrastructure\Queries\EloquentVendorProfileChangeRequestReader;
 use App\Modules\Shared\Infrastructure\Services\EnshrinedSvgSanitizer;
 use App\Modules\Shared\Infrastructure\Services\NullCdnCacheBuster;
 use App\Modules\Shared\Infrastructure\Services\SpacesCdnCacheBuster;
@@ -26,6 +29,7 @@ class SharedServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(StateTransitionLogger::class, StateTransitionObserver::class);
+        $this->app->bind(VendorProfileChangeRequestReader::class, EloquentVendorProfileChangeRequestReader::class);
 
         // Media foundation (ADR-0047 §3). Bindings are env-conditional so MinIO/dev
         // gets a no-op CDN buster while prod hits DigitalOcean Spaces.
@@ -52,6 +56,7 @@ class SharedServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'shared');
+        HtmlDirectionRenderHook::register();
         $this->registerRoutes();
 
         $this->commands([

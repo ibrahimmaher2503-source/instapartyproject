@@ -18,7 +18,7 @@ class DisputeOversightPage extends Page
 
     protected static string $view = 'settlement::filament.pages.dispute-oversight';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 85;
 
     public static function getNavigationGroup(): ?string
     {

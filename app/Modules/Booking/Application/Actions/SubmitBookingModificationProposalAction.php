@@ -33,11 +33,36 @@ class SubmitBookingModificationProposalAction
             }
         }
 
-        return DB::transaction(function () use ($dto): BookingModification {
+        // Read relationship keys without taking child locks, then verify the chain again
+        // as each row is locked in parent-to-child order.
+        $bookingVendorId = BookingModification::query()
+            ->whereKey($dto->bookingModificationId)
+            ->value('booking_vendor_id');
+        abort_if($bookingVendorId === null, Response::HTTP_NOT_FOUND);
+
+        $bookingId = BookingVendor::query()->whereKey((int) $bookingVendorId)->value('booking_id');
+        abort_if($bookingId === null, Response::HTTP_NOT_FOUND);
+
+        return DB::transaction(function () use ($dto, $bookingVendorId, $bookingId): BookingModification {
+            $booking = Booking::query()
+                ->whereKey((int) $bookingId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            /** @var BookingVendor $bookingVendor */
+            $bookingVendor = BookingVendor::query()
+                ->whereKey((int) $bookingVendorId)
+                ->where('booking_id', $booking->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $bookingVendor->setRelation('booking', $booking);
+
             /** @var BookingModification $modification */
             $modification = BookingModification::query()
                 ->with('items')
                 ->where('id', $dto->bookingModificationId)
+                ->where('booking_vendor_id', $bookingVendor->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
@@ -46,12 +71,6 @@ class SubmitBookingModificationProposalAction
                 Response::HTTP_CONFLICT,
                 'Modification is not in draft status',
             );
-
-            /** @var BookingVendor $bookingVendor */
-            $bookingVendor = BookingVendor::query()
-                ->where('id', $modification->booking_vendor_id)
-                ->lockForUpdate()
-                ->firstOrFail();
 
             abort_if(
                 $bookingVendor->vendor_profile_id !== $dto->vendorProfileId,
@@ -138,12 +157,6 @@ class SubmitBookingModificationProposalAction
                 'trigger_kind' => 'vendor',
                 'triggered_by' => $dto->proposedByUserId,
             ]);
-
-            /** @var Booking $booking */
-            $booking = Booking::query()
-                ->where('id', $bookingVendor->booking_id)
-                ->lockForUpdate()
-                ->firstOrFail();
 
             $previousLifecycle = $booking->lifecycle_status->getValue();
 

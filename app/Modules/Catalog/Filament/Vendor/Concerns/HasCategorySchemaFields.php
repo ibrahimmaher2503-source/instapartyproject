@@ -6,6 +6,7 @@ namespace App\Modules\Catalog\Filament\Vendor\Concerns;
 
 use App\Modules\Catalog\Application\Services\CategoryFieldValidationService;
 use App\Modules\Catalog\Domain\Enums\ProductType;
+use App\Modules\Catalog\Domain\Models\Service;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -22,10 +23,10 @@ trait HasCategorySchemaFields
             ->key('category-schema-fields')
             ->visible(fn (Get $get): bool => is_numeric($get('category_id'))
                 && app(CategoryFieldValidationService::class)->schemasFor((int) $get('category_id'), $type)->isNotEmpty())
-            ->schema(function (Get $get) use ($type): array {
+            ->schema(function (Get $get, ?Service $record) use ($type): array {
                 $validator = app(CategoryFieldValidationService::class);
                 $categoryId = is_numeric($get('category_id')) ? (int) $get('category_id') : 0;
-                $rules = $validator->rulesFor($categoryId, $type);
+                $rules = $validator->rulesForEdit($categoryId, $type, $record);
 
                 return $validator->schemasFor($categoryId, $type)->map(function ($schema) use ($validator, $rules) {
                     $name = 'category_field_values.'.$schema->field_key;
@@ -40,7 +41,8 @@ trait HasCategorySchemaFields
 
                     return $field->dehydrated()
                         ->label($schema->getTranslation('field_label', app()->getLocale()))
-                        ->required($schema->is_required)->rules($rules[$schema->field_key] ?? []);
+                        ->required(in_array('required', $rules[$schema->field_key] ?? [], true))
+                        ->rules($rules[$schema->field_key] ?? []);
                 })->all();
             })->columns(2);
     }

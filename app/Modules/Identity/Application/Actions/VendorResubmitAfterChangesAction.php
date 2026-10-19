@@ -11,18 +11,68 @@ use App\Modules\Identity\Domain\States\VendorApprovalStatus\PendingState;
 use App\Modules\Shared\Domain\Enums\ChangeRequestStatus;
 use App\Modules\Shared\Domain\Models\ChangeRequest;
 use App\Modules\Shared\Domain\Models\ChangeRequestItem;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 final class VendorResubmitAfterChangesAction
 {
+    /**
+     * @return array{attribute: string, locale?: string, type: string, required: bool, required_for?: array<int, string>, max_length?: int}|null
+     */
+    public static function correctionField(string $fieldPath): ?array
+    {
+        return match ($fieldPath) {
+            'business_name.en' => [
+                'attribute' => 'business_name', 'locale' => 'en', 'type' => 'text', 'required' => true, 'max_length' => 200,
+            ],
+            'business_name.ar' => [
+                'attribute' => 'business_name', 'locale' => 'ar', 'type' => 'text', 'required' => true, 'max_length' => 200,
+            ],
+            'bio.en' => ['attribute' => 'bio', 'locale' => 'en', 'type' => 'textarea', 'required' => false],
+            'bio.ar' => ['attribute' => 'bio', 'locale' => 'ar', 'type' => 'textarea', 'required' => false],
+            'address_line.en' => [
+                'attribute' => 'address_line', 'locale' => 'en', 'type' => 'text', 'required' => false, 'max_length' => 255,
+            ],
+            'address_line.ar' => [
+                'attribute' => 'address_line', 'locale' => 'ar', 'type' => 'text', 'required' => true, 'max_length' => 255,
+            ],
+            'commercial_register_no' => [
+                'attribute' => 'commercial_register_no', 'type' => 'text', 'required' => false,
+                'required_for' => ['company', 'establishment'], 'max_length' => 50,
+            ],
+            'tax_id' => [
+                'attribute' => 'tax_id', 'type' => 'text', 'required' => false, 'required_for' => ['company'], 'max_length' => 50,
+            ],
+            'national_id' => [
+                'attribute' => 'national_id', 'type' => 'text', 'required' => false, 'required_for' => ['individual'], 'max_length' => 50,
+            ],
+            'facebook_url' => [
+                'attribute' => 'facebook_url', 'type' => 'url', 'required' => false, 'max_length' => 2048,
+            ],
+            'website_url' => [
+                'attribute' => 'website_url', 'type' => 'url', 'required' => false, 'max_length' => 2048,
+            ],
+            'instagram_url' => [
+                'attribute' => 'instagram_url', 'type' => 'url', 'required' => false, 'max_length' => 2048,
+            ],
+            default => null,
+        };
+    }
+
+    /**
+     * @param  array<int, string>  $addressedItemIds
+     * @param  array<int, string>  $waivedItemIds
+     * @param  array<string, string>|null  $corrections
+     */
     public function execute(
         VendorProfile $profile,
         array $addressedItemIds,
         array $waivedItemIds,
         ?string $notes,
         string $idempotencyKey,
+        ?array $corrections = null,
     ): ChangeRequest {
         $actor = auth()->user();
         abort_unless($actor !== null && $actor->getKey() === $profile->user_id, 403);
@@ -37,14 +87,23 @@ final class VendorResubmitAfterChangesAction
         $waivedItemIds = array_values(array_unique($waivedItemIds));
         sort($addressedItemIds);
         sort($waivedItemIds);
-        $payloadHash = hash('sha256', json_encode([
+        if ($corrections !== null) {
+            ksort($corrections);
+        }
+        $idempotencyPayload = [
             'profile' => $profile->public_id,
             'addressed' => $addressedItemIds,
             'waived' => $waivedItemIds,
             'notes' => $notes,
-        ], JSON_THROW_ON_ERROR));
+        ];
 
-        return DB::transaction(function () use ($profile, $addressedItemIds, $waivedItemIds, $notes, $idempotencyKey, $payloadHash, $actor): ChangeRequest {
+        if ($corrections !== null) {
+            $idempotencyPayload['corrections'] = $corrections;
+        }
+
+        $payloadHash = hash('sha256', json_encode($idempotencyPayload, JSON_THROW_ON_ERROR));
+
+        return DB::transaction(function () use ($profile, $addressedItemIds, $waivedItemIds, $notes, $idempotencyKey, $payloadHash, $actor, $corrections): ChangeRequest {
             $lockedProfile = VendorProfile::query()->lockForUpdate()->findOrFail($profile->getKey());
             $existing = DB::table('idempotency_keys')->where('key', $idempotencyKey)->first();
 
@@ -82,6 +141,10 @@ final class VendorResubmitAfterChangesAction
                 throw ValidationException::withMessages([
                     'addressed_item_ids' => [__('identity::identity.validation.invalid_change_request_items')],
                 ]);
+            }
+
+            if ($corrections !== null) {
+                $this->applyRequestedCorrections($lockedProfile, $changeRequest->items()->get(), $addressedItemIds, $corrections);
             }
 
             (clone $itemQuery)->whereIn('public_id', $addressedItemIds)->update(['item_status' => 'addressed']);
@@ -126,5 +189,67 @@ final class VendorResubmitAfterChangesAction
 
             return $changeRequest;
         }, 3);
+    }
+
+    /**
+     * @param  array<int, string>  $addressedItemIds
+     * @param  array<string, mixed>  $corrections
+     * @param  Collection<int, ChangeRequestItem>  $items
+     */
+    private function applyRequestedCorrections(
+        VendorProfile $profile,
+        Collection $items,
+        array $addressedItemIds,
+        array $corrections,
+    ): void {
+        $requestedItems = $items->whereIn('public_id', $addressedItemIds);
+        $requestedPaths = $requestedItems->pluck('field_path')->all();
+        $correctionPaths = array_keys($corrections);
+
+        if (count($requestedItems) !== count($items)
+            || count(array_unique($requestedPaths)) !== count($requestedPaths)
+            || array_diff($requestedPaths, $correctionPaths) !== []
+            || array_diff($correctionPaths, $requestedPaths) !== []) {
+            throw ValidationException::withMessages([
+                'corrections' => [__('identity::identity.validation.invalid_change_request_items')],
+            ]);
+        }
+
+        $profileData = [];
+
+        foreach ($corrections as $fieldPath => $value) {
+            $field = is_string($fieldPath) ? self::correctionField($fieldPath) : null;
+
+            if ($field === null) {
+                throw ValidationException::withMessages([
+                    'corrections' => [__('identity::vendor_correction.unsupported')],
+                ]);
+            }
+
+            if (! is_string($value)) {
+                throw ValidationException::withMessages([
+                    'corrections' => [__('identity::vendor_correction.invalid_value')],
+                ]);
+            }
+
+            $requiredFor = $field['required_for'] ?? [];
+            $required = $field['required'] || in_array($profile->business_type?->value, $requiredFor, true);
+
+            if (($required && blank($value))
+                || (isset($field['max_length']) && mb_strlen($value) > $field['max_length'])) {
+                throw ValidationException::withMessages([
+                    'corrections' => [__('identity::vendor_correction.invalid_value')],
+                ]);
+            }
+
+            if (isset($field['locale'])) {
+                $profileData[$field['attribute']] ??= $profile->getTranslations($field['attribute']);
+                $profileData[$field['attribute']][$field['locale']] = $value;
+            } else {
+                $profileData[$field['attribute']] = $value;
+            }
+        }
+
+        app(UpdateVendorProfileAction::class)->execute($profile, $profileData);
     }
 }

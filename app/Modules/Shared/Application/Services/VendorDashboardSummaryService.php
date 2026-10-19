@@ -88,11 +88,12 @@ class VendorDashboardSummaryService
                             ->where('vendor_profile_id', $vendorId)
                             ->whereIn('sub_status', [VendorSubStatus::Accepted->value, VendorSubStatus::InProgress->value, VendorSubStatus::Completed->value])
                             ->whereBetween('created_at', [$som, $now])
-                            ->sum('vendor_payout_minor'),
+                            ->where('vendor_payout_currency', 'EGP')
+                ->sum('vendor_payout_minor'),
                         'currency' => 'EGP',
                     ],
                     'wallet' => [
-                        'available_minor' => $wallet ? max(0, (int) $wallet->balance_minor - (int) $wallet->pending_withdrawal_minor) : 0,
+                        'available_minor' => $wallet ? max(0, (int) $wallet->balance_minor) : 0,
                         'pending_withdrawal_minor' => $wallet ? (int) $wallet->pending_withdrawal_minor : 0,
                         'currency' => 'EGP',
                     ],

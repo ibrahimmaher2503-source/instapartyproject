@@ -20,8 +20,8 @@ class ShowPublishedServiceAction
             ->with([
                 'media',
                 'category',
-                'vendor.primaryCity',
-                'vendor.primaryGovernorate',
+                'vendor.primaryCity.governorate',
+                'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate',
                 'rentalDetail',
                 'saleDetail',
                 'digitalDetail',

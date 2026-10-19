@@ -20,14 +20,14 @@ class SubscriptionPaymentResource extends Resource
         return __('admin.nav.groups.subscriptions');
     }
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 130;
 
     public static function getNavigationLabel(): string
     {
         return __('subscriptions::subscription.payments');
     }
 
-    protected static ?string $recordTitleAttribute = 'public_id';
+    protected static ?string $recordTitleAttribute = 'gateway_ref';
 
     public static function table(Table $table): Table
     {

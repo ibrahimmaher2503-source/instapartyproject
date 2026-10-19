@@ -45,7 +45,7 @@ class SubscriptionPlanResource extends Resource
         return __('admin.nav.groups.subscriptions');
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 100;
 
     public static function getNavigationLabel(): string
     {
@@ -77,6 +77,7 @@ class SubscriptionPlanResource extends Resource
                         Select::make('plan_code')
                             ->options(PlanCode::class)
                             ->required()
+                            ->unique(ignoreRecord: true)
                             ->disabled(fn ($record) => $record !== null),
 
                         TextInput::make('monthly_price_minor')

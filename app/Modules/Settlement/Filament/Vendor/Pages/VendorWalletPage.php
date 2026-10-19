@@ -72,7 +72,7 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
                     ->money('EGP', divideBy: 100),
                 TextEntry::make('available_balance')
                     ->label(__('vendor-portal.wallet.available_balance'))
-                    ->state(fn () => max(0, ($wallet?->balance_minor ?? 0) - ($wallet?->pending_withdrawal_minor ?? 0)))
+                    ->state(fn () => max(0, ($wallet?->balance_minor ?? 0)))
                     ->money('EGP', divideBy: 100),
                 TextEntry::make('pending_withdrawal_minor')
                     ->label(__('vendor-portal.wallet.pending_balance'))
@@ -197,14 +197,14 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
             ->disabled(function (): bool {
                 $wallet = $this->getWallet();
                 $vendor = $this->getVendorProfile();
-                $available = max(0, ($wallet?->balance_minor ?? 0) - ($wallet?->pending_withdrawal_minor ?? 0));
+                $available = max(0, ($wallet?->balance_minor ?? 0));
 
                 return $available < 10000 || empty($vendor->bank_iban);
             })
             ->tooltip(function (): ?string {
                 $wallet = $this->getWallet();
                 $vendor = $this->getVendorProfile();
-                $available = max(0, ($wallet?->balance_minor ?? 0) - ($wallet?->pending_withdrawal_minor ?? 0));
+                $available = max(0, ($wallet?->balance_minor ?? 0));
                 if (empty($vendor->bank_iban)) {
                     return __('vendor-portal.profile.no_bank_details');
                 }
@@ -218,7 +218,7 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
                     ->label(__('vendor-portal.wallet.available_balance'))
                     ->content(function () {
                         $wallet = $this->getWallet();
-                        $available = max(0, ($wallet?->balance_minor ?? 0) - ($wallet?->pending_withdrawal_minor ?? 0));
+                        $available = max(0, ($wallet?->balance_minor ?? 0));
 
                         return sprintf('EGP %.2f', $available / 100);
                     }),
@@ -231,7 +231,7 @@ class VendorWalletPage extends Page implements HasInfolists, HasTable
                     ->maxValue(function () {
                         $wallet = $this->getWallet();
 
-                        return max(0, ($wallet?->balance_minor ?? 0) - ($wallet?->pending_withdrawal_minor ?? 0)) / 100;
+                        return max(0, ($wallet?->balance_minor ?? 0)) / 100;
                     }),
                 Placeholder::make('fee_disclosure')
                     ->label(__('vendor-portal.withdrawals.fee_label'))

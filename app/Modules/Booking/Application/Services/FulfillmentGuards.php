@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Booking\Application\Services;
 
+use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Exceptions\BookingNotEligibleForFulfillmentException;
 use App\Modules\Booking\Domain\Exceptions\PaymentNotCapturedException;
 use App\Modules\Booking\Domain\Exceptions\RefundInProgressException;
@@ -34,6 +35,13 @@ class FulfillmentGuards
             Response::HTTP_FORBIDDEN,
             'fulfillment.not_your_booking'
         );
+    }
+
+    public function ensureAllocationEligibleForFulfillment(BookingVendor $bookingVendor): void
+    {
+        if (! in_array($bookingVendor->sub_status, [VendorSubStatus::Accepted, VendorSubStatus::InProgress], true)) {
+            throw BookingNotEligibleForFulfillmentException::allocationNotEligible();
+        }
     }
 
     public function ensurePaymentCaptured(BookingVendor $bookingVendor): void
@@ -84,11 +92,12 @@ class FulfillmentGuards
     }
 
     /**
-     * Run all four pre-state-machine guards in spec order (FR-EXT-040-019 steps 1-4).
+     * Run all pre-state-machine guards before the item state machine.
      */
     public function runAll(BookingVendor $bookingVendor, VendorProfile $vendor): void
     {
         $this->ensureOwningVendor($bookingVendor, $vendor);
+        $this->ensureAllocationEligibleForFulfillment($bookingVendor);
         $this->ensureBookingEligible($bookingVendor);
         $this->ensurePaymentCaptured($bookingVendor);
         $this->ensureNoOpenRefund($bookingVendor);

@@ -151,6 +151,8 @@ class VendorCoverageAreasPage extends Page implements HasTable
                         )
                         ->searchable()
                         ->preload()
+                        ->live()
+                        ->afterStateUpdated(fn (Select $component) => $this->validateOnly($component->getStatePath()))
                         ->required(),
                     Grid::make(2)->schema([
                         TextInput::make('delivery_fee')

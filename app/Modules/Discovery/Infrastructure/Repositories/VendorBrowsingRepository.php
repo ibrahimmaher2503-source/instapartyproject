@@ -8,6 +8,8 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Shared\Application\Services\PublicMediaUrl;
+use App\Modules\Shared\Application\Services\StorefrontText;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -39,7 +41,7 @@ class VendorBrowsingRepository
                     fn (Builder $occasions) => $occasions->where('code', $occasionCode),
                 )))
             ->with([
-                'primaryCity',
+                'primaryCity.governorate', 'primaryGovernorate', 'coverageAreas.city.governorate',
                 'services' => fn ($query) => $query
                     ->displayable()
                     ->with(['category.parent', 'category.occasions']),
@@ -47,7 +49,7 @@ class VendorBrowsingRepository
             ->orderByDesc('rating_avg')
             ->orderBy('id')
             ->limit($limit)
-            ->get(['id', 'public_id', 'business_name', 'primary_city_id', 'rating_avg', 'rating_count']);
+            ->get(['id', 'public_id', 'business_name', 'primary_city_id', 'primary_governorate_id', 'rating_avg', 'rating_count']);
     }
 
     /** @return EloquentCollection<int, VendorProfile> */
@@ -56,7 +58,7 @@ class VendorBrowsingRepository
         return VendorProfile::query()
             ->whereState('approval_status', ApprovedState::class)
             ->whereHas('services', fn (Builder $query) => $query->displayable())
-            ->with(['primaryCity'])
+            ->with(['primaryCity.governorate', 'primaryGovernorate', 'coverageAreas.city.governorate'])
             ->withCount(['services' => fn (Builder $query) => $query->displayable()])
             ->orderByDesc('rating_avg')
             ->orderByDesc('rating_count')
@@ -65,15 +67,28 @@ class VendorBrowsingRepository
     }
 
     /** @return CursorPaginator<int, Service> Published services for one vendor, optionally per product type. */
-    public function servicesFor(int $vendorProfileId, ?ProductType $type, int $perPage = 20): CursorPaginator
+    public function servicesFor(int $vendorProfileId, ?ProductType $type, int $perPage = 20, ?string $search = null): CursorPaginator
     {
         return Service::query()
             ->where('vendor_profile_id', $vendorProfileId)
             ->displayable()
             ->when($type !== null, fn ($q) => $q->where('product_type', $type))
-            ->with(['category', 'vendor'])
+            ->when(filled($search), fn ($query) => $query->where(fn ($names) => $names
+                ->where('name->en', 'like', '%'.$search.'%')
+                ->orWhere('name->ar', 'like', '%'.$search.'%')))
+            ->with(['category', 'media', 'vendor.primaryCity.governorate', 'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate'])
             ->orderByDesc('id')
             ->cursorPaginate($perPage);
+    }
+
+    /** @return Collection<int, string> */
+    public function serviceNamesFor(int $vendorProfileId, string $locale): Collection
+    {
+        $text = app(StorefrontText::class);
+
+        return Service::query()->where('vendor_profile_id', $vendorProfileId)->displayable()->orderBy('id')
+            ->get(['id', 'name'])->map(fn ($service): string => $text->translation($service, 'name', $locale))
+            ->filter()->unique()->values();
     }
 
     /** @return Collection<string, int> Counts over all displayable services, not just the current page. */
@@ -118,31 +133,34 @@ class VendorBrowsingRepository
     }
 
     /**
-     * Portfolio = gallery media aggregated across the vendor's published
-     * services (no dedicated vendor portfolio collection exists in Phase 1).
+     * Vendor portfolio first, followed by galleries of displayable services.
      *
-     * @return array{total_count: int, items: list<array{url: string, service_public_id: string}>}
+     * @return array{total_count: int, items: list<array{url: string, thumb: string, service_public_id: ?string}>}
      */
     public function portfolioFor(int $vendorProfileId, int $limit = 24): array
     {
         $services = Service::query()
             ->where('vendor_profile_id', $vendorProfileId)
             ->displayable()
-            ->get();
+            ->with('media')->orderBy('id')->get();
 
         $items = [];
-        $total = 0;
-
+        $urls = app(PublicMediaUrl::class);
+        $mediaItems = VendorProfile::findOrFail($vendorProfileId)->getMedia('portfolio')
+            ->map(fn ($media): array => [$media, null]);
         foreach ($services as $service) {
             foreach ($service->getMedia('gallery') as $media) {
-                $total++;
-                if (count($items) < $limit) {
-                    $items[] = ['url' => $media->getUrl(), 'service_public_id' => $service->public_id];
-                }
+                $mediaItems->push([$media, $service->public_id]);
+            }
+        }
+        foreach ($mediaItems as [$media, $servicePublicId]) {
+            $url = $urls->for($media, 'large');
+            if ($url !== null && ! isset($items[$url])) {
+                $items[$url] = ['url' => $url, 'thumb' => $urls->for($media, 'thumb') ?? $url, 'service_public_id' => $servicePublicId];
             }
         }
 
-        return ['total_count' => $total, 'items' => $items];
+        return ['total_count' => count($items), 'items' => array_slice(array_values($items), 0, $limit)];
     }
 
     /** @return array{services_count: int, bookings_count: int} */

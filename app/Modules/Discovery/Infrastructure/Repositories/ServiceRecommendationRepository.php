@@ -29,7 +29,7 @@ class ServiceRecommendationRepository
 
         return Service::query()
             ->displayable()
-            ->with(['category', 'vendor'])
+            ->with(['category', 'media', 'vendor.primaryCity.governorate', 'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate'])
             ->selectRaw("services.*, {$score} AS recommendation_score", [
                 $occasionId, $occasionId,
                 $cityId, $cityId,

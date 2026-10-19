@@ -51,8 +51,12 @@ class VendorWithdrawalsPage extends VendorWalletPage
                     ->formatStateUsing(fn (int $state): string => __('vendor-portal.withdrawals.label_format', ['id' => $state]))
                     ->weight(FontWeight::SemiBold),
                 TextColumn::make('requested_at')
-                    ->label(__('vendor-portal.withdrawals.requested_at'))
+                    ->label(fn (): string => __('settlement.display_timezone', [
+                        'field' => __('vendor-portal.withdrawals.requested_at'),
+                        'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                    ]))
                     ->dateTime('d M Y H:i')
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->sortable(),
                 TextColumn::make('public_id')
                     ->label(__('vendor-portal.withdrawals.reference'))
@@ -75,13 +79,21 @@ class VendorWithdrawalsPage extends VendorWalletPage
                     ->money('EGP', divideBy: 100),
                 Stack::make([
                     TextColumn::make('approved_at')
-                        ->label(__('vendor-portal.withdrawals.approved_at'))
+                        ->label(fn (): string => __('settlement.display_timezone', [
+                            'field' => __('vendor-portal.withdrawals.approved_at'),
+                            'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                        ]))
                         ->dateTime('d M Y H:i')
+                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                         ->icon('heroicon-m-check-badge')
                         ->placeholder('—'),
                     TextColumn::make('paid_at')
-                        ->label(__('vendor-portal.withdrawals.paid_at'))
+                        ->label(fn (): string => __('settlement.display_timezone', [
+                            'field' => __('vendor-portal.withdrawals.paid_at'),
+                            'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                        ]))
                         ->dateTime('d M Y H:i')
+                        ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                         ->icon('heroicon-m-banknotes')
                         ->placeholder('—'),
                 ]),

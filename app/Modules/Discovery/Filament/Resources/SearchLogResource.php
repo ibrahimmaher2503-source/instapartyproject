@@ -17,12 +17,12 @@ class SearchLogResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.discovery');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-magnifying-glass';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 120;
 
     public static function getNavigationLabel(): string
     {

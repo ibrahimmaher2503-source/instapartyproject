@@ -100,14 +100,14 @@ class VendorProfilePage extends Page implements HasForms
                             ->label(__('vendor-portal.profile.logo'))
                             ->content(function (): HtmlString {
                                 $logoPath = $this->getVendorProfile()->logo_path;
-                                if (! $logoPath) {
+                                if (! $logoPath || ! Storage::disk('public')->exists($logoPath)) {
                                     return new HtmlString(
                                         '<span class="text-sm text-gray-400">'.__('vendor-portal.profile.no_logo').'</span>'
                                     );
                                 }
 
                                 return new HtmlString(
-                                    '<img src="'.e(Storage::url($logoPath)).'" alt="Business logo"'
+                                    '<img src="'.e(Storage::disk('public')->url($logoPath)).'" alt="Business logo"'
                                     .' class="h-20 w-20 rounded-full object-cover border border-gray-200">'
                                 );
                             })

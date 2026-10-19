@@ -17,7 +17,7 @@ class SubscriptionAnalyticsPage extends Page
 
     protected static string $view = 'filament.pages.subscription-analytics';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 90;
 
     public static function getNavigationGroup(): ?string
     {

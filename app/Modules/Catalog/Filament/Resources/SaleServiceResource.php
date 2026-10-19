@@ -16,6 +16,7 @@ use App\Modules\Catalog\Filament\Actions\BulkRejectServicesAction;
 use App\Modules\Catalog\Filament\Actions\RejectServiceAction;
 use App\Modules\Catalog\Filament\Actions\RequestServiceEditsAction;
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\CreateSaleService;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\EditSaleService;
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\ListSaleServices;
 use App\Modules\Catalog\Filament\Resources\SaleServiceResource\Pages\PendingSaleServicesPage;
@@ -58,6 +59,8 @@ use Illuminate\Support\Facades\Storage;
 
 class SaleServiceResource extends Resource
 {
+    use HasCategorySchemaFields;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
@@ -190,6 +193,8 @@ class SaleServiceResource extends Resource
                         ->label(__('catalog.is_featured')),
                 ])
                 ->columns(2),
+
+            static::categorySchemaSection(ProductType::Sale),
 
             Section::make(__('catalog.sale_details'))
                 ->relationship('saleDetail')

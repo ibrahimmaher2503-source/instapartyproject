@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Application\Services;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Category;
 use App\Modules\Catalog\Domain\Models\CategoryFieldSchema;
+use App\Modules\Catalog\Domain\Models\Service;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -116,10 +117,10 @@ class CategoryFieldValidationService
      * @param  array<string, mixed>  $values
      * @return array<string, mixed>
      */
-    public function validateValues(int $categoryId, ProductType $productType, array $values, string $errorPrefix = ''): array
+    public function validateValues(int $categoryId, ProductType $productType, array $values, string $errorPrefix = '', ?Service $existingService = null): array
     {
         $schemas = $this->schemasFor($categoryId, $productType);
-        $validator = Validator::make($values, $this->rulesFor($categoryId, $productType), [],
+        $validator = Validator::make($values, $this->rulesForEdit($categoryId, $productType, $existingService), [],
             $schemas->mapWithKeys(fn (CategoryFieldSchema $schema): array => [
                 $schema->field_key => $schema->getTranslation('field_label', app()->getLocale()),
             ])->all());
@@ -135,6 +136,26 @@ class CategoryFieldValidationService
             throw ValidationException::withMessages(collect($exception->errors())
                 ->mapWithKeys(fn (array $messages, string $key): array => [$errorPrefix.$key => $messages])->all());
         }
+    }
+
+    /** @return array<string, list<mixed>> */
+    public function rulesForEdit(int $categoryId, ProductType $productType, ?Service $service = null): array
+    {
+        $rules = $this->rulesFor($categoryId, $productType);
+
+        if ($service === null || $service->category_id !== $categoryId || $service->product_type !== $productType) {
+            return $rules;
+        }
+
+        foreach ($rules as $key => $fieldRules) {
+            // Missing historical values may stay empty; existing values cannot be cleared.
+            if (! str_contains($key, '.') && blank(($service->category_field_values ?? [])[$key] ?? null)) {
+                $rules[$key] = array_values(array_filter($fieldRules, fn ($rule): bool => $rule !== 'required'));
+                array_unshift($rules[$key], 'nullable');
+            }
+        }
+
+        return $rules;
     }
 
     /**

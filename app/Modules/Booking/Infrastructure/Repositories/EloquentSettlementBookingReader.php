@@ -18,6 +18,9 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
             ->where('booking_items.id', $id)
             ->select([
                 'booking_items.id',
+                'booking_vendors.id as booking_vendor_id',
+                'booking_vendors.delivery_fee_minor',
+                'booking_vendors.delivery_fee_currency',
                 'booking_items.public_id',
                 'booking_vendors.booking_id',
                 'booking_vendors.vendor_profile_id',
@@ -45,6 +48,9 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
             ->where('booking_vendors.booking_id', $bookingId)
             ->select([
                 'booking_items.id',
+                'booking_vendors.id as booking_vendor_id',
+                'booking_vendors.delivery_fee_minor',
+                'booking_vendors.delivery_fee_currency',
                 'booking_items.public_id',
                 'booking_vendors.booking_id',
                 'booking_vendors.vendor_profile_id',
@@ -70,6 +76,9 @@ class EloquentSettlementBookingReader implements SettlementBookingReader
             totalMinor: (int) $row->line_total_minor,
             totalCurrency: (string) $row->line_total_currency,
             commissionBps: isset($row->commission_bps) ? (int) $row->commission_bps : null,
+            bookingVendorId: (int) $row->booking_vendor_id,
+            deliveryFeeMinor: (int) $row->delivery_fee_minor,
+            deliveryFeeCurrency: (string) $row->delivery_fee_currency,
         );
     }
 }

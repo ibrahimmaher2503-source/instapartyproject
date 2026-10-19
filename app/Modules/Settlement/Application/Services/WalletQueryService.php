@@ -36,7 +36,8 @@ class WalletQueryService
             ? [$wallet->balance_minor, $wallet->pending_withdrawal_minor, $wallet->public_id]
             : [0, 0, null];
 
-        $availableMinor = (int) max(0, $balanceMinor - $pendingMinor);
+        // Reserve debits already reduce balance; pending is a lifecycle projection.
+        $availableMinor = (int) max(0, $balanceMinor);
 
         $credits = 0;
         $debits = 0;

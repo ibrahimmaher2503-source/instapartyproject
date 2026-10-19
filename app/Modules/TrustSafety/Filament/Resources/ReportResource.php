@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\TrustSafety\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\QueueAge;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
+use App\Modules\Shared\Filament\Tables\ScopedBulkAction;
+
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use App\Modules\TrustSafety\Application\Actions\DismissReportAction;
 use App\Modules\TrustSafety\Application\Actions\MarkReportUnderReviewAction;
 use App\Modules\TrustSafety\Application\Actions\ResolveReportAction;
@@ -19,12 +26,15 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
+
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -34,10 +44,23 @@ class ReportResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'status', 'reason', 'created_at'])])
             ->columns([
                 TextColumn::make('reporter.name')
                     ->label('Reporter')
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, [
+                            '' => ['public_id'],
+                            'reporter' => ['public_id', 'name', 'email', 'phone_e164'],
+                        ]);
+                        $vendorType = 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile';
+                        $match->orWhere(fn (Builder $target): Builder => $target
+                            ->whereIn('reportable_type', ['vendor', 'vendor_profile', $vendorType])
+                            ->whereIn('reportable_id', ReferenceSearch::apply($vendorType::query(), $search, [
+                                '' => ['public_id', 'business_name->en', 'business_name->ar'],
+                                'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                            ])->select('id')));
+                    })),
 
                 TextColumn::make('reportable_type')
                     ->badge()
@@ -68,8 +91,11 @@ class ReportResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->label('Submitted'),
+                QueueAge::column('report'),
             ])
             ->filters([
+                OperationalDateFilter::make('created_at'),
+                QueueAge::overdue('report'),
                 SelectFilter::make('status')
                     ->options(collect(ReportStatus::cases())->mapWithKeys(
                         fn (ReportStatus $s) => [$s->value => $s->label()]
@@ -118,7 +144,16 @@ class ReportResource extends Resource
                         Notification::make()->title('Report dismissed')->warning()->send();
                     }),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->bulkActions([
+                ScopedBulkAction::make(
+                    'markSelectedUnderReview',
+                    'Mark Under Review',
+                    'update_report',
+                    static::class,
+                    fn (Report $record) => app(MarkReportUnderReviewAction::class)->execute($record),
+                ),
+            ])
+            ->defaultSort('created_at', 'asc');
     }
 
     public static function getPages(): array
@@ -132,5 +167,10 @@ class ReportResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function getRelations(): array
+    {
+        return [InternalRecordNotesRelationManager::class];
     }
 }

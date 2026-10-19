@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Providers;
 
 use App\Modules\Booking\Domain\Contracts\BookingHistoryReader;
+use App\Modules\Booking\Domain\Contracts\BookingReferenceReader;
 use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingHistoryReader;
+use App\Modules\Booking\Infrastructure\Repositories\EloquentBookingReferenceReader;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\Listeners\CreateChatThreadOnBookingConfirmed;
 use App\Modules\Communication\Application\Listeners\DispatchChatFlagEscalatedNotificationsListener;
@@ -89,7 +91,7 @@ use App\Modules\Communication\Infrastructure\Gateways\FcmPushAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\FirebaseChatTokenMinter;
 use App\Modules\Communication\Infrastructure\Gateways\FirebaseFirestoreChatGateway;
 use App\Modules\Communication\Infrastructure\Gateways\FirestoreChatGatewayStub;
-use App\Modules\Communication\Infrastructure\Gateways\MailchimpEmailAdapter;
+use App\Modules\Communication\Infrastructure\Gateways\LaravelMailEmailAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\NullProviderAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\SmsMisrAdapter;
 use App\Modules\Communication\Infrastructure\Gateways\SmsMisrProvider;
@@ -115,6 +117,7 @@ class CommunicationServiceProvider extends ServiceProvider
         $this->bindChatTokenMinter();
         $this->app->bind(NotificationDispatcher::class, DispatchNotificationAction::class);
         $this->app->singleton(BookingHistoryReader::class, EloquentBookingHistoryReader::class);
+        $this->app->scoped(BookingReferenceReader::class, EloquentBookingReferenceReader::class);
         $this->app->singleton(SegmentResolver::class);
 
         // in_app is read directly from notification_dispatches — no external delivery.
@@ -129,7 +132,7 @@ class CommunicationServiceProvider extends ServiceProvider
             $this->app->bind(NotificationChannel::Push->value.'_adapter', FcmPushAdapter::class);
             $this->app->bind(NotificationChannel::Sms->value.'_adapter', SmsMisrAdapter::class);
             $this->app->bind(NotificationChannel::Whatsapp->value.'_adapter', WhatsAppStubAdapter::class);
-            $this->app->bind(NotificationChannel::Email->value.'_adapter', MailchimpEmailAdapter::class);
+            $this->app->bind(NotificationChannel::Email->value.'_adapter', LaravelMailEmailAdapter::class);
         }
     }
 
@@ -313,7 +316,8 @@ class CommunicationServiceProvider extends ServiceProvider
         Event::listen('App\Modules\Settlement\Domain\Events\WithdrawalRejected', OnWithdrawalRejected::class);
 
         // TrustSafety — report acknowledgement
-        Event::listen('App\Modules\TrustSafety\Domain\Events\ReportSubmitted', [OnReportSubmittedInbox::class, OnReportSubmittedCustomerAck::class]);
+        Event::listen('App\Modules\TrustSafety\Domain\Events\ReportSubmitted', OnReportSubmittedInbox::class);
+        Event::listen('App\Modules\TrustSafety\Domain\Events\ReportSubmitted', OnReportSubmittedCustomerAck::class);
 
         // Catalog — service moderation outcome
         Event::listen('App\Modules\Catalog\Domain\Events\ServicePublished', OnServicePublished::class);

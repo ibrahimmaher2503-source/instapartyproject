@@ -21,10 +21,21 @@ class SubscriptionDevelopmentSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
         $plan = SubscriptionPlan::query()->where('plan_code', 'silver')->first()
             ?? SubscriptionPlan::query()->first();
 
-        $vendors = VendorProfile::query()->limit(2)->get();
+        $vendors = VendorProfile::query()
+            ->whereDoesntHave('user', fn ($query) => $query->whereIn('email', [
+                'vendor.rental@instaparty.local',
+                'vendor.sale@instaparty.local',
+                'vendor.digital@instaparty.local',
+            ]))
+            ->limit(2)
+            ->get();
 
         if (! $plan || $vendors->isEmpty()) {
             return;
@@ -45,7 +56,7 @@ class SubscriptionDevelopmentSeeder extends Seeder
                 ],
             );
 
-            $invoice = SubscriptionInvoice::query()->updateOrCreate(
+            $invoice = SubscriptionInvoice::query()->firstOrCreate(
                 [
                     'vendor_subscription_id' => $subscription->id,
                     'period_start' => $subscription->current_period_start,
@@ -56,25 +67,27 @@ class SubscriptionDevelopmentSeeder extends Seeder
                     'idempotency_key' => 'seed:invoice:'.$subscription->id.':'.$subscription->current_period_start->format('Y-m'),
                     'status' => InvoiceStatus::Paid,
                     'billing_cycle' => BillingCycle::Monthly->value,
-                    'amount_minor' => 99_00,
-                    'amount_currency' => 'EGP',
+                    'amount_minor' => $plan->monthly_price->getMinorAmount()->toInt(),
+                    'amount_currency' => $plan->monthly_price->getCurrency()->getCurrencyCode(),
                     'gateway_ref' => 'seed_pay_'.$subscription->id,
                     'paid_at' => now()->startOfMonth()->addDay(),
                 ],
             );
 
-            SubscriptionPayment::query()->firstOrCreate(
-                [
-                    'subscription_invoice_id' => $invoice->id,
-                    'attempt_no' => 1,
-                ],
-                [
-                    'mode' => 'vendor_initiated',
-                    'status' => 'captured',
-                    'gateway' => 'seed',
-                    'gateway_ref' => $invoice->gateway_ref,
-                ],
-            );
+            if ($invoice->wasRecentlyCreated) {
+                SubscriptionPayment::query()->firstOrCreate(
+                    [
+                        'subscription_invoice_id' => $invoice->id,
+                        'attempt_no' => 1,
+                    ],
+                    [
+                        'mode' => 'vendor_initiated',
+                        'status' => 'captured',
+                        'gateway' => 'seed',
+                        'gateway_ref' => $invoice->gateway_ref,
+                    ],
+                );
+            }
 
             SubscriptionAuditEntry::query()->firstOrCreate(
                 [
@@ -122,7 +135,7 @@ class SubscriptionDevelopmentSeeder extends Seeder
             ->get();
 
         foreach ($typeVendors as $vendor) {
-            VendorSubscription::query()->updateOrCreate(
+            $subscription = VendorSubscription::query()->updateOrCreate(
                 ['vendor_profile_id' => $vendor->id, 'ended_at' => null],
                 [
                     'public_id' => (string) Str::ulid(),
@@ -134,6 +147,43 @@ class SubscriptionDevelopmentSeeder extends Seeder
                     'cancel_at_period_end' => false,
                     'is_admin_override' => false,
                     'started_at' => now()->startOfMonth(),
+                ],
+            );
+
+            if ($subscription->wasRecentlyCreated) {
+                $this->createDemoInvoiceAndPayment($subscription, $premium);
+            }
+        }
+    }
+
+    private function createDemoInvoiceAndPayment(VendorSubscription $subscription, SubscriptionPlan $plan): void
+    {
+        $invoice = SubscriptionInvoice::query()->firstOrCreate(
+            [
+                'vendor_subscription_id' => $subscription->id,
+                'period_start' => $subscription->current_period_start,
+                'period_end' => $subscription->current_period_end,
+            ],
+            [
+                'public_id' => (string) Str::ulid(),
+                'idempotency_key' => 'seed:invoice:'.$subscription->id.':'.$subscription->current_period_start->format('Y-m'),
+                'status' => InvoiceStatus::Paid,
+                'billing_cycle' => BillingCycle::Monthly,
+                'amount_minor' => $plan->monthly_price->getMinorAmount()->toInt(),
+                'amount_currency' => $plan->monthly_price->getCurrency()->getCurrencyCode(),
+                'gateway_ref' => 'seed_pay_'.$subscription->id,
+                'paid_at' => now(),
+            ],
+        );
+
+        if ($invoice->wasRecentlyCreated) {
+            SubscriptionPayment::query()->firstOrCreate(
+                ['subscription_invoice_id' => $invoice->id, 'attempt_no' => 1],
+                [
+                    'mode' => 'vendor_initiated',
+                    'status' => 'captured',
+                    'gateway' => 'seed',
+                    'gateway_ref' => $invoice->gateway_ref,
                 ],
             );
         }

@@ -28,11 +28,26 @@ class FaqCategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 110;
 
     public static function getNavigationGroup(): ?string
     {
         return __('admin.nav.groups.support');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('support::support.faq_categories.plural');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('support::support.faq_categories.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('support::support.faq_categories.plural');
     }
 
     public static function getTranslatableLocales(): array
@@ -43,22 +58,26 @@ class FaqCategoryResource extends Resource
     public static function form(Form $schema): Form
     {
         return $schema->components([
-            Section::make()->schema([
+            Section::make(__('support::support.faq_categories.section'))->schema([
                 TextInput::make('name')
+                    ->label(__('support::support.faq_categories.name'))
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('slug')
+                    ->label(__('support::support.faq_categories.slug'))
                     ->required()
                     ->maxLength(100)
                     ->unique(ignoreRecord: true),
 
                 TextInput::make('sort_order')
+                    ->label(__('support::support.faq_categories.sort_order'))
                     ->numeric()
                     ->default(0)
                     ->required(),
 
                 Toggle::make('is_active')
+                    ->label(__('support::support.faq_categories.is_active'))
                     ->default(true),
             ])->columns(2),
         ]);
@@ -69,16 +88,20 @@ class FaqCategoryResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('support::support.faq_categories.name'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('slug')
+                    ->label(__('support::support.faq_categories.slug'))
                     ->sortable(),
 
                 TextColumn::make('sort_order')
+                    ->label(__('support::support.faq_categories.sort_order'))
                     ->sortable(),
 
                 IconColumn::make('is_active')
+                    ->label(__('support::support.faq_categories.is_active'))
                     ->boolean(),
             ])
             ->defaultSort('sort_order')

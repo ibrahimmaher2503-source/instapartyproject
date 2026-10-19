@@ -6,41 +6,47 @@ namespace App\Modules\Booking\Application\Listeners;
 
 use App\Modules\Payments\Domain\Events\PaymentCaptured;
 use App\Modules\Payments\Domain\Events\RefundCompleted;
+use App\Modules\Payments\Domain\Contracts\BookingPaymentTotalsReader;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 
 class UpdateBookingPaymentStatusListener implements ShouldQueue
 {
+    public function __construct(private readonly BookingPaymentTotalsReader $totals) {}
+
     public function handle(PaymentCaptured $event): void
     {
-        // Rebuild from payment/refund rows so a retried PaymentCaptured event
-        // cannot increment the booking twice. Payment rows remain the source
-        // of truth; the booking column is only a read-optimized projection.
-        $capturedMinor = (int) DB::table('payments')
-            ->where('booking_id', $event->bookingId)
-            ->whereIn('status', ['captured', 'refunded', 'partially_refunded'])
-            ->sum('amount_minor');
-        $refundedMinor = (int) DB::table('refunds')
-            ->where('booking_id', $event->bookingId)
-            ->where('status', 'completed')
-            ->sum('amount_minor');
-
-        DB::table('bookings')->where('id', $event->bookingId)->update([
-            'payment_status' => 'paid',
-            'amount_paid_minor' => max(0, $capturedMinor - $refundedMinor),
-            'amount_paid_currency' => $event->amountCurrency,
-            'updated_at' => now(),
-        ]);
+        $this->project($event->bookingId);
     }
 
     public function handleRefund(RefundCompleted $event): void
     {
-        // CASE (not GREATEST) — portable across MySQL (prod) and SQLite (tests).
-        $delta = (int) $event->amountMinor;
-        DB::table('bookings')->where('id', $event->bookingId)->update([
-            'payment_status' => 'refunded',
-            'amount_paid_minor' => DB::raw("CASE WHEN amount_paid_minor - {$delta} < 0 THEN 0 ELSE amount_paid_minor - {$delta} END"),
-            'updated_at' => now(),
-        ]);
+        $this->project($event->bookingId);
+    }
+
+    private function project(int $bookingId): void
+    {
+        DB::transaction(function () use ($bookingId): void {
+            $booking = DB::table('bookings')->where('id', $bookingId)->lockForUpdate()->first();
+            if ($booking === null) {
+                return;
+            }
+
+            // Rebuild both event paths; retries and delayed captures cannot erase a refund.
+            $totals = $this->totals->forBooking($bookingId, (string) $booking->total_currency);
+            $status = match (true) {
+                $totals['refunded_minor'] > 0 && $totals['net_paid_minor'] === 0 => 'refunded',
+                $totals['refunded_minor'] > 0 => 'partially_refunded',
+                $totals['captured_minor'] >= (int) $booking->total_minor && $totals['captured_minor'] > 0 => 'paid',
+                $totals['captured_minor'] > 0 => 'partial',
+                default => 'unpaid',
+            };
+            DB::table('bookings')->where('id', $bookingId)->update([
+                'payment_status' => $status,
+                'amount_paid_minor' => $totals['net_paid_minor'],
+                'amount_paid_currency' => $booking->total_currency,
+                'updated_at' => now(),
+            ]);
+        });
     }
 }

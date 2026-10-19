@@ -5,6 +5,13 @@ declare(strict_types=1);
 return [
     'created_at' => 'تاريخ الإنشاء',
     'updated_at' => 'تاريخ التحديث',
+    'errors' => [
+        'unexpected_failure' => 'تعذر إكمال طلبك. يُرجى المحاولة مرة أخرى.',
+        'action_failed' => 'تعذر إكمال الإجراء.',
+        'validation_failed' => 'يُرجى مراجعة بيانات الدفع المحددة.',
+        'not_found' => 'تعذر العثور على العنصر المطلوب.',
+        'reference_id' => 'رقم المرجع: :id',
+    ],
     'dashboard' => [
         'title' => 'لوحة التحكم', 'console_label' => 'وحدة متابعة العمليات',
         'choose_area' => 'اختر مجالاً للتركيز على المهام التي تحتاج إلى متابعة.',

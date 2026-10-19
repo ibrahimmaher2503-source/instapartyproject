@@ -22,7 +22,7 @@ class PendingWithdrawalsWidget extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->can('view_any_withdrawals_queue') ?? false;
+        return WithdrawalsQueueResource::canViewAny();
     }
 
     protected function getStats(): array

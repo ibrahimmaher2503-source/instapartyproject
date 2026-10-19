@@ -97,7 +97,7 @@ final class VendorProfileTimelineDescriptors
             defaultEventKind: TimelineEventKind::Document,
             canonicalRank: 20,
             queryBuilder: function (VendorProfile $subject, TimelineSubjectScope $scope, TimelineFilters $filters) {
-                $query = DB::table('vendor_documents')
+                $documents = DB::table('vendor_documents')
                     ->where('vendor_profile_id', $subject->getKey())
                     ->select([
                         'id',
@@ -105,14 +105,34 @@ final class VendorProfileTimelineDescriptors
                         'doc_type',
                         'status',
                         'review_notes',
-                        'created_at as occurred_at',
-                    ]);
+                        'reviewed_by',
+                    ])
+                    ->selectRaw('COALESCE(reviewed_at, created_at) as created_at')
+                    ->selectRaw('COALESCE(reviewed_at, created_at) as occurred_at');
+
+                // Keep the effective event time as a real outer created_at column so cursor filtering and ordering use it.
+                $query = DB::query()
+                    ->fromSub($documents, 'vendor_documents')
+                    ->select('vendor_documents.*')
+                    ->selectSub(
+                        DB::table('users')
+                            ->select('name')
+                            ->whereColumn('users.id', 'vendor_documents.reviewed_by'),
+                        'reviewer_name',
+                    );
 
                 if ($filters->eventKind !== null && $filters->eventKind !== TimelineEventKind::Document) {
                     $query->whereRaw('0 = 1');
                 }
 
-                // Documents have no actor_role on the row itself; skip actorRole filter
+                if ($filters->actorRole === TimelineActorRole::Admin) {
+                    $query->whereNotNull('vendor_documents.reviewed_by');
+                } elseif ($filters->actorRole === TimelineActorRole::System) {
+                    $query->whereNull('vendor_documents.reviewed_by');
+                } elseif ($filters->actorRole !== null) {
+                    $query->whereRaw('0 = 1');
+                }
+
                 return $query;
             },
             rowMapper: function (object $row, TimelineAudience $audience): TimelineEntryDTO {
@@ -130,12 +150,15 @@ final class VendorProfileTimelineDescriptors
                     $rejectionNote = $decoded[app()->getLocale()] ?? $decoded['en'] ?? null;
                 }
 
+                $wasReviewed = in_array($row->status, ['approved', 'rejected'], true)
+                    && $row->reviewed_by !== null;
+
                 return new TimelineEntryDTO(
                     occurredAt: CarbonImmutable::parse($row->occurred_at),
                     sourceTable: 'vendor_documents',
                     sourcePublicId: $row->public_id ?? null,
-                    actorLabel: 'System',
-                    actorRole: TimelineActorRole::System,
+                    actorLabel: $wasReviewed ? ($row->reviewer_name ?? 'System') : 'System',
+                    actorRole: $wasReviewed ? TimelineActorRole::Admin : TimelineActorRole::System,
                     actionKey: $actionKey,
                     fromState: null,
                     toState: $row->status,

@@ -30,17 +30,21 @@ class OnVendorDocumentApproved implements ShouldQueue
         }
 
         $context = [
-            'doc_type' => $document->doc_type->value,
+            'doc_type' => $document->doc_type_key,
         ];
 
-        foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+        foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            $channelContext = $channel === NotificationChannel::InApp
+                ? [...$context, 'action_url' => route('filament.vendor.pages.vendor-documents-page')]
+                : $context;
+
             $this->dispatcher->execute(new DispatchNotificationDTO(
                 eventKey: 'vendor.document.approved',
                 channel: $channel,
                 audience: NotificationAudience::Vendor,
                 eventCategory: EventCategory::System,
                 userId: $userId,
-                context: $context,
+                context: $channelContext,
                 referenceType: 'vendor_document',
                 referenceId: $document->id,
             ));

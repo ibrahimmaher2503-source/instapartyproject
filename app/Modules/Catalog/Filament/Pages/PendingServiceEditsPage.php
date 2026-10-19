@@ -36,7 +36,7 @@ class PendingServiceEditsPage extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 40;
 
     public static function getNavigationLabel(): string
     {

@@ -26,11 +26,11 @@ class ReconciliationFindingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-exclamation-triangle';
 
-    protected static ?int $navigationSort = 100;
+    protected static ?int $navigationSort = 180;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settlement');
+        return __('admin.nav.groups.technical');
     }
 
     public static function getNavigationLabel(): string

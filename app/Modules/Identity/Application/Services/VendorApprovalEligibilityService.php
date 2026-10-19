@@ -31,7 +31,7 @@ final class VendorApprovalEligibilityService
             'identity' => filled($vendor->user?->name),
             'contact' => filled($vendor->user?->email)
                 && filled($vendor->user?->phone_e164)
-                && $vendor->user?->email_verified_at !== null,
+                && $vendor->user?->hasVerifiedEmail() === true,
             'profile' => $this->hasRequiredBusinessFields($vendor, $businessType),
             'geography' => filled($vendor->primary_governorate_id)
                 && filled($vendor->primary_city_id)

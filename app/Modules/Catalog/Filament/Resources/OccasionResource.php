@@ -31,10 +31,10 @@ class OccasionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.catalog');
+        return __('admin.nav.groups.packages_occasions');
     }
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {

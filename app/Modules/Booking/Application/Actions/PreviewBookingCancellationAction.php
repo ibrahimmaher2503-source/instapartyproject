@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Booking\Application\Actions;
 
 use App\Modules\Booking\Application\DTOs\CancellationPreviewDTO;
+use App\Modules\Booking\Domain\Enums\VendorSubStatus;
 use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\ActiveState;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CancelledState;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\CompletedState;
@@ -27,10 +29,17 @@ class PreviewBookingCancellationAction
     {
         $booking->loadMissing('vendors.items');
 
+        $hasCompletedAllocation = $booking->vendors->contains(
+            fn (BookingVendor $vendor): bool => $vendor->sub_status === VendorSubStatus::Completed,
+        );
+        $hasInProgressAllocation = $booking->vendors->contains(
+            fn (BookingVendor $vendor): bool => $vendor->sub_status === VendorSubStatus::InProgress,
+        );
+
         $lifecycleBlock = match (true) {
             $booking->lifecycle_status instanceof CancelledState => 'already_cancelled',
-            $booking->lifecycle_status instanceof CompletedState => 'booking_completed',
-            $booking->lifecycle_status instanceof ActiveState => 'booking_active',
+            $booking->lifecycle_status instanceof CompletedState || $hasCompletedAllocation => 'booking_completed',
+            $booking->lifecycle_status instanceof ActiveState || $hasInProgressAllocation => 'booking_active',
             default => null,
         };
 

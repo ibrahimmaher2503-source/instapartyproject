@@ -38,7 +38,7 @@ class ManageSettings extends Page implements HasForms, HasTable
         return __('shared.settings.nav_label');
     }
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 10;
 
     protected static string $view = 'filament.pages.manage-settings';
 

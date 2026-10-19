@@ -7,6 +7,7 @@ namespace App\Modules\Booking\Filament\Resources\BookingResource\Pages;
 use App\Modules\Booking\Application\Actions\AddTransportationAdjustmentAction;
 use App\Modules\Booking\Application\Actions\ForceCancelBookingAction;
 use App\Modules\Booking\Application\DTOs\AdminInterventionDTO;
+use App\Modules\Booking\Application\DTOs\CreateBookingDraftDTO;
 use App\Modules\Booking\Domain\Enums\InterventionType;
 use App\Modules\Booking\Domain\Enums\LifecycleStatus;
 use App\Modules\Booking\Domain\Models\Booking;
@@ -56,7 +57,16 @@ class ViewBooking extends ViewRecord
                     TextInput::make('guest_count')
                         ->label(__('booking.columns.guest_count'))
                         ->numeric()
+                        ->rules(['integer'])
                         ->minValue(1)
+                        ->maxValue(CreateBookingDraftDTO::MAX_GUEST_COUNT)
+                        ->step(1)
+                        ->validationMessages([
+                            'integer' => __('booking.validation.guest_count_range'),
+                            'min' => __('booking.validation.guest_count_range'),
+                            'max' => __('booking.validation.guest_count_range'),
+                        ])
+                        ->helperText(__('booking.validation.guest_count_range'))
                         ->default(fn (): ?int => $this->record->guest_count)
                         ->required(),
                     DateTimePicker::make('event_starts_at')
@@ -90,7 +100,12 @@ class ViewBooking extends ViewRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading(__('booking.modals.force_cancel_title'))
-                ->modalDescription(__('booking.modals.force_cancel_description'))
+                ->modalDescription(fn (Booking $record): string => __('booking.modals.force_cancel_description', [
+                    'reference' => $record->reference_no,
+                    'status' => $record->lifecycle_status->getValue(),
+                    'amount' => $record->total->formatTo(app()->getLocale()),
+                    'customer' => $record->customer?->name ?? '—',
+                ]))
                 ->form([
                     Textarea::make('reason')
                         ->label(__('booking.modals.force_cancel_reason'))

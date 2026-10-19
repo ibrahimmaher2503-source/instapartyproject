@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Filament\Resources\ChatModerationFlagResource\Pages;
 
 use App\Modules\Communication\Application\Actions\EscalateChatFlagToAdminInboxAction;
+use App\Modules\Communication\Application\Actions\RecordChatModerationReadAction;
 use App\Modules\Communication\Application\Actions\ResolveChatFlagAction;
 use App\Modules\Communication\Application\DTOs\EscalateChatFlagDTO;
 use App\Modules\Communication\Application\DTOs\ResolveChatFlagDTO;
@@ -13,6 +14,7 @@ use App\Modules\Communication\Domain\Enums\ChatFlagResolution;
 use App\Modules\Communication\Domain\Enums\ChatFlagType;
 use App\Modules\Communication\Domain\Models\ChatModerationFlag;
 use App\Modules\Communication\Filament\Resources\ChatModerationFlagResource;
+use App\Modules\Communication\Filament\Resources\ChatThreadResource;
 use App\Modules\Communication\Infrastructure\Services\MaskModerationPattern;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -22,10 +24,21 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Auth;
 
 class ViewChatModerationFlag extends ViewRecord
 {
     protected static string $resource = ChatModerationFlagResource::class;
+
+    public function mount(int | string $record): void
+    {
+        parent::mount($record);
+
+        abort_unless($this->record instanceof ChatModerationFlag, 404);
+
+        $actorId = Auth::guard('web')->id();
+        app(RecordChatModerationReadAction::class)->execute($this->record, $actorId === null ? null : (int) $actorId);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -121,6 +134,28 @@ class ViewChatModerationFlag extends ViewRecord
     public function infolist(Infolist $schema): Infolist
     {
         return $schema->components([
+            Section::make(__('chat_moderation.sections.context'))
+                ->schema([
+                    TextEntry::make('thread_context')
+                        ->label(__('chat_moderation.columns.thread'))
+                        ->getStateUsing(fn (ChatModerationFlag $record): ?string => $record->messageLog?->thread?->public_id)
+                        ->url(fn (ChatModerationFlag $record): ?string => $record->messageLog?->thread
+                            ? ChatThreadResource::getUrl('view', ['record' => $record->messageLog->thread])
+                            : null)
+                        ->openUrlInNewTab()
+                        ->placeholder('—'),
+                    TextEntry::make('messageLog.thread.booking.public_id')
+                        ->label(__('chat_moderation.columns.booking_ref'))
+                        ->placeholder('—'),
+                    TextEntry::make('messageLog.thread.customer.name')
+                        ->label(__('chat_moderation.columns.customer'))
+                        ->default('<deleted user>'),
+                    TextEntry::make('messageLog.thread.vendorProfile.business_name')
+                        ->label(__('chat_moderation.columns.vendor'))
+                        ->placeholder('—'),
+                ])
+                ->columns(2),
+
             Section::make(__('chat_moderation.sections.flag_details'))
                 ->schema([
                     TextEntry::make('flag_type')

@@ -29,6 +29,7 @@ trait HasCategoryOccasionHelper
             Select::make('main_category_id')
                 ->label(__('catalog.main_category'))
                 ->options(fn () => Category::query()->active()->forProductType($type)->whereNull('parent_id')
+                    ->whereHas('children', fn ($query) => $query->active()->forProductType($type))
                     ->orderBy('sort_order')->get()->mapWithKeys(fn (Category $category): array => [
                         $category->id => $category->getTranslation('name', app()->getLocale()),
                     ]))
@@ -75,6 +76,7 @@ trait HasCategoryOccasionHelper
         $occasions = Category::query()
             ->with('occasions')
             ->find($categoryId)?->occasions
+            ->filter(fn (Occasion $occasion): bool => $occasion->is_active)
             ->map(fn (Occasion $o): string => $o->getTranslation('name', app()->getLocale()))
             ->implode(__('vendor-portal.services.occasion_separator'));
 

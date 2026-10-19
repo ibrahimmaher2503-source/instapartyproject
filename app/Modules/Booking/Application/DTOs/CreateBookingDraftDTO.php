@@ -8,6 +8,9 @@ use Carbon\Carbon;
 
 final readonly class CreateBookingDraftDTO
 {
+    /** A practical input bound, not a product-defined event-size cap. */
+    public const MAX_GUEST_COUNT = 10_000;
+
     public function __construct(
         public int $customerId,
         public int $occasionId,

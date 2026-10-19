@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Support\Domain\Models;
 
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Shared\Domain\Concerns\HasInternalRecordNotes;
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
 use App\Modules\Support\Domain\Enums\SupportTicketStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Tags\HasTags;
 
 /**
  * @property string $public_id
@@ -23,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SupportTicket extends Model
 {
     use HasPublicId;
+    use HasInternalRecordNotes;
+    use HasTags;
 
     protected $fillable = [
         'public_id', 'user_id', 'email', 'subject', 'body', 'status', 'booking_id', 'assigned_to',

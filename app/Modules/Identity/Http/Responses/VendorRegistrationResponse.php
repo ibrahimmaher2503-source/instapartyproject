@@ -6,6 +6,7 @@ namespace App\Modules\Identity\Http\Responses;
 
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\RegistrationResponse as BaseRegistrationResponse;
+use Filament\Notifications\Notification;
 use Illuminate\Http\RedirectResponse;
 use Livewire\Features\SupportRedirects\Redirector;
 
@@ -13,14 +14,17 @@ final class VendorRegistrationResponse extends BaseRegistrationResponse
 {
     public function toResponse($request): RedirectResponse|Redirector
     {
-        session()->flash('registration_successful', true);
-        session()->flash('verification_pending', true);
+        Filament::auth()->logout();
+        session()->regenerate();
+        session()->forget('url.intended');
 
-        session()->put(
-            'url.intended',
-            Filament::getEmailVerificationPromptUrl() ?? url('/vendor-portal/login'),
-        );
+        Notification::make()
+            ->title(__('identity::identity.messages.registration_request_received_title'))
+            ->body(__('identity::identity.messages.registration_request_received_body'))
+            ->info()
+            ->persistent()
+            ->send();
 
-        return parent::toResponse($request);
+        return redirect(Filament::getLoginUrl());
     }
 }

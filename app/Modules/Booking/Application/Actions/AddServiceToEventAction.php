@@ -27,6 +27,7 @@ class AddServiceToEventAction
         string $servicePublicId,
         int $quantity,
     ): Booking {
+        // Retry the outer unit so nested item-inventory checks receive a fresh transaction snapshot.
         return DB::transaction(function () use ($customerId, $draft, $servicePublicId, $quantity): Booking {
             $serviceId = $this->catalogReader->resolvePublicId($servicePublicId);
             if ($serviceId === null || $this->catalogReader->findPublishedById($serviceId) === null) {
@@ -67,6 +68,6 @@ class AddServiceToEventAction
             app(AppendCustomerBookingNoteAction::class)->execute($booking, $customerId, $draft->notes, $draft->notesLocale);
 
             return $booking->load(['vendors.items', 'vendors.vendor', 'address', 'customerNotes']);
-        });
+        }, 3);
     }
 }

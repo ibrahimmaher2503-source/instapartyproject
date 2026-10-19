@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'allocation_not_eligible' => 'Vendor allocation is not eligible for fulfillment.',
     'sub_status' => 'Vendor status',
     'vendor_total' => 'Vendor total',
+    'display_timezone' => ':field (Timezone: :timezone)',
     'nav' => [
         'bookings' => 'Bookings',
         'negotiation_monitor' => 'Negotiation Monitoring',
@@ -53,6 +55,7 @@ return [
         'amount_paid' => 'Amount Paid',
         'submitted_at' => 'Submitted At',
         'vendor' => 'Vendor',
+        'vendor_id' => 'Vendor',
         'vendor_status' => 'Vendor Status',
         'service' => 'Service',
         'product_type' => 'Product Type',
@@ -143,6 +146,7 @@ return [
         'event_starts_at' => 'Event Start',
         'event_ends_at' => 'Event End',
         'guest_count' => 'Guest Count',
+        'guest_count_helper' => 'Optional. Enter a whole number from 1 to 10,000.',
         'city' => 'City',
         'address_line' => 'Address Line',
         'address_building' => 'Building',
@@ -159,7 +163,7 @@ return [
 
     'modals' => [
         'force_cancel_title' => 'Force cancel booking',
-        'force_cancel_description' => 'This will cancel the booking and record an audit trail.',
+        'force_cancel_description' => 'Booking :reference is currently :status for :customer, total :amount. Confirming marks the booking cancelled, cancels pending, modified, and accepted vendor allocations, and notifies the customer and affected vendors. In-progress allocations and payment records are unchanged; no refund is initiated.',
         'force_cancel_reason' => 'Reason',
         'admin_note_body' => 'Admin note',
     ],
@@ -171,6 +175,10 @@ return [
         'transportation_line_added' => 'Transportation line added and totals recalculated.',
     ],
     'invoice' => [
+        'item_subtotal' => 'Item subtotal',
+        'recorded_subtotal_adjustment' => 'Recorded subtotal adjustment (reason not stored)',
+        'recorded_vat' => 'Recorded VAT amount',
+        'tax_context' => 'Tax amounts are shown as recorded. This booking document does not assign a tax rate or certify a tax invoice.',
         'title' => 'Booking invoice',
         'print' => 'Print invoice',
         'customer' => 'Customer',
@@ -179,6 +187,15 @@ return [
         'item' => 'Item',
         'amount' => 'Amount',
         'vendor_delivery' => 'Vendor delivery',
+        'discount' => 'Booking discount',
+        'loyalty_redemption' => 'Loyalty redemption',
+        'booking_reference' => 'Booking reference',
+        'document_reference' => 'Document reference (booking reference)',
+        'vendor' => 'Vendor',
+        'invoice_name' => 'Invoice recipient',
+        'invoice_tax_id' => 'Tax ID',
+        'no_tax_details_recorded' => 'No tax details recorded for this booking',
+        'payment_status' => 'Payment status',
     ],
 
     'empty_states' => [
@@ -324,6 +341,8 @@ return [
             'escalate_vendor_timeout' => 'Escalate Timeout',
             'extend_vendor_deadline' => 'Extend Response Deadline',
             'suggest_alternative_vendors' => 'Suggest Alternatives',
+            'admin_accept_vendor' => 'Accept for vendor',
+            'admin_reject_vendor' => 'Reject for vendor',
             'resume_customer_review' => 'Resume Review',
             'create_note' => 'Add Note',
             'freeze_chat' => 'Freeze Chat',
@@ -341,6 +360,7 @@ return [
             'resume_reason' => 'Reason for resuming',
             'suggest_vendors' => 'Suggest vendors',
             'suggest_vendors_help' => 'Review the selected alternatives before confirming. The customer remains the decision maker.',
+            'admin_decision_reason' => 'Reason for this admin decision',
             'review_summary' => 'Review before sending',
             'review_summary_body' => '{0} Select at least one alternative. The customer will receive the suggestion; no vendor is assigned and the booking state is unchanged.|{1} The customer will receive 1 suggested alternative. No vendor is assigned and the booking state is unchanged.|[2,*] The customer will receive :count suggested alternatives. No vendor is assigned and the booking state is unchanged.',
             'extend_hours' => 'Extension (hours)',
@@ -352,6 +372,8 @@ return [
             'escalate_vendor_timeout' => 'Escalate vendor timeout? This will mark the vendor as timed out.',
             'extend_vendor_deadline' => 'Extend vendor response deadline? This will reset their deadline and allow them to accept or decline.',
             'suggest_alternative_vendors' => 'Suggest these vendors to the customer?',
+            'admin_accept_vendor' => 'Accept this pending request on behalf of the vendor?',
+            'admin_reject_vendor' => 'Reject this pending request on behalf of the vendor?',
             'resume_customer_review' => 'Send review reminder to the customer?',
             'create_note' => 'Save this note?',
             'freeze_chat' => 'Freeze the booking chat? All parties will be notified.',
@@ -364,6 +386,8 @@ return [
             'escalate_vendor_timeout' => 'Vendor escalated to timed out.',
             'extend_vendor_deadline' => 'Response deadline extended successfully.',
             'suggest_alternative_vendors' => 'Alternative vendors suggested to customer.',
+            'admin_accept_vendor' => 'Vendor request accepted by admin.',
+            'admin_reject_vendor' => 'Vendor request rejected by admin.',
             'resume_customer_review' => 'Customer review reminder sent.',
             'create_note' => 'Note saved.',
             'freeze_chat' => 'Booking chat frozen successfully.',
@@ -372,6 +396,7 @@ return [
         'error' => [
             'throttled' => 'This action was performed recently. Please wait before trying again.',
             'vendor_not_pending' => 'Vendor is no longer in pending status.',
+            'decision_reason' => 'Enter a reason between 10 and 1000 characters.',
             'deadline_not_passed' => 'Response deadline has not yet passed.',
             'no_open_modification' => 'No open modification found for this booking.',
             'chat_thread_not_found' => 'No chat thread found for this booking.',
@@ -410,6 +435,7 @@ return [
         'action_failed' => 'Action failed.',
     ],
     'validation' => [
+        'guest_count_range' => 'Enter a whole number from 1 to 10,000.',
         'transport_price_invalid' => 'Enter a non-negative EGP amount with no more than two decimal places.',
         'lane_required' => 'The fulfillment step is required.',
         'lane_invalid' => 'The fulfillment step must be preparing, ready, in_progress, or completed.',
@@ -437,6 +463,9 @@ return [
         ],
         'currency_mismatch' => [
             'message' => 'Coverage area currency does not match the booking currency.',
+        ],
+        'submit_failed' => [
+            'message' => 'This booking could not be submitted. Review your event details and try again.',
         ],
     ],
     'cancellation' => [

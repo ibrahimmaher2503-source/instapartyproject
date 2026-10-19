@@ -27,7 +27,7 @@ class ListVendorServicesAction
             )
             ->when($type !== null, fn (Builder $q) => $q->where('product_type', $type->value))
             ->when($status !== null, fn (Builder $q) => $q->where('status', $status->value))
-            ->with(['media', 'category', 'vendor.primaryCity', 'vendor.primaryGovernorate', 'rentalDetail', 'saleDetail', 'digitalDetail'])
+            ->with(['media', 'category', 'vendor.primaryCity.governorate', 'vendor.primaryGovernorate', 'vendor.coverageAreas.city.governorate', 'rentalDetail', 'saleDetail', 'digitalDetail'])
             ->latest()
             ->paginate($perPage);
     }

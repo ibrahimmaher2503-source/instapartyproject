@@ -10,6 +10,7 @@ enum InterventionType: string
     case VendorTimeout = 'vendor_timeout';
     case DeadlineExtended = 'deadline_extended';
     case VendorProposal = 'vendor_proposal';
+    case VendorDecision = 'vendor_decision';
     case AdminNote = 'admin_note';
     case VendorReminder = 'vendor_reminder';
     case ChatFrozen = 'chat_frozen';

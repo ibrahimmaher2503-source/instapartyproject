@@ -34,7 +34,7 @@ class LoyaltyRuleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-vertical';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {

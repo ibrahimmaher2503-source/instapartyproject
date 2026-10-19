@@ -29,7 +29,7 @@ class ServiceReviewResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationLabel(): string
     {

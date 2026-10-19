@@ -15,6 +15,7 @@ use App\Modules\Catalog\Filament\Actions\BulkRejectServicesAction;
 use App\Modules\Catalog\Filament\Actions\RejectServiceAction;
 use App\Modules\Catalog\Filament\Actions\RequestServiceEditsAction;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\CreateRentalService;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\EditRentalService;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\ListRentalServices;
 use App\Modules\Catalog\Filament\Resources\RentalServiceResource\Pages\PendingRentalServicesPage;
@@ -48,6 +49,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RentalServiceResource extends Resource
 {
+    use HasCategorySchemaFields;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';
@@ -180,6 +183,8 @@ class RentalServiceResource extends Resource
                         ->label(__('catalog.is_featured')),
                 ])
                 ->columns(2),
+
+            static::categorySchemaSection(ProductType::Rental),
 
             Section::make(__('catalog.rental_details'))
                 ->relationship('rentalDetail')

@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 return [
+    'inbox_title' => 'Customer conversations',
+    'inbox_description' => 'Booking conversations keep their existing booking and moderation restrictions.',
+    'booking' => 'Booking',
+    'status' => 'Status',
+    'created_at' => 'Created at',
+    'no_threads' => 'No booking conversations yet',
+    'thread_status' => ['open' => 'Open', 'locked' => 'Locked', 'closed' => 'Closed'],
     'panel_title' => 'Chat',
     'state_open' => 'Chat is open',
     'state_frozen' => 'Chat suspended by admin',

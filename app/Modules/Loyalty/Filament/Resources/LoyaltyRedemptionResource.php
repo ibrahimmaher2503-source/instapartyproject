@@ -6,6 +6,7 @@ namespace App\Modules\Loyalty\Filament\Resources;
 
 use App\Modules\Loyalty\Domain\Models\LoyaltyRedemption;
 use App\Modules\Loyalty\Filament\Resources\LoyaltyRedemptionResource\Pages\ListLoyaltyRedemptions;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
@@ -70,7 +71,13 @@ class LoyaltyRedemptionResource extends Resource
                 TextColumn::make('public_id')
                     ->label(__('loyalty.columns.public_id'))
                     ->copyable()
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'booking' => ['public_id', 'reference_no'],
+                        'vendorProfile' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->limit(10),
                 TextColumn::make('user.name')
                     ->label(__('loyalty.columns.user'))
@@ -80,7 +87,7 @@ class LoyaltyRedemptionResource extends Resource
                     ->formatStateUsing(fn ($state): string => is_array($state) ? ($state[app()->getLocale()] ?? $state['en'] ?? '—') : ($state ?? '—'))
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereHas(
                         'vendorProfile',
-                        fn ($q) => $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(business_name, '$.en')) LIKE ?", ["%{$search}%"])
+                        fn ($q) => $q->where('business_name->en', 'like', "%{$search}%")
                     )),
                 TextColumn::make('booking.public_id')
                     ->label(__('loyalty.columns.booking'))

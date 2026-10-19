@@ -7,7 +7,6 @@ namespace App\Modules\Identity\Http\Controllers;
 use App\Modules\Identity\Application\Actions\DeleteVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\GenerateDocumentSignedUrlAction;
 use App\Modules\Identity\Application\Actions\UploadVendorDocumentAction;
-use App\Modules\Identity\Domain\Enums\DocumentType;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
@@ -37,13 +36,13 @@ class VendorDocumentController extends Controller
         $document = $action->execute(
             $vendorProfile,
             $request->file('file'),
-            DocumentType::from($request->validated('doc_type')),
+            $request->validated('doc_type'),
         );
 
         return ApiResponse::success(new VendorDocumentResource($document), [], 201);
     }
 
-    /** Vendor-portal 3.4 — delete a document (rejected-only per ADR-0021; existing action). */
+    /** Delete an owned pending or rejected document; approved documents are protected. */
     public function destroy(Request $request, string $publicId, DeleteVendorDocumentAction $action): JsonResponse
     {
         $vendorProfile = $this->vendorProfileForUser($request->user());

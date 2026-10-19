@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Communication\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+
 use App\Modules\Communication\Application\Actions\RetryFailedDispatchAction;
 use App\Modules\Communication\Domain\Enums\DispatchStatus;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Filament\Resources\NotificationDispatchResource\Pages\ListNotificationDispatches;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
@@ -25,12 +29,12 @@ class NotificationDispatchResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.communication');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationLabel(): string
     {
@@ -70,11 +74,24 @@ class NotificationDispatchResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'status', 'channel', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('communication.columns.public_id'))
                     ->copyable()
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, ['' => ['public_id', 'provider_ref', 'provider_message_id']]);
+                        $userType = 'App\\Modules\\Identity\\Domain\\Models\\User';
+                        $match->orWhereIn('user_id', ReferenceSearch::apply($userType::query(), $search, [
+                            '' => ['public_id', 'name', 'email', 'phone_e164'],
+                        ])->select('id'));
+                        $bookingType = 'App\\Modules\\Booking\\Domain\\Models\\Booking';
+                        $match->orWhere(fn (Builder $reference): Builder => $reference
+                            ->whereIn('reference_type', ['booking', $bookingType])
+                            ->whereIn('reference_id', ReferenceSearch::apply($bookingType::query(), $search, [
+                                '' => ['public_id', 'reference_no'],
+                            ])->select('id')));
+                    })),
                 TextColumn::make('template.event_key')
                     ->label(__('communication.columns.template'))
                     ->badge()
@@ -106,6 +123,7 @@ class NotificationDispatchResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                OperationalDateFilter::make('created_at'),
                 SelectFilter::make('status')
                     ->label(__('communication.columns.status'))
                     ->options(

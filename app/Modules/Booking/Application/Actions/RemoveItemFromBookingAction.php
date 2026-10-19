@@ -10,6 +10,7 @@ use App\Modules\Booking\Domain\Models\BookingItem;
 use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Booking\Domain\States\BookingLifecycleStatus\DraftState;
 use App\Modules\Catalog\Domain\Enums\ReservationStatus;
+use App\Modules\Catalog\Domain\Enums\ProductType;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,6 +61,8 @@ class RemoveItemFromBookingAction
             $remainingItems = BookingItem::where('booking_vendor_id', $bookingVendorId)->count();
             if ($remainingItems === 0) {
                 BookingVendor::destroy($bookingVendorId);
+            } elseif (! BookingItem::where('booking_vendor_id', $bookingVendorId)->whereIn('product_type', [ProductType::Rental->value, ProductType::Sale->value])->exists()) {
+                BookingVendor::whereKey($bookingVendorId)->update(['delivery_fee_minor' => 0]);
             }
 
             DB::afterCommit(fn () => event(new BookingItemRemoved($bookingVendorId, $bookingId, $removedLineTotal)));

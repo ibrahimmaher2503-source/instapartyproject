@@ -30,7 +30,7 @@ class StorefrontBookingRequest extends FormRequest
             'occasion' => ['required', 'string', 'exists:occasions,code'],
             'event_starts_at' => ['required', 'date', 'after:now'],
             'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
-            'guest_count' => ['nullable', 'integer', 'min:1'],
+            'guest_count' => ['nullable', 'integer', 'min:1', 'max:'.CreateBookingDraftDTO::MAX_GUEST_COUNT],
             'notes' => ['nullable', 'string', 'max:10000'],
             'celebrant_name' => ['nullable', 'string', 'max:120'],
             'address' => ['required', 'array'],
@@ -44,6 +44,15 @@ class StorefrontBookingRequest extends FormRequest
             'address.recipient_phone_e164' => ['required', 'regex:/^\+[1-9]\d{7,14}$/'],
             'quantity' => ['nullable', 'integer', 'min:1', 'max:100'],
             'timezone' => ['nullable', 'timezone'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'guest_count.integer' => __('booking.validation.guest_count_range'),
+            'guest_count.min' => __('booking.validation.guest_count_range'),
+            'guest_count.max' => __('booking.validation.guest_count_range'),
         ];
     }
 

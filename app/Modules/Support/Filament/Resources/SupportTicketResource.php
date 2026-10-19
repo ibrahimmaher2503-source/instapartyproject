@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Support\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\QueueAge;
+use App\Modules\Shared\Filament\Resources\RelationManagers\InternalRecordNotesRelationManager;
+use App\Modules\Shared\Filament\Tables\ScopedBulkAction;
+
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use App\Modules\Support\Application\Actions\TransitionSupportTicketStatusAction;
 use App\Modules\Support\Domain\Enums\SupportTicketStatus;
 use App\Modules\Support\Domain\Models\SupportTicket;
@@ -21,6 +28,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
 
 class SupportTicketResource extends Resource
 {
@@ -28,7 +36,7 @@ class SupportTicketResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationGroup(): ?string
     {
@@ -83,10 +91,20 @@ class SupportTicketResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'status', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('support::support.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, [
+                            '' => ['public_id', 'email', 'subject'],
+                            'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        ]);
+                        $match->orWhereIn('booking_id', fn ($bookings) => $bookings->select('id')->from('bookings')->where(function ($references) use ($search): void {
+                            $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $search).'%';
+                            $references->whereRaw("public_id LIKE ? ESCAPE '!'", [$pattern])->orWhereRaw("reference_no LIKE ? ESCAPE '!'", [$pattern]);
+                        }));
+                    }))
                     ->copyable()
                     ->limit(14)
                     ->tooltip(fn (SupportTicket $record): string => $record->public_id),
@@ -102,6 +120,7 @@ class SupportTicketResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn (SupportTicketStatus $state): string => $state->label())
                     ->color(fn (SupportTicketStatus $state): string => self::statusColor($state)),
+                QueueAge::column('support'),
                 TextColumn::make('assignee.name')
                     ->label(__('support::support.columns.assignee'))
                     ->default(__('support::support.unassigned'))
@@ -111,8 +130,10 @@ class SupportTicketResource extends Resource
                     ->dateTime()
                     ->sortable(),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('created_at', 'asc')
             ->filters([
+                OperationalDateFilter::make('created_at'),
+                QueueAge::overdue('support'),
                 SelectFilter::make('status')
                     ->options(SupportTicketStatus::class),
             ])
@@ -154,6 +175,23 @@ class SupportTicketResource extends Resource
                         Notification::make()->title(__('support::support.notifications.resolved'))->success()->send();
                     }),
             ])
+            ->bulkActions([
+                ScopedBulkAction::make(
+                    'markSelectedInProgress',
+                    __('support::support.actions.mark_in_progress'),
+                    'update_support::ticket',
+                    static::class,
+                    function (SupportTicket $record): void {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof Authenticatable, 403);
+                        app(TransitionSupportTicketStatusAction::class)->execute(
+                            $record,
+                            $actor,
+                            SupportTicketStatus::InProgress,
+                        );
+                    },
+                ),
+            ])
             ->emptyStateIcon('heroicon-o-chat-bubble-left-right')
             ->emptyStateHeading(__('support::support.empty.heading'))
             ->emptyStateDescription(__('support::support.empty.description'));
@@ -165,6 +203,11 @@ class SupportTicketResource extends Resource
             'index' => ListSupportTickets::route('/'),
             'view' => ViewSupportTicket::route('/{record}'),
         ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [InternalRecordNotesRelationManager::class];
     }
 
     private static function statusColor(SupportTicketStatus $status): string

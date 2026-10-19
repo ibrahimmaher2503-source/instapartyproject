@@ -36,7 +36,7 @@ final class GenerateDocumentSignedUrlAction
             'user_id' => $accessor->getKey(),
             'action' => 'signed_url_generated',
             'changes' => json_encode([
-                'doc_type' => $document->doc_type->value,
+                'doc_type' => $document->doc_type_key,
                 'ttl_seconds' => self::TTL_SECONDS,
             ], JSON_THROW_ON_ERROR),
             'created_at' => now(),

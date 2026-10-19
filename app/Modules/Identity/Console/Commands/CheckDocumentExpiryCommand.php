@@ -83,7 +83,7 @@ final class CheckDocumentExpiryCommand extends Command
     private function isRequired(VendorDocument $document): bool
     {
         return in_array(
-            $document->doc_type->value,
+            $document->doc_type_key,
             $this->requiredDocuments->forBusinessType($document->vendorProfile->business_type),
             true,
         );
@@ -114,7 +114,7 @@ final class CheckDocumentExpiryCommand extends Command
             eventCategory: EventCategory::System,
             userId: $document->vendorProfile->user_id,
             context: [
-                'doc_type' => __('identity::identity.document_type.'.$document->doc_type->value),
+                'doc_type' => $this->requiredDocuments->label($document->doc_type_key),
                 'expiry_date' => $document->expires_at->format('Y-m-d'),
                 'vendor_name' => $document->vendorProfile->getTranslation('business_name', 'en'),
             ],

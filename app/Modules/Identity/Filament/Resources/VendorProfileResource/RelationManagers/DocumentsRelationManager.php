@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Resources\VendorProfileResource\RelationManagers;
 
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
+use App\Modules\Identity\Domain\Models\VendorDocument;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -22,15 +24,13 @@ final class DocumentsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                TextColumn::make('public_id')
-                    ->label(__('identity::identity.columns.public_id'))
-                    ->searchable()
-                    ->copyable(),
                 TextColumn::make('doc_type')
                     ->badge()
+                    ->formatStateUsing(fn (VendorDocument $record): string => app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key))
                     ->label(__('identity::identity.columns.doc_type')),
                 TextColumn::make('file_name')
                     ->label(__('identity::identity.columns.file_name'))
+                    ->searchable(['file_name', 'public_id'])
                     ->limit(40),
                 TextColumn::make('status')
                     ->badge()

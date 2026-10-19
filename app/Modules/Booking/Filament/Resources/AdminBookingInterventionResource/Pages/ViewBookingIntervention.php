@@ -45,13 +45,21 @@ class ViewBookingIntervention extends ViewRecord
                                 ->default(fn ($record): string => '#'.$record->customer_id),
 
                             TextEntry::make('event_starts_at')
-                                ->label(__('booking.intervention.columns.event_starts_at'))
+                                ->label(fn (): string => __('booking.display_timezone', [
+                                    'field' => __('booking.intervention.columns.event_starts_at'),
+                                    'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                                ]))
                                 ->icon('heroicon-o-calendar-days')
+                                ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                                 ->dateTime(),
 
                             TextEntry::make('event_ends_at')
-                                ->label(__('booking.intervention.columns.event_ends_at'))
+                                ->label(fn (): string => __('booking.display_timezone', [
+                                    'field' => __('booking.intervention.columns.event_ends_at'),
+                                    'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                                ]))
                                 ->icon('heroicon-o-calendar')
+                                ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                                 ->dateTime(),
 
                             TextEntry::make('guest_count')

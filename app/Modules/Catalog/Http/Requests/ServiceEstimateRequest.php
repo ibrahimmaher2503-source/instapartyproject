@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Catalog\Http\Requests;
+
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
+use Illuminate\Foundation\Http\FormRequest;
+
+class ServiceEstimateRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'event_starts_at' => ['nullable', 'required_with:event_ends_at', 'date', 'after:now'],
+            'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
+            'timezone' => ['required', 'timezone'],
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $timezone = $this->input('timezone', 'Africa/Cairo');
+        $this->merge(['timezone' => $timezone]);
+        if (! is_string($timezone) || ! in_array($timezone, timezone_identifiers_list(), true)) {
+            return;
+        }
+        foreach (['event_starts_at', 'event_ends_at'] as $field) {
+            if ($this->filled($field) && is_string($this->input($field))) {
+                try {
+                    $this->merge([$field => Carbon::parse($this->input($field), $timezone)->utc()->toIso8601String()]);
+                } catch (InvalidFormatException) {
+                    // Keep invalid input for the date validation rule.
+                }
+            }
+        }
+    }
+}

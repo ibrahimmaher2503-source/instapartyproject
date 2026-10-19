@@ -197,6 +197,14 @@ final class GapNotificationTemplateSeeder extends Seeder
                 'variables' => ['doc_type'],
             ],
             [
+                'event_key' => 'vendor.document.approved',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Vendor,
+                'subject' => ['en' => 'Document approved', 'ar' => 'تمت الموافقة على المستند'],
+                'body' => ['en' => 'Your document was approved.', 'ar' => 'تمت الموافقة على مستندك.'],
+                'variables' => [],
+            ],
+            [
                 'event_key' => 'vendor.document.rejected',
                 'channel' => NotificationChannel::Push,
                 'audience' => NotificationAudience::Vendor,
@@ -265,6 +273,14 @@ final class GapNotificationTemplateSeeder extends Seeder
                 'subject' => ['en' => null, 'ar' => null],
                 'body' => ['en' => 'Booking #{{booking_number}} has been cancelled by our team. A refund will be processed in {{refund_days}} business days.', 'ar' => 'تم إلغاء الحجز رقم #{{booking_number}} من قِبل فريقنا. سيتم معالجة الاسترداد خلال {{refund_days}} أيام عمل.'],
                 'variables' => ['booking_number', 'event_date', 'reason', 'refund_days'],
+            ],
+            [
+                'event_key' => 'booking.force_cancelled',
+                'channel' => NotificationChannel::InApp,
+                'audience' => NotificationAudience::Customer,
+                'subject' => ['en' => 'Booking cancelled', 'ar' => 'تم إلغاء الحجز'],
+                'body' => ['en' => 'Booking #{{booking_number}} has been cancelled by our team. A refund will be processed in {{refund_days}} business days.', 'ar' => 'تم إلغاء الحجز رقم #{{booking_number}} من قِبل فريقنا. سيتم معالجة الاسترداد خلال {{refund_days}} أيام عمل.'],
+                'variables' => ['booking_number', 'refund_days'],
             ],
             [
                 'event_key' => 'booking.force_cancelled',

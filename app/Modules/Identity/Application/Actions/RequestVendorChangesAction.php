@@ -33,7 +33,17 @@ final class RequestVendorChangesAction
 
         Validator::make(['items' => $items], [
             'items' => ['required', 'array', 'min:1'],
-            'items.*.field_path' => ['required', 'string', 'max:255'],
+            'items.*.field_path' => [
+                'required',
+                'string',
+                'max:255',
+                'distinct:strict',
+                static function (string $attribute, mixed $value, $fail): void {
+                    if (! is_string($value) || VendorResubmitAfterChangesAction::correctionField($value) === null) {
+                        $fail(__('identity::identity.validation.unsupported_change_request_field'));
+                    }
+                },
+            ],
             'items.*.requested_change_en' => ['required', 'string', 'min:5', 'max:1000'],
             'items.*.requested_change_ar' => ['required', 'string', 'min:5', 'max:1000'],
         ])->validate();

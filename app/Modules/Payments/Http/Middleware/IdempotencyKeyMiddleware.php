@@ -25,7 +25,15 @@ class IdempotencyKeyMiddleware
         $rawBody = (string) $request->getContent();
         $route = $request->route()?->getName() ?? $request->path();
         $userId = optional($request->user())->id;
-        $hash = hash('sha256', $route.'|'.$rawBody);
+        $ttlSeconds = (int) config('idempotency.ttl.http', 86400);
+        // Route names omit path parameters, so include the concrete request target
+        // and method to prevent one resource's cached response replaying for another.
+        $hash = hash('sha256', implode('|', [
+            $request->getMethod(),
+            $request->getRequestUri(),
+            $route,
+            $rawBody,
+        ]));
 
         DB::table('idempotency_keys')
             ->where('key', $key)
@@ -54,14 +62,14 @@ class IdempotencyKeyMiddleware
         $claimed = DB::table('idempotency_keys')->insertOrIgnore([
             'key' => $key,
             'scope' => 'http',
-            'ttl_seconds' => 86400,
+            'ttl_seconds' => $ttlSeconds,
             'user_id' => $userId,
             'route' => $route,
             'request_hash' => $hash,
             'payload_hash' => $hash,
             'response_status' => null,
             'response_body' => null,
-            'expires_at' => now()->addHours(24),
+            'expires_at' => now()->addSeconds($ttlSeconds),
             'created_at' => now(),
         ]);
 

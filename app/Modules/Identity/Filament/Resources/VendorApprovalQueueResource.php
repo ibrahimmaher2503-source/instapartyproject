@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Identity\Filament\Resources;
 
+use App\Modules\Identity\Application\Actions\ApproveVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\ApproveVendorProfileAction;
 use App\Modules\Identity\Application\Actions\GenerateDocumentSignedUrlAction;
 use App\Modules\Identity\Application\Actions\RejectVendorProfileAction;
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use App\Modules\Identity\Application\Services\VendorApprovalEligibilityService;
 use App\Modules\Identity\Application\Services\VendorSearchQuery;
 use App\Modules\Identity\Application\Support\MaskBankData;
 use App\Modules\Identity\Domain\Enums\BusinessType;
+use App\Modules\Identity\Domain\Enums\DocumentStatus;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
@@ -18,13 +21,17 @@ use App\Modules\Identity\Domain\States\VendorApprovalStatus\PendingState;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages\ListVendorApprovalQueue;
 use App\Modules\Identity\Filament\Resources\VendorApprovalQueueResource\Pages\ReviewVendorApplication;
 use App\Modules\Shared\Application\Services\StorefrontText;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+use App\Modules\Shared\Filament\Tables\OperationalExport;
 use BackedEnum;
 use Filament\Forms\Components\Textarea;
+use Filament\Infolists\Components\Actions\Action as InlineAction;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ViewAction;
@@ -43,11 +50,11 @@ class VendorApprovalQueueResource extends Resource
 
     protected static ?string $slug = 'vendor-approval-queue';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.operations');
+        return __('admin.nav.groups.vendor_management');
     }
 
     public static function getNavigationLabel(): string
@@ -77,14 +84,22 @@ class VendorApprovalQueueResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'approval_status', 'created_at'])])
             ->columns([
-                TextColumn::make('public_id')
-                    ->label(__('identity.columns.id'))
-                    ->searchable(query: fn (Builder $query, string $search): Builder => app(VendorSearchQuery::class)->apply($query, $search))
-                    ->copyable(),
                 TextColumn::make('business_name')
                     ->label(__('identity.columns.business_name'))
                     ->getStateUsing(fn (VendorProfile $record): string => app(StorefrontText::class)->translation($record, 'business_name') ?: '')
+                    ->searchable(query: fn (Builder $query, string $search): Builder => app(VendorSearchQuery::class)->apply($query, $search))
+                    ->description(function (VendorProfile $record): ?string {
+                        $result = app(VendorApprovalEligibilityService::class)->evaluate($record);
+
+                        return $result->eligible ? null : __('identity.approval_eligibility.blocked_summary', [
+                            'requirements' => collect(array_keys($result->errors))
+                                ->map(fn (string $check): string => __('identity.approval_eligibility.requirements.'.$check))
+                                ->implode('، '),
+                        ]);
+                    })
+                    ->wrap()
                     ->limit(40),
                 TextColumn::make('business_type')
                     ->label(__('identity.columns.business_type'))
@@ -105,6 +120,7 @@ class VendorApprovalQueueResource extends Resource
             ])
             ->defaultSort('created_at', 'asc')
             ->filters([
+                OperationalDateFilter::make('created_at'),
                 SelectFilter::make('business_type')
                     ->label(__('identity.columns.business_type'))
                     ->options(collect(BusinessType::cases())->mapWithKeys(fn (BusinessType $t) => [$t->value => __('identity.business_type.'.$t->value)])->all()),
@@ -114,6 +130,18 @@ class VendorApprovalQueueResource extends Resource
                     ->label(__('identity.actions.review'))
                     ->icon('heroicon-o-eye')
                     ->color('primary'),
+
+                Action::make('approvalRequirements')
+                    ->label(__('identity.approval_eligibility.blocked_title'))
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->color('warning')
+                    ->visible(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
+                    ->modalHeading(__('identity.approval_eligibility.blocked_title'))
+                    ->modalDescription(__('identity.approval_eligibility.blocked_description'))
+                    ->modalContent(fn (VendorProfile $record) => view('filament.partials.vendor-approval-requirements', [
+                        'errors' => app(VendorApprovalEligibilityService::class)->evaluate($record)->errors,
+                    ]))
+                    ->modalSubmitAction(false),
 
                 Action::make('approve')
                     ->label(__('identity.actions.approve'))
@@ -164,12 +192,27 @@ class VendorApprovalQueueResource extends Resource
     public static function infolist(Infolist $schema): Infolist
     {
         return $schema->components([
+            InfolistSection::make(__('identity.approval_eligibility.blocked_title'))
+                ->icon('heroicon-o-exclamation-triangle')
+                ->description(__('identity.approval_eligibility.blocked_description'))
+                ->visible(fn (VendorProfile $record): bool => ! app(VendorApprovalEligibilityService::class)->evaluate($record)->eligible)
+                ->schema([
+                    TextEntry::make('approval_blockers')
+                        ->hiddenLabel()
+                        ->state(fn (VendorProfile $record): array => collect(array_keys(app(VendorApprovalEligibilityService::class)->evaluate($record)->errors))
+                            ->map(fn (string $check): string => __('identity.approval_eligibility.requirements.'.$check))
+                            ->all())
+                        ->listWithLineBreaks()
+                        ->bulleted(),
+                ]),
             InfolistSection::make(__('identity.sections.identity'))
                 ->columns(2)
                 ->schema([
                     TextEntry::make('public_id')->label(__('identity.columns.id'))->copyable(),
                     TextEntry::make('user.email')->label(__('identity.columns.email')),
-                    TextEntry::make('user.phone_e164')->label(__('identity.columns.phone')),
+                    TextEntry::make('user.phone_e164')
+                        ->label(__('identity.columns.phone'))
+                        ->extraAttributes(['dir' => 'ltr']),
                     TextEntry::make('user.phone_verified_at')
                         ->label(__('identity.columns.phone_verified'))
                         ->dateTime()
@@ -248,7 +291,7 @@ class VendorApprovalQueueResource extends Resource
 
                             return collect($result->checks)
                                 ->map(fn (bool $passed, string $check): array => [
-                                    'requirement' => __('identity.approval_eligibility.'.$check),
+                                    'requirement' => __('identity.approval_eligibility.requirements.'.$check),
                                     'status' => $passed
                                         ? __('identity.approval_eligibility.complete')
                                         : __('identity.approval_eligibility.incomplete'),
@@ -275,10 +318,28 @@ class VendorApprovalQueueResource extends Resource
                             TextEntry::make('doc_type')
                                 ->label(__('identity.columns.doc_type'))
                                 ->badge()
-                                ->formatStateUsing(fn (mixed $state): string => __('identity.document_type.'.(
-                                    $state instanceof BackedEnum ? $state->value : (string) $state
-                                ))),
-                            TextEntry::make('file_name')->label(__('identity.columns.file_name')),
+                                ->formatStateUsing(fn (VendorDocument $record): string => app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key)),
+                            TextEntry::make('file_name')
+                                ->label(__('identity.columns.file_name'))
+                                ->hintActions([
+                                    InlineAction::make('reviewDocument')
+                                        ->label(__('identity.actions.review'))
+                                        ->icon('heroicon-o-eye')
+                                        ->visible(fn (VendorDocument $record): bool => VendorDocumentFilamentResource::canView($record))
+                                        ->url(fn (VendorDocument $record): string => VendorDocumentFilamentResource::getUrl('view', ['record' => $record])),
+                                    InlineAction::make('approveDocument')
+                                        ->label(__('identity.actions.approve'))
+                                        ->icon('heroicon-o-check-circle')
+                                        ->color('success')
+                                        ->requiresConfirmation()
+                                        ->visible(fn (VendorDocument $record): bool => $record->status === DocumentStatus::Pending
+                                            && (bool) auth()->user()?->can('review_vendor_documents'))
+                                        ->action(function (VendorDocument $record, ViewRecord $livewire): void {
+                                            app(ApproveVendorDocumentAction::class)->execute($record);
+                                            $livewire->getRecord()->refresh();
+                                            Notification::make()->title(__('identity.notifications.document_approved'))->success()->send();
+                                        }),
+                                ]),
                             TextEntry::make('status')
                                 ->label(__('identity.columns.status'))
                                 ->badge()

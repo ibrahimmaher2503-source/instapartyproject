@@ -19,7 +19,7 @@ class TaxReportPage extends Page implements HasForms
 
     protected static string $view = 'tax::filament.pages.tax-report';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 90;
 
     public ?array $data = [];
 
@@ -69,7 +69,7 @@ class TaxReportPage extends Page implements HasForms
 
         $rows = DB::table('bookings')
             ->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59'])
-            ->whereIn('payment_status', ['paid', 'partially_refunded'])
+            ->whereIn('payment_status', ['paid', 'partial', 'partially_refunded', 'refund_pending'])
             ->selectRaw('COUNT(*) as total_bookings, SUM(total_vat_minor) as total_vat, AVG(total_vat_minor) as avg_vat')
             ->first();
 

@@ -74,11 +74,15 @@ return [
     ],
 
     'package_recommendations' => [
-        'nav' => 'Homepage Packages',
+        'name_en' => 'Name (EN)',
+        'description_en' => 'Description (EN)',
+        'name_ar' => 'Name (AR)',
+        'description_ar' => 'Description (AR)',
+        'nav' => 'Manage Packages',
         'singular' => 'Homepage Package',
         'plural' => 'Homepage Packages',
         'content' => 'Package content',
-        'content_help' => 'Curate a homepage recommendation that sends customers to matching marketplace services.',
+        'content_help' => 'Manage homepage recommendations linked to an occasion and suggested budget. This does not create or manage bundled vendor services; that workflow is not available here.',
         'occasion' => 'Matching occasion',
         'presentation' => 'Homepage presentation',
         'hero' => 'Package image',

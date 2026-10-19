@@ -19,6 +19,13 @@ class UpdateVendorProfileAction
     /** @param array<string, mixed> $data */
     public function execute(VendorProfile $vendorProfile, array $data): VendorProfile
     {
+        foreach (MaskBankData::FIELDS as $field) {
+            if (array_key_exists($field, $data) && is_string($data[$field])) {
+                $value = trim($data[$field]);
+                $data[$field] = in_array($value, ['', '—', '–', '-'], true) ? null : $value;
+            }
+        }
+
         foreach (['facebook_url', 'website_url', 'instagram_url'] as $field) {
             if (isset($data[$field]) && is_string($data[$field])) {
                 $value = trim($data[$field]);

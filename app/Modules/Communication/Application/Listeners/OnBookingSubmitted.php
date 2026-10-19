@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\Communication\Application\Listeners;
 
 use App\Modules\Booking\Domain\Events\BookingSubmittedToVendor;
+use App\Modules\Booking\Domain\Models\BookingVendor;
 use App\Modules\Communication\Application\Actions\DispatchNotificationAction;
 use App\Modules\Communication\Application\DTOs\DispatchNotificationDTO;
+use App\Modules\Communication\Domain\Enums\AdminInboxSeverity;
 use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationAudience;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
+use App\Modules\Communication\Domain\Models\AdminInboxItem;
+use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Identity\Domain\Models\VendorProfile;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Str;
 
 class OnBookingSubmitted implements ShouldQueue
 {
@@ -40,9 +46,11 @@ class OnBookingSubmitted implements ShouldQueue
             'event_date' => $booking->event_starts_at?->format('Y-m-d') ?? '',
         ];
 
-        // Customer: push + email
+        $this->createAdminInboxItems($booking->id, $bookingVendor, $vendor);
+
+        // Customer: in-app + push + email
         if ($booking->customer_id !== null) {
-            foreach ([NotificationChannel::Push, NotificationChannel::Email] as $channel) {
+            foreach ([NotificationChannel::InApp, NotificationChannel::Push, NotificationChannel::Email] as $channel) {
                 $this->dispatcher->execute(new DispatchNotificationDTO(
                     eventKey: 'booking.submitted',
                     channel: $channel,
@@ -71,6 +79,40 @@ class OnBookingSubmitted implements ShouldQueue
                     referenceId: $booking->id,
                 ));
             }
+        }
+    }
+
+    private function createAdminInboxItems(int $bookingId, BookingVendor $bookingVendor, ?VendorProfile $vendor): void
+    {
+        $admins = User::query()
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'super_admin', 'booking_manager']))
+            ->pluck('id');
+
+        $reference = $bookingVendor->booking?->reference_no ?? $bookingVendor->booking_id;
+        $deadline = $bookingVendor->response_deadline?->toIso8601String() ?? '—';
+        $businessName = $vendor?->getTranslations('business_name') ?? [];
+        $vendorNameEn = trim(is_array($businessName) ? (string) ($businessName['en'] ?? '') : (string) $businessName);
+        $vendorNameAr = trim(is_array($businessName) ? (string) ($businessName['ar'] ?? '') : (string) $businessName);
+        $vendorNameEn = $vendorNameEn !== '' ? $vendorNameEn : 'Vendor';
+        $vendorNameAr = $vendorNameAr !== '' ? $vendorNameAr : 'مقدم الخدمة';
+
+        foreach ($admins as $adminId) {
+            AdminInboxItem::firstOrCreate(
+                ['source_type' => 'booking', 'source_id' => $bookingId, 'admin_id' => $adminId],
+                [
+                    'public_id' => Str::ulid()->toBase32(),
+                    'severity' => AdminInboxSeverity::Warning,
+                    'status' => 'unread',
+                    'title' => [
+                        'en' => "Booking #{$reference} submitted",
+                        'ar' => "تم استلام الحجز رقم {$reference}",
+                    ],
+                    'body' => [
+                        'en' => "Awaiting response from {$vendorNameEn} by {$deadline}.",
+                        'ar' => "بانتظار رد {$vendorNameAr} قبل {$deadline}.",
+                    ],
+                ],
+            );
         }
     }
 }

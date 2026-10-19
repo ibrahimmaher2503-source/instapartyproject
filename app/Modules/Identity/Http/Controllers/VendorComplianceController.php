@@ -53,7 +53,7 @@ class VendorComplianceController extends Controller
             ])->values(),
             'documents' => $documents->map(fn (VendorDocument $doc): array => [
                 'public_id' => $doc->public_id,
-                'doc_type' => $doc->doc_type->value,
+                'doc_type' => $doc->doc_type_key,
                 'status' => $doc->status->value,
                 'is_critical' => (bool) $doc->is_critical,
                 'expires_at' => $doc->expires_at?->toDateString(),

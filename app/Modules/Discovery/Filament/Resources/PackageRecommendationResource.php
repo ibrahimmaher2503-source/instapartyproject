@@ -36,11 +36,11 @@ class PackageRecommendationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-gift';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.appearance');
+        return __('admin.nav.groups.packages_occasions');
     }
 
     public static function getNavigationLabel(): string
@@ -66,20 +66,20 @@ class PackageRecommendationResource extends Resource
                 ->schema([
                     Tabs::make('translations')->tabs([
                         Tab::make('English')->schema([
-                            TextInput::make('name.en')->required()->maxLength(160)
+                            TextInput::make('name.en')->label(__('discovery::discovery.package_recommendations.name_en'))->required()->maxLength(160)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn (?string $state, $set) => $set('slug', Str::slug((string) $state))),
-                            Textarea::make('description.en')->required()->rows(3)->maxLength(400),
+                            Textarea::make('description.en')->label(__('discovery::discovery.package_recommendations.description_en'))->required()->rows(3)->maxLength(400),
                         ]),
                         Tab::make('العربية')->schema([
-                            TextInput::make('name.ar')->required()->maxLength(160),
-                            Textarea::make('description.ar')->required()->rows(3)->maxLength(400),
+                            TextInput::make('name.ar')->label(__('discovery::discovery.package_recommendations.name_ar'))->required()->maxLength(160),
+                            Textarea::make('description.ar')->label(__('discovery::discovery.package_recommendations.description_ar'))->required()->rows(3)->maxLength(400),
                         ]),
                     ])->columnSpanFull(),
                     TextInput::make('slug')->required()->unique(ignoreRecord: true)->maxLength(120),
                     Select::make('occasion_id')
                         ->label(__('discovery::discovery.package_recommendations.occasion'))
-                        ->options(fn (): array => DB::table('occasions')->where('is_active', true)->orderBy('sort_order')->pluck('name', 'id')->map(fn (string $name): string => (string) data_get(json_decode($name, true), app()->getLocale(), data_get(json_decode($name, true), 'en')))->all())
+                        ->options(fn (): array => DB::table('occasions')->where('is_active', true)->whereNull('deleted_at')->orderBy('sort_order')->pluck('name', 'id')->map(fn (string $name): string => (string) data_get(json_decode($name, true), app()->getLocale(), data_get(json_decode($name, true), 'en')))->all())
                         ->searchable()
                         ->preload(),
                 ])->columns(2),

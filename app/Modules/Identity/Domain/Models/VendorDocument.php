@@ -8,6 +8,7 @@ use App\Modules\Identity\Domain\Enums\DocumentStatus;
 use App\Modules\Identity\Domain\Enums\DocumentType;
 use App\Modules\Shared\Domain\Concerns\HasPublicId;
 use Database\Factories\VendorDocumentFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +19,8 @@ use Spatie\Translatable\HasTranslations;
  * @property int $id
  * @property string $public_id
  * @property int $vendor_profile_id
- * @property DocumentType $doc_type
+ * @property DocumentType|string $doc_type
+ * @property-read string $doc_type_key
  * @property string $file_path
  * @property string $file_name
  * @property DocumentStatus $status
@@ -76,13 +78,27 @@ class VendorDocument extends Model
     protected function casts(): array
     {
         return [
-            'doc_type' => DocumentType::class,
             'status' => DocumentStatus::class,
             'reviewed_at' => 'datetime',
             'expires_at' => 'date',
             'is_critical' => 'bool',
             'last_reminder_sent_at' => 'date',
         ];
+    }
+
+    /** @return Attribute<DocumentType|string, DocumentType|string> */
+    protected function docType(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value): DocumentType|string => DocumentType::tryFrom($value) ?? $value,
+            set: fn (DocumentType|string $value): string => $value instanceof DocumentType ? $value->value : $value,
+        );
+    }
+
+    /** @return Attribute<string, never> */
+    protected function docTypeKey(): Attribute
+    {
+        return Attribute::make(get: fn (): string => $this->doc_type instanceof DocumentType ? $this->doc_type->value : $this->doc_type);
     }
 
     public function scopeWithExpiry($query)
@@ -94,7 +110,14 @@ class VendorDocument extends Model
     {
         $expiryDate = today()->addDays($days)->toDateString();
 
-        return $query->where('expires_at', '<=', $expiryDate);
+        return $query
+            ->whereDate('expires_at', '>=', today()->toDateString())
+            ->whereDate('expires_at', '<=', $expiryDate);
+    }
+
+    public function scopeLatestPerType($query)
+    {
+        return $query->whereIn('id', static::query()->selectRaw('MAX(id)')->groupBy('vendor_profile_id', 'doc_type'));
     }
 
     public function scopeExpired($query)

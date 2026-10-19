@@ -179,6 +179,7 @@ return [
     ],
 
     'inbox' => [
+        'open_booking' => 'Open Booking',
         'severity' => 'Severity',
         'title' => 'Title',
         'source' => 'Source',
@@ -252,6 +253,8 @@ return [
             'name' => 'Campaign Name',
             'channel' => 'Channel',
             'target_locale' => 'Target Locale',
+            'scheduled_at' => 'Schedule for',
+            'scheduled_at_hint' => 'Leave blank to keep this campaign as a draft.',
             'segment_filters' => 'Segment Filters',
             'segment_filters_hint' => 'Allowed keys: booked_product_type (rental|sale|digital), booked_within_days, governorate_id, preferred_locale',
             'filter_key' => 'Filter Key',

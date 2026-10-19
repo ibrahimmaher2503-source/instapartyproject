@@ -9,6 +9,7 @@ use App\Modules\Settlement\Domain\Models\Wallet;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\Pages\ListWalletLedger;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\Pages\ViewWalletLedger;
 use App\Modules\Settlement\Filament\Resources\WalletLedgerViewerResource\RelationManagers\LedgerEntriesRelationManager;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -17,6 +18,8 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Brick\Money\Money;
+use Illuminate\Database\Eloquent\Builder;
 
 class WalletLedgerViewerResource extends Resource
 {
@@ -33,7 +36,7 @@ class WalletLedgerViewerResource extends Resource
 
     protected static ?string $slug = 'settlement-wallets';
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 80;
 
     public static function getNavigationLabel(): string
     {
@@ -86,6 +89,22 @@ class WalletLedgerViewerResource extends Resource
                             TextEntry::make('currency')
                                 ->label(__('settlement.columns.currency')),
 
+                            TextEntry::make('owner_type')
+                                ->label(__('settlement::settlement.wallet.stored_owner_type')),
+
+                            TextEntry::make('ledger_balance')
+                                ->label(__('settlement::settlement.wallet.ledger_balance'))
+                                ->state(function (Wallet $record): string {
+                                    $credits = (int) $record->ledgerEntries()->where('currency', $record->currency)
+                                        ->where('direction', 'credit')->sum('amount_minor');
+                                    $debits = (int) $record->ledgerEntries()->where('currency', $record->currency)
+                                        ->where('direction', 'debit')->sum('amount_minor');
+
+                                    return Money::ofMinor($credits, $record->currency)
+                                        ->minus(Money::ofMinor($debits, $record->currency))->formatTo(app()->getLocale());
+                                })
+                                ->helperText(__('settlement::settlement.wallet.diagnostic_note')),
+
                             TextEntry::make('balance_minor')
                                 ->label(__('settlement.columns.balance'))
                                 ->money('EGP', divideBy: 100),
@@ -109,7 +128,22 @@ class WalletLedgerViewerResource extends Resource
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $match) use ($search): void {
+                        ReferenceSearch::apply($match, $search, ['' => ['public_id']]);
+                        $vendorType = 'App\\Modules\\Identity\\Domain\\Models\\VendorProfile';
+                        $userType = 'App\\Modules\\Identity\\Domain\\Models\\User';
+                        $match->orWhere(fn (Builder $owner): Builder => $owner
+                            ->whereIn('owner_type', ['vendor', 'vendor_profile', $vendorType])
+                            ->whereIn('owner_id', ReferenceSearch::apply($vendorType::query(), $search, [
+                                '' => ['public_id', 'business_name->en', 'business_name->ar'],
+                                'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                            ])->select('id')));
+                        $match->orWhere(fn (Builder $owner): Builder => $owner
+                            ->whereIn('owner_type', ['customer', 'user', $userType])
+                            ->whereIn('owner_id', ReferenceSearch::apply($userType::query(), $search, [
+                                '' => ['public_id', 'name', 'email', 'phone_e164'],
+                            ])->select('id')));
+                    }))
                     ->copyable(),
 
                 TextColumn::make('owner_id')

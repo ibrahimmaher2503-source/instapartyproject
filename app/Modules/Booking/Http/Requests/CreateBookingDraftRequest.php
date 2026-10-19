@@ -33,7 +33,7 @@ class CreateBookingDraftRequest extends FormRequest
             'occasion_id' => ['required', 'string', 'exists:occasions,public_id'],
             'event_starts_at' => ['required', 'date', 'after:now'],
             'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
-            'guest_count' => ['nullable', 'integer', 'min:1'],
+            'guest_count' => ['nullable', 'integer', 'min:1', 'max:'.CreateBookingDraftDTO::MAX_GUEST_COUNT],
             'notes' => ['nullable', 'string', 'max:10000'],
             'theme' => ['nullable', 'array'],
             'theme.en' => ['nullable', 'string', 'max:120'],
@@ -57,6 +57,15 @@ class CreateBookingDraftRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'guest_count.integer' => __('booking.validation.guest_count_range'),
+            'guest_count.min' => __('booking.validation.guest_count_range'),
+            'guest_count.max' => __('booking.validation.guest_count_range'),
+        ];
+    }
+
     public function toDTO(): CreateBookingDraftDTO
     {
         $occasionId = DB::table('occasions')
@@ -68,7 +77,7 @@ class CreateBookingDraftRequest extends FormRequest
             occasionId: (int) $occasionId,
             eventStartsAt: Carbon::parse($this->input('event_starts_at'))->utc(),
             eventEndsAt: $this->filled('event_ends_at') ? Carbon::parse($this->input('event_ends_at'))->utc() : null,
-            guestCount: $this->input('guest_count'),
+            guestCount: $this->integer('guest_count') ?: null,
             theme: $this->input('theme'),
             celebrantName: $this->input('celebrant_name'),
             celebrantDob: $this->input('celebrant_dob'),

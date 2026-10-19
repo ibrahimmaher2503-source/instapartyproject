@@ -22,6 +22,7 @@ use App\Modules\Booking\Filament\Resources\AdminBookingInterventionResource\Page
 use App\Modules\Discovery\Domain\Contracts\AlternativeVendorFinder;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use DomainException;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -52,7 +53,7 @@ class AdminBookingInterventionResource extends Resource
 
     protected static ?string $slug = 'admin-booking-intervention';
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {
@@ -150,7 +151,12 @@ class AdminBookingInterventionResource extends Resource
             ->columns([
                 TextColumn::make('reference_no')
                     ->label(__('booking.intervention.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'reference_no'],
+                        'customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->sortable()
                     ->copyable(),
 
@@ -186,7 +192,11 @@ class AdminBookingInterventionResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('event_starts_at')
-                    ->label(__('booking.columns.event_starts_at'))
+                    ->label(fn (): string => __('booking.display_timezone', [
+                        'field' => __('booking.columns.event_starts_at'),
+                        'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                    ]))
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
                     ->dateTime()
                     ->sortable(),
             ])

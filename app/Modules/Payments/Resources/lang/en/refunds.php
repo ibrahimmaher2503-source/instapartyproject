@@ -3,6 +3,15 @@
 declare(strict_types=1);
 
 return [
+    'actions' => [
+        'initiate' => 'Refund',
+        'confirm' => 'Confirm a partial refund or refund the remaining captured amount. Service refund policies still apply.',
+        'amount_minor' => 'Refund amount (minor units)',
+        'amount_help' => '100 minor units = EGP 1. The default is the remaining amount after refund reservations.',
+        'note_en' => 'Reason note (English)',
+        'note_ar' => 'Reason note (Arabic)',
+        'recorded' => 'Refund request recorded',
+    ],
     'nav' => [
         'refunds' => 'Refunds',
     ],
@@ -48,6 +57,8 @@ return [
     ],
 
     'errors' => [
+        'amount_positive' => 'Enter a refund amount greater than zero.',
         'partial_refund_unsupported' => 'Partial refunds are not supported in phase 1.',
+        'over_refund_attempted' => 'The requested refund exceeds the amount remaining for this payment.',
     ],
 ];

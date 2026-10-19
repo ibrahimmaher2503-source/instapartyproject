@@ -15,6 +15,8 @@ use App\Modules\Loyalty\Domain\Events\LoyaltyRedemptionApplied;
 use App\Modules\Loyalty\Domain\Models\LoyaltyRedemption;
 use App\Modules\Loyalty\Domain\Services\BalanceCalculator;
 use App\Modules\Loyalty\Domain\Services\DiscountCalculator;
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +46,10 @@ class ApplyRedemptionToBookingAction
             throw new DomainException('loyalty.program_inactive');
         }
 
+        if ((string) $program->points_value_currency !== $draft->currency) {
+            throw new DomainException('loyalty.currency_mismatch');
+        }
+
         if ($pointsToRedeem < (int) $program->min_points_to_redeem) {
             throw new DomainException('loyalty.below_min_threshold');
         }
@@ -59,7 +65,11 @@ class ApplyRedemptionToBookingAction
         }
 
         // Enforce max_redeem_pct cap (whole-percent, 0–100).
-        $maxAllowed = (int) floor($draft->subtotalMinor * (int) $program->max_redeem_pct / 100);
+        $maxAllowed = Money::ofMinor($draft->subtotalMinor, $draft->currency)
+            ->multipliedBy((int) $program->max_redeem_pct)
+            ->dividedBy(100, RoundingMode::DOWN)
+            ->getMinorAmount()
+            ->toInt();
         if ($discountMinor > $maxAllowed) {
             throw new DomainException('loyalty.exceeds_max_redeem_pct');
         }

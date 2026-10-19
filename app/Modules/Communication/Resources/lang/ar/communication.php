@@ -170,6 +170,7 @@ return [
     ],
 
     'inbox' => [
+        'open_booking' => 'فتح الحجز',
         'severity' => 'الأهمية',
         'title' => 'العنوان',
         'source' => 'المصدر',
@@ -243,6 +244,8 @@ return [
             'name' => 'اسم الحملة',
             'channel' => 'القناة',
             'target_locale' => 'اللغة المستهدفة',
+            'scheduled_at' => 'موعد الإرسال',
+            'scheduled_at_hint' => 'اتركه فارغاً لحفظ الحملة كمسودة.',
             'segment_filters' => 'مرشحات الشريحة',
             'segment_filters_hint' => 'المفاتيح المتاحة: booked_product_type (rental|sale|digital)، booked_within_days، governorate_id، preferred_locale',
             'filter_key' => 'مفتاح المرشح',

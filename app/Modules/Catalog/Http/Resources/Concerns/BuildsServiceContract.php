@@ -8,6 +8,7 @@ use App\Modules\Catalog\Application\Services\CategoryFieldPresenter;
 use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Shared\Application\Services\StorefrontText;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -125,8 +126,7 @@ trait BuildsServiceContract
     }
 
     /**
-     * Short, human-readable location hint derived from the vendor's primary
-     * city (falling back to governorate). Rendered on service cards.
+     * Primary and coverage governorates, localized without duplicate locations.
      */
     protected function serviceAreaHint(Service $service, string $locale): ?string
     {
@@ -136,18 +136,8 @@ trait BuildsServiceContract
             return null;
         }
 
-        foreach ([$vendor->primaryCity, $vendor->primaryGovernorate] as $place) {
-            if ($place === null) {
-                continue;
-            }
+        $names = app(StorefrontText::class)->vendorGovernorates($vendor, $locale)->pluck('name')->join(' · ');
 
-            $name = $place->getTranslation('name', $locale, useFallbackLocale: true);
-
-            if (! empty($name)) {
-                return $name;
-            }
-        }
-
-        return null;
+        return $names !== '' ? $names : null;
     }
 }

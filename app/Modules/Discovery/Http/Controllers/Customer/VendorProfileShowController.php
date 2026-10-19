@@ -10,6 +10,7 @@ use App\Modules\Discovery\Http\Resources\VendorProfileResource;
 use App\Modules\Discovery\Infrastructure\Repositories\VendorBrowsingRepository;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Identity\Domain\States\VendorApprovalStatus\ApprovedState;
+use App\Modules\Reviews\Domain\Contracts\VendorReviewRepository;
 use App\Modules\Shared\Http\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,8 +31,9 @@ class VendorProfileShowController
         string $publicId,
         VendorBrowsingRepository $repository,
         VendorAvailabilityService $availability,
+        VendorReviewRepository $reviews,
     ): JsonResponse {
-        $vendor = VendorProfile::with(['primaryCity', 'approvedTypes', 'user'])
+        $vendor = VendorProfile::with(['primaryCity.governorate', 'primaryGovernorate', 'coverageAreas.city.governorate', 'approvedTypes', 'user'])
             // Published-only — keeps the header badge equal to the visible list
             // and stats.services_count (VendorBrowsingRepository::statsFor).
             ->withCount(['services' => fn ($q) => $q->published()])
@@ -46,11 +48,14 @@ class VendorProfileShowController
         $payload = Cache::remember(
             "customer:vendor-profile:{$vendor->id}:".app()->getLocale(),
             now()->addMinutes(5),
-            function () use ($vendor, $request, $repository, $availability): array {
+            function () use ($vendor, $request, $repository, $availability, $reviews): array {
                 $stats = $repository->statsFor($vendor->id);
                 $coverage = $repository->coverageFor($vendor->id);
                 $portfolio = $repository->portfolioFor($vendor->id, 4);
-                $featured = $repository->featuredReviewFor($vendor->id);
+                $reviewSummary = $reviews->publicSummariesForVendors([$vendor->id])[$vendor->id];
+                $vendor->setAttribute('rating_avg', $reviewSummary['average']);
+                $vendor->setAttribute('rating_count', $reviewSummary['count']);
+                $featured = $reviewSummary['featured_review'];
                 $snapshot = $availability->snapshotFor($vendor->id);
 
                 return array_merge(
@@ -69,10 +74,10 @@ class VendorProfileShowController
                             'next_open_at' => $snapshot['next_open_at'],
                         ],
                         'featured_review' => $featured !== null ? [
-                            'rating' => (int) $featured->rating,
-                            'body' => $featured->body,
-                            'reviewer_first_name' => preg_split('/\s+/', trim((string) $featured->reviewer_name))[0] ?? null,
-                            'created_at' => $featured->created_at,
+                            'rating' => $featured['rating'],
+                            'body' => $featured['body'],
+                            'reviewer_first_name' => $featured['reviewer_first_name'],
+                            'created_at' => $featured['created_at'],
                         ] : null,
                         'top_services' => ServiceSearchResultResource::collection(
                             $repository->servicesFor($vendor->id, null, 4)->items()

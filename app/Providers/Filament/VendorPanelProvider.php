@@ -9,7 +9,7 @@ use App\Modules\Identity\Filament\Vendor\Pages\RegisterVendorPage;
 use App\Modules\Identity\Http\Middleware\CheckVendorSuspension;
 use App\Modules\Identity\Http\Middleware\EnforcePanelIntendedUrl;
 use App\Modules\Identity\Http\Middleware\SetLocaleMiddleware;
-use App\Modules\Shared\Filament\RenderHooks\HtmlDirectionRenderHook;
+use App\Modules\Identity\Http\Middleware\ValidateVendorImpersonationSession;
 use App\Modules\Shared\Filament\RenderHooks\NotificationHeadingA11yRenderHook;
 use App\Modules\Shared\Filament\Vendor\Pages\VendorDashboardPage;
 use App\Modules\Shared\Http\Middleware\SetHtmlDirectionMiddleware;
@@ -47,7 +47,6 @@ class VendorPanelProvider extends PanelProvider
                 ->visible(insidePanels: true);
         });
 
-        HtmlDirectionRenderHook::register();
         NotificationHeadingA11yRenderHook::register();
     }
 
@@ -56,6 +55,7 @@ class VendorPanelProvider extends PanelProvider
         if (config('app.minimal_filament_panels', false)) {
             return $panel
                 ->id('vendor')
+                ->renderHook(\Filament\View\PanelsRenderHook::BODY_START, fn () => view('vendor-portal.partials.impersonation-banner'))
                 ->path('vendor-portal')
                 ->login(IsolatedPanelLogin::class)
                 ->homeUrl('/vendor-portal')
@@ -86,12 +86,14 @@ class VendorPanelProvider extends PanelProvider
                 ])
                 ->authMiddleware([
                     Authenticate::class,
+                    ValidateVendorImpersonationSession::class,
                     CheckVendorSuspension::class,
-                ]);
+                ], isPersistent: true);
         }
 
         return $panel
             ->id('vendor')
+            ->renderHook(\Filament\View\PanelsRenderHook::BODY_START, fn () => view('vendor-portal.partials.impersonation-banner'))
             ->path('vendor-portal')
             ->login(IsolatedPanelLogin::class)
             ->registration(RegisterVendorPage::class)
@@ -315,7 +317,8 @@ class VendorPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                ValidateVendorImpersonationSession::class,
                 CheckVendorSuspension::class,
-            ]);
+            ], isPersistent: true);
     }
 }

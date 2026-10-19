@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Identity\Http\Controllers\Web\CustomerAccountController;
+use App\Modules\Identity\Http\Controllers\Web\CustomerAddressPageController;
 use App\Modules\Identity\Http\Controllers\Web\LoginController;
 use App\Modules\Identity\Http\Controllers\Web\PasswordResetController;
 use App\Modules\Identity\Http\Controllers\Web\PhoneVerificationController;
@@ -51,6 +52,7 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
 
 Route::middleware(['auth', 'role:customer'])->prefix('account')->name('account.')->group(function (): void {
     Route::get('/', [CustomerAccountController::class, 'dashboard'])->name('dashboard');
+    Route::get('addresses', [CustomerAddressPageController::class, 'index'])->name('addresses');
     Route::get('bookings', [CustomerAccountController::class, 'bookings'])->name('bookings');
     Route::get('bookings/{publicId}', [CustomerAccountController::class, 'booking'])->name('bookings.show');
     Route::get('payments', [CustomerAccountController::class, 'payments'])->name('payments');

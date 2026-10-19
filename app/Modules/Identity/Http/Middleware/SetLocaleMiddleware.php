@@ -7,6 +7,7 @@ namespace App\Modules\Identity\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Livewire\Features\SupportRedirects\Redirector;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocaleMiddleware
@@ -15,7 +16,7 @@ class SetLocaleMiddleware
 
     private const string DEFAULT_LOCALE = 'en';
 
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next): Response|Redirector
     {
         $locale = $this->resolveLocale($request);
 

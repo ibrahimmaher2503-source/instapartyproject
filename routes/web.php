@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Modules\Shared\Http\Middleware\SetStorefrontLocaleMiddleware;
+use App\Modules\Shared\Http\Controllers\RobotsTxtController;
+use App\Modules\Shared\Http\Controllers\SitemapController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +34,9 @@ $preferredLocale = static fn (Request $request): string => $request->getPreferre
 
 Route::get('/', fn (Request $request) => redirect('/'.$preferredLocale($request)))
     ->name('storefront.root');
+
+Route::get('robots.txt', RobotsTxtController::class)->name('robots');
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 
 /*
 | Unlocalised /login alias.

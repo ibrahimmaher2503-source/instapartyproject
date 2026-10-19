@@ -26,7 +26,7 @@ class ServiceInventoryReservationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 80;
 
     public static function getNavigationLabel(): string
     {

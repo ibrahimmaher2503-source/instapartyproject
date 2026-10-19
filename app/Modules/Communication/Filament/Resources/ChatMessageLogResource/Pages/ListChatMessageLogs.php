@@ -7,6 +7,7 @@ namespace App\Modules\Communication\Filament\Resources\ChatMessageLogResource\Pa
 use App\Modules\Communication\Domain\Models\ChatMessageLog;
 use App\Modules\Communication\Filament\Resources\ChatMessageLogResource;
 use App\Modules\Communication\Filament\Resources\ChatThreadResource;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -36,6 +37,14 @@ class ListChatMessageLogs extends ListRecords
                 TextColumn::make('thread.public_id')
                     ->label(__('chat_moderation.columns.thread'))
                     ->limit(20)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        'thread' => ['public_id'],
+                        'thread.booking' => ['public_id'],
+                        'thread.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'thread.vendorProfile' => ['public_id'],
+                        'thread.vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'sender' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->url(fn (ChatMessageLog $record): ?string => $record->thread
                         ? ChatThreadResource::getUrl('view', ['record' => $record->thread])
                         : null

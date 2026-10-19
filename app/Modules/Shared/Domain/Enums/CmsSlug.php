@@ -10,4 +10,5 @@ enum CmsSlug: string
     case Privacy = 'privacy';
     case About = 'about';
     case Contact = 'contact';
+    case RefundPolicy = 'refund-policy';
 }

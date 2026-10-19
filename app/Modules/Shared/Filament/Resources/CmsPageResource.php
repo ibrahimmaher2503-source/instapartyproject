@@ -12,6 +12,7 @@ use App\Modules\Shared\Filament\Resources\CmsPageResource\Pages\ListCmsPages;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
@@ -35,7 +36,7 @@ class CmsPageResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.settings');
+        return __('admin.nav.groups.content');
     }
 
     public static function getNavigationLabel(): string
@@ -53,7 +54,7 @@ class CmsPageResource extends Resource
         return __('shared::shared.cms.model_plural');
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 50;
 
     public static function form(Form $schema): Form
     {

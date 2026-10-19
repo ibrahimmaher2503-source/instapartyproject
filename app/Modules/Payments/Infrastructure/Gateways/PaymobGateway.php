@@ -11,6 +11,7 @@ use App\Modules\Payments\Application\DTOs\PingResult;
 use App\Modules\Payments\Application\DTOs\RefundResultDto;
 use App\Modules\Payments\Application\DTOs\VoidResult;
 use App\Modules\Payments\Domain\Contracts\PaymentGateway;
+use App\Modules\Payments\Domain\Contracts\RefundConfirmationGateway;
 use App\Modules\Payments\Domain\Models\GatewayWebhookLog;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Payments\Infrastructure\Support\RedactPciFields;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Throwable;
 
-final class PaymobGateway implements PaymentGateway
+final class PaymobGateway implements PaymentGateway, RefundConfirmationGateway
 {
     /** @var list<string> */
     private const HMAC_FIELDS = [
@@ -128,6 +129,61 @@ final class PaymobGateway implements PaymentGateway
     public function refund(Payment $payment, Money $amount): RefundResultDto
     {
         return $this->mutateTransaction('acceptance/void_refund/refund', $payment, $amount);
+    }
+
+    public function confirmRefund(
+        Payment $payment,
+        string $callbackTransactionId,
+        Money $refundAmount,
+        Money $expectedCumulativeAmount,
+    ): bool {
+        $paymentTransactionId = (string) ($payment->metadata['paymob_transaction_id'] ?? '');
+        $currency = $refundAmount->getCurrency()->getCurrencyCode();
+
+        if ($paymentTransactionId === ''
+            || $callbackTransactionId === ''
+            || $callbackTransactionId !== $paymentTransactionId
+            || $expectedCumulativeAmount->getCurrency()->getCurrencyCode() !== $currency) {
+            return false;
+        }
+
+        try {
+            $response = $this->client()->withToken($this->authenticate())
+                ->get('acceptance/transactions/'.rawurlencode($callbackTransactionId));
+
+            if (! $response->successful()) {
+                return false;
+            }
+
+            $transaction = $response->json();
+            if (! is_array($transaction)
+                || (string) ($transaction['id'] ?? '') !== $callbackTransactionId
+                || (string) ($transaction['currency'] ?? '') !== $currency) {
+                return false;
+            }
+
+            $refundedAmount = $transaction['refunded_amount_cents'] ?? null;
+            if (is_int($refundedAmount)) {
+                $verifiedRefundedAmount = $refundedAmount;
+            } elseif (is_string($refundedAmount)
+                && preg_match('/\A(?:0|[1-9][0-9]*)\z/', $refundedAmount)) {
+                $maxInteger = (string) PHP_INT_MAX;
+                if (strlen($refundedAmount) > strlen($maxInteger)
+                    || (strlen($refundedAmount) === strlen($maxInteger) && strcmp($refundedAmount, $maxInteger) > 0)) {
+                    return false;
+                }
+
+                $verifiedRefundedAmount = (int) $refundedAmount;
+            } else {
+                return false;
+            }
+
+            return ($transaction['is_refunded'] ?? false) === true
+                && $verifiedRefundedAmount >= 0
+                && $verifiedRefundedAmount === $expectedCumulativeAmount->getMinorAmount()->toInt();
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public function void(string $gatewayRef): VoidResult

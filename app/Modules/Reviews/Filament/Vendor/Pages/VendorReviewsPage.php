@@ -53,7 +53,7 @@ class VendorReviewsPage extends Page implements HasTable
                 ServiceReview::query()
                     ->whereHas('service', fn (Builder $q) => $q->where('vendor_profile_id', $vendorProfile->id))
                     ->where('moderation_status', ModerationStatus::Approved)
-                    ->with(['reviewer', 'service'])
+                    ->with(['reviewer', 'service', 'vendorResponse'])
                     ->latest()
             )
             ->emptyStateIcon('heroicon-o-star')
@@ -76,6 +76,10 @@ class VendorReviewsPage extends Page implements HasTable
                     ->label(__('vendor-portal.reviews.body'))
                     ->limit(60)
                     ->wrap(),
+                TextColumn::make('vendorResponse.moderation_status')
+                    ->label(__('reviews::reviews.response.status'))
+                    ->state(fn (ServiceReview $record): string => $record->vendorResponse?->moderation_status->getLabel() ?? __('reviews::reviews.response.not_submitted'))
+                    ->badge(),
                 TextColumn::make('reviewer.name')
                     ->label(__('vendor-portal.bookings.customer')),
                 TextColumn::make('created_at')
@@ -85,11 +89,14 @@ class VendorReviewsPage extends Page implements HasTable
             ])
             ->actions([
                 TableAction::make('respond')
-                    ->label(__('vendor-portal.reviews.respond'))
+                    ->label(fn (ServiceReview $record): string => $record->vendorResponse
+                        ? __('reviews::reviews.actions.edit_response')
+                        : __('reviews::reviews.actions.respond'))
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->fillForm(fn (ServiceReview $record): array => ['body' => $record->vendorResponse?->body])
                     ->form([
                         Textarea::make('body')
-                            ->label(__('vendor-portal.reviews.body'))
+                            ->label(__('reviews::reviews.response.body'))
                             ->required()
                             ->rows(4),
                     ])

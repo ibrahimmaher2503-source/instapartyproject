@@ -11,6 +11,7 @@ use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\Cre
 use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\EditCategoryFieldSchema;
 use App\Modules\Catalog\Filament\Resources\CategoryFieldSchemaResource\Pages\ListCategoryFieldSchemas;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -34,12 +35,12 @@ class CategoryFieldSchemaResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.catalog');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 110;
 
     public static function getNavigationLabel(): string
     {
@@ -104,13 +105,13 @@ class CategoryFieldSchemaResource extends Resource
                 ->columns(4),
             Tabs::make(__('catalog.field_label'))
                 ->tabs([
-                    Tab::make('English')->schema([
+                    Tab::make(__('catalog.language_english'))->schema([
                         TextInput::make('field_label.en')
                             ->label(__('catalog.field_label_en'))
                             ->required()
                             ->maxLength(255),
                     ]),
-                    Tab::make('Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©')->schema([
+                    Tab::make(__('catalog.language_arabic'))->schema([
                         TextInput::make('field_label.ar')
                             ->label(__('catalog.field_label_ar'))
                             ->required()
@@ -120,8 +121,24 @@ class CategoryFieldSchemaResource extends Resource
                 ]),
             Section::make(__('catalog.advanced_schema'))
                 ->schema([
-                    KeyValue::make('options')
-                        ->label(__('catalog.options')),
+                    Repeater::make('options')
+                        ->label(__('catalog.options'))
+                        ->schema([
+                            TextInput::make('value')
+                                ->label(__('catalog.option_value'))
+                                ->required()
+                                ->distinct(),
+                            TextInput::make('label.en')
+                                ->label(__('catalog.option_label_en'))
+                                ->required(),
+                            TextInput::make('label.ar')
+                                ->label(__('catalog.option_label_ar'))
+                                ->required()
+                                ->extraInputAttributes(['dir' => 'rtl']),
+                        ])
+                        ->columns(3)
+                        ->columnSpanFull()
+                        ->defaultItems(0),
                     KeyValue::make('validation_rules')
                         ->label(__('catalog.validation_rules')),
                 ])

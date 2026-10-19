@@ -8,6 +8,7 @@ use App\Modules\Communication\Domain\Enums\EventCategory;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationPreference;
 use App\Modules\Communication\Filament\Resources\NotificationPreferenceResource\Pages\ListNotificationPreferences;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -68,7 +69,10 @@ class NotificationPreferenceResource extends Resource
             ->columns([
                 TextColumn::make('user.name')
                     ->label(__('communication.columns.user_id'))
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id'],
+                        'user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('channel')
                     ->label(__('communication.columns.channel'))
                     ->badge()

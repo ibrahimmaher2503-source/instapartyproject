@@ -16,6 +16,7 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
         return $this->map(
             PackageRecommendation::query()
                 ->published()
+                ->with('media')
                 ->leftJoin('occasions', 'occasions.id', '=', 'package_recommendations.occasion_id')
                 ->select(
                     'package_recommendations.*',
@@ -23,7 +24,7 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
                     'occasions.code as occasion_code',
                 )
                 ->orderBy('display_order')
-                ->limit(6),
+                ->limit(50),
             $locale,
         );
     }
@@ -119,6 +120,10 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
                     ? $min
                     : null;
 
+            $reference = app()->environment(['local', 'testing'])
+                ? $package->getFirstMedia('hero')?->getCustomProperty('homepage_reference', [])
+                : [];
+
             return [
                 'public_id' => $package->public_id,
                 'slug' => $package->slug,
@@ -129,6 +134,9 @@ final class EloquentPackageRecommendationReader implements PackageRecommendation
                 'min_budget' => $min,
                 'max_budget' => $max,
                 'fixed_budget' => $fixed,
+                'reference_card' => $reference
+                    ? ['photo' => $reference['photo'], ...($reference[$locale] ?? $reference['en'])]
+                    : [],
                 'hero_url' => $package->getFirstMediaUrl('hero', 'large')
                     ?: $package->getFirstMediaUrl('hero')
                     ?: null,

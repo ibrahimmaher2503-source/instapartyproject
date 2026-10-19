@@ -28,7 +28,7 @@ class CustomerResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.vendor_management');
+        return __('admin.nav.groups.customers');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -64,6 +64,11 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('public_id')
+                    ->label(__('identity.columns.id'))
+                    ->copyable()
+                    ->searchable(),
+
                 TextColumn::make('name')
                     ->label(__('identity.columns.name'))
                     ->searchable()
@@ -75,6 +80,7 @@ class CustomerResource extends Resource
 
                 TextColumn::make('phone_e164')
                     ->label(__('identity.columns.phone'))
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->searchable(),
 
                 TextColumn::make('status')
@@ -126,6 +132,7 @@ class CustomerResource extends Resource
                     ->label(__('identity.fields.phone'))
                     ->nullable()
                     ->tel()
+                    ->extraInputAttributes(['dir' => 'ltr'])
                     ->helperText('E.164 format: +201001234567'),
             ])
             ->fillForm(fn (User $record): array => [

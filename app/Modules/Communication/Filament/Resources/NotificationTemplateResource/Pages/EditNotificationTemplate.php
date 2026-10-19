@@ -26,6 +26,28 @@ class EditNotificationTemplate extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return NotificationTemplateResource::validateFormData($data);
+        $validationData = [
+            'body' => $this->record->getTranslations('body'),
+            'subject' => $this->record->getTranslations('subject'),
+            'variables' => $data['variables'] ?? $this->record->variables ?? [],
+        ];
+
+        foreach ($this->otherLocaleData as $locale => $localeData) {
+            foreach (['body', 'subject'] as $field) {
+                if (isset($localeData[$field])) {
+                    $validationData[$field][$locale] = $localeData[$field];
+                }
+            }
+        }
+
+        foreach (['body', 'subject'] as $field) {
+            if (isset($data[$field])) {
+                $validationData[$field][$this->activeLocale] = $data[$field];
+            }
+        }
+
+        NotificationTemplateResource::validateFormData($validationData);
+
+        return $data;
     }
 }

@@ -131,6 +131,7 @@ class VendorAccountPage extends Page implements HasInfolists
                         ->label(__('vendor-portal.account.new_phone'))
                         ->placeholder('+201234567890')
                         ->required()
+                        ->regex('/^\+[1-9]\d{7,14}$/')
                         ->maxLength(20)
                         ->helperText('Include country code, e.g. +201234567890'),
                 ])
@@ -139,6 +140,9 @@ class VendorAccountPage extends Page implements HasInfolists
                     $user = auth()->user();
                     app(UpdateVendorPhoneAction::class)->execute($user, $data['new_phone']);
                     Notification::make()->title(__('vendor-portal.account.phone_changed'))->success()->send();
+                    if (! $user->hasVerifiedPhone()) {
+                        $this->redirect(VendorPhoneVerificationPage::getUrl(panel: 'vendor'));
+                    }
                 }),
         ];
     }

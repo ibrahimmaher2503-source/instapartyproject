@@ -28,7 +28,8 @@ class EditVendorProfile extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         foreach (MaskBankData::FIELDS as $field) {
-            $data[$field] = MaskBankData::forField($field, $this->getRecord()->getRawOriginal($field));
+            $value = $this->getRecord()->getRawOriginal($field);
+            $data[$field] = filled($value) ? MaskBankData::forField($field, $value) : null;
         }
 
         return $data;

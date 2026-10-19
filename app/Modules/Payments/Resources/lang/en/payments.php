@@ -3,6 +3,14 @@
 declare(strict_types=1);
 
 return [
+    'errors' => [
+        'capture_not_authorized' => 'Only an authorized payment can be captured.',
+        'void_not_authorized' => 'Only an authorized payment can be voided.',
+        'gateway_void_failed' => 'The payment gateway could not void this authorization.',
+        'payment_not_found' => 'The payment could not be found.',
+        'refund_conflict' => 'This refund request conflicts with an earlier request.',
+    ],
+
     'navigation' => [
         'payments' => 'Payments',
         'refunds' => 'Refunds',
@@ -146,6 +154,7 @@ return [
             'open_chargeback' => 'Open Chargeback',
             'resolve' => 'Resolve',
         ],
+        'capture_modal_description' => 'This records a manual capture of :amount for payment :reference, customer :customer, vendors :vendors. It does not contact the payment gateway; the booking status follows the recorded capture event.',
 
         'forms' => [
             'reason_manual_capture' => 'Reason for manual capture',

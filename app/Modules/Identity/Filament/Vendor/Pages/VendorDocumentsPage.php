@@ -8,8 +8,8 @@ use App\Modules\Identity\Application\Actions\DeleteVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\GenerateDocumentSignedUrlAction;
 use App\Modules\Identity\Application\Actions\ReuploadVendorDocumentAction;
 use App\Modules\Identity\Application\Actions\UploadVendorDocumentAction;
+use App\Modules\Identity\Application\Services\RequiredVendorDocumentTypesResolver;
 use App\Modules\Identity\Domain\Enums\DocumentStatus;
-use App\Modules\Identity\Domain\Enums\DocumentType;
 use App\Modules\Identity\Domain\Models\VendorDocument;
 use App\Modules\Identity\Domain\Models\VendorProfile;
 use Filament\Actions\Action;
@@ -21,9 +21,12 @@ use Filament\Tables\Actions\Action as TableAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -39,6 +42,15 @@ class VendorDocumentsPage extends Page implements HasTable
 
     protected static string $view = 'vendor-portal.pages.vendor-documents';
 
+    public function mount(): void
+    {
+        $count = VendorDocument::query()->where('vendor_profile_id', $this->getVendorProfile()->id)
+            ->latestPerType()->where('status', DocumentStatus::Approved)->expiringWithinDays(30)->count();
+        if ($count > 0) {
+            Notification::make()->title(__('identity.compliance.expiring_alert', ['count' => $count]))->warning()->send();
+        }
+    }
+
     public function getTitle(): string|Htmlable
     {
         return __('vendor-portal.documents.title');
@@ -47,6 +59,16 @@ class VendorDocumentsPage extends Page implements HasTable
     public static function getNavigationLabel(): string
     {
         return __('vendor-portal.documents.title');
+    }
+
+    public function getSubheading(): ?string
+    {
+        $resolver = app(RequiredVendorDocumentTypesResolver::class);
+        $required = $resolver->forBusinessType($this->getVendorProfile()->business_type);
+
+        return $required === []
+            ? __('identity::document_types.none_required')
+            : __('identity::document_types.requirements', ['names' => implode('، ', array_map(fn (string $key): string => $resolver->label($key), $required))]);
     }
 
     public function table(Table $table): Table
@@ -61,7 +83,7 @@ class VendorDocumentsPage extends Page implements HasTable
                 TextColumn::make('doc_type')
                     ->label(__('vendor-portal.documents.type'))
                     ->badge()
-                    ->formatStateUsing(fn (DocumentType $state) => __('identity.document_type.'.$state->value)),
+                    ->formatStateUsing(fn (VendorDocument $record): string => app(RequiredVendorDocumentTypesResolver::class)->label($record->doc_type_key)),
                 TextColumn::make('status')
                     ->label(__('vendor-portal.documents.status'))
                     ->badge()
@@ -87,6 +109,17 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->label(__('identity.fields.uploaded_at'))
                     ->dateTime('d M Y')
                     ->sortable(),
+                TextColumn::make('expires_at')
+                    ->label(__('identity.fields.expires_at'))
+                    ->date('d M Y')
+                    ->placeholder('—')
+                    ->color(fn (VendorDocument $record): ?string => $record->expires_at?->lt(today()) ? 'danger'
+                        : ($record->expires_at?->lte(today()->addDays(30)) ? 'warning' : null)),
+            ])
+            ->filters([
+                Filter::make('expiring_soon')
+                    ->label(__('identity.compliance.expiring_soon'))
+                    ->query(fn (Builder $query): Builder => $query->latestPerType()->where('status', DocumentStatus::Approved)->expiringWithinDays(30)),
             ])
             ->actions([
                 TableAction::make('view')
@@ -115,7 +148,8 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->label(__('identity.actions.re_upload_document'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('warning')
-                    ->visible(fn (VendorDocument $record): bool => $record->status === DocumentStatus::Rejected)
+                    ->visible(fn (VendorDocument $record): bool => $record->status === DocumentStatus::Rejected
+                        && array_key_exists($record->doc_type_key, app(RequiredVendorDocumentTypesResolver::class)->options()))
                     ->form([
                         FileUpload::make('file')
                             ->label(__('identity.fields.document_file'))
@@ -124,7 +158,7 @@ class VendorDocumentsPage extends Page implements HasTable
                             ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
                             ->storeFiles(false),
                     ])
-                    ->action(function (VendorDocument $record, array $data): void {
+                    ->action(function (VendorDocument $record, array $data, TableAction $action): void {
                         /** @var TemporaryUploadedFile $temporaryFile */
                         $temporaryFile = $data['file'];
                         $uploadedFile = new UploadedFile(
@@ -135,7 +169,14 @@ class VendorDocumentsPage extends Page implements HasTable
                             true,
                         );
 
-                        app(ReuploadVendorDocumentAction::class)->execute($record, $uploadedFile, auth()->user());
+                        try {
+                            app(ReuploadVendorDocumentAction::class)->execute($record, $uploadedFile, auth()->user());
+                        } catch (ValidationException $exception) {
+                            Notification::make()->title($exception->errors()['file'][0] ?? $exception->errors()['doc_type'][0] ?? $exception->getMessage())->danger()->send();
+                            $action->halt();
+
+                            return;
+                        }
 
                         Notification::make()
                             ->title(__('identity.notifications.document_upload_success'))
@@ -147,7 +188,7 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn (VendorDocument $record) => $record->status === DocumentStatus::Rejected)
+                    ->visible(fn (VendorDocument $record) => in_array($record->status, [DocumentStatus::Pending, DocumentStatus::Rejected], true))
                     ->action(function (VendorDocument $record): void {
                         app(DeleteVendorDocumentAction::class)->execute(
                             $this->getVendorProfile(),
@@ -163,17 +204,12 @@ class VendorDocumentsPage extends Page implements HasTable
         return [
             Action::make('upload')
                 ->label(__('vendor-portal.documents.upload'))
+                ->visible(fn (): bool => app(RequiredVendorDocumentTypesResolver::class)->options() !== [])
                 ->icon('heroicon-o-arrow-up-tray')
                 ->form([
                     Select::make('doc_type')
                         ->label(__('vendor-portal.documents.type'))
-                        ->options([
-                            DocumentType::Cr->value => __('identity.document_type.cr'),
-                            DocumentType::TaxCard->value => __('identity.document_type.tax_card'),
-                            DocumentType::NationalId->value => __('identity.document_type.national_id'),
-                            DocumentType::IbanProof->value => __('identity.document_type.iban_proof'),
-                            DocumentType::Other->value => __('identity.document_type.other'),
-                        ])
+                        ->options(fn (): array => app(RequiredVendorDocumentTypesResolver::class)->options())
                         ->required(),
                     FileUpload::make('file')
                         ->label(__('identity.fields.document_file'))
@@ -226,11 +262,18 @@ class VendorDocumentsPage extends Page implements HasTable
                         true,
                     );
 
-                    app(UploadVendorDocumentAction::class)->execute(
-                        $profile,
-                        $uploadedFile,
-                        DocumentType::from($data['doc_type']),
-                    );
+                    try {
+                        app(UploadVendorDocumentAction::class)->execute(
+                            $profile,
+                            $uploadedFile,
+                            $data['doc_type'],
+                        );
+                    } catch (ValidationException $exception) {
+                        Notification::make()->title($exception->errors()['file'][0] ?? $exception->errors()['doc_type'][0] ?? $exception->getMessage())->danger()->send();
+                        $action->halt();
+
+                        return;
+                    }
 
                     Notification::make()->title(__('identity.notifications.document_upload_success'))->success()->send();
                 }),

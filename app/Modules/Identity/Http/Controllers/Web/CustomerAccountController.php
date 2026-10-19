@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Http\Controllers\Web;
 
 use App\Modules\Booking\Domain\Models\Booking;
+use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Discovery\Domain\Models\Wishlist;
 use App\Modules\Identity\Application\Actions\UpdateCustomerProfileAction;
 use App\Modules\Identity\Domain\Models\User;
 use App\Modules\Identity\Http\Requests\UpdateCustomerProfileRequest;
+use App\Modules\Payments\Domain\Contracts\RefundTimelineReader;
 use App\Modules\Payments\Domain\Models\Payment;
-use App\Modules\Reviews\Domain\Models\ServiceReview;
-use App\Modules\Reviews\Domain\Models\VendorReview;
+use App\Modules\Reviews\Domain\Contracts\CustomerReviewReader;
+use App\Modules\Reviews\Domain\Contracts\BookingItemReviewabilityReader;
+use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,18 +45,53 @@ final class CustomerAccountController
         return view('storefront.account.bookings', compact('bookings'));
     }
 
-    public function booking(Request $request, string $publicId): View
+    public function booking(Request $request, string $publicId, RefundTimelineReader $refundReader, CatalogServiceReader $catalogReader, BookingItemReviewabilityReader $reviewability, ServiceReviewRepository $reviews): View
     {
         $booking = Booking::query()->where('customer_id', $this->user($request)->id)->where('public_id', $publicId)->with(['vendors.vendor', 'vendors.items.service', 'occasion', 'address', 'payments', 'customerNotes'])->firstOrFail();
+        $refunds = $refundReader->findByBookingId($booking->id);
+        $availableServices = [];
+        $reviewableItems = [];
 
-        return view('storefront.account.booking', compact('booking'));
+        foreach ($booking->vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $availableServices[$item->public_id] = $item->service_id === null ? null : $catalogReader->findPublishedById((int) $item->service_id);
+                $reviewableItems[$item->public_id] = $reviewability->isReviewable($item->public_id, $booking->customer_id)
+                    && $reviews->findByBookingItemId($item->id) === null;
+            }
+        }
+
+        return view('storefront.account.booking', compact('booking', 'refunds', 'availableServices', 'reviewableItems'));
     }
 
-    public function payments(Request $request): View
+    public function payments(Request $request, RefundTimelineReader $refundReader): View
     {
-        $payments = Payment::query()->where('user_id', $this->user($request)->id)->with('booking')->latest('created_at')->paginate(15);
+        $user = $this->user($request);
+        $payments = Payment::query()->where('user_id', $user->id)->with('booking')->latest('created_at')->paginate(15);
+        $customerBookings = $payments->getCollection()
+            ->map(fn (Payment $payment) => $payment->booking)
+            ->filter(fn ($booking): bool => $booking instanceof Booking && $booking->customer_id === $user->id)
+            ->unique('id')
+            ->keyBy('id');
+        $refundsByBooking = $refundReader->findByBookingIds(
+            $customerBookings->keys()->map(static fn ($bookingId): int => (int) $bookingId)->all(),
+        );
+        $refunds = collect($refundsByBooking)
+            ->flatMap(function ($bookingRefunds, $bookingId) use ($customerBookings): array {
+                $booking = $customerBookings->get($bookingId);
 
-        return view('storefront.account.payments', compact('payments'));
+                if ($booking === null) {
+                    return [];
+                }
+
+                return $bookingRefunds->map(fn ($refund): array => [
+                    'booking_public_id' => $booking->public_id,
+                    'booking_reference' => $booking->reference_no,
+                    'refund' => $refund,
+                ])->all();
+            })
+            ->values();
+
+        return view('storefront.account.payments', compact('payments', 'refunds'));
     }
 
     public function plans(): View
@@ -75,11 +113,9 @@ final class CustomerAccountController
         return view('storefront.account.notifications', compact('notifications'));
     }
 
-    public function reviews(Request $request): View
+    public function reviews(Request $request, CustomerReviewReader $reviewReader): View
     {
-        $id = $this->user($request)->id;
-        $reviews = ServiceReview::query()->where('user_id', $id)->latest('created_at')->get()->map(fn ($r): array => ['type' => 'service', 'review' => $r])
-            ->merge(VendorReview::query()->where('user_id', $id)->latest('created_at')->get()->map(fn ($r): array => ['type' => 'vendor', 'review' => $r]))->sortByDesc(fn (array $i) => $i['review']->created_at);
+        $reviews = $reviewReader->listForCustomer($this->user($request)->id);
 
         return view('storefront.account.reviews', compact('reviews'));
     }

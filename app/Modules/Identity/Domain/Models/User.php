@@ -44,7 +44,29 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasPublicId, HasRoles, MustVerifyEmailTrait, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, HasPublicId, HasRoles, Notifiable, SoftDeletes;
+
+    use MustVerifyEmailTrait {
+        hasVerifiedEmail as private hasVerifiedEmailWithoutDebug;
+        sendEmailVerificationNotification as private sendEmailVerificationNotificationWithoutDebug;
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return config('app.debug') || $this->hasVerifiedEmailWithoutDebug();
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return config('app.debug') || $this->phone_verified_at !== null;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        if (! config('app.debug')) {
+            $this->sendEmailVerificationNotificationWithoutDebug();
+        }
+    }
 
     protected $fillable = [
         'public_id',

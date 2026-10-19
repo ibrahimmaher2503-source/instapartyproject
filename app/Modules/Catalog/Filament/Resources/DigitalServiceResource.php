@@ -16,6 +16,7 @@ use App\Modules\Catalog\Filament\Actions\BulkRejectServicesAction;
 use App\Modules\Catalog\Filament\Actions\RejectServiceAction;
 use App\Modules\Catalog\Filament\Actions\RequestServiceEditsAction;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\CreateDigitalService;
+use App\Modules\Catalog\Filament\Vendor\Concerns\HasCategorySchemaFields;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\EditDigitalService;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\ListDigitalServices;
 use App\Modules\Catalog\Filament\Resources\DigitalServiceResource\Pages\PendingDigitalServicesPage;
@@ -55,6 +56,8 @@ use Illuminate\Support\Facades\Storage;
 
 class DigitalServiceResource extends Resource
 {
+    use HasCategorySchemaFields;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-device-phone-mobile';
@@ -187,6 +190,8 @@ class DigitalServiceResource extends Resource
                         ->label(__('catalog.is_featured')),
                 ])
                 ->columns(2),
+
+            static::categorySchemaSection(ProductType::Digital),
 
             Section::make(__('catalog.digital_details'))
                 ->relationship('digitalDetail')

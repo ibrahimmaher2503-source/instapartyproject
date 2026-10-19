@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Settlement\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+
 use App\Modules\Settlement\Application\Actions\ApproveWithdrawalAction;
 use App\Modules\Settlement\Application\Actions\MarkWithdrawalPaidAction;
 use App\Modules\Settlement\Application\Actions\RejectWithdrawalAction;
@@ -11,6 +14,7 @@ use App\Modules\Settlement\Application\DTOs\MarkWithdrawalPaidInput;
 use App\Modules\Settlement\Domain\Enums\WithdrawalStatus;
 use App\Modules\Settlement\Domain\Models\Withdrawal;
 use App\Modules\Settlement\Filament\Resources\WithdrawalsQueueResource\Pages\ListWithdrawalsQueue;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
@@ -49,7 +53,7 @@ class WithdrawalsQueueResource extends Resource
 
     protected static ?string $slug = 'settlement-withdrawals';
 
-    protected static ?int $navigationSort = 120;
+    protected static ?int $navigationSort = 40;
 
     public static function getNavigationLabel(): string
     {
@@ -107,8 +111,12 @@ class WithdrawalsQueueResource extends Resource
                             ->money('EGP', divideBy: 100),
 
                         TextEntry::make('requested_at')
-                            ->label(__('settlement.columns.requested_at'))
-                            ->dateTime(),
+                            ->label(fn (): string => __('settlement.display_timezone', [
+                                'field' => __('settlement.columns.requested_at'),
+                                'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                            ]))
+                            ->dateTime()
+                            ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo'),
 
                         TextEntry::make('vendorProfile.business_name')
                             ->label(__('settlement.columns.vendor'))
@@ -142,11 +150,16 @@ class WithdrawalsQueueResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'vendorProfile.public_id', 'status', 'requested_amount_minor', 'requested_amount_currency', 'requested_at'])])
             ->defaultSort('requested_at', 'desc')
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('settlement.columns.reference'))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'bank_transfer_reference'],
+                        'vendorProfile' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'vendorProfile.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ]))
                     ->copyable()
                     ->limit(14)
                     ->tooltip(fn (Withdrawal $record): string => $record->public_id),
@@ -182,16 +195,25 @@ class WithdrawalsQueueResource extends Resource
 
                 TextColumn::make('requested_at')
                     ->dateTime()
-                    ->label(__('settlement.columns.requested_at'))
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->label(fn (): string => __('settlement.display_timezone', [
+                        'field' => __('settlement.columns.requested_at'),
+                        'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                    ]))
                     ->sortable(),
 
                 TextColumn::make('approved_at')
                     ->dateTime()
-                    ->label(__('settlement.columns.approved_at'))
+                    ->timezone(fn () => auth()->user()?->timezone ?? 'Africa/Cairo')
+                    ->label(fn (): string => __('settlement.display_timezone', [
+                        'field' => __('settlement.columns.approved_at'),
+                        'timezone' => auth()->user()?->timezone ?? 'Africa/Cairo',
+                    ]))
                     ->sortable()
                     ->placeholder('—'),
             ])
             ->filters([
+                OperationalDateFilter::make('requested_at'),
                 SelectFilter::make('status')
                     ->options([
                         WithdrawalStatus::Pending->value => __('settlement.withdrawal_status.pending'),
@@ -348,7 +370,7 @@ class WithdrawalsQueueResource extends Resource
                                 ->send();
                         })
                         ->visible(fn (Withdrawal $record): bool => $record->getRawOriginal('status') === WithdrawalStatus::Pending->value
-                            && auth()->user()?->can('reject_withdrawal')
+                            && auth()->user()?->can('settlement.reject_withdrawal')
                         ),
                 ])
                     ->tooltip(__('admin.actions.more')),

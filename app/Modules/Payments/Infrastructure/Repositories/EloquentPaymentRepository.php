@@ -27,6 +27,11 @@ class EloquentPaymentRepository
         return Payment::query()->find($id);
     }
 
+    public function findByIdForUpdate(int $id): ?Payment
+    {
+        return Payment::query()->lockForUpdate()->find($id);
+    }
+
     /** @return Builder<Payment> */
     public function queryForBooking(int $bookingId): Builder
     {
@@ -36,7 +41,7 @@ class EloquentPaymentRepository
     public function findActiveCaptureForBooking(int $bookingId): ?Payment
     {
         return Payment::query()
-            ->whereState('status', CapturedState::class)
+            ->whereIn('status', ['captured', 'partially_refunded'])
             ->where('booking_id', $bookingId)
             ->latest('id')
             ->first();

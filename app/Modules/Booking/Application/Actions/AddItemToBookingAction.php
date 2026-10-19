@@ -8,6 +8,8 @@ use App\Modules\Booking\Application\DTOs\AddBookingItemDTO;
 use App\Modules\Booking\Application\DTOs\ServiceReadDTO;
 use App\Modules\Booking\Application\Services\BookingTransportPricingService;
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
+use App\Modules\Booking\Domain\Contracts\CoverageAreaResolver;
+use App\Modules\Booking\Domain\Exceptions\CurrencyMismatchException;
 use App\Modules\Booking\Domain\Events\BookingItemAdded;
 use App\Modules\Booking\Domain\Models\Booking;
 use App\Modules\Booking\Domain\Models\BookingItem;
@@ -29,10 +31,12 @@ class AddItemToBookingAction
         private readonly CatalogServiceReader $catalogReader,
         private readonly CommissionRateResolver $commissionRateResolver,
         private readonly BookingTransportPricingService $transportPricing,
+        private readonly CoverageAreaResolver $coverageResolver,
     ) {}
 
     public function execute(AddBookingItemDTO $dto): BookingItem
     {
+        // MariaDB ER_CHECKREAD needs the entire transaction restarted with a fresh snapshot.
         return DB::transaction(function () use ($dto): BookingItem {
             $booking = Booking::find($dto->bookingId);
 
@@ -103,6 +107,28 @@ class AddItemToBookingAction
                 ]
             );
 
+            $requiresDelivery = match ($service->productType) {
+                ProductType::Rental, ProductType::Sale => true,
+                ProductType::Digital => false,
+            };
+
+            if ($requiresDelivery && ! $vendor->items()->whereIn('product_type', [ProductType::Rental->value, ProductType::Sale->value])->exists()) {
+                $cityId = $booking->address?->city_id;
+                $coverage = $cityId === null ? null : ($this->coverageResolver->resolveForCity((int) $cityId, [$service->vendorProfileId])[$service->vendorProfileId] ?? null);
+
+                if ($coverage !== null) {
+                    if ($coverage->deliveryFeeMinor > 0 && $coverage->deliveryFeeCurrency !== $booking->total_currency) {
+                        throw new CurrencyMismatchException($booking->total_currency, $coverage->deliveryFeeCurrency);
+                    }
+
+                    // Snapshot once per vendor delivery, independent of platform transport pricing.
+                    $vendor->update([
+                        'delivery_fee_minor' => $coverage->deliveryFeeMinor,
+                        'delivery_fee_currency' => $coverage->deliveryFeeCurrency,
+                    ]);
+                }
+            }
+
             $lineTotal = $service->basePriceMinor * $dto->quantity;
             $commissionBps = $this->commissionRateResolver->resolve($service->categoryId, $service->productType) ?? 0;
 
@@ -135,7 +161,7 @@ class AddItemToBookingAction
             DB::afterCommit(fn () => event(new BookingItemAdded($item)));
 
             return $item;
-        });
+        }, 3);
     }
 
     private function reserveRental(
@@ -155,9 +181,10 @@ class AddItemToBookingAction
                     ->where('expires_at', '>', now())))
             ->where('reserved_starts_at', '<', $end)
             ->where('reserved_ends_at', '>', $start)
-            ->count();
+            ->lockForUpdate()
+            ->first();
 
-        if ($overlapping > 0) {
+        if ($overlapping !== null) {
             $this->abortWith(Response::HTTP_CONFLICT, 'Service is unavailable for the requested dates');
         }
 
@@ -180,18 +207,28 @@ class AddItemToBookingAction
     private function reserveSale(ServiceReadDTO $service, AddBookingItemDTO $dto): int
     {
         DB::table('services')->where('id', $service->id)->lockForUpdate()->first();
-
-        $heldCount = (int) DB::table('service_inventory_reservations')
+        $stockQuantity = DB::table('service_sale_details')
             ->where('service_id', $service->id)
-            ->where(fn ($query) => $query
-                ->where('status', ReservationStatus::Confirmed->value)
-                ->orWhere(fn ($held) => $held
-                    ->where('status', ReservationStatus::Held->value)
-                    ->where('expires_at', '>', now())))
-            ->sum('quantity');
+            ->lockForUpdate()
+            ->value('stock_quantity');
 
-        if ($service->stockQuantity !== null) {
-            $available = $service->stockQuantity - $heldCount;
+        if ($stockQuantity !== null) {
+            $heldReservations = DB::table('service_inventory_reservations')
+                ->where('service_id', $service->id)
+                ->where(fn ($query) => $query
+                    ->where('status', ReservationStatus::Confirmed->value)
+                    ->orWhere(fn ($held) => $held
+                        ->where('status', ReservationStatus::Held->value)
+                        ->where('expires_at', '>', now())))
+                ->select('quantity')
+                ->lockForUpdate()
+                ->get();
+            $heldCount = 0;
+            foreach ($heldReservations as $reservation) {
+                $heldCount += (int) $reservation->quantity;
+            }
+
+            $available = (int) $stockQuantity - $heldCount;
 
             if ($available < $dto->quantity) {
                 $this->abortWith(Response::HTTP_CONFLICT, 'Insufficient stock');

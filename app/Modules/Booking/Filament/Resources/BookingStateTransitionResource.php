@@ -32,12 +32,12 @@ class BookingStateTransitionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('admin.nav.groups.operations');
+        return __('admin.nav.groups.technical');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-up-down';
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 130;
 
     public static function getNavigationLabel(): string
     {

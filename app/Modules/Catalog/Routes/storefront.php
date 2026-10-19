@@ -8,4 +8,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('services/{servicePublicId}', ServiceController::class)->name('services.show');
 Route::get('c/{identifier}', [TaxonomyController::class, 'category'])->name('categories.show');
+Route::get('occasions', [TaxonomyController::class, 'occasions'])->name('occasions.index');
 Route::get('o/{identifier}', [TaxonomyController::class, 'occasion'])->name('occasions.show');

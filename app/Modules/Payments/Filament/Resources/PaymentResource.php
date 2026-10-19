@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Modules\Payments\Filament\Resources;
 
+use App\Modules\Shared\Filament\Tables\OperationalExport;
+use App\Modules\Shared\Filament\Tables\OperationalDateFilter;
+
 use App\Modules\Payments\Domain\Enums\PaymentMethod;
+use App\Modules\Payments\Filament\Actions\RefundPaymentAction;
 use App\Modules\Payments\Domain\Models\Payment;
 use App\Modules\Payments\Domain\States\PaymentStatus\PaymentState;
 use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ListPayments;
 use App\Modules\Payments\Filament\Resources\PaymentResource\Pages\ViewPayment;
 use App\Modules\Shared\Application\Timeline\Enums\TimelineAudience;
 use App\Modules\Shared\Filament\Infolists\Components\AuditTimelineSection;
+use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -85,11 +90,18 @@ class PaymentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([OperationalExport::make(static::class, ['public_id', 'booking.public_id', 'status', 'amount_minor', 'amount_currency', 'created_at'])])
             ->columns([
                 TextColumn::make('public_id')
                     ->label(__('payments.columns.public_id'))
                     ->copyable()
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => ReferenceSearch::apply($query, $search, [
+                        '' => ['public_id', 'gateway_ref'],
+                        'booking' => ['public_id', 'reference_no'],
+                        'booking.customer' => ['public_id', 'name', 'email', 'phone_e164'],
+                        'booking.vendors.vendor' => ['public_id', 'business_name->en', 'business_name->ar'],
+                        'booking.vendors.vendor.user' => ['public_id', 'name', 'email', 'phone_e164'],
+                    ])),
                 TextColumn::make('booking.reference_no')
                     ->label(__('payments.columns.booking'))
                     ->searchable()
@@ -124,8 +136,10 @@ class PaymentResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
+                RefundPaymentAction::make(),
             ])
             ->filters([
+                OperationalDateFilter::make('created_at'),
                 SelectFilter::make('status')
                     ->label(__('payments.columns.status'))
                     ->options([

@@ -15,6 +15,7 @@ use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class RestrictedChatPanel extends Component
@@ -23,6 +24,7 @@ class RestrictedChatPanel extends Component
     // Public properties (wire-bound / passed from host)
     // -----------------------------------------------------------------
 
+    #[Locked]
     public string $bookingPublicId = '';
 
     public string $body = '';
@@ -48,6 +50,16 @@ class RestrictedChatPanel extends Component
     public function mount(string $bookingPublicId): void
     {
         $this->bookingPublicId = $bookingPublicId;
+        $this->resolveContext();
+    }
+
+    public function hydrate(): void
+    {
+        $this->resolveContext();
+    }
+
+    private function resolveContext(): void
+    {
 
         // Load vendor profile for the authenticated user
         $this->vendorProfile = VendorProfile::query()
@@ -56,7 +68,8 @@ class RestrictedChatPanel extends Component
 
         // Load booking via public_id
         $this->booking = Booking::query()
-            ->where('public_id', $bookingPublicId)
+            ->where('public_id', $this->bookingPublicId)
+            ->whereHas('vendors', fn ($query) => $query->where('vendor_profile_id', $this->vendorProfile->id))
             ->firstOrFail();
 
         // Load chat thread for this booking+vendor (may be null)
@@ -96,6 +109,13 @@ class RestrictedChatPanel extends Component
         $this->validate([
             'body' => 'required|string|max:2000',
         ]);
+
+        if ($this->state() !== ChatPanelState::Open || $this->thread === null) {
+            $this->flashMessage = __('communication::chat.system_locked_notice');
+            $this->isBlocked = true;
+
+            return;
+        }
 
         try {
             app(SendVendorChatMessageAction::class)->execute(
