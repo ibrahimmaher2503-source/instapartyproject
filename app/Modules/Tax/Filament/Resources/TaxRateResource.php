@@ -97,7 +97,9 @@ class TaxRateResource extends Resource
                 ->schema([
                     TextInput::make('rate_bps')
                         ->label(__('tax.rate_percent'))
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->numeric()
                         ->minValue(0)
                         ->maxValue(100_00)
@@ -108,7 +110,9 @@ class TaxRateResource extends Resource
                     Select::make('applies_to')
                         ->label(__('tax.applies_to'))
                         ->options(collect(TaxAppliesTo::cases())->mapWithKeys(fn ($c) => [$c->value => $c->label()]))
-                        ->required(),
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired(),
 
                     CheckboxList::make('product_types')
                         ->label(__('tax.product_types'))

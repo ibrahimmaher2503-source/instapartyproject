@@ -101,7 +101,9 @@ it('creates customer and all tax rates with the supplied percentages and transla
         ->and($allRate->public_id)->toHaveLength(26);
 });
 
-it('shows required-field errors when a tax rate is submitted empty', function (): void {
+it('renders localized required-field errors when a tax rate is submitted empty', function (string $locale): void {
+    app()->setLocale($locale);
+
     $admin = User::factory()->superAdmin()->create();
     $admin->givePermissionTo([
         Permission::findOrCreate('view_any_tax::rate', 'web'),
@@ -110,7 +112,21 @@ it('shows required-field errors when a tax rate is submitted empty', function ()
     $this->actingAs($admin);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
-    Livewire::test(CreateTaxRate::class)
+    $form = Livewire::test(CreateTaxRate::class);
+    $fields = collect($form->instance()->form->getFlatComponents())
+        ->filter(fn ($field): bool => method_exists($field, 'getName'))
+        ->keyBy(fn ($field): string => $field->getName());
+
+    foreach (['rate_bps', 'applies_to'] as $name) {
+        expect($fields[$name]->isRequired())->toBeFalse()
+            ->and($fields[$name]->isMarkedAsRequired())->toBeTrue();
+    }
+
+    expect($fields['applies_to']->isNative())->toBeTrue();
+    expect($fields['effective_from']->isRequired())->toBeTrue()
+        ->and($fields['effective_from']->isMarkedAsRequired())->toBeTrue();
+
+    $form
         ->call('create')
         ->assertHasFormErrors([
             'name.en' => 'required',
@@ -120,8 +136,13 @@ it('shows required-field errors when a tax rate is submitted empty', function ()
             'effective_from' => 'required',
         ]);
 
+    foreach (['rate_bps', 'applies_to', 'effective_from'] as $name) {
+        $message = trans('validation.required', ['attribute' => $fields[$name]->getValidationAttribute()], $locale);
+        $form->assertSeeText($message);
+    }
+
     expect(TaxRate::query()->count())->toBe(0);
-});
+})->with(['en', 'ar']);
 
 it('opens the Arabic tax-rate tab when its required translation is missing', function (): void {
     $admin = User::factory()->superAdmin()->create();

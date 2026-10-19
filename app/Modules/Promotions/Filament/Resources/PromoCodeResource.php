@@ -56,7 +56,9 @@ class PromoCodeResource extends Resource
                         ->label('Code'),
 
                     Select::make('type')
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->options(PromoCodeType::class)
                         ->live()
                         ->label('Discount Type'),

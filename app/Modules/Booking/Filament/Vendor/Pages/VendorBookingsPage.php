@@ -24,6 +24,9 @@ class VendorBookingsPage extends Page implements HasTable
     use InteractsWithTable;
     use RequiresApprovedVendor;
 
+    /** @var array<string> */
+    protected const ALLOWED_STATUSES = ['pending', 'accepted', 'in_progress', 'completed', 'rejected'];
+
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
     protected static ?string $navigationGroup = 'bookings';
@@ -32,12 +35,30 @@ class VendorBookingsPage extends Page implements HasTable
 
     protected static string $view = 'vendor-portal.pages.vendor-bookings';
 
-    #[Url]
+    #[Url(as: 'statusFilter', keep: true)]
     public string $statusFilter = 'pending';
+
+    public function mount(): void
+    {
+        $this->normalizeStatusFilter();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->normalizeStatusFilter();
+        $this->resetTable();
+    }
 
     public function getTitle(): string|Htmlable
     {
         return __('vendor-portal.bookings.unified_title');
+    }
+
+    private function normalizeStatusFilter(): void
+    {
+        if (! in_array($this->statusFilter, self::ALLOWED_STATUSES, true)) {
+            $this->statusFilter = 'pending';
+        }
     }
 
     public static function getNavigationLabel(): string
