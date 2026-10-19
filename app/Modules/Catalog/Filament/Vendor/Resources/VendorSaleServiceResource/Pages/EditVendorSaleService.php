@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource\Pages;
 
+use App\Modules\Catalog\Application\Actions\DeleteVendorDraftSaleServiceAction;
 use App\Modules\Catalog\Application\Actions\UpdateSaleServiceAction;
 use App\Modules\Catalog\Domain\Enums\ServiceStatus;
 use App\Modules\Catalog\Domain\Models\Service;
+use App\Modules\Catalog\Domain\States\ServiceStatus\DraftState;
 use App\Modules\Catalog\Filament\Vendor\Resources\VendorSaleServiceResource;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +18,25 @@ use Illuminate\Database\Eloquent\Model;
 class EditVendorSaleService extends EditRecord
 {
     protected static string $resource = VendorSaleServiceResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make()
+                ->authorize('delete')
+                ->visible(fn (Service $record): bool => $record->status instanceof DraftState)
+                ->using(function (Service $record): bool {
+                    $actor = auth()->user();
+                    abort_unless($actor !== null, 403);
+                    app(DeleteVendorDraftSaleServiceAction::class)->execute(
+                        $record,
+                        $actor,
+                    );
+
+                    return true;
+                }),
+        ];
+    }
 
     protected function mutateFormDataBeforeFill(array $data): array
     {

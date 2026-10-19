@@ -19,6 +19,7 @@ use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Domain\Models\NotificationTemplate;
 use App\Modules\Communication\Infrastructure\Gateways\DatabaseNotificationAdapter;
 use App\Modules\Identity\Domain\Models\User;
+use App\Modules\Identity\Domain\Models\VendorProfile;
 use App\Modules\Payments\Domain\Events\PaymentCaptured;
 use App\Modules\Payments\Domain\Events\RefundCompleted;
 use Illuminate\Support\Facades\Queue;
@@ -59,8 +60,11 @@ it('renders one customer inbox item per core event after listener replay', funct
             ->and($dispatch->context['subject'])->not->toBeEmpty()
             ->and($dispatch->context['body'])->toContain($booking->public_id)->not->toContain('{{');
         app(DatabaseNotificationAdapter::class)->send($dispatch);
+        $displayed = $dispatch->context['localized_content'][$locale] ?? [];
+        $displayedTitle = $displayed['title'] ?? $dispatch->context['subject'];
+        $displayedBody = $displayed['body'] ?? $dispatch->context['body'];
         $this->actingAs($customer)->get(route('storefront.account.notifications', ['locale' => $locale]))
-            ->assertOk()->assertSeeText($dispatch->context['subject'])->assertSeeText($dispatch->context['body']);
+            ->assertOk()->assertSeeText($displayedTitle)->assertSeeText($displayedBody);
     }
 
     // Separate refund occurrences for the same booking must not collapse.
@@ -69,6 +73,31 @@ it('renders one customer inbox item per core event after listener replay', funct
         ->where('channel', NotificationChannel::InApp->value)
         ->whereHas('template', fn ($query) => $query->where('event_key', 'refund.completed'))->count())->toBe(2);
 })->with(['en', 'ar']);
+
+it('renders vendor rejection notices in the locale selected by the customer', function (): void {
+    Queue::fake();
+    app(CustomerCoreInAppNotificationTemplateSeeder::class)->run();
+    $customer = User::factory()->asCustomer()->create(['preferred_locale' => 'ar']);
+    $booking = Booking::factory()->create(['customer_id' => $customer->id]);
+    $vendor = VendorProfile::factory()->approved()->create([
+        'business_name' => ['en' => 'English Vendor', 'ar' => 'مقدم الخدمة العربي'],
+    ]);
+    $bookingVendor = BookingVendor::factory()->create([
+        'booking_id' => $booking->id,
+        'vendor_profile_id' => $vendor->id,
+        'rejection_reason' => ['en' => 'English reason', 'ar' => 'السبب العربي'],
+    ]);
+
+    app(OnVendorRejected::class)->handle(new VendorRejected($bookingVendor));
+    $dispatch = NotificationDispatch::query()->where('user_id', $customer->id)
+        ->where('channel', NotificationChannel::InApp->value)->firstOrFail();
+    app(DatabaseNotificationAdapter::class)->send($dispatch);
+
+    $this->actingAs($customer)->get('/en/account/notifications')->assertOk()
+        ->assertSeeText('A vendor declined your booking')->assertSeeText('English Vendor')->assertSeeText('English reason');
+    $this->get('/ar/account/notifications')->assertOk()
+        ->assertSeeText('اعتذر مورد عن حجزك')->assertSeeText('مقدم الخدمة العربي')->assertSeeText('السبب العربي');
+});
 
 it('adds missing core templates without replacing customer edits or reactivating them', function () {
     $seeder = app(CustomerCoreInAppNotificationTemplateSeeder::class);

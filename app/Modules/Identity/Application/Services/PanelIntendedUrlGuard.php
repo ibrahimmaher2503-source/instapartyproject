@@ -35,7 +35,20 @@ final class PanelIntendedUrlGuard
         $host = $parts['host'] ?? null;
         $path = '/'.trim((string) ($parts['path'] ?? ''), '/');
         $panelPath = '/'.trim($panel->getPath(), '/');
-        $belongsToCurrentPanel = ($host === null || strcasecmp($host, $request->getHost()) === 0)
+        $scheme = isset($parts['scheme']) ? strtolower($parts['scheme']) : null;
+        $port = $parts['port'] ?? match ($scheme) {
+            'http' => 80,
+            'https' => 443,
+            default => null,
+        };
+        $sameOrigin = $host === null
+            ? $scheme === null && ! isset($parts['port'])
+            : strcasecmp($host, $request->getHost()) === 0
+                && in_array($scheme, [null, strtolower($request->getScheme())], true)
+                && ($port === null || $port === $request->getPort())
+                && ! isset($parts['user'])
+                && ! isset($parts['pass']);
+        $belongsToCurrentPanel = $sameOrigin
             && ($path === $panelPath || str_starts_with($path, $panelPath.'/'));
 
         if (! $belongsToCurrentPanel) {

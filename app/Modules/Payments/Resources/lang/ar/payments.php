@@ -42,6 +42,19 @@ return [
         ],
     ],
 
+    'sections' => [
+        'payment_details' => 'تفاصيل الدفع',
+        'tax_breakdown' => 'تفاصيل ضريبة الحجز',
+    ],
+
+    'gateway_reference' => 'مرجع المعاملة لدى بوابة الدفع',
+    'booking_public_id' => 'المعرّف العام للحجز',
+    'customer' => 'العميل',
+    'tax_collected' => 'ضريبة القيمة المضافة المحصّلة',
+    'booking_item' => 'عنصر الحجز',
+    'vat_rate_bps' => 'معدل ضريبة القيمة المضافة',
+    'vat_amount' => 'قيمة ضريبة القيمة المضافة',
+
     'columns' => [
         'public_id' => 'المعرّف العام',
         'booking' => 'الحجز',

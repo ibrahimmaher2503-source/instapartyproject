@@ -13,7 +13,7 @@
     $mediaUrls = app(App\Modules\Shared\Application\Services\PublicMediaUrl::class);
     $vendorLogo = $mediaUrls->publicPath($vendor?->logo_path);
     $categoryName = $service->category ? $storefrontText->translation($service->category, 'name') : '';
-    $ratingCount = (int) ($service->rating_count ?? 0);
+    $ratingCount = (int) ($serviceReviewSummary['count'] ?? 0);
     $isOutOfStock = $service->product_type === ProductType::Sale
         && $service->saleDetail?->stock_quantity !== null
         && $service->saleDetail->stock_quantity <= 0;
@@ -69,9 +69,12 @@
                         @if ($categoryName)
                             <span class="text-sm font-semibold text-ink-500">{{ $categoryName }}</span>
                         @endif
-                        <x-storefront.rating-display :average="$service->rating_avg" :count="$ratingCount" class="text-accent-600" />
+                        <x-storefront.rating-display :average="$serviceReviewSummary['average']" :count="$ratingCount" class="text-accent-600" />
                     </div>
-                    <h1 class="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] text-ink-900 sm:text-[2.75rem]">{{ $serviceName }}</h1>
+                    <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                        <h1 class="max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] text-ink-900 sm:text-[2.75rem]">{{ $serviceName }}</h1>
+                        <x-storefront.favorite-toggle :service="$service" />
+                    </div>
                     @if ($shortDescription)
                         <p class="mt-4 max-w-2xl text-lg leading-8 text-ink-600">{{ $shortDescription }}</p>
                     @endif
@@ -217,7 +220,7 @@
                                     <li class="rounded-2xl border border-ink-200 bg-white p-5">
                                         <h3 class="font-bold text-ink-900">{{ $package->getTranslation('name', $locale, useFallbackLocale: true) }}</h3>
                                         <p class="mt-2 text-sm leading-6 text-ink-600">{{ $package->getTranslation('description', $locale, useFallbackLocale: true) }}</p>
-                                        <p class="mt-3 font-extrabold text-secondary-800"><bdi dir="ltr">{{ \Brick\Money\Money::ofMinor($package->price_minor, $package->currency)->formatTo($locale) }}</bdi></p>
+                                        <p class="mt-3 font-extrabold text-secondary-800"><x-storefront.price :minor="$package->price_minor" :currency="$package->currency" /></p>
                                         <ul class="mt-3 space-y-1 text-sm text-ink-600">
                                             @foreach ($package->components as $component)
                                                 <li>{{ $component->getTranslation('name', $locale, useFallbackLocale: true) }} · {{ __('storefront.wizard.step1.package_component_quantity', ['quantity' => $component->quantity]) }}</li>
@@ -251,6 +254,45 @@
                             </ul>
                         </section>
                     @endif
+
+                    <section class="mt-10 border-t border-ink-200 pt-8" aria-labelledby="service-reviews-heading" data-service-reviews>
+                        <div class="flex flex-wrap items-end justify-between gap-3">
+                            <h2 id="service-reviews-heading" class="text-2xl font-extrabold tracking-[-0.03em] text-ink-900">{{ __('storefront.service.reviews_heading') }}</h2>
+                            @if ($serviceReviewSummary['count'] > 0)
+                                <p class="text-sm font-semibold text-ink-600">
+                                    <bdi dir="ltr">{{ number_format($serviceReviewSummary['average'], 1) }} / 5</bdi>
+                                    · {{ __('storefront.service.reviews_count', ['count' => $serviceReviewSummary['count']]) }}
+                                </p>
+                            @endif
+                        </div>
+
+                        @if ($serviceReviewSummary['count'] === 0)
+                            <p class="mt-4 text-sm text-ink-600">{{ __('storefront.service.no_reviews') }}</p>
+                        @else
+                            <div class="mt-5 space-y-4">
+                                @foreach ($serviceReviews as $review)
+                                    <article data-service-review="{{ $review['public_id'] }}" class="rounded-2xl border border-ink-200 bg-white p-5">
+                                        <header class="flex flex-wrap items-center justify-between gap-2">
+                                            <p class="font-bold text-ink-900">{{ __('storefront.service.reviewer', ['name' => $review['reviewer_first_name']]) }}</p>
+                                            <p class="text-sm font-semibold text-accent-700"><bdi dir="ltr">{{ __('storefront.service.rating_value', ['rating' => $review['rating']]) }}</bdi></p>
+                                        </header>
+                                        @if (filled($review['body']))
+                                            <p class="mt-3 whitespace-pre-line leading-7 text-ink-700" lang="{{ $review['locale'] }}" dir="{{ $review['locale'] === 'ar' ? 'rtl' : 'ltr' }}">{{ $review['body'] }}</p>
+                                        @endif
+                                        @if (filled($review['vendor_response']))
+                                            <div class="mt-4 rounded-xl bg-secondary-50 p-4">
+                                                <p class="text-sm font-bold text-secondary-900">{{ __('storefront.service.vendor_response') }}</p>
+                                                <p class="mt-2 whitespace-pre-line text-sm leading-6 text-secondary-800">{{ $review['vendor_response'] }}</p>
+                                            </div>
+                                        @endif
+                                    </article>
+                                @endforeach
+                            </div>
+                            @if ($nextReviewUrl)
+                                <a href="{{ $nextReviewUrl }}" class="sf-button sf-button--quiet mt-5">{{ __('storefront.service.next_reviews') }}</a>
+                            @endif
+                        @endif
+                    </section>
                 </div>
             </div>
         </div>

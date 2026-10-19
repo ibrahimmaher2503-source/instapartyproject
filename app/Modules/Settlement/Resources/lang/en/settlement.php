@@ -193,6 +193,7 @@ return [
         'commission_bps_label' => 'Commission (basis points)',
         'commission_bps_helper' => '100 bps = 1%,  1500 bps = 15%,  10000 bps = 100%',
         'effective_from_label' => 'Effective From',
+        'duplicate_scope' => 'A commission rule already exists for this category and product type. Edit the existing rule instead.',
         'category_any' => 'Any',
         'bps_format' => ':bps bps (:percent%)',
     ],

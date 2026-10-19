@@ -9,6 +9,7 @@ use App\Modules\Catalog\Domain\Enums\ProductType;
 use App\Modules\Catalog\Domain\Models\Service;
 use App\Modules\Catalog\Domain\States\ServiceStatus\DraftState;
 use App\Modules\Identity\Domain\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
@@ -78,4 +79,83 @@ it('uses the real web session for the existing API cancellation flow', function 
         ->postJson('/api/v1/customer/bookings/'.$booking->public_id.'/cancel', [])
         ->assertOk();
     expect($booking->fresh()->lifecycle_status->getValue())->toBe('cancelled');
+});
+
+it('keeps the configured app origin stateful when extra Sanctum domains are configured', function (): void {
+    $originalUrl = config('app.url');
+    $originalStatefulDomains = config('sanctum.stateful');
+    $originalDomains = getenv('SANCTUM_STATEFUL_DOMAINS');
+    $hadOriginalDomains = $originalDomains !== false;
+    $originalEnvValue = $_ENV['SANCTUM_STATEFUL_DOMAINS'] ?? null;
+    $originalServerValue = $_SERVER['SANCTUM_STATEFUL_DOMAINS'] ?? null;
+
+    try {
+        config()->set('app.url', 'https://instaparty.test:8443');
+        putenv('SANCTUM_STATEFUL_DOMAINS=extra.test,extra.test:3000');
+        $_ENV['SANCTUM_STATEFUL_DOMAINS'] = 'extra.test,extra.test:3000';
+        $_SERVER['SANCTUM_STATEFUL_DOMAINS'] = 'extra.test,extra.test:3000';
+        $sanctumConfig = require config_path('sanctum.php');
+        config()->set('sanctum.stateful', $sanctumConfig['stateful']);
+
+        expect(config('sanctum.stateful'))->toContain('instaparty.test:8443');
+
+        $customer = User::factory()->phoneVerified()->asCustomer()->create([
+            'email' => 'booking-actions-stateful@example.test', 'password' => 'SafePassword123!',
+        ]);
+        $booking = Booking::factory()->create(['customer_id' => $customer->id, 'lifecycle_status' => 'vendor_review']);
+        BookingVendor::factory()->create(['booking_id' => $booking->id, 'sub_status' => 'pending']);
+        $this->post('/en/auth/login', ['login' => $customer->email, 'password' => 'SafePassword123!'])->assertRedirect();
+        $this->withCookie(config('session.cookie'), session()->getId());
+        Auth::forgetGuards();
+
+        $this->withHeader('Origin', 'https://instaparty.test:8443')
+            ->getJson('/api/v1/customer/bookings/'.$booking->public_id.'/cancellation-preview')
+            ->assertOk()->assertJsonPath('data.cancellable', true);
+        $this->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson('/api/v1/customer/bookings/'.$booking->public_id.'/cancel', [])
+            ->assertOk();
+        expect($booking->fresh()->lifecycle_status->getValue())->toBe('cancelled');
+
+        expect(EnsureFrontendRequestsAreStateful::fromFrontend(Request::create('/', 'GET', [], [], [], [
+            'HTTP_ORIGIN' => 'https://foreign.test',
+        ])))->toBeFalse();
+        expect(EnsureFrontendRequestsAreStateful::fromFrontend(Request::create('/', 'GET', [], [], [], [
+            'HTTP_HOST' => 'attacker.test',
+        ])))->toBeFalse();
+    } finally {
+        config()->set('app.url', $originalUrl);
+        config()->set('sanctum.stateful', $originalStatefulDomains);
+        if ($hadOriginalDomains) {
+            putenv('SANCTUM_STATEFUL_DOMAINS='.$originalDomains);
+        } else {
+            putenv('SANCTUM_STATEFUL_DOMAINS');
+        }
+        if ($originalEnvValue === null) {
+            unset($_ENV['SANCTUM_STATEFUL_DOMAINS']);
+        } else {
+            $_ENV['SANCTUM_STATEFUL_DOMAINS'] = $originalEnvValue;
+        }
+        if ($originalServerValue === null) {
+            unset($_SERVER['SANCTUM_STATEFUL_DOMAINS']);
+        } else {
+            $_SERVER['SANCTUM_STATEFUL_DOMAINS'] = $originalServerValue;
+        }
+    }
+});
+
+it('rejects unauthenticated cancellation preview requests from the app origin', function (): void {
+    $this->withHeader('Origin', 'https://instaparty.test:8443')
+        ->getJson('/api/v1/customer/bookings/01J00000000000000000000000/cancellation-preview')
+        ->assertUnauthorized();
+});
+
+it('keeps bearer-authenticated cancellation preview available without a frontend origin', function (): void {
+    $customer = User::factory()->phoneVerified()->asCustomer()->create();
+    $booking = Booking::factory()->create(['customer_id' => $customer->id, 'lifecycle_status' => 'vendor_review']);
+    BookingVendor::factory()->create(['booking_id' => $booking->id, 'sub_status' => 'pending']);
+    $token = $customer->createToken('mobile')->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/v1/customer/bookings/'.$booking->public_id.'/cancellation-preview')
+        ->assertOk()->assertJsonPath('data.cancellable', true);
 });

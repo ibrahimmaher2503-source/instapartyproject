@@ -21,7 +21,7 @@ class ViewReport extends ViewRecord
                 ->schema([
                     TextEntry::make('public_id')->label('ID')->copyable(),
                     TextEntry::make('reporter.name')->label('Reporter'),
-                    TextEntry::make('reportable_type')->label('Target Type')->badge(),
+                    TextEntry::make('reportable_type')->formatStateUsing(fn (string $state): string => ReportResource::targetTypeLabel($state))->label('Target Type')->badge(),
                     TextEntry::make('reportable_id')->label('Target ID'),
                     TextEntry::make('reason')->label('Reason')->badge(),
                     TextEntry::make('details')->label('Details'),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Http\Requests;
 
+use App\Modules\Reviews\Domain\ValueObjects\ReviewCursor;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +24,16 @@ class ServiceEstimateRequest extends FormRequest
             'event_starts_at' => ['nullable', 'required_with:event_ends_at', 'date', 'after:now'],
             'event_ends_at' => ['nullable', 'date', 'after:event_starts_at'],
             'timezone' => ['required', 'timezone'],
+            'review_cursor' => [
+                'nullable',
+                'string',
+                'max:512',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value !== null && ReviewCursor::fromEncoded($value) === null) {
+                        $fail(__('storefront.service.review_cursor_invalid'));
+                    }
+                },
+            ],
         ];
     }
 

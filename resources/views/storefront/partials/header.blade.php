@@ -234,12 +234,26 @@
                 @endforeach
             </div>
 
-            <a
-                href="{{ route('storefront.auth.login') }}"
-                class="mt-3 flex w-full items-center justify-center rounded-full border border-ink-300 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-600"
-            >
-                {{ __('storefront.nav.login') }}
-            </a>
+            @auth
+                @if(auth()->user()->hasRole('customer'))
+                    <a href="{{ route('storefront.account.dashboard') }}" class="mt-3 flex w-full items-center justify-center rounded-full bg-primary-50 px-4 py-3 text-sm font-bold text-primary-700">
+                        {{ __('account.title') }}
+                    </a>
+                @endif
+                <form method="POST" action="{{ route('storefront.auth.logout') }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center justify-center rounded-full border border-ink-300 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-600">
+                        {{ __('storefront.nav.logout') }}
+                    </button>
+                </form>
+            @else
+                <a
+                    href="{{ route('storefront.auth.login') }}"
+                    class="mt-3 flex w-full items-center justify-center rounded-full border border-ink-300 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-600"
+                >
+                    {{ __('storefront.nav.login') }}
+                </a>
+            @endauth
         </div>
     </div>
 </dialog>

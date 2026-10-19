@@ -28,7 +28,7 @@ class CheckServiceAvailabilityAction
     ): ServiceAvailabilityResultDTO {
         return match ($service->product_type) {
             ProductType::Rental => $this->checkRental($service, $startsAt, $endsAt),
-            ProductType::Sale => $this->checkSale($service, $quantity),
+            ProductType::Sale => $this->checkSale($service, $startsAt, $quantity),
             ProductType::Digital => $this->checkDigital($service),
         };
     }
@@ -64,8 +64,23 @@ class CheckServiceAvailabilityAction
         );
     }
 
-    private function checkSale(Service $service, int $quantity): ServiceAvailabilityResultDTO
+    private function checkSale(Service $service, ?Carbon $startsAt, int $quantity): ServiceAvailabilityResultDTO
     {
+        $leadTimeHours = $service->saleDetail?->is_made_to_order
+            ? $service->saleDetail->lead_time_hours
+            : null;
+        if ($leadTimeHours !== null && $leadTimeHours > 0
+            && ($startsAt === null || $startsAt->lessThan(now()->addHours($leadTimeHours)))) {
+            return new ServiceAvailabilityResultDTO(
+                available: false,
+                productType: ProductType::Sale,
+                reasonCode: 'lead_time_not_met',
+                remainingQuantity: null,
+                startsAt: $startsAt,
+                endsAt: null,
+            );
+        }
+
         $stockQuantity = $service->saleDetail?->stock_quantity;
 
         // NULL stock means made-to-order: no inventory ceiling applies.

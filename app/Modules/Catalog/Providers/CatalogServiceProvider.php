@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Providers;
 use App\Modules\Booking\Domain\Contracts\CatalogServiceReader;
 use App\Modules\Catalog\Application\Listeners\ArchiveServicesOnAccountDeletedListener;
 use App\Modules\Catalog\Application\Listeners\ArchiveServicesOnTypeRevokedListener;
+use App\Modules\Catalog\Application\Listeners\ReindexServiceForRatingRecomputed;
 use App\Modules\Catalog\Application\Listeners\ReindexServicesForOccasionCategoriesChanged;
 use App\Modules\Catalog\Application\Listeners\RevalidateFrontendCatalogListener;
 use App\Modules\Catalog\Application\Listeners\WriteServiceChangeRequestAuditListener;
@@ -39,6 +40,7 @@ use App\Modules\Identity\Domain\Events\VendorAccountDeleted;
 use App\Modules\Identity\Domain\Events\VendorTypeRevoked;
 use App\Modules\Payments\Domain\Contracts\PaymentsCatalogReader;
 use App\Modules\Reviews\Domain\Contracts\ServiceRatingWriter;
+use App\Modules\Reviews\Domain\Events\ServiceRatingRecomputed;
 use App\Modules\Shared\Application\Timeline\TimelineSourceRegistry;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -70,6 +72,7 @@ class CatalogServiceProvider extends ServiceProvider
         Event::listen(VendorTypeRevoked::class, ArchiveServicesOnTypeRevokedListener::class);
         Event::listen(VendorAccountDeleted::class, ArchiveServicesOnAccountDeletedListener::class);
         Event::listen(OccasionCategoriesChanged::class, ReindexServicesForOccasionCategoriesChanged::class);
+        Event::listen(ServiceRatingRecomputed::class, ReindexServiceForRatingRecomputed::class);
 
         // Trigger ISR revalidation on the customer frontend when a service is published
         Event::listen(ServicePublished::class, RevalidateFrontendCatalogListener::class);

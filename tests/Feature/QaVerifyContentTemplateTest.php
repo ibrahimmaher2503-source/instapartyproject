@@ -13,6 +13,7 @@ use App\Modules\Communication\Domain\Enums\NotificationChannel;
 use App\Modules\Communication\Domain\Models\NotificationDispatch;
 use App\Modules\Communication\Domain\Models\NotificationTemplate;
 use App\Modules\Communication\Filament\Resources\NotificationTemplateResource;
+use App\Modules\Communication\Filament\Resources\NotificationTemplateResource\Pages\CreateNotificationTemplate;
 use App\Modules\Communication\Filament\Resources\NotificationTemplateResource\Pages\EditNotificationTemplate;
 use App\Modules\Identity\Domain\Models\User;
 use Filament\Facades\Filament;
@@ -27,11 +28,44 @@ function qaVerifyTemplateAdmin(): User
     $admin->givePermissionTo(
         Permission::findOrCreate('view_any_notification::template', 'web'),
         Permission::findOrCreate('view_notification::template', 'web'),
+        Permission::findOrCreate('create_notification::template', 'web'),
         Permission::findOrCreate('update_notification::template', 'web'),
     );
 
     return $admin;
 }
+
+it('shows required-field errors when a notification template is submitted empty', function (): void {
+    app()->setLocale('en');
+    $this->actingAs(qaVerifyTemplateAdmin());
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    $before = NotificationTemplate::query()->count();
+
+    $form = Livewire::test(CreateNotificationTemplate::class);
+    $fields = collect($form->instance()->form->getFlatComponents())
+        ->filter(fn ($field): bool => method_exists($field, 'getName'))
+        ->keyBy(fn ($field): string => $field->getName());
+
+    foreach (['event_key', 'channel', 'audience', 'body'] as $name) {
+        expect($fields[$name]->isRequired())->toBeFalse()
+            ->and($fields[$name]->isMarkedAsRequired())->toBeTrue();
+    }
+
+    $form
+        ->call('create')
+        ->assertHasFormErrors([
+            'event_key' => 'required',
+            'channel' => 'required',
+            'audience' => 'required',
+            'body' => 'required',
+        ])
+        ->assertSeeText('The event Key field is required.')
+        ->assertSeeText('The delivery Channel field is required.')
+        ->assertSeeText('The target Audience field is required.')
+        ->assertSeeText('The message Body field is required.');
+
+    expect(NotificationTemplate::query()->count())->toBe($before);
+});
 
 it('edits bilingual template content and renders a local test dispatch from the saved event template', function (): void {
     Queue::fake();

@@ -37,9 +37,13 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
 
         $stockQuantity = null;
         $rentalDuration = null;
+        $isMadeToOrder = false;
+        $leadTimeHours = null;
         if ($row->product_type === 'sale') {
             $detail = DB::table('service_sale_details')->where('service_id', $id)->first();
             $stockQuantity = $detail?->stock_quantity;
+            $isMadeToOrder = (bool) ($detail?->is_made_to_order ?? false);
+            $leadTimeHours = $detail?->lead_time_hours;
         } elseif ($row->product_type === ProductType::Rental->value) {
             $rentalDuration = DB::table('service_rental_details')->where('service_id', $id)->value('default_rental_duration_hours');
         }
@@ -58,6 +62,8 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
             basePriceCurrency: $row->base_price_currency ?? 'EGP',
             stockQuantity: $stockQuantity !== null ? (int) $stockQuantity : null,
             defaultRentalDurationHours: $rentalDuration !== null ? (int) $rentalDuration : null,
+            isMadeToOrder: $isMadeToOrder,
+            leadTimeHours: $leadTimeHours !== null ? (int) $leadTimeHours : null,
         );
     }
 
@@ -392,8 +398,13 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
     {
         $stockQuantity = null;
         $rentalDuration = null;
+        $isMadeToOrder = false;
+        $leadTimeHours = null;
         if ($row->product_type === ProductType::Sale->value) {
-            $stockQuantity = DB::table('service_sale_details')->where('service_id', $row->id)->value('stock_quantity');
+            $detail = DB::table('service_sale_details')->where('service_id', $row->id)->first();
+            $stockQuantity = $detail?->stock_quantity;
+            $isMadeToOrder = (bool) ($detail?->is_made_to_order ?? false);
+            $leadTimeHours = $detail?->lead_time_hours;
         } elseif ($row->product_type === ProductType::Rental->value) {
             $rentalDuration = DB::table('service_rental_details')->where('service_id', $row->id)->value('default_rental_duration_hours');
         }
@@ -412,6 +423,8 @@ class EloquentCatalogServiceReader implements CatalogServiceReader
             basePriceCurrency: $row->base_price_currency ?? 'EGP',
             stockQuantity: $stockQuantity !== null ? (int) $stockQuantity : null,
             defaultRentalDurationHours: $rentalDuration !== null ? (int) $rentalDuration : null,
+            isMadeToOrder: $isMadeToOrder,
+            leadTimeHours: $leadTimeHours !== null ? (int) $leadTimeHours : null,
         );
     }
 }

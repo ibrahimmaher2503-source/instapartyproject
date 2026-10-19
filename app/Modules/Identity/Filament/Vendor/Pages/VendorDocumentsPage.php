@@ -166,8 +166,10 @@ class VendorDocumentsPage extends Page implements HasTable
                     ->label(__('identity.actions.re_upload_document'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('warning')
-                    ->visible(fn (VendorDocument $record): bool => $record->status === DocumentStatus::Rejected
-                        && array_key_exists($record->doc_type_key, app(RequiredVendorDocumentTypesResolver::class)->options()))
+                    ->visible(fn (VendorDocument $record): bool => (
+                        $record->status === DocumentStatus::Rejected
+                        || ($record->status === DocumentStatus::Approved && $record->expires_at?->lt(today()))
+                    ) && array_key_exists($record->doc_type_key, app(RequiredVendorDocumentTypesResolver::class)->options()))
                     ->form([
                         FileUpload::make('file')
                             ->label(__('identity.fields.document_file'))

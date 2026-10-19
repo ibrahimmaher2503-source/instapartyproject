@@ -67,11 +67,13 @@ it('keeps failed submissions in the cart with errors and no success state', func
         $item = BookingItem::factory()->create(['booking_vendor_id' => $vendor->id]);
         $item->service->category->occasions()->attach($booking->occasion_id);
     }
+    $itemIdsBefore = $booking->items()->orderBy('booking_items.id')->pluck('booking_items.id')->all();
 
     $this->actingAs($customer)->post("/{$locale}/cart/{$booking->public_id}/submit")
         ->assertRedirect("/{$locale}/cart")->assertSessionHasErrors('booking')
         ->assertSessionMissing('booking_submitted');
     expect($booking->fresh()->lifecycle_status->getValue())->toBe('draft');
+    expect($booking->items()->orderBy('booking_items.id')->pluck('booking_items.id')->all())->toBe($itemIdsBefore);
     $this->get("/{$locale}/cart")->assertOk()->assertSee('role="alert"', false)
         ->assertDontSee('data-booking-confirmation', false);
 })->with(['en', 'ar'])->with([false, true]);

@@ -32,6 +32,8 @@ return [
         'deleted' => 'تم حذف البحث المحفوظ.',
     ],
     'account' => [
+        'add_favorite' => 'أضف إلى المفضلة',
+        'remove_favorite' => 'إزالة من المفضلة',
         'save_search' => 'حفظ هذا البحث',
         'search_label' => 'سمّ هذا البحث',
         'run_search' => 'تشغيل البحث',

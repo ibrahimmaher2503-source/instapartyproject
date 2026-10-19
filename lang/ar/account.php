@@ -44,4 +44,5 @@ return [
         'no_payment' => 'لم يتم تحصيل أي دفعة، لذلك لا يوجد مبلغ مسترد مسجل حاليًا.',
     ],
     'addresses' => 'العناوين', 'saved_searches' => 'عمليات البحث المحفوظة', 'no_saved_searches' => 'لا توجد عمليات بحث محفوظة بعد.', 'loyalty' => 'الولاء',
+    'notification_mark_read' => 'تحديد كمقروء', 'notification_mark_unread' => 'تحديد كغير مقروء',
 ];

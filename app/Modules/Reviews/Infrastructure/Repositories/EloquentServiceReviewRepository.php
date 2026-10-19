@@ -8,6 +8,7 @@ use App\Modules\Reviews\Application\DTOs\SubmitReviewData;
 use App\Modules\Reviews\Domain\Contracts\ServiceReviewRepository;
 use App\Modules\Reviews\Domain\Enums\ModerationStatus;
 use App\Modules\Reviews\Domain\Models\ServiceReview;
+use App\Modules\Reviews\Domain\ValueObjects\ReviewCursor;
 use Illuminate\Support\Str;
 
 class EloquentServiceReviewRepository implements ServiceReviewRepository
@@ -52,13 +53,15 @@ class EloquentServiceReviewRepository implements ServiceReviewRepository
             ->orderByDesc('id');
 
         if ($cursor !== null) {
-            $decoded = json_decode(base64_decode($cursor), true);
-            if (isset($decoded['created_at'], $decoded['id'])) {
-                $query->where(function ($q) use ($decoded): void {
-                    $q->where('created_at', '<', $decoded['created_at'])
-                        ->orWhere(function ($q2) use ($decoded): void {
-                            $q2->where('created_at', '=', $decoded['created_at'])
-                                ->where('id', '<', $decoded['id']);
+            $decoded = ReviewCursor::fromEncoded($cursor);
+            if ($decoded !== null) {
+                $createdAt = $decoded->createdAt;
+                $id = $decoded->id;
+                $query->where(function ($q) use ($createdAt, $id): void {
+                    $q->where('created_at', '<', $createdAt)
+                        ->orWhere(function ($q2) use ($createdAt, $id): void {
+                            $q2->where('created_at', '=', $createdAt)
+                                ->where('id', '<', $id);
                         });
                 });
             }
@@ -69,7 +72,10 @@ class EloquentServiceReviewRepository implements ServiceReviewRepository
         $items = $items->take($limit);
 
         $nextCursor = $hasMore
-            ? base64_encode(json_encode(['created_at' => $items->last()->created_at->toISOString(), 'id' => $items->last()->id]))
+            ? base64_encode(json_encode([
+                'created_at' => $items->last()->getRawOriginal('created_at'),
+                'id' => $items->last()->id,
+            ], JSON_THROW_ON_ERROR))
             : null;
 
         return [

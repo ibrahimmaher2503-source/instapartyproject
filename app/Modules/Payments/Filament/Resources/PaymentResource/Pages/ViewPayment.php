@@ -7,6 +7,7 @@ namespace App\Modules\Payments\Filament\Resources\PaymentResource\Pages;
 use App\Modules\Payments\Filament\Actions\RefundPaymentHeaderAction;
 use App\Modules\Payments\Filament\Resources\PaymentResource;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class ViewPayment extends ViewRecord
 {
@@ -15,5 +16,10 @@ class ViewPayment extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [RefundPaymentHeaderAction::make()];
+    }
+
+    protected function resolveRecord(int|string $key): Model
+    {
+        return parent::resolveRecord($key)->loadMissing(['booking.customer', 'booking.items']);
     }
 }

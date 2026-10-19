@@ -11,6 +11,7 @@ use App\Modules\Shared\Domain\Enums\NavigationTargetType;
 use App\Modules\Shared\Domain\Models\CmsPage;
 use App\Modules\Shared\Domain\Models\NavigationMenu;
 use App\Modules\Shared\Domain\Models\NavigationMenuItem;
+use App\Modules\Shared\Filament\Forms\BilingualTabErrorFeedback;
 use App\Modules\Shared\Filament\Resources\CmsPageResource\Pages\EditCmsPage;
 use Database\Seeders\InformationalCmsPagesSeeder;
 use Filament\Facades\Filament;
@@ -107,4 +108,25 @@ it('rejects duplicate and reserved CMS public slugs without changing the saved p
 
     expect($about->refresh()->public_slug)->toBe('about-qa-guide')
         ->and($privacy->refresh()->public_slug)->toBeNull();
+});
+
+it('activates and identifies the language tab containing CMS validation errors', function (): void {
+    $this->seed(InformationalCmsPagesSeeder::class);
+    $page = CmsPage::query()->where('slug', 'about')->sole();
+    $this->actingAs(qaVerifyCmsAdmin());
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $form = Livewire::test(EditCmsPage::class, ['record' => $page->getRouteKey()])
+        ->fillForm([
+            'title.en' => '',
+            'title.ar' => '',
+            'body.en' => '<p>English body</p>',
+            'body.ar' => '<p>محتوى عربي</p>',
+        ])
+        ->call('save')
+        ->assertHasFormErrors(['title.en', 'title.ar']);
+
+    expect(BilingualTabErrorFeedback::activeTab($form->instance()))->toBe(1)
+        ->and(BilingualTabErrorFeedback::countForLocale($form->instance(), 'en'))->toBeGreaterThan(0)
+        ->and(BilingualTabErrorFeedback::countForLocale($form->instance(), 'ar'))->toBeGreaterThan(0);
 });

@@ -120,6 +120,7 @@ class VendorDocumentPolicy
     public function reupload(User $user, VendorDocument $vendorDocument): bool
     {
         return $user->vendorProfile?->getKey() === $vendorDocument->vendor_profile_id
-            && $vendorDocument->status->value === 'rejected';
+            && ($vendorDocument->status->value === 'rejected'
+                || ($vendorDocument->status->value === 'approved' && $vendorDocument->expires_at?->lt(today())));
     }
 }

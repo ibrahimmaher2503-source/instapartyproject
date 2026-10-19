@@ -73,4 +73,7 @@
             </div>
         </div>
     </a>
+    <div class="px-5 pb-5">
+        <x-storefront.favorite-toggle :service="$service" />
+    </div>
 </article>

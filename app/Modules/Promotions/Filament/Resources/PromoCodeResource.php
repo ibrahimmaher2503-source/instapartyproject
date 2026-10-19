@@ -48,7 +48,9 @@ class PromoCodeResource extends Resource
             Section::make('Code Details')
                 ->schema([
                     TextInput::make('code')
-                        ->required()
+                        ->required(false)
+                        ->rule('required')
+                        ->markAsRequired()
                         ->unique(ignoreRecord: true)
                         ->maxLength(50)
                         ->label('Code'),

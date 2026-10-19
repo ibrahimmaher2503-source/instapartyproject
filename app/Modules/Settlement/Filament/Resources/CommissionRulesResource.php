@@ -15,6 +15,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -108,6 +109,21 @@ class CommissionRulesResource extends Resource
                         ->minValue(0)
                         ->maxValue(10000)
                         ->required()
+                        ->rules(fn (Get $get, ?CommissionRate $record): array => [
+                            function (string $attribute, mixed $value, \Closure $fail) use ($get, $record): void {
+                                if (! filled($value) || ! filled($get('effective_from'))) {
+                                    return;
+                                }
+
+                                if (self::hasDuplicateRuleScope(
+                                    filled($get('category_id')) ? (int) $get('category_id') : null,
+                                    filled($get('product_type')) ? (string) $get('product_type') : null,
+                                    $record,
+                                )) {
+                                    $fail(__('settlement.commission_rule.duplicate_scope'));
+                                }
+                            },
+                        ])
                         ->helperText(__('settlement.commission_rule.commission_bps_helper')),
 
                     DatePicker::make('effective_from')
@@ -118,6 +134,32 @@ class CommissionRulesResource extends Resource
                 ])
                 ->columns(2),
         ]);
+    }
+
+    /** The database unique key covers the nullable category/type pair, not the effective date. */
+    public static function hasDuplicateRuleScope(?int $categoryId, ?string $productType, ?CommissionRate $record = null): bool
+    {
+        if ($record !== null
+            && $record->category_id === $categoryId
+            && $record->product_type?->value === $productType) {
+            return false;
+        }
+
+        $query = CommissionRate::query();
+
+        $categoryId === null
+            ? $query->whereNull('category_id')
+            : $query->where('category_id', $categoryId);
+
+        $productType === null
+            ? $query->whereNull('product_type')
+            : $query->where('product_type', $productType);
+
+        if ($record !== null) {
+            $query->whereKeyNot($record->getKey());
+        }
+
+        return $query->exists();
     }
 
     public static function table(Table $table): Table

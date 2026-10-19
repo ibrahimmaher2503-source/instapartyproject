@@ -17,6 +17,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Attributes\Url;
 
 class VendorBookingsPage extends Page implements HasTable
 {
@@ -31,6 +32,7 @@ class VendorBookingsPage extends Page implements HasTable
 
     protected static string $view = 'vendor-portal.pages.vendor-bookings';
 
+    #[Url]
     public string $statusFilter = 'pending';
 
     public function getTitle(): string|Htmlable

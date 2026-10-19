@@ -552,7 +552,7 @@ return [
         'vendor_not_approved' => 'The vendor profile must be approved before granting product-type permissions.',
         'type_approval_not_found' => 'Product type approval was not found or has already been revoked.',
         'document_already_reviewed' => 'This document has already been reviewed.',
-        'document_not_reuploadable' => 'Only a rejected document can be re-uploaded.',
+        'document_not_reuploadable' => 'Only a rejected or expired document can be re-uploaded.',
         'document_already_pending' => 'A replacement for this document is already pending review.',
         'invalid_change_request_items' => 'One or more change-request items do not belong to this request.',
         'unsupported_change_request_field' => 'Select a supported profile field for each requested change.',

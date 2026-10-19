@@ -52,7 +52,10 @@ final class ReuploadVendorDocumentAction
             return DB::transaction(function () use ($document, $path, $file, $actor): VendorDocument {
                 $locked = VendorDocument::query()->lockForUpdate()->findOrFail($document->getKey());
 
-                if ($locked->status !== DocumentStatus::Rejected) {
+                $expiredApproved = $locked->status === DocumentStatus::Approved
+                    && $locked->expires_at?->lt(today());
+
+                if ($locked->status !== DocumentStatus::Rejected && ! $expiredApproved) {
                     throw new ConflictHttpException(__('identity::identity.validation.document_not_reuploadable'));
                 }
 
@@ -73,7 +76,7 @@ final class ReuploadVendorDocumentAction
                     'file_path' => $path,
                     'file_name' => $file->getClientOriginalName(),
                     'status' => DocumentStatus::Pending->value,
-                    'expires_at' => $locked->expires_at,
+                    'expires_at' => $locked->expires_at?->lt(today()) ? null : $locked->expires_at,
                     'is_critical' => $locked->is_critical,
                 ]);
 

@@ -18,6 +18,9 @@ use App\Modules\Shared\Filament\Tables\ReferenceSearch;
 use Brick\Money\Money;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
@@ -213,10 +216,82 @@ class PaymentResource extends Resource
     public static function infolist(Infolist $schema): Infolist
     {
         return $schema->components([
+            Section::make(__('payments::payments.sections.payment_details'))
+                ->schema([
+                    TextEntry::make('public_id')
+                        ->label(__('payments::payments.columns.public_id'))
+                        ->copyable(),
+                    TextEntry::make('amount_minor')
+                        ->label(__('payments::payments.columns.amount'))
+                        ->formatStateUsing(fn (int $state, Payment $record): string => self::formatMoney($state, $record->amount_currency)),
+                    TextEntry::make('status')
+                        ->label(__('payments::payments.columns.status'))
+                        ->formatStateUsing(fn (mixed $state): string => PaymentState::label(
+                            $state instanceof PaymentState ? $state->getValue() : (string) $state,
+                            app()->getLocale(),
+                        ) ?? (string) $state),
+                    TextEntry::make('gateway')
+                        ->label(__('payments::payments.columns.gateway')),
+                    TextEntry::make('gateway_ref')
+                        ->label(__('payments::payments.gateway_reference'))
+                        ->placeholder('—')
+                        ->copyable(),
+                    TextEntry::make('method')
+                        ->label(__('payments::payments.columns.method'))
+                        ->formatStateUsing(fn (mixed $state): string => $state instanceof PaymentMethod ? $state->getLabel() : (string) $state),
+                    TextEntry::make('captured_at')
+                        ->label(__('payments::payments.columns.captured_at'))
+                        ->dateTime()
+                        ->placeholder('—'),
+                    TextEntry::make('booking.reference_no')
+                        ->label(__('payments::payments.columns.booking'))
+                        ->url(fn (Payment $record): ?string => $record->booking !== null
+                            && auth()->user()?->can('view', $record->booking) === true
+                            ? route('filament.admin.resources.bookings.view', ['record' => $record->booking->public_id])
+                            : null)
+                        ->placeholder('—'),
+                    TextEntry::make('booking.public_id')
+                        ->label(__('payments::payments.booking_public_id'))
+                        ->copyable()
+                        ->placeholder('—'),
+                    TextEntry::make('booking.customer.name')
+                        ->label(__('payments::payments.customer'))
+                        ->placeholder('—'),
+                    TextEntry::make('booking.total_vat_minor')
+                        ->label(__('payments::payments.tax_collected'))
+                        ->formatStateUsing(fn (?int $state, Payment $record): string => $record->booking === null
+                            ? '—'
+                            : self::formatMoney($state ?? 0, $record->booking->total_currency ?: $record->amount_currency))
+                        ->placeholder('—'),
+                ])
+                ->columns(2)
+                ->columnSpanFull(),
+            RepeatableEntry::make('booking.items')
+                ->label(__('payments::payments.sections.tax_breakdown'))
+                ->schema([
+                    TextEntry::make('name_snapshot')
+                        ->label(__('payments::payments.booking_item'))
+                        ->formatStateUsing(fn (mixed $state): string => is_array($state)
+                            ? (string) ($state[app()->getLocale()] ?? $state['en'] ?? reset($state) ?: '—')
+                            : (string) $state),
+                    TextEntry::make('vat_rate_bps')
+                        ->label(__('payments::payments.vat_rate_bps'))
+                        ->formatStateUsing(fn (int $state): string => $state.' bps'),
+                    TextEntry::make('vat_amount_minor')
+                        ->label(__('payments::payments.vat_amount'))
+                        ->formatStateUsing(fn (int $state, $record): string => self::formatMoney($state, $record->vat_amount_currency ?: 'EGP')),
+                ])
+                ->columns(3)
+                ->columnSpanFull(),
             AuditTimelineSection::make()
                 ->audience(TimelineAudience::Admin)
                 ->columnSpanFull(),
         ]);
+    }
+
+    private static function formatMoney(int $minor, string $currency): string
+    {
+        return Money::ofMinor($minor, $currency)->formatTo(app()->getLocale());
     }
 
     public static function getPages(): array
