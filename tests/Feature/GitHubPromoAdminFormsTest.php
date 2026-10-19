@@ -44,21 +44,32 @@ it('creates a promotion through its authorized reactive form', function (string 
     expect($promo->code)->toBe('QA-'.$type)->and($promo->type->value)->toBe($type);
 })->with(['percentage', 'fixed']);
 
-it('shows required-field errors when a promotion is submitted empty', function (): void {
+it('renders localized required-field errors when a promotion is submitted empty', function (string $locale): void {
+    app()->setLocale($locale);
+
     $form = Livewire::test(CreatePromoCode::class);
     $fields = collect($form->instance()->form->getFlatComponents())
         ->filter(fn ($field): bool => method_exists($field, 'getName'))
         ->keyBy(fn ($field): string => $field->getName());
 
-    expect($fields['code']->isRequired())->toBeFalse()
-        ->and($fields['code']->isMarkedAsRequired())->toBeTrue();
+    foreach (['code', 'type'] as $name) {
+        expect($fields[$name]->isRequired())->toBeFalse()
+            ->and($fields[$name]->isMarkedAsRequired())->toBeTrue();
+    }
+
+    expect($fields['type']->isNative())->toBeTrue();
 
     $form
         ->call('create')
         ->assertHasFormErrors(['code' => 'required', 'type' => 'required']);
 
+    foreach (['code', 'type'] as $name) {
+        $message = trans('validation.required', ['attribute' => $fields[$name]->getValidationAttribute()], $locale);
+        $form->assertSeeText($message);
+    }
+
     expect(PromoCode::query()->count())->toBe(0);
-});
+})->with(['en', 'ar']);
 
 it('edits an existing promotion through its authorized form', function (): void {
     $promo = PromoCode::query()->create(['code' => 'QA-OLD', 'type' => 'percentage', 'scope' => 'platform', 'discount_percent' => 10, 'is_active' => true]);
